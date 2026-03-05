@@ -60,7 +60,7 @@ export type Database = {
           description: string | null
           id: string
           location: string
-          organiser_id: string
+          organiser_id: string | null
           promotion_name: string | null
           status: Database["public"]["Enums"]["event_status"]
           title: string
@@ -73,7 +73,7 @@ export type Database = {
           description?: string | null
           id?: string
           location: string
-          organiser_id: string
+          organiser_id?: string | null
           promotion_name?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           title: string
@@ -86,7 +86,7 @@ export type Database = {
           description?: string | null
           id?: string
           location?: string
-          organiser_id?: string
+          organiser_id?: string | null
           promotion_name?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           title?: string
