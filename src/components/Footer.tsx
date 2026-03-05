@@ -16,6 +16,7 @@ export function Footer() {
             <div className="flex flex-col gap-2">
               <Link to="/events" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Events</Link>
               <Link to="/fighters" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Fighters</Link>
+              <Link to="/gyms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Gyms</Link>
             </div>
           </div>
           <div>
