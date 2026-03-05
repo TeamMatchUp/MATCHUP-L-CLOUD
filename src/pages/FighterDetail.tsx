@@ -1,0 +1,173 @@
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { motion } from "framer-motion";
+import { ArrowLeft, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useParams, Link } from "react-router-dom";
+
+const WEIGHT_CLASS_LABELS: Record<string, string> = {
+  strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
+  featherweight: "Featherweight", lightweight: "Lightweight", super_lightweight: "Super Lightweight",
+  welterweight: "Welterweight", super_welterweight: "Super Welterweight", middleweight: "Middleweight",
+  super_middleweight: "Super Middleweight", light_heavyweight: "Light Heavyweight",
+  cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
+};
+
+const STYLE_LABELS: Record<string, string> = {
+  boxing: "Boxing", muay_thai: "Muay Thai", mma: "MMA", kickboxing: "Kickboxing", bjj: "BJJ",
+};
+
+export default function FighterDetail() {
+  const { id } = useParams<{ id: string }>();
+
+  const { data: fighter, isLoading } = useQuery({
+    queryKey: ["fighter", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fighter_profiles")
+        .select("*, fighter_gym_links(gym_id, is_primary, gyms(id, name, location))")
+        .eq("id", id!)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-16">
+          <div className="container py-16">
+            <div className="h-8 w-64 bg-card animate-pulse rounded mb-4" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!fighter) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-16">
+          <div className="container py-16 text-center">
+            <h1 className="font-heading text-3xl text-foreground mb-4">Fighter Not Found</h1>
+            <Button variant="ghost" asChild>
+              <Link to="/fighters"><ArrowLeft className="h-4 w-4 mr-2" />Back to Fighters</Link>
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
+  const gyms = fighter.fighter_gym_links ?? [];
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="pt-16">
+        <section className="py-16">
+          <div className="container max-w-3xl">
+            <Button variant="ghost" size="sm" asChild className="mb-6">
+              <Link to="/fighters"><ArrowLeft className="h-4 w-4 mr-2" />All Fighters</Link>
+            </Button>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="flex items-start gap-6 mb-8">
+                <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center font-heading text-2xl text-muted-foreground shrink-0">
+                  {fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)}
+                </div>
+                <div>
+                  <h1 className="font-heading text-3xl md:text-4xl text-foreground">{fighter.name}</h1>
+                  <p className="text-primary font-bold text-2xl mt-1">{record}</p>
+                  <span className={`inline-block mt-2 text-xs font-medium px-3 py-1 rounded-full ${fighter.available ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                    {fighter.available ? "Available for fights" : "Currently booked"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                {[
+                  { label: "Weight Class", value: WEIGHT_CLASS_LABELS[fighter.weight_class] },
+                  { label: "Style", value: fighter.style ? STYLE_LABELS[fighter.style] : "—" },
+                  { label: "Height", value: fighter.height ?? "—" },
+                  { label: "Reach", value: fighter.reach ?? "—" },
+                ].map((stat) => (
+                  <div key={stat.label} className="rounded-lg border border-border bg-card p-4">
+                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                    <p className="font-heading text-lg text-foreground mt-1">{stat.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Record Breakdown */}
+              <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="font-heading text-3xl text-success">{fighter.record_wins}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Wins</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="font-heading text-3xl text-destructive">{fighter.record_losses}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Losses</p>
+                </div>
+                <div className="rounded-lg border border-border bg-card p-4 text-center">
+                  <p className="font-heading text-3xl text-muted-foreground">{fighter.record_draws}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Draws</p>
+                </div>
+              </div>
+
+              {/* Bio */}
+              {fighter.bio && (
+                <div className="mb-8">
+                  <h2 className="font-heading text-xl text-foreground mb-3">ABOUT</h2>
+                  <p className="text-muted-foreground leading-relaxed">{fighter.bio}</p>
+                </div>
+              )}
+
+              {/* Gym Affiliations */}
+              {gyms.length > 0 && (
+                <div>
+                  <h2 className="font-heading text-xl text-foreground mb-3">GYM AFFILIATIONS</h2>
+                  <div className="space-y-3">
+                    {gyms.map((link: any) => (
+                      <Link
+                        key={link.gym_id}
+                        to={`/gyms/${link.gyms?.id}`}
+                        className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:gold-border-subtle transition-all"
+                      >
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{link.gyms?.name}</p>
+                          {link.gyms?.location && (
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                              <MapPin className="h-3 w-3" />{link.gyms.location}
+                            </p>
+                          )}
+                        </div>
+                        {link.is_primary && (
+                          <span className="text-xs text-primary font-medium">Primary</span>
+                        )}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </div>
+  );
+}
