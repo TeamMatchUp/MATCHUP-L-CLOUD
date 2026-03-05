@@ -7,7 +7,11 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Fighters from "./pages/Fighters";
+import FighterDetail from "./pages/FighterDetail";
+import Gyms from "./pages/Gyms";
+import GymDetail from "./pages/GymDetail";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import OrganiserDashboard from "./pages/OrganiserDashboard";
@@ -28,7 +32,11 @@ const App = () => (
             {/* Public */}
             <Route path="/" element={<Index />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/fighters" element={<Fighters />} />
+            <Route path="/fighters/:id" element={<FighterDetail />} />
+            <Route path="/gyms" element={<Gyms />} />
+            <Route path="/gyms/:id" element={<GymDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
