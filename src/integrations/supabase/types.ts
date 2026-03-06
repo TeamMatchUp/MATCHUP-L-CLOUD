@@ -402,6 +402,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_notification: {
+        Args: {
+          _message?: string
+          _reference_id?: string
+          _title: string
+          _type?: Database["public"]["Enums"]["notification_type"]
+          _user_id: string
+        }
+        Returns: string
+      }
       get_user_roles: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"][]
