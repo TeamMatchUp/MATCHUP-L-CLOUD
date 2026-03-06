@@ -15,6 +15,8 @@ import GymDetail from "./pages/GymDetail";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import OrganiserDashboard from "./pages/OrganiserDashboard";
+import CreateEvent from "./pages/organiser/CreateEvent";
+import EventManager from "./pages/organiser/EventManager";
 import CoachDashboard from "./pages/CoachDashboard";
 import FighterDashboard from "./pages/FighterDashboard";
 import NotFound from "./pages/NotFound";
@@ -46,6 +48,22 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="organiser">
                   <OrganiserDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/organiser/create-event"
+              element={
+                <ProtectedRoute requiredRole="organiser">
+                  <CreateEvent />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/organiser/events/:id"
+              element={
+                <ProtectedRoute requiredRole="organiser">
+                  <EventManager />
                 </ProtectedRoute>
               }
             />
