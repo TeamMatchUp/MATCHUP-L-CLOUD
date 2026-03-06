@@ -1,0 +1,302 @@
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Globe, Users } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { FighterSearchPanel } from "@/components/organiser/FighterSearchPanel";
+import { ProposeMatchDialog } from "@/components/organiser/ProposeMatchDialog";
+import type { Database } from "@/integrations/supabase/types";
+
+type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
+type FightSlot = Database["public"]["Tables"]["fight_slots"]["Row"];
+
+function formatWeightClass(wc: string) {
+  return wc.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  open: "bg-success/20 text-success border-success/30",
+  proposed: "bg-primary/20 text-primary border-primary/30",
+  confirmed: "bg-secondary/20 text-secondary border-secondary/30",
+  cancelled: "bg-destructive/20 text-destructive border-destructive/30",
+};
+
+export default function EventManager() {
+  const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const [activeSlot, setActiveSlot] = useState<FightSlot | null>(null);
+  const [selectedFighterA, setSelectedFighterA] = useState<FighterProfile | null>(null);
+  const [selectedFighterB, setSelectedFighterB] = useState<FighterProfile | null>(null);
+  const [showProposeDialog, setShowProposeDialog] = useState(false);
+
+  const { data: event, isLoading: eventLoading } = useQuery({
+    queryKey: ["organiser-event", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .eq("id", id!)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  const { data: slots = [] } = useQuery({
+    queryKey: ["event-slots", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fight_slots")
+        .select("*")
+        .eq("event_id", id!)
+        .order("slot_number");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  const { data: proposals = [] } = useQuery({
+    queryKey: ["event-proposals", id],
+    queryFn: async () => {
+      const slotIds = slots.map((s) => s.id);
+      if (slotIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("match_proposals")
+        .select("*, fighter_a:fighter_profiles!match_proposals_fighter_a_id_fkey(*), fighter_b:fighter_profiles!match_proposals_fighter_b_id_fkey(*)")
+        .in("fight_slot_id", slotIds);
+      if (error) throw error;
+      return data;
+    },
+    enabled: slots.length > 0,
+  });
+
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("events")
+        .update({ status: "published" })
+        .eq("id", id!);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organiser-event", id] });
+      toast({ title: "Event published", description: "Your event is now visible to everyone." });
+    },
+  });
+
+  const handleSelectFighter = (fighter: FighterProfile) => {
+    if (!selectedFighterA) {
+      setSelectedFighterA(fighter);
+    } else if (!selectedFighterB && fighter.id !== selectedFighterA.id) {
+      setSelectedFighterB(fighter);
+      setShowProposeDialog(true);
+    }
+  };
+
+  const handleCancelSearch = () => {
+    setActiveSlot(null);
+    setSelectedFighterA(null);
+    setSelectedFighterB(null);
+  };
+
+  const handleProposalCreated = () => {
+    setShowProposeDialog(false);
+    setActiveSlot(null);
+    setSelectedFighterA(null);
+    setSelectedFighterB(null);
+    queryClient.invalidateQueries({ queryKey: ["event-slots", id] });
+    queryClient.invalidateQueries({ queryKey: ["event-proposals", id] });
+  };
+
+  if (eventLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-16">
+          <div className="container py-16">
+            <div className="animate-pulse text-muted-foreground">Loading event...</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="pt-16">
+          <div className="container py-16 text-center">
+            <p className="text-muted-foreground">Event not found.</p>
+            <Button variant="outline" asChild className="mt-4">
+              <Link to="/organiser/dashboard">Back to Dashboard</Link>
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const getSlotProposal = (slotId: string) =>
+    proposals.find((p) => p.fight_slot_id === slotId);
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="pt-16">
+        <section className="py-16">
+          <div className="container">
+            <Link
+              to="/organiser/dashboard"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+            </Link>
+
+            <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
+              <div>
+                <div className="flex items-center gap-3 mb-1">
+                  <h1 className="font-heading text-4xl text-foreground">
+                    {event.title}
+                  </h1>
+                  <Badge
+                    variant="outline"
+                    className={STATUS_COLORS[event.status] || ""}
+                  >
+                    {event.status}
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground">
+                  {event.date} · {event.location} · {event.country}
+                </p>
+                {event.promotion_name && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {event.promotion_name}
+                  </p>
+                )}
+              </div>
+              {event.status === "draft" && (
+                <Button
+                  onClick={() => publishMutation.mutate()}
+                  disabled={publishMutation.isPending}
+                  className="gap-2"
+                >
+                  <Globe className="h-4 w-4" />
+                  {publishMutation.isPending ? "Publishing..." : "Publish Event"}
+                </Button>
+              )}
+            </div>
+
+            {event.description && (
+              <p className="text-muted-foreground mb-8 max-w-2xl">
+                {event.description}
+              </p>
+            )}
+
+            {/* Fight Slots */}
+            <h2 className="font-heading text-2xl text-foreground mb-4">
+              FIGHT <span className="text-primary">SLOTS</span>
+            </h2>
+
+            <div className="space-y-3 mb-8">
+              {slots.map((slot) => {
+                const proposal = getSlotProposal(slot.id);
+                return (
+                  <div
+                    key={slot.id}
+                    className="rounded-lg border border-border bg-card p-4"
+                  >
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-3">
+                        <span className="font-heading text-lg text-muted-foreground">
+                          #{slot.slot_number}
+                        </span>
+                        <span className="text-sm font-medium text-foreground">
+                          {formatWeightClass(slot.weight_class)}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={STATUS_COLORS[slot.status] || ""}
+                        >
+                          {slot.status}
+                        </Badge>
+                      </div>
+
+                      {slot.status === "open" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1"
+                          onClick={() => {
+                            setActiveSlot(slot);
+                            setSelectedFighterA(null);
+                            setSelectedFighterB(null);
+                          }}
+                        >
+                          <Users className="h-3 w-3" /> Find Fighters
+                        </Button>
+                      )}
+                    </div>
+
+                    {proposal && (
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="text-foreground font-medium">
+                            {(proposal as any).fighter_a?.name || "Fighter A"}
+                          </span>
+                          <span className="text-primary font-heading">VS</span>
+                          <span className="text-foreground font-medium">
+                            {(proposal as any).fighter_b?.name || "Fighter B"}
+                          </span>
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            {proposal.status.replace(/_/g, " ")}
+                          </Badge>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Fighter Search Panel */}
+            {activeSlot && (
+              <FighterSearchPanel
+                slot={activeSlot}
+                selectedFighterA={selectedFighterA}
+                selectedFighterB={selectedFighterB}
+                onSelectFighter={handleSelectFighter}
+                onCancel={handleCancelSearch}
+              />
+            )}
+
+            {/* Propose Match Dialog */}
+            {showProposeDialog && activeSlot && selectedFighterA && selectedFighterB && user && (
+              <ProposeMatchDialog
+                open={showProposeDialog}
+                onOpenChange={setShowProposeDialog}
+                slot={activeSlot}
+                fighterA={selectedFighterA}
+                fighterB={selectedFighterB}
+                proposedBy={user.id}
+                onSuccess={handleProposalCreated}
+              />
+            )}
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </div>
+  );
+}
