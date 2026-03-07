@@ -7,10 +7,11 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Globe, Users } from "lucide-react";
+import { ArrowLeft, Globe, Users, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FighterSearchPanel } from "@/components/organiser/FighterSearchPanel";
 import { ProposeMatchDialog } from "@/components/organiser/ProposeMatchDialog";
+import { MatchSuggestionsPanel } from "@/components/organiser/MatchSuggestionsPanel";
 import type { Database } from "@/integrations/supabase/types";
 
 type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
@@ -34,6 +35,7 @@ export default function EventManager() {
   const queryClient = useQueryClient();
 
   const [activeSlot, setActiveSlot] = useState<FightSlot | null>(null);
+  const [suggestSlot, setSuggestSlot] = useState<FightSlot | null>(null);
   const [selectedFighterA, setSelectedFighterA] = useState<FighterProfile | null>(null);
   const [selectedFighterB, setSelectedFighterB] = useState<FighterProfile | null>(null);
   const [showProposeDialog, setShowProposeDialog] = useState(false);
@@ -104,8 +106,16 @@ export default function EventManager() {
     }
   };
 
+  const handleSuggestionSelect = (fighterA: FighterProfile, fighterB: FighterProfile) => {
+    setSelectedFighterA(fighterA);
+    setSelectedFighterB(fighterB);
+    setActiveSlot(suggestSlot);
+    setShowProposeDialog(true);
+  };
+
   const handleCancelSearch = () => {
     setActiveSlot(null);
+    setSuggestSlot(null);
     setSelectedFighterA(null);
     setSelectedFighterB(null);
   };
@@ -113,6 +123,7 @@ export default function EventManager() {
   const handleProposalCreated = () => {
     setShowProposeDialog(false);
     setActiveSlot(null);
+    setSuggestSlot(null);
     setSelectedFighterA(null);
     setSelectedFighterB(null);
     queryClient.invalidateQueries({ queryKey: ["event-slots", id] });
@@ -148,8 +159,19 @@ export default function EventManager() {
     );
   }
 
-  const getSlotProposal = (slotId: string) =>
-    proposals.find((p) => p.fight_slot_id === slotId);
+  const getSlotProposals = (slotId: string) =>
+    proposals.filter((p) => p.fight_slot_id === slotId);
+
+  const getActiveProposal = (slotId: string) =>
+    proposals.find((p) => p.fight_slot_id === slotId && p.status !== "declined" && p.status !== "withdrawn");
+
+  const getDeclinedProposals = (slotId: string) =>
+    proposals.filter((p) => p.fight_slot_id === slotId && p.status === "declined");
+
+  // Collect fighter IDs in active proposals for exclusion from suggestions
+  const activeProposalFighterIds = proposals
+    .filter((p) => p.status !== "declined" && p.status !== "withdrawn")
+    .flatMap((p) => [p.fighter_a_id, p.fighter_b_id]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -211,7 +233,8 @@ export default function EventManager() {
 
             <div className="space-y-3 mb-8">
               {slots.map((slot) => {
-                const proposal = getSlotProposal(slot.id);
+                const activeProposal = getActiveProposal(slot.id);
+                const declinedCount = getDeclinedProposals(slot.id).length;
                 return (
                   <div
                     key={slot.id}
@@ -231,36 +254,57 @@ export default function EventManager() {
                         >
                           {slot.status}
                         </Badge>
+                        {declinedCount > 0 && (
+                          <span className="text-xs text-muted-foreground">
+                            ({declinedCount} declined)
+                          </span>
+                        )}
                       </div>
 
                       {slot.status === "open" && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-1"
-                          onClick={() => {
-                            setActiveSlot(slot);
-                            setSelectedFighterA(null);
-                            setSelectedFighterB(null);
-                          }}
-                        >
-                          <Users className="h-3 w-3" /> Find Fighters
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={() => {
+                              setSuggestSlot(slot);
+                              setActiveSlot(null);
+                              setSelectedFighterA(null);
+                              setSelectedFighterB(null);
+                            }}
+                          >
+                            <Sparkles className="h-3 w-3" /> Suggestions
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            onClick={() => {
+                              setActiveSlot(slot);
+                              setSuggestSlot(null);
+                              setSelectedFighterA(null);
+                              setSelectedFighterB(null);
+                            }}
+                          >
+                            <Users className="h-3 w-3" /> Manual Search
+                          </Button>
+                        </div>
                       )}
                     </div>
 
-                    {proposal && (
+                    {activeProposal && (
                       <div className="mt-3 pt-3 border-t border-border">
                         <div className="flex items-center gap-2 text-sm">
                           <span className="text-foreground font-medium">
-                            {(proposal as any).fighter_a?.name || "Fighter A"}
+                            {(activeProposal as any).fighter_a?.name || "Fighter A"}
                           </span>
                           <span className="text-primary font-heading">VS</span>
                           <span className="text-foreground font-medium">
-                            {(proposal as any).fighter_b?.name || "Fighter B"}
+                            {(activeProposal as any).fighter_b?.name || "Fighter B"}
                           </span>
                           <Badge variant="outline" className="ml-2 text-xs">
-                            {proposal.status.replace(/_/g, " ")}
+                            {activeProposal.status.replace(/_/g, " ")}
                           </Badge>
                         </div>
                       </div>
@@ -270,8 +314,27 @@ export default function EventManager() {
               })}
             </div>
 
+            {/* AI Suggestions Panel */}
+            {suggestSlot && (
+              <div className="mb-8">
+                <MatchSuggestionsPanel
+                  slot={suggestSlot}
+                  existingProposalFighterIds={activeProposalFighterIds}
+                  onSelectPair={handleSuggestionSelect}
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSuggestSlot(null)}
+                  className="mt-2"
+                >
+                  Close Suggestions
+                </Button>
+              </div>
+            )}
+
             {/* Fighter Search Panel */}
-            {activeSlot && (
+            {activeSlot && !showProposeDialog && (
               <FighterSearchPanel
                 slot={activeSlot}
                 selectedFighterA={selectedFighterA}
@@ -282,11 +345,11 @@ export default function EventManager() {
             )}
 
             {/* Propose Match Dialog */}
-            {showProposeDialog && activeSlot && selectedFighterA && selectedFighterB && user && (
+            {showProposeDialog && (activeSlot || suggestSlot) && selectedFighterA && selectedFighterB && user && (
               <ProposeMatchDialog
                 open={showProposeDialog}
                 onOpenChange={setShowProposeDialog}
-                slot={activeSlot}
+                slot={(activeSlot || suggestSlot)!}
                 fighterA={selectedFighterA}
                 fighterB={selectedFighterB}
                 proposedBy={user.id}

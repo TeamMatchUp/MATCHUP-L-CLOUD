@@ -30,6 +30,7 @@ const ROLE_DASHBOARDS: Record<AppRole, string> = {
 const navLinks = [
   { label: "Events", to: "/events" },
   { label: "Fighters", to: "/fighters" },
+  { label: "Gyms", to: "/gyms" },
 ];
 
 export function Header() {

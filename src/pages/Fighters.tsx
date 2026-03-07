@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Filter, Search } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
@@ -26,6 +27,7 @@ const STYLE_LABELS: Record<string, string> = {
 };
 
 const Fighters = () => {
+  const [searchQuery, setSearchQuery] = useState("");
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [weightFilter, setWeightFilter] = useState<string>("all");
   const [styleFilter, setStyleFilter] = useState<string>("all");
@@ -46,6 +48,26 @@ const Fighters = () => {
       if (error) throw error;
       return data;
     },
+  });
+
+  // Client-side search filtering across name, gym, record, style, weight
+  const filteredFighters = fighters?.filter((fighter) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    const primaryGym = fighter.fighter_gym_links?.find((l: any) => l.is_primary);
+    const gymName = primaryGym?.gyms?.name ?? "Independent";
+    const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
+    const styleLabel = fighter.style ? STYLE_LABELS[fighter.style] || fighter.style : "";
+    const weightLabel = WEIGHT_CLASS_LABELS[fighter.weight_class] || fighter.weight_class;
+
+    return (
+      fighter.name.toLowerCase().includes(q) ||
+      gymName.toLowerCase().includes(q) ||
+      record.includes(q) ||
+      styleLabel.toLowerCase().includes(q) ||
+      weightLabel.toLowerCase().includes(q) ||
+      fighter.country.toLowerCase().includes(q)
+    );
   });
 
   return (
@@ -70,6 +92,17 @@ const Fighters = () => {
             >
               Explore active fighters across weight classes and disciplines.
             </motion.p>
+
+            {/* Search Bar */}
+            <div className="relative mb-4">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, gym, weight class, style, record..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 h-12 text-base bg-card border-border"
+              />
+            </div>
 
             {/* Filters */}
             <div className="flex flex-wrap gap-3 mb-8">
@@ -115,9 +148,9 @@ const Fighters = () => {
                   <div key={i} className="h-48 rounded-lg bg-card animate-pulse" />
                 ))}
               </div>
-            ) : fighters && fighters.length > 0 ? (
+            ) : filteredFighters && filteredFighters.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {fighters.map((fighter, i) => {
+                {filteredFighters.map((fighter, i) => {
                   const primaryGym = fighter.fighter_gym_links?.find((l: any) => l.is_primary);
                   const gymName = primaryGym?.gyms?.name ?? "Independent";
                   const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
