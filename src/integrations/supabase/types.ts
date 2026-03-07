@@ -178,6 +178,7 @@ export type Database = {
           country: Database["public"]["Enums"]["country_code"]
           created_at: string
           created_by_coach_id: string | null
+          email: string | null
           height: string | null
           id: string
           name: string
@@ -196,6 +197,7 @@ export type Database = {
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           created_by_coach_id?: string | null
+          email?: string | null
           height?: string | null
           id?: string
           name: string
@@ -214,6 +216,7 @@ export type Database = {
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           created_by_coach_id?: string | null
+          email?: string | null
           height?: string | null
           id?: string
           name?: string
