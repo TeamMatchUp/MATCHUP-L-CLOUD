@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
+import { AddFighterDialog } from "@/components/coach/AddFighterDialog";
 
 function formatEnum(val: string) {
   return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -13,6 +17,21 @@ function formatEnum(val: string) {
 export default function CoachDashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [showAddFighter, setShowAddFighter] = useState(false);
+
+  // Get coach's gym
+  const { data: myGym } = useQuery({
+    queryKey: ["coach-gym", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("gyms")
+        .select("id, name")
+        .eq("coach_id", user!.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
 
   // Get fighters created by this coach
   const { data: myFighters = [] } = useQuery({
@@ -66,7 +85,6 @@ export default function CoachDashboard() {
     queryKey: ["coach-proposals", coachFighterIds],
     queryFn: async () => {
       if (coachFighterIds.length === 0) return [];
-      // Get proposals where fighter_a or fighter_b is one of the coach's fighters
       const { data: proposalsA } = await supabase
         .from("match_proposals")
         .select("*, fighter_a:fighter_profiles!match_proposals_fighter_a_id_fkey(*), fighter_b:fighter_profiles!match_proposals_fighter_b_id_fkey(*), fight_slot:fight_slots!match_proposals_fight_slot_id_fkey(*, events(*))")
@@ -79,7 +97,6 @@ export default function CoachDashboard() {
         .in("fighter_b_id", coachFighterIds)
         .in("status", ["pending_coach_a", "pending_coach_b", "pending_fighter_a", "pending_fighter_b"]);
 
-      // Deduplicate
       const map = new Map<string, any>();
       [...(proposalsA || []), ...(proposalsB || [])].forEach((p) => map.set(p.id, p));
       return Array.from(map.values());
@@ -102,6 +119,8 @@ export default function CoachDashboard() {
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ["coach-proposals"] });
+    queryClient.invalidateQueries({ queryKey: ["coach-fighters"] });
+    queryClient.invalidateQueries({ queryKey: ["coach-gym-fighters"] });
   };
 
   return (
@@ -129,11 +148,21 @@ export default function CoachDashboard() {
             </div>
 
             {/* Fighter Roster */}
-            <h2 className="font-heading text-2xl text-foreground mb-4">
-              FIGHTER <span className="text-primary">ROSTER</span>
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-2xl text-foreground">
+                FIGHTER <span className="text-primary">ROSTER</span>
+              </h2>
+              <Button size="sm" className="gap-1" onClick={() => setShowAddFighter(true)}>
+                <Plus className="h-3 w-3" /> Add Fighter
+              </Button>
+            </div>
             {allFighters.length === 0 ? (
-              <p className="text-muted-foreground mb-8">No fighters linked to your account yet.</p>
+              <div className="rounded-lg border border-border bg-card p-8 text-center mb-8">
+                <p className="text-muted-foreground mb-4">No fighters linked to your account yet.</p>
+                <Button onClick={() => setShowAddFighter(true)} className="gap-1">
+                  <Plus className="h-4 w-4" /> Add Your First Fighter
+                </Button>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-10">
                 {allFighters.map((f) => (
@@ -178,6 +207,17 @@ export default function CoachDashboard() {
                   />
                 ))}
               </div>
+            )}
+
+            {/* Add Fighter Dialog */}
+            {user && (
+              <AddFighterDialog
+                open={showAddFighter}
+                onOpenChange={setShowAddFighter}
+                coachId={user.id}
+                gymId={myGym?.id}
+                onSuccess={handleRefresh}
+              />
             )}
           </div>
         </section>
