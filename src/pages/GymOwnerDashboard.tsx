@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Calendar, ArrowRight, Building2, Users, Inbox, Pencil, FileText, Trash2 } from "lucide-react";
+import { Plus, Calendar, ArrowRight, Building2, Users, Inbox, Pencil, FileText, Trash2, Search } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
@@ -57,6 +57,8 @@ export default function GymOwnerDashboard() {
   const [fightResultFighter, setFightResultFighter] = useState<{ id: string; name: string } | null>(null);
   const [editFighter, setEditFighter] = useState<any>(null);
   const [deleteFighter, setDeleteFighter] = useState<{ id: string; name: string } | null>(null);
+  const [rosterGymFilter, setRosterGymFilter] = useState<string>("all");
+  const [rosterSearch, setRosterSearch] = useState("");
 
   // Get owner's gyms
   const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
@@ -95,25 +97,33 @@ export default function GymOwnerDashboard() {
     enabled: !!user,
   });
 
+  // Get fighter-gym links for filtering
+  const { data: fighterGymLinks = [] } = useQuery({
+    queryKey: ["owner-fighter-gym-links", myGyms.map((g) => g.id)],
+    queryFn: async () => {
+      const gymIds = myGyms.map((g) => g.id);
+      const { data } = await supabase
+        .from("fighter_gym_links")
+        .select("fighter_id, gym_id")
+        .in("gym_id", gymIds);
+      return data ?? [];
+    },
+    enabled: myGyms.length > 0,
+  });
+
   // Get fighters linked via gyms
   const { data: gymFighters = [] } = useQuery({
-    queryKey: ["owner-gym-fighters", user?.id],
+    queryKey: ["owner-gym-fighters", fighterGymLinks.map((l) => l.fighter_id)],
     queryFn: async () => {
-      if (myGyms.length === 0) return [];
-      const gymIds = myGyms.map((g) => g.id);
-      const { data: links } = await supabase
-        .from("fighter_gym_links")
-        .select("fighter_id")
-        .in("gym_id", gymIds);
-      if (!links || links.length === 0) return [];
-      const fighterIds = links.map((l) => l.fighter_id);
+      if (fighterGymLinks.length === 0) return [];
+      const fighterIds = [...new Set(fighterGymLinks.map((l) => l.fighter_id))];
       const { data: fighters } = await supabase
         .from("fighter_profiles")
         .select("*")
         .in("id", fighterIds);
       return fighters ?? [];
     },
-    enabled: myGyms.length > 0,
+    enabled: fighterGymLinks.length > 0,
   });
 
   // Combine unique fighters
@@ -121,6 +131,28 @@ export default function GymOwnerDashboard() {
   [...myFighters, ...gymFighters].forEach((f) => allFighterMap.set(f.id, f));
   const allFighters = Array.from(allFighterMap.values());
   const fighterIds = allFighters.map((f) => f.id);
+
+  // Filter fighters by gym and search
+  const filteredRosterFighters = useMemo(() => {
+    let result = allFighters;
+    if (rosterGymFilter !== "all") {
+      const idsInGym = new Set(
+        fighterGymLinks.filter((l) => l.gym_id === rosterGymFilter).map((l) => l.fighter_id)
+      );
+      result = result.filter((f) => idsInGym.has(f.id));
+    }
+    if (rosterSearch.trim()) {
+      const q = rosterSearch.toLowerCase().trim();
+      result = result.filter(
+        (f) =>
+          f.name.toLowerCase().includes(q) ||
+          formatEnum(f.weight_class).toLowerCase().includes(q) ||
+          (f.style && formatEnum(f.style).toLowerCase().includes(q)) ||
+          f.country.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [allFighters, rosterGymFilter, rosterSearch, fighterGymLinks]);
 
   // Get proposals involving owner's fighters
   const { data: proposals = [] } = useQuery({
@@ -402,33 +434,42 @@ export default function GymOwnerDashboard() {
                   <h2 className="font-heading text-2xl text-foreground">
                     FIGHTER <span className="text-primary">ROSTER</span>
                   </h2>
+                  <Button
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => {
+                      if (!addFighterGymId && primaryGym) setAddFighterGymId(primaryGym.id);
+                      setShowAddFighter(true);
+                    }}
+                    disabled={myGyms.length === 0}
+                  >
+                    <Plus className="h-3 w-3" /> Add Fighter
+                  </Button>
+                </div>
+
+                {/* Search & Filter Bar */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search fighters..."
+                      value={rosterSearch}
+                      onChange={(e) => setRosterSearch(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
                   {myGyms.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Select
-                        value={addFighterGymId ?? primaryGym?.id ?? ""}
-                        onValueChange={(v) => setAddFighterGymId(v)}
-                      >
-                        <SelectTrigger className="w-[180px] h-8 text-xs">
-                          <SelectValue placeholder="Select gym" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {myGyms.map((g) => (
-                            <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        size="sm"
-                        className="gap-1"
-                        onClick={() => {
-                          if (!addFighterGymId && primaryGym) setAddFighterGymId(primaryGym.id);
-                          setShowAddFighter(true);
-                        }}
-                        disabled={!addFighterGymId && !primaryGym}
-                      >
-                        <Plus className="h-3 w-3" /> Add Fighter
-                      </Button>
-                    </div>
+                    <Select value={rosterGymFilter} onValueChange={setRosterGymFilter}>
+                      <SelectTrigger className="w-full sm:w-[200px]">
+                        <SelectValue placeholder="Filter by gym" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Gyms</SelectItem>
+                        {myGyms.map((g) => (
+                          <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   )}
                 </div>
 
@@ -444,9 +485,13 @@ export default function GymOwnerDashboard() {
                       <Plus className="h-4 w-4" /> Add Your First Fighter
                     </Button>
                   </div>
+                ) : filteredRosterFighters.length === 0 ? (
+                  <div className="rounded-lg border border-border bg-card p-8 text-center">
+                    <p className="text-muted-foreground">No fighters match your filters.</p>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {allFighters.map((f) => (
+                    {filteredRosterFighters.map((f) => (
                       <div
                         key={f.id}
                         className="rounded-lg border border-border bg-card p-4"
