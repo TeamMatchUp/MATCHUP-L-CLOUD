@@ -18,6 +18,14 @@ const ROLES: { value: AppRole; label: string; description: string }[] = [
   { value: "gym_owner", label: "Coach", description: "Manage gyms, rosters, fighter records, and organise events" },
 ];
 
+const ROLE_DASHBOARDS: Record<AppRole, string> = {
+  organiser: "/organiser/dashboard",
+  fighter: "/fighter/dashboard",
+  gym_owner: "/gym-owner/dashboard",
+  coach: "/coach/dashboard",
+  admin: "/admin/dashboard",
+};
+
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
@@ -41,13 +49,24 @@ export default function Auth() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      setLoading(false);
       toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
-    } else {
-      navigate(from || "/", { replace: true });
+      return;
     }
+    
+    // Fetch user roles to determine dashboard
+    const { data: rolesData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.user.id);
+    
+    setLoading(false);
+    const userRoles = (rolesData ?? []).map((r) => r.role);
+    const primaryRole = userRoles[0];
+    const dashboardPath = primaryRole ? ROLE_DASHBOARDS[primaryRole] : "/";
+    navigate(from || dashboardPath, { replace: true });
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -80,6 +99,15 @@ export default function Auth() {
       const { error: roleError } = await supabase.from("user_roles").insert(roleInserts);
       if (roleError) {
         console.error("Failed to insert roles:", roleError);
+      }
+
+      // If session exists (auto-confirm enabled), redirect to dashboard
+      if (data.session) {
+        const primaryRole = selectedRoles[0];
+        const dashboardPath = primaryRole ? ROLE_DASHBOARDS[primaryRole] : "/";
+        setLoading(false);
+        navigate(dashboardPath, { replace: true });
+        return;
       }
     }
 
