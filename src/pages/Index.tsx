@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { HeroSection } from "@/components/landing/HeroSection";
+import { ThreeSidesSection } from "@/components/landing/ThreeSidesSection";
+import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { TwoSidedSection } from "@/components/landing/TwoSidedSection";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -32,6 +34,8 @@ const Index = () => {
       <main className="pt-16">
         <HeroSection />
         <TwoSidedSection />
+        <ThreeSidesSection />
+        <HowItWorksSection />
       </main>
       <Footer />
     </div>
