@@ -68,9 +68,9 @@ export function TwoSidedSection() {
       >
         <Link
           to="/auth"
-          className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200">
-          <img src={matchupIcon} alt="" className="h-5 w-5" />
+          className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
         >
+          <img src={matchupIcon} alt="" className="h-5 w-5" />
           create account
         </Link>
       </motion.div>
