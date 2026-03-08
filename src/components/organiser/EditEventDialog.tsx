@@ -37,6 +37,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, Globe, EyeOff } from "lucide-react";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
+type EventStatus = Database["public"]["Enums"]["event_status"];
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 const COUNTRIES = Constants.public.Enums.country_code;
 
