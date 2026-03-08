@@ -107,6 +107,116 @@ export default function EventManager() {
     enabled: activeProposalIds.length > 0,
   });
 
+  // Collect all user IDs we need to resolve names for (confirmation users + coaches + fighters)
+  const allRelevantUserIds = (() => {
+    const ids = new Set<string>();
+    confirmations.forEach((c) => ids.add(c.user_id));
+    proposals.forEach((p: any) => {
+      if (p.fighter_a?.user_id) ids.add(p.fighter_a.user_id);
+      if (p.fighter_b?.user_id) ids.add(p.fighter_b.user_id);
+      if (p.fighter_a?.created_by_coach_id) ids.add(p.fighter_a.created_by_coach_id);
+      if (p.fighter_b?.created_by_coach_id) ids.add(p.fighter_b.created_by_coach_id);
+    });
+    return Array.from(ids);
+  })();
+
+  // Fetch gym coach IDs for fighters in proposals
+  const proposalFighterIds = proposals.flatMap((p) => [p.fighter_a_id, p.fighter_b_id]);
+
+  const { data: fighterGymLinks = [] } = useQuery({
+    queryKey: ["event-fighter-gym-links", proposalFighterIds],
+    queryFn: async () => {
+      if (proposalFighterIds.length === 0) return [];
+      const { data } = await supabase
+        .from("fighter_gym_links")
+        .select("fighter_id, gym_id")
+        .in("fighter_id", proposalFighterIds)
+        .eq("status", "accepted");
+      return data ?? [];
+    },
+    enabled: proposalFighterIds.length > 0,
+  });
+
+  const gymIdsForProposals = fighterGymLinks.map((gl) => gl.gym_id);
+
+  const { data: gymsForProposals = [] } = useQuery({
+    queryKey: ["event-gyms-for-proposals", gymIdsForProposals],
+    queryFn: async () => {
+      if (gymIdsForProposals.length === 0) return [];
+      const { data } = await supabase
+        .from("gyms")
+        .select("id, coach_id")
+        .in("id", gymIdsForProposals);
+      return data ?? [];
+    },
+    enabled: gymIdsForProposals.length > 0,
+  });
+
+  // Build a combined set of all user IDs (including gym coaches)
+  const allUserIds = (() => {
+    const ids = new Set(allRelevantUserIds);
+    gymsForProposals.forEach((g) => { if (g.coach_id) ids.add(g.coach_id); });
+    return Array.from(ids);
+  })();
+
+  const { data: userProfiles = [] } = useQuery({
+    queryKey: ["event-user-profiles", allUserIds],
+    queryFn: async () => {
+      if (allUserIds.length === 0) return [];
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", allUserIds);
+      return data ?? [];
+    },
+    enabled: allUserIds.length > 0,
+  });
+
+  const profileMap = new Map(userProfiles.map((p) => [p.id, p.full_name || "Unknown"]));
+
+  // Compute required parties for a proposal (excluding organiser)
+  const getRequiredParties = (proposal: any) => {
+    const parties = new Map<string, { label: string }>(); // userId -> label
+    const fighterA = proposal.fighter_a;
+    const fighterB = proposal.fighter_b;
+
+    // Coaches via created_by_coach_id
+    if (fighterA?.created_by_coach_id) {
+      parties.set(fighterA.created_by_coach_id, { label: `Coach (${fighterA.name})` });
+    }
+    if (fighterB?.created_by_coach_id) {
+      parties.set(fighterB.created_by_coach_id, { label: `Coach (${fighterB.name})` });
+    }
+
+    // Coaches via gym links
+    const aGymLinks = fighterGymLinks.filter((gl) => gl.fighter_id === proposal.fighter_a_id);
+    const bGymLinks = fighterGymLinks.filter((gl) => gl.fighter_id === proposal.fighter_b_id);
+    aGymLinks.forEach((gl) => {
+      const gym = gymsForProposals.find((g) => g.id === gl.gym_id);
+      if (gym?.coach_id && !parties.has(gym.coach_id)) {
+        parties.set(gym.coach_id, { label: `Coach (${fighterA?.name})` });
+      }
+    });
+    bGymLinks.forEach((gl) => {
+      const gym = gymsForProposals.find((g) => g.id === gl.gym_id);
+      if (gym?.coach_id && !parties.has(gym.coach_id)) {
+        parties.set(gym.coach_id, { label: `Coach (${fighterB?.name})` });
+      }
+    });
+
+    // Registered fighters only
+    if (fighterA?.user_id) {
+      parties.set(fighterA.user_id, { label: fighterA.name });
+    }
+    if (fighterB?.user_id) {
+      parties.set(fighterB.user_id, { label: fighterB.name });
+    }
+
+    // Remove organiser
+    parties.delete(proposal.proposed_by);
+    return parties;
+  };
+
   const publishMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
