@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown, LogOut, User } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,7 +60,7 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <span className="font-heading text-2xl tracking-wider text-foreground">matchup.</span>
+          <img src={logo} alt="MatchUp" className="h-8" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">

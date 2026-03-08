@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "@/assets/logo.png";
 
 export function Footer() {
   return (
@@ -6,7 +7,7 @@ export function Footer() {
       <div className="container py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <span className="font-heading text-xl tracking-wider text-foreground">matchup.</span>
+            <img src={logo} alt="MatchUp" className="h-7" />
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
               The professional matchmaking platform for combat sports.
             </p>
