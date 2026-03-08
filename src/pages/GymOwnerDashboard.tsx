@@ -57,6 +57,8 @@ export default function GymOwnerDashboard() {
   const [fightResultFighter, setFightResultFighter] = useState<{ id: string; name: string } | null>(null);
   const [editFighter, setEditFighter] = useState<any>(null);
   const [deleteFighter, setDeleteFighter] = useState<{ id: string; name: string } | null>(null);
+  const [rosterGymFilter, setRosterGymFilter] = useState<string>("all");
+  const [rosterSearch, setRosterSearch] = useState("");
 
   // Get owner's gyms
   const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
