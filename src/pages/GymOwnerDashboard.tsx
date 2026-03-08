@@ -131,6 +131,18 @@ export default function GymOwnerDashboard() {
   const allFighters = Array.from(allFighterMap.values());
   const fighterIds = allFighters.map((f) => f.id);
 
+  // Build gym-to-fighter mapping for filtering
+  const gymToFighterIds = new Map<string, Set<string>>();
+  gymFighterLinks.forEach((link) => {
+    if (!gymToFighterIds.has(link.gym_id)) gymToFighterIds.set(link.gym_id, new Set());
+    gymToFighterIds.get(link.gym_id)!.add(link.fighter_id);
+  });
+
+  // Filtered fighters for roster tab
+  const filteredRosterFighters = rosterGymFilter === "all"
+    ? allFighters
+    : allFighters.filter((f) => gymToFighterIds.get(rosterGymFilter)?.has(f.id));
+
   // Get proposals involving owner's fighters
   const { data: proposals = [] } = useQuery({
     queryKey: ["owner-proposals", fighterIds],
