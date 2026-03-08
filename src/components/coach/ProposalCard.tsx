@@ -1,23 +1,21 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Check, X } from "lucide-react";
-import type { Database } from "@/integrations/supabase/types";
-
-type MatchStatus = Database["public"]["Enums"]["match_status"];
 
 function formatEnum(val: string) {
   return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 interface ProposalCardProps {
-  proposal: any; // joined proposal with fighter_a, fighter_b, fight_slot, event
+  proposal: any;
   userId: string;
   userRole: "coach" | "fighter";
-  coachFighterIds: string[]; // fighter IDs belonging to this coach
+  coachFighterIds: string[];
   onActionComplete: () => void;
 }
 
@@ -39,27 +37,31 @@ export function ProposalCard({
   const slotNumber = proposal.fight_slot?.slot_number || "?";
   const weightClass = proposal.fight_slot?.weight_class || "";
 
-  // Determine which side this coach controls
-  const coachSideA = coachFighterIds.includes(proposal.fighter_a_id);
-  const coachSideB = coachFighterIds.includes(proposal.fighter_b_id);
+  // Fetch existing confirmations for this proposal
+  const { data: existingConfirmations = [] } = useQuery({
+    queryKey: ["proposal-confirmations", proposal.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("confirmations")
+        .select("*")
+        .eq("match_proposal_id", proposal.id);
+      return data ?? [];
+    },
+  });
 
-  // Status progression
-  const getNextStatus = (currentStatus: MatchStatus): MatchStatus | null => {
-    if (userRole === "coach") {
-      if (currentStatus === "pending_coach_a" && coachSideA) return "pending_coach_b";
-      if (currentStatus === "pending_coach_b" && coachSideB) return "pending_fighter_a";
-      // If coach is same for both fighters
-      if (currentStatus === "pending_coach_a" && coachSideB) return null; // not their turn
-      if (currentStatus === "pending_coach_b" && coachSideA) return null; // not their turn
-    }
-    return null;
-  };
+  // Check if this user has already confirmed
+  const hasAlreadyConfirmed = existingConfirmations.some(
+    (c) => c.user_id === userId
+  );
 
-  const nextStatus = getNextStatus(proposal.status);
-  const canAct = nextStatus !== null;
+  // Can act if proposal is pending and user hasn't confirmed yet
+  const canAct = proposal.status === "pending" && !hasAlreadyConfirmed;
+
+  const acceptedCount = existingConfirmations.filter(
+    (c) => c.decision === "accepted"
+  ).length;
 
   const handleAccept = async () => {
-    if (!nextStatus) return;
     setLoading(true);
 
     // Insert confirmation
@@ -71,33 +73,84 @@ export function ProposalCard({
       comment: comment || null,
     });
 
-    // Update proposal status
-    await supabase
-      .from("match_proposals")
-      .update({ status: nextStatus })
-      .eq("id", proposal.id);
+    // Check if all 4 parties have now confirmed
+    const newAcceptedCount = acceptedCount + 1;
 
-    // Notify next party
-    if (nextStatus === "pending_coach_b" && fighterB?.created_by_coach_id) {
-      await supabase.rpc("create_notification", {
-        _user_id: fighterB.created_by_coach_id,
-        _title: "Match Proposal Awaiting Your Review",
-        _message: `${fighterA?.name} vs ${fighterB?.name} — Coach A has approved. Your turn.`,
-        _type: "match_accepted",
-        _reference_id: proposal.id,
-      });
-    } else if (nextStatus === "pending_fighter_a" && fighterA?.user_id) {
-      await supabase.rpc("create_notification", {
-        _user_id: fighterA.user_id,
-        _title: "Match Proposal Awaiting Your Confirmation",
-        _message: `You have been proposed to fight ${fighterB?.name}. Both coaches approved.`,
-        _type: "match_accepted",
-        _reference_id: proposal.id,
+    // Count required parties (coach_a, coach_b, fighter_a, fighter_b)
+    // We need to check how many unique parties exist
+    const requiredParties = new Set<string>();
+    if (fighterA?.created_by_coach_id) requiredParties.add(fighterA.created_by_coach_id);
+    if (fighterB?.created_by_coach_id) requiredParties.add(fighterB.created_by_coach_id);
+    if (fighterA?.user_id) requiredParties.add(fighterA.user_id);
+    if (fighterB?.user_id) requiredParties.add(fighterB.user_id);
+
+    // Also check gym coaches
+    const { data: gymLinks } = await supabase
+      .from("fighter_gym_links")
+      .select("gym_id, fighter_id")
+      .in("fighter_id", [proposal.fighter_a_id, proposal.fighter_b_id])
+      .eq("status", "accepted");
+
+    if (gymLinks && gymLinks.length > 0) {
+      const gymIds = gymLinks.map((gl) => gl.gym_id);
+      const { data: gyms } = await supabase
+        .from("gyms")
+        .select("coach_id")
+        .in("id", gymIds);
+      gyms?.forEach((g) => {
+        if (g.coach_id) requiredParties.add(g.coach_id);
       });
     }
 
+    // Remove organiser from required parties
+    requiredParties.delete(proposal.proposed_by);
+
+    // Re-fetch confirmations to get accurate count
+    const { data: allConfs } = await supabase
+      .from("confirmations")
+      .select("user_id")
+      .eq("match_proposal_id", proposal.id)
+      .eq("decision", "accepted");
+
+    const confirmedUserIds = new Set((allConfs ?? []).map((c) => c.user_id));
+    const allConfirmed = Array.from(requiredParties).every((id) =>
+      confirmedUserIds.has(id)
+    );
+
+    if (allConfirmed) {
+      // All parties confirmed - update proposal and slot
+      await supabase
+        .from("match_proposals")
+        .update({ status: "confirmed" })
+        .eq("id", proposal.id);
+
+      await supabase
+        .from("fight_slots")
+        .update({ status: "confirmed" })
+        .eq("id", proposal.fight_slot_id);
+
+      // Notify all parties
+      const notifyIds = new Set(requiredParties);
+      notifyIds.add(proposal.proposed_by);
+      notifyIds.delete(userId);
+
+      const promises = Array.from(notifyIds).map((nid) =>
+        supabase.rpc("create_notification", {
+          _user_id: nid,
+          _title: "Match Confirmed!",
+          _message: `${fighterA?.name} vs ${fighterB?.name} is confirmed for ${eventTitle}.`,
+          _type: "match_confirmed",
+          _reference_id: proposal.id,
+        })
+      );
+      await Promise.all(promises);
+
+      toast({ title: "Match confirmed!", description: "All parties have accepted." });
+    } else {
+      toast({ title: "Accepted", description: `Waiting for ${requiredParties.size - confirmedUserIds.size} more confirmation(s).` });
+    }
+
     setLoading(false);
-    toast({ title: "Proposal accepted" });
     onActionComplete();
   };
 
@@ -117,20 +170,30 @@ export function ProposalCard({
       .update({ status: "declined" })
       .eq("id", proposal.id);
 
-    // Reset fight slot to open
     await supabase
       .from("fight_slots")
       .update({ status: "open" })
       .eq("id", proposal.fight_slot_id);
 
-    // Notify organiser
-    await supabase.rpc("create_notification", {
-      _user_id: proposal.proposed_by,
-      _title: "Match Proposal Declined",
-      _message: `${fighterA?.name} vs ${fighterB?.name} was declined.`,
-      _type: "match_declined",
-      _reference_id: proposal.id,
-    });
+    // Notify organiser and all other parties
+    const notifyIds = new Set<string>();
+    notifyIds.add(proposal.proposed_by);
+    if (fighterA?.created_by_coach_id) notifyIds.add(fighterA.created_by_coach_id);
+    if (fighterB?.created_by_coach_id) notifyIds.add(fighterB.created_by_coach_id);
+    if (fighterA?.user_id) notifyIds.add(fighterA.user_id);
+    if (fighterB?.user_id) notifyIds.add(fighterB.user_id);
+    notifyIds.delete(userId);
+
+    const promises = Array.from(notifyIds).map((nid) =>
+      supabase.rpc("create_notification", {
+        _user_id: nid,
+        _title: "Match Proposal Declined",
+        _message: `${fighterA?.name} vs ${fighterB?.name} was declined.`,
+        _type: "match_declined",
+        _reference_id: proposal.id,
+      })
+    );
+    await Promise.all(promises);
 
     setLoading(false);
     toast({ title: "Proposal declined" });
@@ -145,11 +208,13 @@ export function ProposalCard({
           <p className="text-xs text-muted-foreground">{formatEnum(weightClass)}</p>
         </div>
         <Badge variant="outline" className="text-xs">
-          {formatEnum(proposal.status)}
+          {proposal.status === "pending"
+            ? `${acceptedCount}/${existingConfirmations.length > 0 ? "?" : "4"} confirmed`
+            : formatEnum(proposal.status)}
         </Badge>
       </div>
 
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-3">
         <div className="flex-1">
           <p className="font-heading text-lg text-foreground">{fighterA?.name || "TBD"}</p>
           <p className="text-xs text-muted-foreground">
@@ -166,6 +231,29 @@ export function ProposalCard({
           </p>
         </div>
       </div>
+
+      {/* Confirmation progress */}
+      {proposal.status === "pending" && existingConfirmations.length > 0 && (
+        <div className="flex gap-1 mb-3 flex-wrap">
+          {existingConfirmations.map((c: any) => (
+            <Badge
+              key={c.id}
+              variant="outline"
+              className={
+                c.decision === "accepted"
+                  ? "text-[10px] bg-success/10 text-success border-success/30"
+                  : "text-[10px] bg-destructive/10 text-destructive border-destructive/30"
+              }
+            >
+              {formatEnum(c.role)} {c.decision}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {hasAlreadyConfirmed && proposal.status === "pending" && (
+        <p className="text-xs text-success mb-2">✓ You have confirmed. Waiting for others.</p>
+      )}
 
       {canAct && (
         <div className="space-y-3">
@@ -191,8 +279,7 @@ export function ProposalCard({
               disabled={loading}
               className="gap-1"
             >
-              <Check className="h-3 w-3" />
-              Accept
+              <Check className="h-3 w-3" /> Accept
             </Button>
             <Button
               size="sm"
@@ -201,11 +288,16 @@ export function ProposalCard({
               disabled={loading}
               className="gap-1 text-destructive hover:text-destructive"
             >
-              <X className="h-3 w-3" />
-              Decline
+              <X className="h-3 w-3" /> Decline
             </Button>
           </div>
         </div>
+      )}
+
+      {proposal.message && (
+        <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border italic">
+          "{proposal.message}"
+        </p>
       )}
     </div>
   );

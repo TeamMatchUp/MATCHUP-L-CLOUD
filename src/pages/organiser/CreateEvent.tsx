@@ -23,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { Badge } from "@/components/ui/badge";
 
 type WeightClass = Database["public"]["Enums"]["weight_class"];
 type CountryCode = Database["public"]["Enums"]["country_code"];
@@ -30,13 +31,35 @@ type CountryCode = Database["public"]["Enums"]["country_code"];
 const WEIGHT_CLASSES = Constants.public.Enums.weight_class;
 const COUNTRIES = Constants.public.Enums.country_code;
 
-function formatWeightClass(wc: string) {
-  return wc.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+const EXPERIENCE_LEVELS = ["debut", "amateur", "semi-pro", "professional"] as const;
+const CARD_POSITIONS = ["main_card", "undercard"] as const;
+
+function formatEnum(val: string) {
+  return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 interface SlotRow {
   id: string;
   weight_class: WeightClass;
+  card_position: string;
+  experience_level: string;
+  min_weight_kg: string;
+  max_weight_kg: string;
+  min_wins: string;
+  max_wins: string;
+}
+
+function createSlot(cardPosition: string = "undercard"): SlotRow {
+  return {
+    id: crypto.randomUUID(),
+    weight_class: "lightweight",
+    card_position: cardPosition,
+    experience_level: "",
+    min_weight_kg: "",
+    max_weight_kg: "",
+    min_wins: "",
+    max_wins: "",
+  };
 }
 
 export default function CreateEvent() {
@@ -50,16 +73,11 @@ export default function CreateEvent() {
   const [country, setCountry] = useState<CountryCode>("UK");
   const [promotionName, setPromotionName] = useState("");
   const [description, setDescription] = useState("");
-  const [slots, setSlots] = useState<SlotRow[]>([
-    { id: crypto.randomUUID(), weight_class: "lightweight" },
-  ]);
+  const [slots, setSlots] = useState<SlotRow[]>([createSlot("main_card")]);
   const [loading, setLoading] = useState(false);
 
-  const addSlot = () => {
-    setSlots((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), weight_class: "lightweight" },
-    ]);
+  const addSlot = (cardPosition: string) => {
+    setSlots((prev) => [...prev, createSlot(cardPosition)]);
   };
 
   const removeSlot = (id: string) => {
@@ -67,11 +85,14 @@ export default function CreateEvent() {
     setSlots((prev) => prev.filter((s) => s.id !== id));
   };
 
-  const updateSlotWeight = (id: string, wc: WeightClass) => {
+  const updateSlot = (id: string, field: keyof SlotRow, value: string) => {
     setSlots((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, weight_class: wc } : s))
+      prev.map((s) => (s.id === id ? { ...s, [field]: value } : s))
     );
   };
+
+  const mainCardSlots = slots.filter((s) => s.card_position === "main_card");
+  const undercardSlots = slots.filter((s) => s.card_position === "undercard");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,6 +130,12 @@ export default function CreateEvent() {
       weight_class: s.weight_class,
       slot_number: i + 1,
       status: "open" as const,
+      card_position: s.card_position,
+      experience_level: s.experience_level || null,
+      min_weight_kg: s.min_weight_kg ? parseFloat(s.min_weight_kg) : null,
+      max_weight_kg: s.max_weight_kg ? parseFloat(s.max_weight_kg) : null,
+      min_wins: s.min_wins ? parseInt(s.min_wins) : null,
+      max_wins: s.max_wins ? parseInt(s.max_wins) : null,
     }));
 
     const { error: slotError } = await supabase
@@ -130,6 +157,110 @@ export default function CreateEvent() {
     navigate(`/organiser/events/${event.id}`);
   };
 
+  const renderSlotRow = (slot: SlotRow, index: number) => (
+    <div
+      key={slot.id}
+      className="rounded-md border border-border bg-card p-4 space-y-3"
+    >
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-heading text-muted-foreground">
+          Fight #{index + 1}
+        </span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => removeSlot(slot.id)}
+          disabled={slots.length <= 1}
+          className="text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div className="space-y-1">
+          <Label className="text-xs">Weight Class</Label>
+          <Select
+            value={slot.weight_class}
+            onValueChange={(v) => updateSlot(slot.id, "weight_class", v)}
+          >
+            <SelectTrigger className="h-9 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {WEIGHT_CLASSES.map((wc) => (
+                <SelectItem key={wc} value={wc}>
+                  {formatEnum(wc)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1">
+          <Label className="text-xs">Experience Level</Label>
+          <Select
+            value={slot.experience_level || "any"}
+            onValueChange={(v) => updateSlot(slot.id, "experience_level", v === "any" ? "" : v)}
+          >
+            <SelectTrigger className="h-9 text-xs">
+              <SelectValue placeholder="Any" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="any">Any</SelectItem>
+              {EXPERIENCE_LEVELS.map((l) => (
+                <SelectItem key={l} value={l}>
+                  {formatEnum(l)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-1">
+          <Label className="text-xs">Weight Range (kg)</Label>
+          <div className="flex gap-1">
+            <Input
+              type="number"
+              placeholder="Min"
+              value={slot.min_weight_kg}
+              onChange={(e) => updateSlot(slot.id, "min_weight_kg", e.target.value)}
+              className="h-9 text-xs"
+            />
+            <Input
+              type="number"
+              placeholder="Max"
+              value={slot.max_weight_kg}
+              onChange={(e) => updateSlot(slot.id, "max_weight_kg", e.target.value)}
+              className="h-9 text-xs"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1 col-span-2 md:col-span-1">
+          <Label className="text-xs">Win Record Range</Label>
+          <div className="flex gap-1">
+            <Input
+              type="number"
+              placeholder="Min wins"
+              value={slot.min_wins}
+              onChange={(e) => updateSlot(slot.id, "min_wins", e.target.value)}
+              className="h-9 text-xs"
+            />
+            <Input
+              type="number"
+              placeholder="Max wins"
+              value={slot.max_wins}
+              onChange={(e) => updateSlot(slot.id, "max_wins", e.target.value)}
+              className="h-9 text-xs"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -140,7 +271,7 @@ export default function CreateEvent() {
               CREATE <span className="text-primary">EVENT</span>
             </h1>
             <p className="text-muted-foreground mb-8">
-              Set up a new event and define fight slots.
+              Set up a new event with main card and undercard fights.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -236,59 +367,61 @@ export default function CreateEvent() {
                 />
               </div>
 
-              {/* Fight Slots */}
+              {/* Main Card */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label>Fight Slots</Label>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-lg font-heading">MAIN CARD</Label>
+                    <Badge className="bg-primary/20 text-primary border-primary/30">
+                      {mainCardSlots.length} fights
+                    </Badge>
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={addSlot}
+                    onClick={() => addSlot("main_card")}
                     className="gap-1"
                   >
-                    <Plus className="h-3 w-3" /> Add Slot
+                    <Plus className="h-3 w-3" /> Add Fight
                   </Button>
                 </div>
-
                 <div className="space-y-2">
-                  {slots.map((slot, i) => (
-                    <div
-                      key={slot.id}
-                      className="flex items-center gap-3 rounded-md border border-border bg-card p-3"
-                    >
-                      <span className="text-sm font-medium text-muted-foreground w-8">
-                        #{i + 1}
-                      </span>
-                      <Select
-                        value={slot.weight_class}
-                        onValueChange={(v) =>
-                          updateSlotWeight(slot.id, v as WeightClass)
-                        }
-                      >
-                        <SelectTrigger className="flex-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {WEIGHT_CLASSES.map((wc) => (
-                            <SelectItem key={wc} value={wc}>
-                              {formatWeightClass(wc)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeSlot(slot.id)}
-                        disabled={slots.length <= 1}
-                        className="text-muted-foreground hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                  {mainCardSlots.map((slot, i) => renderSlotRow(slot, i))}
+                  {mainCardSlots.length === 0 && (
+                    <p className="text-sm text-muted-foreground p-4 border border-dashed border-border rounded-md text-center">
+                      No main card fights yet.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Undercard */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-lg font-heading">UNDERCARD</Label>
+                    <Badge variant="outline">
+                      {undercardSlots.length} fights
+                    </Badge>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => addSlot("undercard")}
+                    className="gap-1"
+                  >
+                    <Plus className="h-3 w-3" /> Add Fight
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {undercardSlots.map((slot, i) => renderSlotRow(slot, i))}
+                  {undercardSlots.length === 0 && (
+                    <p className="text-sm text-muted-foreground p-4 border border-dashed border-border rounded-md text-center">
+                      No undercard fights yet.
+                    </p>
+                  )}
                 </div>
               </div>
 

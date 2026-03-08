@@ -17,8 +17,8 @@ import type { Database } from "@/integrations/supabase/types";
 type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
 type FightSlot = Database["public"]["Tables"]["fight_slots"]["Row"];
 
-function formatWeightClass(wc: string) {
-  return wc.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+function formatEnum(val: string) {
+  return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -81,6 +81,24 @@ export default function EventManager() {
       return data;
     },
     enabled: slots.length > 0,
+  });
+
+  // Fetch confirmations for active proposals
+  const activeProposalIds = proposals
+    .filter((p) => p.status === "pending" || p.status === "confirmed")
+    .map((p) => p.id);
+
+  const { data: confirmations = [] } = useQuery({
+    queryKey: ["event-confirmations", activeProposalIds],
+    queryFn: async () => {
+      if (activeProposalIds.length === 0) return [];
+      const { data } = await supabase
+        .from("confirmations")
+        .select("*")
+        .in("match_proposal_id", activeProposalIds);
+      return data ?? [];
+    },
+    enabled: activeProposalIds.length > 0,
   });
 
   const publishMutation = useMutation({
@@ -159,19 +177,140 @@ export default function EventManager() {
     );
   }
 
-  const getSlotProposals = (slotId: string) =>
-    proposals.filter((p) => p.fight_slot_id === slotId);
-
   const getActiveProposal = (slotId: string) =>
     proposals.find((p) => p.fight_slot_id === slotId && p.status !== "declined" && p.status !== "withdrawn");
 
   const getDeclinedProposals = (slotId: string) =>
     proposals.filter((p) => p.fight_slot_id === slotId && p.status === "declined");
 
-  // Collect fighter IDs in active proposals for exclusion from suggestions
+  const getProposalConfirmations = (proposalId: string) =>
+    confirmations.filter((c) => c.match_proposal_id === proposalId);
+
   const activeProposalFighterIds = proposals
     .filter((p) => p.status !== "declined" && p.status !== "withdrawn")
     .flatMap((p) => [p.fighter_a_id, p.fighter_b_id]);
+
+  // Group slots by card position
+  const mainCardSlots = slots.filter((s) => (s as any).card_position === "main_card");
+  const undercardSlots = slots.filter((s) => (s as any).card_position !== "main_card");
+
+  const renderSlotCard = (slot: FightSlot) => {
+    const activeProposal = getActiveProposal(slot.id);
+    const declinedCount = getDeclinedProposals(slot.id).length;
+    const slotExtra = slot as any;
+    const proposalConfs = activeProposal ? getProposalConfirmations(activeProposal.id) : [];
+    const acceptedCount = proposalConfs.filter((c) => c.decision === "accepted").length;
+
+    return (
+      <div key={slot.id} className="rounded-lg border border-border bg-card p-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="font-heading text-lg text-muted-foreground">
+              #{slot.slot_number}
+            </span>
+            <span className="text-sm font-medium text-foreground">
+              {formatEnum(slot.weight_class)}
+            </span>
+            {slotExtra.experience_level && (
+              <Badge variant="outline" className="text-xs">
+                {formatEnum(slotExtra.experience_level)}
+              </Badge>
+            )}
+            {(slotExtra.min_weight_kg || slotExtra.max_weight_kg) && (
+              <Badge variant="outline" className="text-xs">
+                {slotExtra.min_weight_kg || "?"}–{slotExtra.max_weight_kg || "?"}kg
+              </Badge>
+            )}
+            {(slotExtra.min_wins !== null || slotExtra.max_wins !== null) && (
+              <Badge variant="outline" className="text-xs">
+                {slotExtra.min_wins ?? 0}–{slotExtra.max_wins ?? "∞"} wins
+              </Badge>
+            )}
+            <Badge
+              variant="outline"
+              className={STATUS_COLORS[slot.status] || ""}
+            >
+              {slot.status}
+            </Badge>
+            {declinedCount > 0 && (
+              <span className="text-xs text-muted-foreground">
+                ({declinedCount} declined)
+              </span>
+            )}
+          </div>
+
+          {slot.status === "open" && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => {
+                  setSuggestSlot(slot);
+                  setActiveSlot(null);
+                  setSelectedFighterA(null);
+                  setSelectedFighterB(null);
+                }}
+              >
+                <Sparkles className="h-3 w-3" /> Suggestions
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => {
+                  setActiveSlot(slot);
+                  setSuggestSlot(null);
+                  setSelectedFighterA(null);
+                  setSelectedFighterB(null);
+                }}
+              >
+                <Users className="h-3 w-3" /> Manual Search
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {activeProposal && (
+          <div className="mt-3 pt-3 border-t border-border">
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <span className="text-foreground font-medium">
+                {(activeProposal as any).fighter_a?.name || "Fighter A"}
+              </span>
+              <span className="text-primary font-heading">VS</span>
+              <span className="text-foreground font-medium">
+                {(activeProposal as any).fighter_b?.name || "Fighter B"}
+              </span>
+              <Badge variant="outline" className="ml-2 text-xs">
+                {activeProposal.status === "pending"
+                  ? `${acceptedCount}/4 confirmed`
+                  : activeProposal.status === "confirmed"
+                  ? "Confirmed"
+                  : formatEnum(activeProposal.status)}
+              </Badge>
+            </div>
+            {activeProposal.status === "pending" && proposalConfs.length > 0 && (
+              <div className="flex gap-1 mt-2 flex-wrap">
+                {proposalConfs.map((c) => (
+                  <Badge
+                    key={c.id}
+                    variant="outline"
+                    className={
+                      c.decision === "accepted"
+                        ? "text-xs bg-success/10 text-success border-success/30"
+                        : "text-xs bg-destructive/10 text-destructive border-destructive/30"
+                    }
+                  >
+                    {formatEnum(c.role)} {c.decision}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -226,92 +365,32 @@ export default function EventManager() {
               </p>
             )}
 
-            {/* Fight Slots */}
+            {/* Main Card */}
             <h2 className="font-heading text-2xl text-foreground mb-4">
-              FIGHT <span className="text-primary">SLOTS</span>
+              MAIN <span className="text-primary">CARD</span>
             </h2>
+            <div className="space-y-3 mb-10">
+              {mainCardSlots.length === 0 ? (
+                <p className="text-sm text-muted-foreground p-4 border border-dashed border-border rounded-md text-center">
+                  No main card fights.
+                </p>
+              ) : (
+                mainCardSlots.map(renderSlotCard)
+              )}
+            </div>
 
+            {/* Undercard */}
+            <h2 className="font-heading text-2xl text-foreground mb-4">
+              UNDER<span className="text-primary">CARD</span>
+            </h2>
             <div className="space-y-3 mb-8">
-              {slots.map((slot) => {
-                const activeProposal = getActiveProposal(slot.id);
-                const declinedCount = getDeclinedProposals(slot.id).length;
-                return (
-                  <div
-                    key={slot.id}
-                    className="rounded-lg border border-border bg-card p-4"
-                  >
-                    <div className="flex items-center justify-between flex-wrap gap-3">
-                      <div className="flex items-center gap-3">
-                        <span className="font-heading text-lg text-muted-foreground">
-                          #{slot.slot_number}
-                        </span>
-                        <span className="text-sm font-medium text-foreground">
-                          {formatWeightClass(slot.weight_class)}
-                        </span>
-                        <Badge
-                          variant="outline"
-                          className={STATUS_COLORS[slot.status] || ""}
-                        >
-                          {slot.status}
-                        </Badge>
-                        {declinedCount > 0 && (
-                          <span className="text-xs text-muted-foreground">
-                            ({declinedCount} declined)
-                          </span>
-                        )}
-                      </div>
-
-                      {slot.status === "open" && (
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-1"
-                            onClick={() => {
-                              setSuggestSlot(slot);
-                              setActiveSlot(null);
-                              setSelectedFighterA(null);
-                              setSelectedFighterB(null);
-                            }}
-                          >
-                            <Sparkles className="h-3 w-3" /> Suggestions
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="gap-1"
-                            onClick={() => {
-                              setActiveSlot(slot);
-                              setSuggestSlot(null);
-                              setSelectedFighterA(null);
-                              setSelectedFighterB(null);
-                            }}
-                          >
-                            <Users className="h-3 w-3" /> Manual Search
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-
-                    {activeProposal && (
-                      <div className="mt-3 pt-3 border-t border-border">
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="text-foreground font-medium">
-                            {(activeProposal as any).fighter_a?.name || "Fighter A"}
-                          </span>
-                          <span className="text-primary font-heading">VS</span>
-                          <span className="text-foreground font-medium">
-                            {(activeProposal as any).fighter_b?.name || "Fighter B"}
-                          </span>
-                          <Badge variant="outline" className="ml-2 text-xs">
-                            {activeProposal.status.replace(/_/g, " ")}
-                          </Badge>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {undercardSlots.length === 0 ? (
+                <p className="text-sm text-muted-foreground p-4 border border-dashed border-border rounded-md text-center">
+                  No undercard fights.
+                </p>
+              ) : (
+                undercardSlots.map(renderSlotCard)
+              )}
             </div>
 
             {/* AI Suggestions Panel */}
