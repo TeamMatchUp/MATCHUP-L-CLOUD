@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { JoinGymButton } from "@/components/gym/JoinGymButton";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { useToast } from "@/hooks/use-toast";
+import { EditGymDialog } from "@/components/gym/EditGymDialog";
+import { useNavigate } from "react-router-dom";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
