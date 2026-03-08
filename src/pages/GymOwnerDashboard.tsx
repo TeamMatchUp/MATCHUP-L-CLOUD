@@ -468,7 +468,7 @@ export default function GymOwnerDashboard() {
                   )}
                 </div>
 
-                {allFighters.length === 0 ? (
+                {filteredRosterFighters.length === 0 ? (
                   <div className="rounded-lg border border-border bg-card p-8 text-center">
                     <p className="text-muted-foreground mb-4">
                       No fighters in your roster yet.
