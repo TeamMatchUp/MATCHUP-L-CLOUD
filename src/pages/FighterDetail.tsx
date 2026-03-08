@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, ShieldCheck } from "lucide-react";
+import { FightHistory } from "@/components/fighter/FightHistory";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,7 +67,7 @@ export default function FighterDetail() {
     );
   }
 
-  const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
+  // Static record kept as fallback, but dynamic record from FightHistory will override visually
   const gyms = fighter.fighter_gym_links ?? [];
 
   return (
@@ -93,7 +94,7 @@ export default function FighterDetail() {
                     <h1 className="font-heading text-3xl md:text-4xl text-foreground">{fighter.name}</h1>
                     {fighter.verified && <ShieldCheck className="h-5 w-5 text-primary" />}
                   </div>
-                  <p className="text-primary font-bold text-2xl mt-1">{record}</p>
+                  <FightHistory fighterId={fighter.id} />
                   <span className={`inline-block mt-2 text-xs font-medium px-3 py-1 rounded-full ${fighter.available ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                     {fighter.available ? "Available for fights" : "Currently booked"}
                   </span>
@@ -115,21 +116,7 @@ export default function FighterDetail() {
                 ))}
               </div>
 
-              {/* Record Breakdown */}
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="font-heading text-3xl text-success">{fighter.record_wins}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Wins</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="font-heading text-3xl text-destructive">{fighter.record_losses}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Losses</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="font-heading text-3xl text-muted-foreground">{fighter.record_draws}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Draws</p>
-                </div>
-              </div>
+              {/* Record Breakdown removed - now shown dynamically via FightHistory */}
 
               {/* Bio */}
               {fighter.bio && (

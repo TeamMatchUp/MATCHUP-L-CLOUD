@@ -6,9 +6,10 @@ import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterDialog } from "@/components/coach/AddFighterDialog";
+import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 
 function formatEnum(val: string) {
   return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -18,6 +19,7 @@ export default function CoachDashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showAddFighter, setShowAddFighter] = useState(false);
+  const [fightResultFighter, setFightResultFighter] = useState<{ id: string; name: string } | null>(null);
 
   // Get coach's gym
   const { data: myGym } = useQuery({
@@ -171,7 +173,7 @@ export default function CoachDashboard() {
                     <p className="text-xs text-muted-foreground mt-1">
                       {f.record_wins}W-{f.record_losses}L-{f.record_draws}D · {formatEnum(f.weight_class)}
                     </p>
-                    <div className="flex gap-1 mt-2">
+                    <div className="flex gap-1 mt-2 flex-wrap">
                       {f.style && (
                         <Badge variant="outline" className="text-xs">{formatEnum(f.style)}</Badge>
                       )}
@@ -183,6 +185,14 @@ export default function CoachDashboard() {
                         {f.available ? "Available" : "Unavailable"}
                       </Badge>
                     </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-3 gap-1 text-xs"
+                      onClick={() => setFightResultFighter({ id: f.id, name: f.name })}
+                    >
+                      <FileText className="h-3 w-3" /> Add Fight Result
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -216,6 +226,17 @@ export default function CoachDashboard() {
                 onOpenChange={setShowAddFighter}
                 coachId={user.id}
                 gymId={myGym?.id}
+                onSuccess={handleRefresh}
+              />
+            )}
+
+            {/* Add Fight Result Dialog */}
+            {user && fightResultFighter && (
+              <AddFightResultDialog
+                open={!!fightResultFighter}
+                onOpenChange={(open) => { if (!open) setFightResultFighter(null); }}
+                fighter={fightResultFighter}
+                coachId={user.id}
                 onSuccess={handleRefresh}
               />
             )}
