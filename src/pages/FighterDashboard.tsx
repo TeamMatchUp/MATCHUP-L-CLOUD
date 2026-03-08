@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { MatchProposalCard } from "@/components/fighter/MatchProposalCard";
 import { CreateFighterProfileForm } from "@/components/fighter/CreateFighterProfileForm";
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
+import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
 
 function formatEnum(val: string) {
   return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
