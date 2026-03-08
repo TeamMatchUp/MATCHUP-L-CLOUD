@@ -58,9 +58,9 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-20 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="MatchUp" className="h-8" />
+          <img src={logo} alt="MatchUp" className="h-12" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
@@ -68,7 +68,7 @@ export function Header() {
             <Link
               key={link.to}
               to={link.to}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+              className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               {link.label}
             </Link>
@@ -76,7 +76,7 @@ export function Header() {
           {user && activeRole && (
             <Link
               to={dashboardPath}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+              className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               Dashboard
             </Link>
