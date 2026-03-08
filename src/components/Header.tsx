@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, LogOut, User, Menu, X } from "lucide-react";
+import { ChevronDown, LogOut, User, Menu, X, Settings } from "lucide-react";
 import logoFull from "@/assets/logo-full.webp";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
