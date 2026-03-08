@@ -176,6 +176,28 @@ export function AddFighterToGymDialog({
       return;
     }
 
+    // Send notification to the fighter if they have a user_id
+    const { data: fullFighter } = await supabase
+      .from("fighter_profiles")
+      .select("user_id")
+      .eq("id", existingFighter.id)
+      .single();
+
+    if (fullFighter?.user_id) {
+      const { data: gymData } = await supabase
+        .from("gyms")
+        .select("name")
+        .eq("id", gymId)
+        .single();
+
+      await supabase.rpc("create_notification", {
+        _user_id: fullFighter.user_id,
+        _title: `Gym Invite: ${gymData?.name ?? "A gym"}`,
+        _message: `You've been invited to join ${gymData?.name ?? "a gym"}. Go to your Fighter Dashboard to accept or decline.`,
+        _type: "system",
+      });
+    }
+
     toast({ title: "Invite sent", description: `${existingFighter.name} has been invited to join the gym.` });
     setInviteLoading(false);
     resetForm();

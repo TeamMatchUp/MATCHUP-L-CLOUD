@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown, LogOut, User } from "lucide-react";
+import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -81,8 +82,10 @@ export function Header() {
           )}
         </nav>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
           {user ? (
+            <>
+            <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
@@ -117,6 +120,7 @@ export function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </>
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild>
