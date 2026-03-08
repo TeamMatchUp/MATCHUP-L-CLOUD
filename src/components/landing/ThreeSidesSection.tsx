@@ -1,7 +1,5 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Calendar, Users, Shield } from "lucide-react";
-import iconGold from "@/assets/icon-gold.webp";
-import { useRef } from "react";
 
 const sides = [
   {
