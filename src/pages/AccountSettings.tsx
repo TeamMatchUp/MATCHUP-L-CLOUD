@@ -114,7 +114,15 @@ export default function AccountSettings() {
 
     setSaving(true);
 
-    // Update profile
+    // Check we have a valid session before auth operations
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      toast({ title: "Session expired", description: "Please sign in again to update your settings.", variant: "destructive" });
+      setSaving(false);
+      return;
+    }
+
+    // Update profile in database
     const avatarClean = avatarUrl?.split("?")[0] || null;
     const { error: profileError } = await supabase
       .from("profiles")
@@ -146,7 +154,10 @@ export default function AccountSettings() {
     }
 
     // Update auth metadata name
-    await supabase.auth.updateUser({ data: { full_name: fullName.trim() } });
+    const { error: metaError } = await supabase.auth.updateUser({ data: { full_name: fullName.trim() } });
+    if (metaError) {
+      console.warn("Could not update auth metadata:", metaError.message);
+    }
 
     setSaving(false);
     setNewPassword("");
