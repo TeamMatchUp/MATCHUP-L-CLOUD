@@ -19,6 +19,7 @@ export default function CoachDashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showAddFighter, setShowAddFighter] = useState(false);
+  const [fightResultFighter, setFightResultFighter] = useState<{ id: string; name: string } | null>(null);
 
   // Get coach's gym
   const { data: myGym } = useQuery({
