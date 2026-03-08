@@ -139,9 +139,17 @@ export function Header() {
             </DropdownMenu>
             </>
           ) : (
-            <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
-              <Link to="/auth">log in</Link>
-            </Button>
+            <>
+              <Link
+                to="/auth"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-[0_0_12px_hsl(var(--foreground)/0.15)] transition-all duration-200 px-4 py-1.5 rounded-full"
+              >
+                CREATE ACCOUNT
+              </Link>
+              <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
+                <Link to="/auth">log in</Link>
+              </Button>
+            </>
           )}
         </div>
 
