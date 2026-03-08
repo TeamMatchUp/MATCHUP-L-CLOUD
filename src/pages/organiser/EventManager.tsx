@@ -8,8 +8,9 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditFightSlotDialog } from "@/components/organiser/EditFightSlotDialog";
+import { AddFightSlotDialog } from "@/components/organiser/AddFightSlotDialog";
 import { EditEventDialog } from "@/components/organiser/EditEventDialog";
-import { ArrowLeft, Globe, Users, Sparkles, Pencil } from "lucide-react";
+import { ArrowLeft, Globe, Users, Sparkles, Pencil, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FighterSearchPanel } from "@/components/organiser/FighterSearchPanel";
 import { ProposeMatchDialog } from "@/components/organiser/ProposeMatchDialog";
@@ -44,6 +45,7 @@ export default function EventManager() {
   const [showProposeDialog, setShowProposeDialog] = useState(false);
   const [editingSlot, setEditingSlot] = useState<FightSlot | null>(null);
   const [showEditEvent, setShowEditEvent] = useState(false);
+  const [showAddSlot, setShowAddSlot] = useState(false);
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["organiser-event", id],
@@ -369,6 +371,14 @@ export default function EventManager() {
                   variant="outline"
                   size="sm"
                   className="gap-1"
+                  onClick={() => setShowAddSlot(true)}
+                >
+                  <Plus className="h-3 w-3" /> Add Fight
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
                   onClick={() => setShowEditEvent(true)}
                 >
                   <Pencil className="h-3 w-3" /> Edit Event
@@ -490,6 +500,17 @@ export default function EventManager() {
                 }}
               />
             )}
+
+            {/* Add Fight Slot Dialog */}
+            <AddFightSlotDialog
+              open={showAddSlot}
+              onOpenChange={setShowAddSlot}
+              eventId={id!}
+              nextSlotNumber={slots.length + 1}
+              onSuccess={() => {
+                queryClient.invalidateQueries({ queryKey: ["event-slots", id] });
+              }}
+            />
           </div>
         </section>
       </main>
