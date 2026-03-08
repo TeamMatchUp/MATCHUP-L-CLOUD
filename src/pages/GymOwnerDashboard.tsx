@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Calendar, ArrowRight, Building2, Users, Inbox } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
-import { AddFighterDialog } from "@/components/coach/AddFighterDialog";
+import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
