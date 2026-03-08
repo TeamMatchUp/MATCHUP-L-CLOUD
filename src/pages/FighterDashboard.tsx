@@ -51,13 +51,9 @@ export default function FighterDashboard() {
     enabled: !!fighterProfile,
   });
 
-  const pendingProposals = proposals.filter((p) =>
-    ["pending_fighter_a", "pending_fighter_b"].includes(p.status)
-  );
+  const pendingProposals = proposals.filter((p) => p.status === "pending");
   const confirmedFights = proposals.filter((p) => p.status === "confirmed");
-  const awaitingOthers = proposals.filter((p) =>
-    ["pending_coach_a", "pending_coach_b"].includes(p.status)
-  );
+  const awaitingOthers = proposals.filter(() => false); // all handled via confirmations table now
 
   const stats = [
     { label: "Pending Your Decision", value: String(pendingProposals.length), sub: "Match proposals for you" },

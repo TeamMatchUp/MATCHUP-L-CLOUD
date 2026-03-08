@@ -64,9 +64,7 @@ export default function OrganiserDashboard() {
   });
 
   const openSlots = slots.filter((s) => s.status === "open").length;
-  const pendingProposals = proposals.filter((p) =>
-    ["pending_coach_a", "pending_coach_b", "pending_fighter_a", "pending_fighter_b"].includes(p.status)
-  ).length;
+  const pendingProposals = proposals.filter((p) => p.status === "pending").length;
   const confirmedMatches = proposals.filter((p) => p.status === "confirmed").length;
 
   const stats = [

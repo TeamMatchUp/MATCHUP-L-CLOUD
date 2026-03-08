@@ -74,8 +74,8 @@ export function ProposalCard({
     // Check if all 4 parties have now confirmed
     const newAcceptedCount = acceptedCount + 1;
 
-    // Count required parties (coach_a, coach_b, fighter_a, fighter_b)
-    // We need to check how many unique parties exist
+    // Only require confirmation from registered fighters (those with user_id).
+    // Unregistered fighters (created by coach, no account) are auto-approved.
     const requiredParties = new Set<string>();
     if (fighterA?.created_by_coach_id) requiredParties.add(fighterA.created_by_coach_id);
     if (fighterB?.created_by_coach_id) requiredParties.add(fighterB.created_by_coach_id);
