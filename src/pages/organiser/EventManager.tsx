@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditFightSlotDialog } from "@/components/organiser/EditFightSlotDialog";
+import { EditEventDialog } from "@/components/organiser/EditEventDialog";
 import { ArrowLeft, Globe, Users, Sparkles, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FighterSearchPanel } from "@/components/organiser/FighterSearchPanel";
@@ -31,6 +32,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function EventManager() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -41,6 +43,7 @@ export default function EventManager() {
   const [selectedFighterB, setSelectedFighterB] = useState<FighterProfile | null>(null);
   const [showProposeDialog, setShowProposeDialog] = useState(false);
   const [editingSlot, setEditingSlot] = useState<FightSlot | null>(null);
+  const [showEditEvent, setShowEditEvent] = useState(false);
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["organiser-event", id],
@@ -361,16 +364,26 @@ export default function EventManager() {
                   </p>
                 )}
               </div>
-              {event.status === "draft" && (
+              <div className="flex gap-2 flex-wrap">
                 <Button
-                  onClick={() => publishMutation.mutate()}
-                  disabled={publishMutation.isPending}
-                  className="gap-2"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => setShowEditEvent(true)}
                 >
-                  <Globe className="h-4 w-4" />
-                  {publishMutation.isPending ? "Publishing..." : "Publish Event"}
+                  <Pencil className="h-3 w-3" /> Edit Event
                 </Button>
-              )}
+                {event.status === "draft" && (
+                  <Button
+                    onClick={() => publishMutation.mutate()}
+                    disabled={publishMutation.isPending}
+                    className="gap-2"
+                  >
+                    <Globe className="h-4 w-4" />
+                    {publishMutation.isPending ? "Publishing..." : "Publish Event"}
+                  </Button>
+                )}
+              </div>
             </div>
 
             {event.description && (
@@ -459,6 +472,21 @@ export default function EventManager() {
                 onSuccess={() => {
                   setEditingSlot(null);
                   queryClient.invalidateQueries({ queryKey: ["event-slots", id] });
+                }}
+              />
+            )}
+
+            {/* Edit Event Dialog */}
+            {showEditEvent && event && (
+              <EditEventDialog
+                open={showEditEvent}
+                onOpenChange={setShowEditEvent}
+                event={event}
+                onSuccess={() => {
+                  queryClient.invalidateQueries({ queryKey: ["organiser-event", id] });
+                }}
+                onDelete={() => {
+                  navigate("/organiser/dashboard");
                 }}
               />
             )}

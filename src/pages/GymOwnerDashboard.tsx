@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Calendar, ArrowRight, Building2, Users, Inbox } from "lucide-react";
+import { Plus, Calendar, ArrowRight, Building2, Users, Inbox, Pencil } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -58,7 +58,7 @@ export default function GymOwnerDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("gyms")
-        .select("id, name, location, country, fighter_gym_links(fighter_id)")
+        .select("id, name, location, city, address, country, description, contact_email, phone, website, fighter_gym_links(fighter_id)")
         .eq("coach_id", user!.id)
         .order("name");
       return data ?? [];
@@ -361,17 +361,29 @@ export default function GymOwnerDashboard() {
                             {gym.fighter_gym_links?.length ?? 0} fighters
                           </p>
                         </Link>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-3 gap-1 w-full"
-                          onClick={() => {
-                            setAddFighterGymId(gym.id);
-                            setShowAddFighter(true);
-                          }}
-                        >
-                          <Plus className="h-3 w-3" /> Add Fighter
-                        </Button>
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 flex-1"
+                            onClick={() => {
+                              setAddFighterGymId(gym.id);
+                              setShowAddFighter(true);
+                            }}
+                          >
+                            <Plus className="h-3 w-3" /> Add Fighter
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="gap-1"
+                            asChild
+                          >
+                            <Link to={`/gyms/${gym.id}`}>
+                              <Pencil className="h-3 w-3" /> Edit
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { ArrowLeft, MapPin, ShieldCheck, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, MapPin, ShieldCheck, Plus, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { JoinGymButton } from "@/components/gym/JoinGymButton";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { useToast } from "@/hooks/use-toast";
+import { EditGymDialog } from "@/components/gym/EditGymDialog";
+import { useNavigate } from "react-router-dom";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -37,6 +39,8 @@ export default function GymDetail() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showAddFighter, setShowAddFighter] = useState(false);
+  const [showEditGym, setShowEditGym] = useState(false);
+  const navigate = useNavigate();
 
   const { data: gym, isLoading } = useQuery({
     queryKey: ["gym", id],
@@ -132,7 +136,13 @@ export default function GymDetail() {
                     )}
                   </div>
                 </div>
-                {!isOwner && <JoinGymButton gymId={gym.id} />}
+                {isOwner ? (
+                  <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowEditGym(true)}>
+                    <Pencil className="h-3 w-3" /> Edit Gym
+                  </Button>
+                ) : (
+                  <JoinGymButton gymId={gym.id} />
+                )}
               </div>
 
               {gym.description && (
@@ -245,6 +255,16 @@ export default function GymDetail() {
                 gymId={gym.id}
                 coachId={user!.id}
                 onSuccess={() => queryClient.invalidateQueries({ queryKey: ["gym", id] })}
+              />
+            )}
+
+            {isOwner && gym && (
+              <EditGymDialog
+                open={showEditGym}
+                onOpenChange={setShowEditGym}
+                gym={gym}
+                onSuccess={() => queryClient.invalidateQueries({ queryKey: ["gym", id] })}
+                onDelete={() => navigate("/gym-owner/dashboard")}
               />
             )}
           </div>
