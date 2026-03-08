@@ -62,12 +62,14 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          <Link
-            to="/"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
-          >
-            Home
-          </Link>
+          {!isLanding && (
+            <Link
+              to="/"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+            >
+              Home
+            </Link>
+          )}
           {user && activeRole && (
             <Link
               to={dashboardPath}
