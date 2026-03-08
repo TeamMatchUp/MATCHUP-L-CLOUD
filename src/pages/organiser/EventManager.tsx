@@ -241,36 +241,48 @@ export default function EventManager() {
             )}
           </div>
 
-          {slot.status === "open" && (
-            <div className="flex gap-2">
+          <div className="flex gap-2">
+            {slot.status === "open" && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => {
+                    setSuggestSlot(slot);
+                    setActiveSlot(null);
+                    setSelectedFighterA(null);
+                    setSelectedFighterB(null);
+                  }}
+                >
+                  <Sparkles className="h-3 w-3" /> Suggestions
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => {
+                    setActiveSlot(slot);
+                    setSuggestSlot(null);
+                    setSelectedFighterA(null);
+                    setSelectedFighterB(null);
+                  }}
+                >
+                  <Users className="h-3 w-3" /> Manual Search
+                </Button>
+              </>
+            )}
+            {(slot.status === "open" || slot.status === "proposed") && (
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 className="gap-1"
-                onClick={() => {
-                  setSuggestSlot(slot);
-                  setActiveSlot(null);
-                  setSelectedFighterA(null);
-                  setSelectedFighterB(null);
-                }}
+                onClick={() => setEditingSlot(slot)}
               >
-                <Sparkles className="h-3 w-3" /> Suggestions
+                <Pencil className="h-3 w-3" /> Edit
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={() => {
-                  setActiveSlot(slot);
-                  setSuggestSlot(null);
-                  setSelectedFighterA(null);
-                  setSelectedFighterB(null);
-                }}
-              >
-                <Users className="h-3 w-3" /> Manual Search
-              </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {activeProposal && (
