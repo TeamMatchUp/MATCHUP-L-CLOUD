@@ -173,7 +173,7 @@ export default function CoachDashboard() {
                     <p className="text-xs text-muted-foreground mt-1">
                       {f.record_wins}W-{f.record_losses}L-{f.record_draws}D · {formatEnum(f.weight_class)}
                     </p>
-                    <div className="flex gap-1 mt-2">
+                    <div className="flex gap-1 mt-2 flex-wrap">
                       {f.style && (
                         <Badge variant="outline" className="text-xs">{formatEnum(f.style)}</Badge>
                       )}
@@ -185,6 +185,14 @@ export default function CoachDashboard() {
                         {f.available ? "Available" : "Unavailable"}
                       </Badge>
                     </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-3 gap-1 text-xs"
+                      onClick={() => setFightResultFighter({ id: f.id, name: f.name })}
+                    >
+                      <FileText className="h-3 w-3" /> Add Fight Result
+                    </Button>
                   </div>
                 ))}
               </div>
