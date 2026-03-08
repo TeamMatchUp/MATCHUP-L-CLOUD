@@ -390,13 +390,34 @@ export default function GymOwnerDashboard() {
                   <h2 className="font-heading text-2xl text-foreground">
                     FIGHTER <span className="text-primary">ROSTER</span>
                   </h2>
-                  <Button
-                    size="sm"
-                    className="gap-1"
-                    onClick={() => setShowAddFighter(true)}
-                  >
-                    <Plus className="h-3 w-3" /> Add Fighter
-                  </Button>
+                  {myGyms.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={addFighterGymId ?? primaryGym?.id ?? ""}
+                        onValueChange={(v) => setAddFighterGymId(v)}
+                      >
+                        <SelectTrigger className="w-[180px] h-8 text-xs">
+                          <SelectValue placeholder="Select gym" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {myGyms.map((g) => (
+                            <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => {
+                          if (!addFighterGymId && primaryGym) setAddFighterGymId(primaryGym.id);
+                          setShowAddFighter(true);
+                        }}
+                        disabled={!addFighterGymId && !primaryGym}
+                      >
+                        <Plus className="h-3 w-3" /> Add Fighter
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {allFighters.length === 0 ? (
