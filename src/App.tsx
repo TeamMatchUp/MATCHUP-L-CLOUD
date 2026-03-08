@@ -18,6 +18,7 @@ import OrganiserDashboard from "./pages/OrganiserDashboard";
 import CreateEvent from "./pages/organiser/CreateEvent";
 import EventManager from "./pages/organiser/EventManager";
 import GymOwnerDashboard from "./pages/GymOwnerDashboard";
+import RegisterGym from "./pages/RegisterGym";
 import FighterDashboard from "./pages/FighterDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -84,6 +85,16 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="gym_owner">
                   <GymOwnerDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected: Coach – Register Gym */}
+            <Route
+              path="/register-gym"
+              element={
+                <ProtectedRoute requiredRole="gym_owner">
+                  <RegisterGym />
                 </ProtectedRoute>
               }
             />

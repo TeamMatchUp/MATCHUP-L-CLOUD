@@ -30,7 +30,7 @@ export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/";
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
 
   const toggleRole = (role: AppRole) => {
     setSelectedRoles((prev) =>
@@ -46,7 +46,7 @@ export default function Auth() {
     if (error) {
       toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
     } else {
-      navigate(from, { replace: true });
+      navigate(from || "/", { replace: true });
     }
   };
 
