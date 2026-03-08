@@ -428,7 +428,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "organiser" | "coach" | "fighter"
+      app_role: "organiser" | "coach" | "fighter" | "gym_owner" | "admin"
       confirmation_decision: "accepted" | "declined"
       country_code: "UK" | "USA" | "AUS"
       event_status: "draft" | "published" | "completed" | "cancelled"
@@ -592,7 +592,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["organiser", "coach", "fighter"],
+      app_role: ["organiser", "coach", "fighter", "gym_owner", "admin"],
       confirmation_decision: ["accepted", "declined"],
       country_code: ["UK", "USA", "AUS"],
       event_status: ["draft", "published", "completed", "cancelled"],
