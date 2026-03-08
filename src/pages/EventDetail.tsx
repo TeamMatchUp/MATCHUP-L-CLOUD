@@ -40,6 +40,20 @@ export default function EventDetail() {
     enabled: !!id,
   });
 
+  const { data: tickets = [] } = useQuery({
+    queryKey: ["event-tickets-public", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tickets")
+        .select("*")
+        .eq("event_id", id!)
+        .order("price");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id && !!event?.ticket_enabled,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
