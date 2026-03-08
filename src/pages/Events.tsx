@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import React from "react";
 import type { Database } from "@/integrations/supabase/types";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
