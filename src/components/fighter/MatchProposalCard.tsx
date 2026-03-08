@@ -7,9 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Check, X } from "lucide-react";
 
-function formatEnum(val: string) {
-  return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { formatEnum } from "@/lib/format";
 
 interface MatchProposalCardProps {
   proposal: any;

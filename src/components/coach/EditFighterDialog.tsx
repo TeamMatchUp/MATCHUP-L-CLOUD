@@ -23,9 +23,7 @@ const WEIGHT_CLASSES = Constants.public.Enums.weight_class;
 const COUNTRIES = Constants.public.Enums.country_code;
 const STYLES = Constants.public.Enums.fighting_style;
 
-function formatEnum(val: string) {
-  return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { formatEnum } from "@/lib/format";
 
 interface FighterData {
   id: string;

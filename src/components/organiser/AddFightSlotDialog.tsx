@@ -15,9 +15,7 @@ const WEIGHT_CLASSES = Constants.public.Enums.weight_class;
 const EXPERIENCE_LEVELS = ["debut", "amateur", "semi-pro", "professional"] as const;
 const CARD_POSITIONS = ["main_card", "undercard"] as const;
 
-function formatEnum(val: string) {
-  return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { formatEnum } from "@/lib/format";
 
 interface AddFightSlotDialogProps {
   open: boolean;
