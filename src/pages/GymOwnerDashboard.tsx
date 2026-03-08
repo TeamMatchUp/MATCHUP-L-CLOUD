@@ -361,17 +361,29 @@ export default function GymOwnerDashboard() {
                             {gym.fighter_gym_links?.length ?? 0} fighters
                           </p>
                         </Link>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-3 gap-1 w-full"
-                          onClick={() => {
-                            setAddFighterGymId(gym.id);
-                            setShowAddFighter(true);
-                          }}
-                        >
-                          <Plus className="h-3 w-3" /> Add Fighter
-                        </Button>
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 flex-1"
+                            onClick={() => {
+                              setAddFighterGymId(gym.id);
+                              setShowAddFighter(true);
+                            }}
+                          >
+                            <Plus className="h-3 w-3" /> Add Fighter
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="gap-1"
+                            asChild
+                          >
+                            <Link to={`/gyms/${gym.id}`}>
+                              <Pencil className="h-3 w-3" /> Edit
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
