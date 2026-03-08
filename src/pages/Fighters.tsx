@@ -79,14 +79,29 @@ const Fighters = () => {
       <main className="pt-16">
         <section className="py-16">
           <div className="container">
-            <motion.h1
-              className="font-heading text-5xl md:text-6xl text-foreground mb-2"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              FIGHTER <span className="text-primary">ROSTER</span>
-            </motion.h1>
+            <div className="flex items-center justify-between mb-2">
+              <motion.h1
+                className="font-heading text-5xl md:text-6xl text-foreground"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                FIGHTER <span className="text-primary">ROSTER</span>
+              </motion.h1>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <Link
+                  to="/auth"
+                  className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
+                >
+                  <img src={iconImg} alt="" className="h-5 w-5" />
+                  create account
+                </Link>
+              </motion.div>
+            </div>
             <motion.p
               className="text-muted-foreground mb-8"
               initial={{ opacity: 0 }}
@@ -194,40 +209,9 @@ const Fighters = () => {
                   );
                 })}
                 {filteredFighters.length < 5 && <BannerAd variant="grid-break" />}
-                <motion.div
-                  className="col-span-full flex justify-center py-12"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <Link
-                    to="/auth"
-                    className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
-                  >
-                    <img src={iconImg} alt="" className="h-5 w-5" />
-                    create account
-                  </Link>
-                </motion.div>
               </div>
             ) : (
-              <>
-                <p className="text-muted-foreground text-center py-12">No fighters found.</p>
-                <motion.div
-                  className="flex justify-center py-4"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <Link
-                    to="/auth"
-                    className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
-                  >
-                    <img src={iconImg} alt="" className="h-5 w-5" />
-                    create account
-                  </Link>
-                </motion.div>
-              </>
+              <p className="text-muted-foreground text-center py-12">No fighters found.</p>
             )}
           </div>
         </section>
