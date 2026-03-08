@@ -202,6 +202,7 @@ export default function CoachDashboard() {
               fighters={allFighters}
               gyms={myGyms}
               fighterGymLinks={fighterGymLinks}
+              fighterRecords={fighterRecords}
               onAddFighter={() => setShowAddFighter(true)}
               onAddFightResult={(fighter) => setFightResultFighter(fighter)}
             />

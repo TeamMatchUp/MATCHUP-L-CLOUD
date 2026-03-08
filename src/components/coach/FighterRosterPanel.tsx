@@ -156,7 +156,7 @@ export function FighterRosterPanel({
                 <FileText className="h-3 w-3" /> Add Fight Result
               </Button>
             </div>
-          ))}
+          )})}
         </div>
       )}
     </div>
