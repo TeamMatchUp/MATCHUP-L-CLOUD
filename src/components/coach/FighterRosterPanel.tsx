@@ -42,6 +42,7 @@ export function FighterRosterPanel({
   fighters,
   gyms,
   fighterGymLinks,
+  fighterRecords,
   onAddFighter,
   onAddFightResult,
 }: FighterRosterPanelProps) {
