@@ -141,7 +141,7 @@ export function Header() {
           ) : (
             <>
               <Link
-                to="/auth"
+                to="/auth?mode=signup"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-[0_0_12px_hsl(var(--foreground)/0.15)] transition-all duration-200 px-4 py-1.5 rounded-full"
               >
                 CREATE ACCOUNT

@@ -28,6 +28,8 @@ const ROLE_DASHBOARDS: Record<AppRole, string> = {
 };
 
 export default function Auth() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const [isSignUp, setIsSignUp] = useState(searchParams.get("mode") === "signup");
   const [email, setEmail] = useState("");
@@ -37,8 +39,6 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
 
