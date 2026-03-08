@@ -7,7 +7,7 @@ export function Footer() {
       <div className="container py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <img src={logo} alt="MatchUp" className="h-7" />
+            <img src={icon} alt="MatchUp" className="h-7" />
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
               The professional matchmaking platform for combat sports.
             </p>
