@@ -7,7 +7,8 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Globe, Users, Sparkles } from "lucide-react";
+import { EditFightSlotDialog } from "@/components/organiser/EditFightSlotDialog";
+import { ArrowLeft, Globe, Users, Sparkles, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FighterSearchPanel } from "@/components/organiser/FighterSearchPanel";
 import { ProposeMatchDialog } from "@/components/organiser/ProposeMatchDialog";
@@ -39,6 +40,7 @@ export default function EventManager() {
   const [selectedFighterA, setSelectedFighterA] = useState<FighterProfile | null>(null);
   const [selectedFighterB, setSelectedFighterB] = useState<FighterProfile | null>(null);
   const [showProposeDialog, setShowProposeDialog] = useState(false);
+  const [editingSlot, setEditingSlot] = useState<FightSlot | null>(null);
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["organiser-event", id],
@@ -239,36 +241,48 @@ export default function EventManager() {
             )}
           </div>
 
-          {slot.status === "open" && (
-            <div className="flex gap-2">
+          <div className="flex gap-2">
+            {slot.status === "open" && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => {
+                    setSuggestSlot(slot);
+                    setActiveSlot(null);
+                    setSelectedFighterA(null);
+                    setSelectedFighterB(null);
+                  }}
+                >
+                  <Sparkles className="h-3 w-3" /> Suggestions
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => {
+                    setActiveSlot(slot);
+                    setSuggestSlot(null);
+                    setSelectedFighterA(null);
+                    setSelectedFighterB(null);
+                  }}
+                >
+                  <Users className="h-3 w-3" /> Manual Search
+                </Button>
+              </>
+            )}
+            {(slot.status === "open" || slot.status === "proposed") && (
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 className="gap-1"
-                onClick={() => {
-                  setSuggestSlot(slot);
-                  setActiveSlot(null);
-                  setSelectedFighterA(null);
-                  setSelectedFighterB(null);
-                }}
+                onClick={() => setEditingSlot(slot)}
               >
-                <Sparkles className="h-3 w-3" /> Suggestions
+                <Pencil className="h-3 w-3" /> Edit
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1"
-                onClick={() => {
-                  setActiveSlot(slot);
-                  setSuggestSlot(null);
-                  setSelectedFighterA(null);
-                  setSelectedFighterB(null);
-                }}
-              >
-                <Users className="h-3 w-3" /> Manual Search
-              </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {activeProposal && (
@@ -433,6 +447,19 @@ export default function EventManager() {
                 fighterB={selectedFighterB}
                 proposedBy={user.id}
                 onSuccess={handleProposalCreated}
+              />
+            )}
+
+            {/* Edit Fight Slot Dialog */}
+            {editingSlot && (
+              <EditFightSlotDialog
+                open={!!editingSlot}
+                onOpenChange={(open) => { if (!open) setEditingSlot(null); }}
+                slot={editingSlot}
+                onSuccess={() => {
+                  setEditingSlot(null);
+                  queryClient.invalidateQueries({ queryKey: ["event-slots", id] });
+                }}
               />
             )}
           </div>
