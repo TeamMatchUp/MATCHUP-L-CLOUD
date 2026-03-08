@@ -1,14 +1,38 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
+/**
+ * Compute effective roles based on tier inheritance:
+ * admin → inherits all
+ * gym_owner → inherits organiser, fighter, coach
+ */
+function getEffectiveRoles(rawRoles: AppRole[]): AppRole[] {
+  const effective = new Set<string>(rawRoles);
+  for (const role of rawRoles) {
+    if (role === "admin") {
+      effective.add("gym_owner");
+      effective.add("organiser");
+      effective.add("fighter");
+      effective.add("coach");
+    }
+    if (role === "gym_owner") {
+      effective.add("organiser");
+      effective.add("fighter");
+      effective.add("coach");
+    }
+  }
+  return Array.from(effective) as AppRole[];
+}
+
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   roles: AppRole[];
+  effectiveRoles: AppRole[];
   activeRole: AppRole | null;
   setActiveRole: (role: AppRole) => void;
   loading: boolean;
@@ -20,6 +44,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   user: null,
   roles: [],
+  effectiveRoles: [],
   activeRole: null,
   setActiveRole: () => {},
   loading: true,
@@ -35,6 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [activeRole, setActiveRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const effectiveRoles = useMemo(() => getEffectiveRoles(roles), [roles]);
 
   const fetchRoles = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -62,13 +89,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Set up auth listener BEFORE checking session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          // Use setTimeout to avoid potential deadlock with Supabase
           setTimeout(() => fetchRoles(session.user.id), 0);
         } else {
           setRoles([]);
@@ -78,7 +103,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // Then check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -106,6 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         session,
         user,
         roles,
+        effectiveRoles,
         activeRole,
         setActiveRole: handleSetActiveRole,
         loading,

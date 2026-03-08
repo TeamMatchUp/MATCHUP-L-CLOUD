@@ -94,6 +94,77 @@ export type Database = {
         }
         Relationships: []
       }
+      fight_results: {
+        Row: {
+          created_at: string
+          event_id: string
+          fighter_a_id: string
+          fighter_b_id: string
+          id: string
+          method: string | null
+          round: number | null
+          time: string | null
+          updated_at: string
+          verification_status: string
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          fighter_a_id: string
+          fighter_b_id: string
+          id?: string
+          method?: string | null
+          round?: number | null
+          time?: string | null
+          updated_at?: string
+          verification_status?: string
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          fighter_a_id?: string
+          fighter_b_id?: string
+          id?: string
+          method?: string | null
+          round?: number | null
+          time?: string | null
+          updated_at?: string
+          verification_status?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fight_results_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fight_results_fighter_a_id_fkey"
+            columns: ["fighter_a_id"]
+            isOneToOne: false
+            referencedRelation: "fighter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fight_results_fighter_b_id_fkey"
+            columns: ["fighter_b_id"]
+            isOneToOne: false
+            referencedRelation: "fighter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fight_results_winner_id_fkey"
+            columns: ["winner_id"]
+            isOneToOne: false
+            referencedRelation: "fighter_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fight_slots: {
         Row: {
           created_at: string
@@ -230,6 +301,57 @@ export type Database = {
           weight_class?: Database["public"]["Enums"]["weight_class"]
         }
         Relationships: []
+      }
+      fighter_records: {
+        Row: {
+          created_at: string
+          draws: number
+          fighter_id: string
+          id: string
+          losses: number
+          no_contests: number
+          updated_at: string
+          updated_by_gym_id: string | null
+          wins: number
+        }
+        Insert: {
+          created_at?: string
+          draws?: number
+          fighter_id: string
+          id?: string
+          losses?: number
+          no_contests?: number
+          updated_at?: string
+          updated_by_gym_id?: string | null
+          wins?: number
+        }
+        Update: {
+          created_at?: string
+          draws?: number
+          fighter_id?: string
+          id?: string
+          losses?: number
+          no_contests?: number
+          updated_at?: string
+          updated_by_gym_id?: string | null
+          wins?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fighter_records_fighter_id_fkey"
+            columns: ["fighter_id"]
+            isOneToOne: true
+            referencedRelation: "fighter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fighter_records_updated_by_gym_id_fkey"
+            columns: ["updated_by_gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       gyms: {
         Row: {
@@ -378,6 +500,127 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      promotions: {
+        Row: {
+          boost_level: number | null
+          created_at: string
+          end_date: string | null
+          id: string
+          owner_id: string
+          payment_status: string | null
+          promotion_type: string
+          start_date: string | null
+          target_id: string
+          updated_at: string
+        }
+        Insert: {
+          boost_level?: number | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          owner_id: string
+          payment_status?: string | null
+          promotion_type: string
+          start_date?: string | null
+          target_id: string
+          updated_at?: string
+        }
+        Update: {
+          boost_level?: number | null
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          owner_id?: string
+          payment_status?: string | null
+          promotion_type?: string
+          start_date?: string | null
+          target_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      result_verifications: {
+        Row: {
+          created_at: string
+          id: string
+          result_id: string
+          verification_action: string
+          verifier_id: string
+          verifier_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          result_id: string
+          verification_action?: string
+          verifier_id: string
+          verifier_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          result_id?: string
+          verification_action?: string
+          verifier_id?: string
+          verifier_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "result_verifications_result_id_fkey"
+            columns: ["result_id"]
+            isOneToOne: false
+            referencedRelation: "fight_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          created_at: string
+          event_id: string
+          external_link: string | null
+          id: string
+          price: number | null
+          quantity_available: number | null
+          sales_end: string | null
+          sales_start: string | null
+          ticket_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          external_link?: string | null
+          id?: string
+          price?: number | null
+          quantity_available?: number | null
+          sales_end?: string | null
+          sales_start?: string | null
+          ticket_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          external_link?: string | null
+          id?: string
+          price?: number | null
+          quantity_available?: number | null
+          sales_end?: string | null
+          sales_start?: string | null
+          ticket_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
