@@ -371,6 +371,14 @@ export default function EventManager() {
                   variant="outline"
                   size="sm"
                   className="gap-1"
+                  onClick={() => setShowAddSlot(true)}
+                >
+                  <Plus className="h-3 w-3" /> Add Fight
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
                   onClick={() => setShowEditEvent(true)}
                 >
                   <Pencil className="h-3 w-3" /> Edit Event
