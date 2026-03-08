@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, LogOut, User, Menu, X } from "lucide-react";
 import logoFull from "@/assets/logo-full.webp";
@@ -39,6 +39,8 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, roles, activeRole, setActiveRole, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLanding = location.pathname === "/";
 
   const handleSignOut = async () => {
     await signOut();
@@ -60,12 +62,14 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          <Link
-            to="/"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
-          >
-            Home
-          </Link>
+          {!isLanding && (
+            <Link
+              to="/"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+            >
+              Home
+            </Link>
+          )}
           {user && activeRole && (
             <Link
               to={dashboardPath}
@@ -137,13 +141,15 @@ export function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl">
           <div className="container py-4 flex flex-col gap-3">
-            <Link
-              to="/"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground py-2"
-              onClick={() => setMobileOpen(false)}
-            >
-              Home
-            </Link>
+            {!isLanding && (
+              <Link
+                to="/"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2"
+                onClick={() => setMobileOpen(false)}
+              >
+                Home
+              </Link>
+            )}
             {user && activeRole && (
               <Link
                 to={dashboardPath}
