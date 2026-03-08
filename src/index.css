@@ -80,14 +80,14 @@
 
 @layer utilities {
   .text-gold-glow {
-    text-shadow: 0 0 20px hsl(42 65% 52% / 0.3);
+    text-shadow: 0 0 20px hsl(40 90% 61% / 0.3);
   }
 
   .card-elevated {
-    box-shadow: 0 4px 24px -4px hsl(0 0% 0% / 0.4);
+    box-shadow: 0 4px 24px -4px hsl(0 0% 0% / 0.5);
   }
 
   .gold-border-subtle {
-    border-color: hsl(42 65% 52% / 0.2);
+    border-color: hsl(40 90% 61% / 0.2);
   }
 }
