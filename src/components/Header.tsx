@@ -78,6 +78,25 @@ export function Header() {
               Dashboard
             </Link>
           )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 uppercase tracking-wide">
+                Explore
+                <ChevronDown className="h-3 w-3" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-44">
+              <DropdownMenuItem asChild>
+                <Link to="/events" className="uppercase tracking-wide text-xs">View Events</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/fighters" className="uppercase tracking-wide text-xs">View Fighters</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/gyms" className="uppercase tracking-wide text-xs">View Gyms</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
@@ -159,6 +178,9 @@ export function Header() {
                 Dashboard
               </Link>
             )}
+            <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Events</Link>
+            <Link to="/fighters" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Fighters</Link>
+            <Link to="/gyms" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Gyms</Link>
             <div className="flex gap-3 pt-2">
               {user ? (
                 <Button variant="ghost" size="sm" onClick={handleSignOut}>
