@@ -56,7 +56,7 @@ export function HowItWorksSection() {
               transition={{ duration: 0.5, delay: i * 0.15 }}
             >
               {/* Step number glow */}
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 pointer-events-none z-10">
                 <span className="font-heading text-5xl text-primary/10">{s.step}</span>
               </div>
 
