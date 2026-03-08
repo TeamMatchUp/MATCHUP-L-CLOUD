@@ -1,12 +1,17 @@
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { ArrowLeft, MapPin, ShieldCheck } from "lucide-react";
+import { ArrowLeft, MapPin, ShieldCheck, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useParams, Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { JoinGymButton } from "@/components/gym/JoinGymButton";
+import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -20,21 +25,47 @@ const STYLE_LABELS: Record<string, string> = {
   boxing: "Boxing", muay_thai: "Muay Thai", mma: "MMA", kickboxing: "Kickboxing", bjj: "BJJ",
 };
 
+const STATUS_BADGE: Record<string, { label: string; className: string }> = {
+  accepted: { label: "Active", className: "bg-success/20 text-success border-success/30" },
+  pending: { label: "Pending", className: "bg-warning/20 text-warning border-warning/30" },
+  declined: { label: "Declined", className: "bg-destructive/20 text-destructive border-destructive/30" },
+};
+
 export default function GymDetail() {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [showAddFighter, setShowAddFighter] = useState(false);
 
   const { data: gym, isLoading } = useQuery({
     queryKey: ["gym", id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("gyms")
-        .select("*, fighter_gym_links(fighter_id, is_primary, fighter_profiles(id, name, weight_class, style, record_wins, record_losses, record_draws, available))")
+        .select("*, fighter_gym_links(id, fighter_id, is_primary, status, fighter_profiles(id, name, weight_class, style, record_wins, record_losses, record_draws, available))")
         .eq("id", id!)
         .single();
       if (error) throw error;
       return data;
     },
     enabled: !!id,
+  });
+
+  const isOwner = !!user && !!gym && gym.coach_id === user.id;
+
+  const removeFighterMutation = useMutation({
+    mutationFn: async (linkId: string) => {
+      const { error } = await supabase.from("fighter_gym_links").delete().eq("id", linkId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["gym", id] });
+      toast({ title: "Fighter removed from gym" });
+    },
+    onError: (e: any) => {
+      toast({ title: "Failed to remove fighter", description: e.message, variant: "destructive" });
+    },
   });
 
   if (isLoading) {
@@ -67,7 +98,7 @@ export default function GymDetail() {
     );
   }
 
-  const fighters = gym.fighter_gym_links?.map((l: any) => l.fighter_profiles).filter(Boolean) ?? [];
+  const links = gym.fighter_gym_links ?? [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -101,7 +132,7 @@ export default function GymDetail() {
                     )}
                   </div>
                 </div>
-                <JoinGymButton gymId={gym.id} />
+                {!isOwner && <JoinGymButton gymId={gym.id} />}
               </div>
 
               {gym.description && (
@@ -111,44 +142,89 @@ export default function GymDetail() {
               )}
 
               {/* Fighter Roster */}
-              <h2 className="font-heading text-2xl text-foreground mb-4">
-                FIGHTER <span className="text-primary">ROSTER</span>
-              </h2>
-              {fighters.length > 0 ? (
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-heading text-2xl text-foreground">
+                  FIGHTER <span className="text-primary">ROSTER</span>
+                </h2>
+                {isOwner && (
+                  <Button size="sm" className="gap-1" onClick={() => setShowAddFighter(true)}>
+                    <Plus className="h-3 w-3" /> Add Fighter
+                  </Button>
+                )}
+              </div>
+
+              {links.length > 0 ? (
                 <div className="space-y-3">
-                  {fighters.map((fighter: any) => {
+                  {links.map((link: any) => {
+                    const fighter = link.fighter_profiles;
+                    if (!fighter) return null;
                     const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
+                    const statusInfo = STATUS_BADGE[link.status] ?? STATUS_BADGE.accepted;
                     return (
-                      <Link
-                        key={fighter.id}
-                        to={`/fighters/${fighter.id}`}
-                        className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:gold-border-subtle transition-all block"
+                      <div
+                        key={link.id}
+                        className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-all"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-heading text-sm text-muted-foreground">
+                        <Link
+                          to={`/fighters/${fighter.id}`}
+                          className="flex items-center gap-4 flex-1 min-w-0"
+                        >
+                          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-heading text-sm text-muted-foreground shrink-0">
                             {fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)}
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-foreground">{fighter.name}</p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">{fighter.name}</p>
                             <p className="text-xs text-muted-foreground">
                               {WEIGHT_CLASS_LABELS[fighter.weight_class]} · {fighter.style ? STYLE_LABELS[fighter.style] : "—"}
                             </p>
                           </div>
+                        </Link>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <Badge variant="outline" className={statusInfo.className}>
+                            {statusInfo.label}
+                          </Badge>
+                          <div className="text-right">
+                            <p className="text-primary font-bold text-sm">{record}</p>
+                            <span className={`text-xs ${fighter.available ? "text-success" : "text-muted-foreground"}`}>
+                              {fighter.available ? "Available" : "Booked"}
+                            </span>
+                          </div>
+                          {isOwner && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              onClick={() => removeFighterMutation.mutate(link.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
-                        <div className="text-right">
-                          <p className="text-primary font-bold text-sm">{record}</p>
-                          <span className={`text-xs ${fighter.available ? "text-success" : "text-muted-foreground"}`}>
-                            {fighter.available ? "Available" : "Booked"}
-                          </span>
-                        </div>
-                      </Link>
+                      </div>
                     );
                   })}
                 </div>
               ) : (
-                <p className="text-muted-foreground">No fighters registered at this gym yet.</p>
+                <div className="rounded-lg border border-border bg-card p-8 text-center">
+                  <p className="text-muted-foreground mb-4">No fighters registered at this gym yet.</p>
+                  {isOwner && (
+                    <Button onClick={() => setShowAddFighter(true)} className="gap-1">
+                      <Plus className="h-4 w-4" /> Add Your First Fighter
+                    </Button>
+                  )}
+                </div>
               )}
             </motion.div>
+
+            {isOwner && (
+              <AddFighterToGymDialog
+                open={showAddFighter}
+                onOpenChange={setShowAddFighter}
+                gymId={gym.id}
+                coachId={user!.id}
+                onSuccess={() => queryClient.invalidateQueries({ queryKey: ["gym", id] })}
+              />
+            )}
           </div>
         </section>
       </main>
