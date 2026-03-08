@@ -33,11 +33,7 @@ const ROLE_DASHBOARDS: Partial<Record<AppRole, string>> = {
   coach: "/gym-owner/dashboard",
 };
 
-const navLinks = [
-  { label: "Events", to: "/events" },
-  { label: "Fighters", to: "/fighters" },
-  { label: "Gyms", to: "/gyms" },
-];
+const navLinks: { label: string; to: string }[] = [];
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
