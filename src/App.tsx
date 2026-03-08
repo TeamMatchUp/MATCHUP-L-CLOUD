@@ -17,7 +17,7 @@ import ResetPassword from "./pages/ResetPassword";
 import OrganiserDashboard from "./pages/OrganiserDashboard";
 import CreateEvent from "./pages/organiser/CreateEvent";
 import EventManager from "./pages/organiser/EventManager";
-import CoachDashboard from "./pages/CoachDashboard";
+import GymOwnerDashboard from "./pages/GymOwnerDashboard";
 import FighterDashboard from "./pages/FighterDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -68,12 +68,22 @@ const App = () => (
               }
             />
 
-            {/* Protected: Coach */}
+            {/* Protected: Gym Owner (inherits organiser + fighter) */}
+            <Route
+              path="/gym-owner/dashboard"
+              element={
+                <ProtectedRoute requiredRole="gym_owner">
+                  <GymOwnerDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Backward compat: /coach/dashboard redirects to gym-owner */}
             <Route
               path="/coach/dashboard"
               element={
-                <ProtectedRoute requiredRole="coach">
-                  <CoachDashboard />
+                <ProtectedRoute requiredRole="gym_owner">
+                  <GymOwnerDashboard />
                 </ProtectedRoute>
               }
             />

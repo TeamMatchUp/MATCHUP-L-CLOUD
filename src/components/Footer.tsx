@@ -22,8 +22,8 @@ export function Footer() {
           <div>
             <h4 className="font-body text-sm font-semibold text-foreground mb-3">For Teams</h4>
             <div className="flex flex-col gap-2">
-              <Link to="/register" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Register Gym</Link>
-              <Link to="/register" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Create Event</Link>
+              <Link to="/auth" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Register Gym</Link>
+              <Link to="/auth" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Create Event</Link>
             </div>
           </div>
           <div>

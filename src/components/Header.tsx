@@ -15,16 +15,20 @@ import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
-const ROLE_LABELS: Record<AppRole, string> = {
+const ROLE_LABELS: Partial<Record<AppRole, string>> = {
   organiser: "Organiser",
-  coach: "Coach",
+  gym_owner: "Gym Owner",
   fighter: "Fighter",
+  admin: "Admin",
+  coach: "Coach",
 };
 
-const ROLE_DASHBOARDS: Record<AppRole, string> = {
+const ROLE_DASHBOARDS: Partial<Record<AppRole, string>> = {
   organiser: "/organiser/dashboard",
-  coach: "/coach/dashboard",
+  gym_owner: "/gym-owner/dashboard",
   fighter: "/fighter/dashboard",
+  admin: "/organiser/dashboard",
+  coach: "/gym-owner/dashboard",
 };
 
 const navLinks = [
@@ -45,8 +49,10 @@ export function Header() {
 
   const handleRoleSwitch = (role: AppRole) => {
     setActiveRole(role);
-    navigate(ROLE_DASHBOARDS[role]);
+    navigate(ROLE_DASHBOARDS[role] || "/");
   };
+
+  const dashboardPath = activeRole ? (ROLE_DASHBOARDS[activeRole] || "/") : "/";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -67,7 +73,7 @@ export function Header() {
           ))}
           {user && activeRole && (
             <Link
-              to={ROLE_DASHBOARDS[activeRole]}
+              to={dashboardPath}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               Dashboard
@@ -83,7 +89,7 @@ export function Header() {
                   <User className="h-4 w-4" />
                   {activeRole && (
                     <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-                      {ROLE_LABELS[activeRole]}
+                      {ROLE_LABELS[activeRole] || activeRole}
                     </span>
                   )}
                   <ChevronDown className="h-3 w-3" />
@@ -99,7 +105,7 @@ export function Header() {
                         onClick={() => handleRoleSwitch(role)}
                         className={role === activeRole ? "bg-primary/10 text-primary" : ""}
                       >
-                        {ROLE_LABELS[role]}
+                        {ROLE_LABELS[role] || role}
                       </DropdownMenuItem>
                     ))}
                     <DropdownMenuSeparator />
@@ -146,7 +152,7 @@ export function Header() {
             ))}
             {user && activeRole && (
               <Link
-                to={ROLE_DASHBOARDS[activeRole]}
+                to={dashboardPath}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground py-2"
                 onClick={() => setMobileOpen(false)}
               >

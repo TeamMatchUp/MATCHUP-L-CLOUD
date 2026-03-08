@@ -40,10 +40,10 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
         >
           <Button variant="hero" size="lg" asChild>
-            <Link to="/register">Create Event</Link>
+            <Link to="/auth">Create Event</Link>
           </Button>
           <Button variant="heroOutline" size="lg" asChild>
-            <Link to="/register">Register Gym</Link>
+            <Link to="/auth">Register Gym</Link>
           </Button>
         </motion.div>
       </div>
