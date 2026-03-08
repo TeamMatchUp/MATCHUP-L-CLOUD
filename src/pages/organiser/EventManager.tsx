@@ -399,43 +399,82 @@ export default function EventManager() {
           </div>
         </div>
 
-        {activeProposal && (
-          <div className="mt-3 pt-3 border-t border-border">
-            <div className="flex items-center gap-2 text-sm flex-wrap">
-              <span className="text-foreground font-medium">
-                {(activeProposal as any).fighter_a?.name || "Fighter A"}
-              </span>
-              <span className="text-primary font-heading">VS</span>
-              <span className="text-foreground font-medium">
-                {(activeProposal as any).fighter_b?.name || "Fighter B"}
-              </span>
-              <Badge variant="outline" className="ml-2 text-xs">
-                {activeProposal.status === "pending"
-                  ? `${acceptedCount}/4 confirmed`
-                  : activeProposal.status === "confirmed"
-                  ? "Confirmed"
-                  : formatEnum(activeProposal.status)}
-              </Badge>
-            </div>
-            {activeProposal.status === "pending" && proposalConfs.length > 0 && (
-              <div className="flex gap-1 mt-2 flex-wrap">
-                {proposalConfs.map((c) => (
-                  <Badge
-                    key={c.id}
-                    variant="outline"
-                    className={
-                      c.decision === "accepted"
-                        ? "text-xs bg-success/10 text-success border-success/30"
-                        : "text-xs bg-destructive/10 text-destructive border-destructive/30"
-                    }
-                  >
-                    {formatEnum(c.role)} {c.decision}
-                  </Badge>
-                ))}
+        {activeProposal && (() => {
+          const proposalConfs = getProposalConfirmations(activeProposal.id);
+          const requiredParties = getRequiredParties(activeProposal);
+          const confirmedUserIds = new Set(proposalConfs.filter((c) => c.decision === "accepted").map((c) => c.user_id));
+          const declinedUserIds = new Set(proposalConfs.filter((c) => c.decision === "declined").map((c) => c.user_id));
+          const pendingParties = Array.from(requiredParties.entries()).filter(([uid]) => !confirmedUserIds.has(uid) && !declinedUserIds.has(uid));
+          const respondedParties = proposalConfs.map((c) => ({
+            userId: c.user_id,
+            decision: c.decision,
+            label: requiredParties.get(c.user_id)?.label || profileMap.get(c.user_id) || "Unknown",
+          }));
+          const totalRequired = requiredParties.size;
+          const totalAccepted = confirmedUserIds.size;
+
+          return (
+            <div className="mt-3 pt-3 border-t border-border">
+              <div className="flex items-center gap-2 text-sm flex-wrap">
+                <span className="text-foreground font-medium">
+                  {(activeProposal as any).fighter_a?.name || "Fighter A"}
+                </span>
+                <span className="text-primary font-heading">VS</span>
+                <span className="text-foreground font-medium">
+                  {(activeProposal as any).fighter_b?.name || "Fighter B"}
+                </span>
+                <Badge variant="outline" className="ml-2 text-xs">
+                  {activeProposal.status === "pending"
+                    ? `${totalAccepted}/${totalRequired} confirmed`
+                    : activeProposal.status === "confirmed"
+                    ? "Confirmed"
+                    : formatEnum(activeProposal.status)}
+                </Badge>
               </div>
-            )}
-          </div>
-        )}
+
+              {activeProposal.status === "pending" && (
+                <div className="mt-3 space-y-1.5">
+                  {respondedParties.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1">Responded</p>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {respondedParties.map((rp) => (
+                          <Badge
+                            key={rp.userId}
+                            variant="outline"
+                            className={
+                              rp.decision === "accepted"
+                                ? "text-xs bg-success/10 text-success border-success/30"
+                                : "text-xs bg-destructive/10 text-destructive border-destructive/30"
+                            }
+                          >
+                            {rp.label} · {rp.decision}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {pendingParties.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1">Awaiting</p>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {pendingParties.map(([uid, info]) => (
+                          <Badge
+                            key={uid}
+                            variant="outline"
+                            className="text-xs bg-muted text-muted-foreground"
+                          >
+                            {info.label} · pending
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     );
   };
