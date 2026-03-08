@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Calendar, ArrowRight, Building2, Users, Inbox } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
-import { AddFighterDialog } from "@/components/coach/AddFighterDialog";
+import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
@@ -44,6 +44,7 @@ export default function GymOwnerDashboard() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [showAddFighter, setShowAddFighter] = useState(false);
+  const [addFighterGymId, setAddFighterGymId] = useState<string | undefined>();
   const [showCreateGym, setShowCreateGym] = useState(false);
   const [newGymName, setNewGymName] = useState("");
   const [newGymLocation, setNewGymLocation] = useState("");
@@ -351,21 +352,33 @@ export default function GymOwnerDashboard() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {myGyms.map((gym) => (
-                      <Link
+                      <div
                         key={gym.id}
-                        to={`/gyms/${gym.id}`}
                         className="rounded-lg border border-border bg-card p-5 hover:border-primary/30 transition-colors"
                       >
-                        <h3 className="font-heading text-lg text-foreground">
-                          {gym.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {gym.location} · {gym.country}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {gym.fighter_gym_links?.length ?? 0} fighters
-                        </p>
-                      </Link>
+                        <Link to={`/gyms/${gym.id}`}>
+                          <h3 className="font-heading text-lg text-foreground">
+                            {gym.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {gym.location} · {gym.country}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {gym.fighter_gym_links?.length ?? 0} fighters
+                          </p>
+                        </Link>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-3 gap-1 w-full"
+                          onClick={() => {
+                            setAddFighterGymId(gym.id);
+                            setShowAddFighter(true);
+                          }}
+                        >
+                          <Plus className="h-3 w-3" /> Add Fighter
+                        </Button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -377,13 +390,34 @@ export default function GymOwnerDashboard() {
                   <h2 className="font-heading text-2xl text-foreground">
                     FIGHTER <span className="text-primary">ROSTER</span>
                   </h2>
-                  <Button
-                    size="sm"
-                    className="gap-1"
-                    onClick={() => setShowAddFighter(true)}
-                  >
-                    <Plus className="h-3 w-3" /> Add Fighter
-                  </Button>
+                  {myGyms.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={addFighterGymId ?? primaryGym?.id ?? ""}
+                        onValueChange={(v) => setAddFighterGymId(v)}
+                      >
+                        <SelectTrigger className="w-[180px] h-8 text-xs">
+                          <SelectValue placeholder="Select gym" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {myGyms.map((g) => (
+                            <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => {
+                          if (!addFighterGymId && primaryGym) setAddFighterGymId(primaryGym.id);
+                          setShowAddFighter(true);
+                        }}
+                        disabled={!addFighterGymId && !primaryGym}
+                      >
+                        <Plus className="h-3 w-3" /> Add Fighter
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 {allFighters.length === 0 ? (
@@ -527,12 +561,12 @@ export default function GymOwnerDashboard() {
               </TabsContent>
             </Tabs>
 
-            {user && (
-              <AddFighterDialog
+            {user && (addFighterGymId || primaryGym?.id) && (
+              <AddFighterToGymDialog
                 open={showAddFighter}
                 onOpenChange={setShowAddFighter}
                 coachId={user.id}
-                gymId={primaryGym?.id}
+                gymId={addFighterGymId || primaryGym!.id}
                 onSuccess={handleRefresh}
               />
             )}
