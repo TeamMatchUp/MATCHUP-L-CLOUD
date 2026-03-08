@@ -1,11 +1,16 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Trash2 } from "lucide-react";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -58,6 +63,19 @@ export function EditFightSlotDialog({ open, onOpenChange, slot, onSuccess }: Edi
       toast({ title: "Error updating slot", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Fight slot updated" });
+      onSuccess();
+      onOpenChange(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setLoading(true);
+    const { error } = await supabase.from("fight_slots").delete().eq("id", slot.id);
+    setLoading(false);
+    if (error) {
+      toast({ title: "Error deleting slot", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Fight slot deleted" });
       onSuccess();
       onOpenChange(false);
     }
@@ -123,9 +141,36 @@ export function EditFightSlotDialog({ open, onOpenChange, slot, onSuccess }: Edi
             </div>
           </div>
 
-          <Button onClick={handleSave} disabled={loading} className="w-full">
-            {loading ? "Saving..." : "Save Changes"}
-          </Button>
+          <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" className="gap-1">
+                  <Trash2 className="h-3 w-3" /> Delete Fight
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this fight slot?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently remove fight #{slot.slot_number} from the card. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {loading ? "Deleting..." : "Delete"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <Button onClick={handleSave} disabled={loading}>
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>
