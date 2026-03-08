@@ -56,12 +56,13 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-nav/90 backdrop-blur-xl border-b border-border/50">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between relative">
         <Link to="/" className="flex items-center gap-2">
           <img src={logoFull} alt="MatchUp" className="h-10" />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-8">
+        {/* Center-aligned Explore + optional links */}
+        <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           {!isLanding && (
             <Link
               to="/"
@@ -85,7 +86,7 @@ export function Header() {
                 <ChevronDown className="h-3 w-3" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-44">
+            <DropdownMenuContent align="center" className="w-44">
               <DropdownMenuItem asChild>
                 <Link to="/events" className="uppercase tracking-wide text-xs">View Events</Link>
               </DropdownMenuItem>
