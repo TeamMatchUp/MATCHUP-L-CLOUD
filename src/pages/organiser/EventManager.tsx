@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FighterSearchPanel } from "@/components/organiser/FighterSearchPanel";
 import { ProposeMatchDialog } from "@/components/organiser/ProposeMatchDialog";
 import { MatchSuggestionsPanel } from "@/components/organiser/MatchSuggestionsPanel";
+import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
 import type { Database } from "@/integrations/supabase/types";
 
 type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
