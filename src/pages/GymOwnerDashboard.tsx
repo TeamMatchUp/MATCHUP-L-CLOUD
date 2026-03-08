@@ -18,10 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Calendar, ArrowRight, Building2, Users, Inbox, Pencil, FileText } from "lucide-react";
+import { Plus, Calendar, ArrowRight, Building2, Users, Inbox, Pencil, FileText, Trash2 } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
+import { EditFighterDialog } from "@/components/coach/EditFighterDialog";
+import { DeleteFighterDialog } from "@/components/coach/DeleteFighterDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
@@ -53,6 +55,8 @@ export default function GymOwnerDashboard() {
   const [newGymCountry, setNewGymCountry] = useState<CountryCode>("UK");
   const [newGymDescription, setNewGymDescription] = useState("");
   const [fightResultFighter, setFightResultFighter] = useState<{ id: string; name: string } | null>(null);
+  const [editFighter, setEditFighter] = useState<any>(null);
+  const [deleteFighter, setDeleteFighter] = useState<{ id: string; name: string } | null>(null);
 
   // Get owner's gyms
   const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
@@ -472,14 +476,32 @@ export default function GymOwnerDashboard() {
                             {f.available ? "Available" : "Unavailable"}
                           </Badge>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-3 gap-1 text-xs"
-                          onClick={() => setFightResultFighter({ id: f.id, name: f.name })}
-                        >
-                          <FileText className="h-3 w-3" /> Add Fight Result
-                        </Button>
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 text-xs flex-1"
+                            onClick={() => setEditFighter(f)}
+                          >
+                            <Pencil className="h-3 w-3" /> Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 text-xs flex-1"
+                            onClick={() => setFightResultFighter({ id: f.id, name: f.name })}
+                          >
+                            <FileText className="h-3 w-3" /> Add Result
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 text-xs text-destructive hover:text-destructive"
+                            onClick={() => setDeleteFighter({ id: f.id, name: f.name })}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -593,6 +615,26 @@ export default function GymOwnerDashboard() {
                 onOpenChange={(open) => { if (!open) setFightResultFighter(null); }}
                 fighter={fightResultFighter}
                 coachId={user.id}
+                onSuccess={handleRefresh}
+              />
+            )}
+
+            {editFighter && (
+              <EditFighterDialog
+                open={!!editFighter}
+                onOpenChange={(open) => { if (!open) setEditFighter(null); }}
+                fighter={editFighter}
+                onSuccess={handleRefresh}
+              />
+            )}
+
+            {deleteFighter && (
+              <DeleteFighterDialog
+                open={!!deleteFighter}
+                onOpenChange={(open) => { if (!open) setDeleteFighter(null); }}
+                fighter={deleteFighter}
+                gymId={primaryGym?.id}
+                removeFromGymOnly={false}
                 onSuccess={handleRefresh}
               />
             )}
