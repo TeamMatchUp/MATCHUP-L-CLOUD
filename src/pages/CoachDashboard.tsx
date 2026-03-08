@@ -6,9 +6,10 @@ import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterDialog } from "@/components/coach/AddFighterDialog";
+import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 
 function formatEnum(val: string) {
   return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
