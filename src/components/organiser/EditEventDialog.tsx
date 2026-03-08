@@ -34,7 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2 } from "lucide-react";
+import { Trash2, Globe, EyeOff } from "lucide-react";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
