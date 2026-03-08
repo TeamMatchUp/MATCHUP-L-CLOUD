@@ -476,14 +476,32 @@ export default function GymOwnerDashboard() {
                             {f.available ? "Available" : "Unavailable"}
                           </Badge>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-3 gap-1 text-xs"
-                          onClick={() => setFightResultFighter({ id: f.id, name: f.name })}
-                        >
-                          <FileText className="h-3 w-3" /> Add Fight Result
-                        </Button>
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 text-xs flex-1"
+                            onClick={() => setEditFighter(f)}
+                          >
+                            <Pencil className="h-3 w-3" /> Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 text-xs flex-1"
+                            onClick={() => setFightResultFighter({ id: f.id, name: f.name })}
+                          >
+                            <FileText className="h-3 w-3" /> Add Result
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 text-xs text-destructive hover:text-destructive"
+                            onClick={() => setDeleteFighter({ id: f.id, name: f.name })}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
