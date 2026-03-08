@@ -183,6 +183,34 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
               Show ticket sales on public event page
             </Label>
           </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-border p-3">
+            <div className="flex items-center gap-2">
+              {status === "published" ? (
+                <Globe className="h-4 w-4 text-green-500" />
+              ) : (
+                <EyeOff className="h-4 w-4 text-muted-foreground" />
+              )}
+              <div>
+                <p className="text-sm font-medium">
+                  {status === "published" ? "Published" : "Draft"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {status === "published"
+                    ? "Visible to the public"
+                    : "Only visible to you"}
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant={status === "published" ? "outline" : "default"}
+              size="sm"
+              onClick={() => setStatus(status === "published" ? "draft" : "published")}
+            >
+              {status === "published" ? "Unpublish" : "Publish"}
+            </Button>
+          </div>
         </div>
 
         <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">
