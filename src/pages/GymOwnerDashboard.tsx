@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Calendar, ArrowRight, Building2, Users, Inbox, Pencil } from "lucide-react";
+import { Plus, Calendar, ArrowRight, Building2, Users, Inbox, Pencil, FileText } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { useToast } from "@/hooks/use-toast";
