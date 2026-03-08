@@ -60,15 +60,12 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
-            >
-              {link.label}
-            </Link>
-          ))}
+          <Link
+            to="/"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+          >
+            Home
+          </Link>
           {user && activeRole && (
             <Link
               to={dashboardPath}
@@ -140,16 +137,13 @@ export function Header() {
       {mobileOpen && (
         <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl">
           <div className="container py-4 flex flex-col gap-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2"
-                onClick={() => setMobileOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+            <Link
+              to="/"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground py-2"
+              onClick={() => setMobileOpen(false)}
+            >
+              Home
+            </Link>
             {user && activeRole && (
               <Link
                 to={dashboardPath}
