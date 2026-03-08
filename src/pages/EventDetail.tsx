@@ -104,8 +104,28 @@ export default function EventDetail() {
               </div>
 
               {event.description && (
-                <p className="text-muted-foreground max-w-2xl mb-12">{event.description}</p>
+                <p className="text-muted-foreground max-w-2xl mb-8">{event.description}</p>
               )}
+
+              {/* Location Map */}
+              <div className="rounded-lg border border-border overflow-hidden mb-12">
+                <iframe
+                  title="Event Location"
+                  width="100%"
+                  height="300"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                    [event.venue_name, event.location, event.city, event.country].filter(Boolean).join(", ")
+                  )}&output=embed&z=14`}
+                />
+                <div className="bg-card px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
+                </div>
+              </div>
             </motion.div>
 
             {/* Stats */}
