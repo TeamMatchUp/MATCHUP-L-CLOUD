@@ -16,9 +16,7 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
   cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
 };
 
-const STYLE_LABELS: Record<string, string> = {
-  boxing: "Boxing", muay_thai: "Muay Thai", mma: "MMA", kickboxing: "Kickboxing", bjj: "BJJ",
-};
+import { STYLE_LABELS } from "@/lib/format";
 
 export default function FighterDetail() {
   const { id } = useParams<{ id: string }>();

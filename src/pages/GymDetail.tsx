@@ -23,9 +23,7 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
   cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
 };
 
-const STYLE_LABELS: Record<string, string> = {
-  boxing: "Boxing", muay_thai: "Muay Thai", mma: "MMA", kickboxing: "Kickboxing", bjj: "BJJ",
-};
+import { STYLE_LABELS } from "@/lib/format";
 
 const STATUS_BADGE: Record<string, { label: string; className: string }> = {
   accepted: { label: "Active", className: "bg-success/20 text-success border-success/30" },

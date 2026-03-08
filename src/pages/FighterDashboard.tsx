@@ -8,9 +8,7 @@ import { CreateFighterProfileForm } from "@/components/fighter/CreateFighterProf
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
 
-function formatEnum(val: string) {
-  return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { formatEnum } from "@/lib/format";
 
 export default function FighterDashboard() {
   const { user } = useAuth();

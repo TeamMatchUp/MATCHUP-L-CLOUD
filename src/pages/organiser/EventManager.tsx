@@ -21,9 +21,7 @@ import type { Database } from "@/integrations/supabase/types";
 type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
 type FightSlot = Database["public"]["Tables"]["fight_slots"]["Row"];
 
-function formatEnum(val: string) {
-  return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { formatEnum } from "@/lib/format";
 
 const STATUS_COLORS: Record<string, string> = {
   open: "bg-success/20 text-success border-success/30",

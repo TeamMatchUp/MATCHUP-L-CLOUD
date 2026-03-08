@@ -31,9 +31,7 @@ import type { Database } from "@/integrations/supabase/types";
 type CountryCode = Database["public"]["Enums"]["country_code"];
 const COUNTRIES = Constants.public.Enums.country_code;
 
-function formatEnum(val: string) {
-  return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { formatEnum } from "@/lib/format";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
