@@ -47,6 +47,10 @@ const App = () => (
             <Route path="/gyms/:id" element={<GymDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/record-accuracy" element={<RecordAccuracyPolicy />} />
+            <Route path="/contact" element={<Contact />} />
 
             {/* Protected: Organiser */}
             <Route
