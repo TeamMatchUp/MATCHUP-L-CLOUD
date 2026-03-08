@@ -618,6 +618,26 @@ export default function GymOwnerDashboard() {
                 onSuccess={handleRefresh}
               />
             )}
+
+            {editFighter && (
+              <EditFighterDialog
+                open={!!editFighter}
+                onOpenChange={(open) => { if (!open) setEditFighter(null); }}
+                fighter={editFighter}
+                onSuccess={handleRefresh}
+              />
+            )}
+
+            {deleteFighter && (
+              <DeleteFighterDialog
+                open={!!deleteFighter}
+                onOpenChange={(open) => { if (!open) setDeleteFighter(null); }}
+                fighter={deleteFighter}
+                gymId={primaryGym?.id}
+                removeFromGymOnly={false}
+                onSuccess={handleRefresh}
+              />
+            )}
           </div>
         </section>
       </main>
