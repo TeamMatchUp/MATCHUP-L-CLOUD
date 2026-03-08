@@ -84,6 +84,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
           description: description || null,
           venue_name: venueName || null,
           city: city || null,
+          ticket_enabled: ticketEnabled,
         })
         .eq("id", event.id);
       if (error) throw error;
