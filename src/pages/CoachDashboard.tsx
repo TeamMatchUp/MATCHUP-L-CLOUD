@@ -4,15 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
 import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterDialog } from "@/components/coach/AddFighterDialog";
-import { FighterRosterPanel } from "@/components/coach/FighterRosterPanel";
 import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
-
-function formatEnum(val: string) {
-  return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-}
+import { FighterRosterPanel } from "@/components/coach/FighterRosterPanel";
 
 export default function CoachDashboard() {
   const { user } = useAuth();
@@ -20,19 +15,21 @@ export default function CoachDashboard() {
   const [showAddFighter, setShowAddFighter] = useState(false);
   const [fightResultFighter, setFightResultFighter] = useState<{ id: string; name: string } | null>(null);
 
-  // Get coach's gym
-  const { data: myGym } = useQuery({
-    queryKey: ["coach-gym", user?.id],
+  // Get coach's gyms
+  const { data: myGyms = [] } = useQuery({
+    queryKey: ["coach-gyms", user?.id],
     queryFn: async () => {
       const { data } = await supabase
         .from("gyms")
         .select("id, name")
         .eq("coach_id", user!.id)
-        .maybeSingle();
-      return data;
+        .order("name");
+      return data || [];
     },
     enabled: !!user,
   });
+
+  const myGym = myGyms.length > 0 ? myGyms[0] : null;
 
   // Get fighters created by this coach
   const { data: myFighters = [] } = useQuery({
@@ -49,22 +46,26 @@ export default function CoachDashboard() {
     enabled: !!user,
   });
 
+  // Get fighter-gym links for coach's gyms
+  const { data: fighterGymLinks = [] } = useQuery({
+    queryKey: ["coach-fighter-gym-links", myGyms.map((g) => g.id)],
+    queryFn: async () => {
+      const gymIds = myGyms.map((g) => g.id);
+      const { data } = await supabase
+        .from("fighter_gym_links")
+        .select("fighter_id, gym_id")
+        .in("gym_id", gymIds);
+      return data || [];
+    },
+    enabled: myGyms.length > 0,
+  });
+
   // Get fighters linked via gyms
   const { data: gymFighters = [] } = useQuery({
-    queryKey: ["coach-gym-fighters", user?.id],
+    queryKey: ["coach-gym-fighters", fighterGymLinks.map((l) => l.fighter_id)],
     queryFn: async () => {
-      const { data: gyms } = await supabase
-        .from("gyms")
-        .select("id")
-        .eq("coach_id", user!.id);
-      if (!gyms || gyms.length === 0) return [];
-      const gymIds = gyms.map((g) => g.id);
-      const { data: links } = await supabase
-        .from("fighter_gym_links")
-        .select("fighter_id")
-        .in("gym_id", gymIds);
-      if (!links || links.length === 0) return [];
-      const fighterIds = links.map((l) => l.fighter_id);
+      if (fighterGymLinks.length === 0) return [];
+      const fighterIds = [...new Set(fighterGymLinks.map((l) => l.fighter_id))];
       const { data: fighters, error } = await supabase
         .from("fighter_profiles")
         .select("*")
@@ -72,7 +73,7 @@ export default function CoachDashboard() {
       if (error) throw error;
       return fighters || [];
     },
-    enabled: !!user,
+    enabled: fighterGymLinks.length > 0,
   });
 
   // Combine unique fighters
@@ -122,6 +123,8 @@ export default function CoachDashboard() {
     queryClient.invalidateQueries({ queryKey: ["coach-proposals"] });
     queryClient.invalidateQueries({ queryKey: ["coach-fighters"] });
     queryClient.invalidateQueries({ queryKey: ["coach-gym-fighters"] });
+    queryClient.invalidateQueries({ queryKey: ["coach-fighter-gym-links"] });
+    queryClient.invalidateQueries({ queryKey: ["coach-gyms"] });
   };
 
   return (
@@ -148,54 +151,14 @@ export default function CoachDashboard() {
               ))}
             </div>
 
-            {/* Fighter Roster */}
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading text-2xl text-foreground">
-                FIGHTER <span className="text-primary">ROSTER</span>
-              </h2>
-              <Button size="sm" className="gap-1" onClick={() => setShowAddFighter(true)}>
-                <Plus className="h-3 w-3" /> Add Fighter
-              </Button>
-            </div>
-            {allFighters.length === 0 ? (
-              <div className="rounded-lg border border-border bg-card p-8 text-center mb-8">
-                <p className="text-muted-foreground mb-4">No fighters linked to your account yet.</p>
-                <Button onClick={() => setShowAddFighter(true)} className="gap-1">
-                  <Plus className="h-4 w-4" /> Add Your First Fighter
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-10">
-                {allFighters.map((f) => (
-                  <div key={f.id} className="rounded-lg border border-border bg-card p-4">
-                    <p className="font-medium text-foreground">{f.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {f.record_wins}W-{f.record_losses}L-{f.record_draws}D · {formatEnum(f.weight_class)}
-                    </p>
-                    <div className="flex gap-1 mt-2 flex-wrap">
-                      {f.style && (
-                        <Badge variant="outline" className="text-xs">{formatEnum(f.style)}</Badge>
-                      )}
-                      <Badge variant="outline" className="text-xs">{f.country}</Badge>
-                      <Badge
-                        variant="outline"
-                        className={`text-xs ${f.available ? "text-success border-success/30" : "text-destructive border-destructive/30"}`}
-                      >
-                        {f.available ? "Available" : "Unavailable"}
-                      </Badge>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="mt-3 gap-1 text-xs"
-                      onClick={() => setFightResultFighter({ id: f.id, name: f.name })}
-                    >
-                      <FileText className="h-3 w-3" /> Add Fight Result
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Fighter Roster with search & gym filter */}
+            <FighterRosterPanel
+              fighters={allFighters}
+              gyms={myGyms}
+              fighterGymLinks={fighterGymLinks}
+              onAddFighter={() => setShowAddFighter(true)}
+              onAddFightResult={(fighter) => setFightResultFighter(fighter)}
+            />
 
             {/* Incoming Proposals */}
             <h2 className="font-heading text-2xl text-foreground mb-4">
