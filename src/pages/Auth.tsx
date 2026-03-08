@@ -100,6 +100,15 @@ export default function Auth() {
       if (roleError) {
         console.error("Failed to insert roles:", roleError);
       }
+
+      // If session exists (auto-confirm enabled), redirect to dashboard
+      if (data.session) {
+        const primaryRole = selectedRoles[0];
+        const dashboardPath = primaryRole ? ROLE_DASHBOARDS[primaryRole] : "/";
+        setLoading(false);
+        navigate(dashboardPath, { replace: true });
+        return;
+      }
     }
 
     setLoading(false);
