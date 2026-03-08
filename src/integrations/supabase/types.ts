@@ -54,6 +54,7 @@ export type Database = {
       }
       events: {
         Row: {
+          city: string | null
           country: Database["public"]["Enums"]["country_code"]
           created_at: string
           date: string
@@ -62,11 +63,15 @@ export type Database = {
           location: string
           organiser_id: string | null
           promotion_name: string | null
+          promotion_status: string | null
           status: Database["public"]["Enums"]["event_status"]
+          ticket_enabled: boolean
           title: string
           updated_at: string
+          venue_name: string | null
         }
         Insert: {
+          city?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           date: string
@@ -75,11 +80,15 @@ export type Database = {
           location: string
           organiser_id?: string | null
           promotion_name?: string | null
+          promotion_status?: string | null
           status?: Database["public"]["Enums"]["event_status"]
+          ticket_enabled?: boolean
           title: string
           updated_at?: string
+          venue_name?: string | null
         }
         Update: {
+          city?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           date?: string
@@ -88,9 +97,12 @@ export type Database = {
           location?: string
           organiser_id?: string | null
           promotion_name?: string | null
+          promotion_status?: string | null
           status?: Database["public"]["Enums"]["event_status"]
+          ticket_enabled?: boolean
           title?: string
           updated_at?: string
+          venue_name?: string | null
         }
         Relationships: []
       }
@@ -210,6 +222,8 @@ export type Database = {
           gym_id: string
           id: string
           is_primary: boolean
+          role: string | null
+          status: string
         }
         Insert: {
           created_at?: string
@@ -217,6 +231,8 @@ export type Database = {
           gym_id: string
           id?: string
           is_primary?: boolean
+          role?: string | null
+          status?: string
         }
         Update: {
           created_at?: string
@@ -224,6 +240,8 @@ export type Database = {
           gym_id?: string
           id?: string
           is_primary?: boolean
+          role?: string | null
+          status?: string
         }
         Relationships: [
           {
@@ -253,6 +271,7 @@ export type Database = {
           height: string | null
           id: string
           name: string
+          profile_image: string | null
           reach: string | null
           record_draws: number
           record_losses: number
@@ -260,6 +279,8 @@ export type Database = {
           style: Database["public"]["Enums"]["fighting_style"] | null
           updated_at: string
           user_id: string | null
+          verified: boolean
+          visibility: string
           weight_class: Database["public"]["Enums"]["weight_class"]
         }
         Insert: {
@@ -272,6 +293,7 @@ export type Database = {
           height?: string | null
           id?: string
           name: string
+          profile_image?: string | null
           reach?: string | null
           record_draws?: number
           record_losses?: number
@@ -279,6 +301,8 @@ export type Database = {
           style?: Database["public"]["Enums"]["fighting_style"] | null
           updated_at?: string
           user_id?: string | null
+          verified?: boolean
+          visibility?: string
           weight_class: Database["public"]["Enums"]["weight_class"]
         }
         Update: {
@@ -291,6 +315,7 @@ export type Database = {
           height?: string | null
           id?: string
           name?: string
+          profile_image?: string | null
           reach?: string | null
           record_draws?: number
           record_losses?: number
@@ -298,6 +323,8 @@ export type Database = {
           style?: Database["public"]["Enums"]["fighting_style"] | null
           updated_at?: string
           user_id?: string | null
+          verified?: boolean
+          visibility?: string
           weight_class?: Database["public"]["Enums"]["weight_class"]
         }
         Relationships: []
@@ -355,7 +382,10 @@ export type Database = {
       }
       gyms: {
         Row: {
+          address: string | null
+          city: string | null
           coach_id: string | null
+          contact_email: string | null
           country: Database["public"]["Enums"]["country_code"]
           created_at: string
           description: string | null
@@ -363,10 +393,16 @@ export type Database = {
           location: string | null
           logo_url: string | null
           name: string
+          phone: string | null
           updated_at: string
+          verified: boolean
+          website: string | null
         }
         Insert: {
+          address?: string | null
+          city?: string | null
           coach_id?: string | null
+          contact_email?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           description?: string | null
@@ -374,10 +410,16 @@ export type Database = {
           location?: string | null
           logo_url?: string | null
           name: string
+          phone?: string | null
           updated_at?: string
+          verified?: boolean
+          website?: string | null
         }
         Update: {
+          address?: string | null
+          city?: string | null
           coach_id?: string | null
+          contact_email?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           description?: string | null
@@ -385,7 +427,10 @@ export type Database = {
           location?: string | null
           logo_url?: string | null
           name?: string
+          phone?: string | null
           updated_at?: string
+          verified?: boolean
+          website?: string | null
         }
         Relationships: []
       }
@@ -396,6 +441,7 @@ export type Database = {
           fighter_a_id: string
           fighter_b_id: string
           id: string
+          message: string | null
           proposed_by: string
           status: Database["public"]["Enums"]["match_status"]
           updated_at: string
@@ -406,6 +452,7 @@ export type Database = {
           fighter_a_id: string
           fighter_b_id: string
           id?: string
+          message?: string | null
           proposed_by: string
           status?: Database["public"]["Enums"]["match_status"]
           updated_at?: string
@@ -416,6 +463,7 @@ export type Database = {
           fighter_a_id?: string
           fighter_b_id?: string
           id?: string
+          message?: string | null
           proposed_by?: string
           status?: Database["public"]["Enums"]["match_status"]
           updated_at?: string
@@ -480,6 +528,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          country: string | null
           created_at: string
           full_name: string | null
           id: string
@@ -487,6 +536,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
           full_name?: string | null
           id: string
@@ -494,6 +544,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          country?: string | null
           created_at?: string
           full_name?: string | null
           id?: string

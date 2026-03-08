@@ -1,11 +1,12 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { ArrowLeft, MapPin, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useParams, Link } from "react-router-dom";
+import { JoinGymButton } from "@/components/gym/JoinGymButton";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -83,18 +84,24 @@ export default function GymDetail() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="flex items-start gap-6 mb-8">
-                <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center font-heading text-xl text-muted-foreground shrink-0">
-                  {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+              <div className="flex items-start justify-between gap-6 mb-8">
+                <div className="flex items-start gap-6">
+                  <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center font-heading text-xl text-muted-foreground shrink-0">
+                    {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h1 className="font-heading text-3xl md:text-4xl text-foreground">{gym.name}</h1>
+                      {gym.verified && <ShieldCheck className="h-5 w-5 text-primary" />}
+                    </div>
+                    {gym.location && (
+                      <p className="text-muted-foreground flex items-center gap-2 mt-2">
+                        <MapPin className="h-4 w-4" />{gym.location}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <h1 className="font-heading text-3xl md:text-4xl text-foreground">{gym.name}</h1>
-                  {gym.location && (
-                    <p className="text-muted-foreground flex items-center gap-2 mt-2">
-                      <MapPin className="h-4 w-4" />{gym.location}
-                    </p>
-                  )}
-                </div>
+                <JoinGymButton gymId={gym.id} />
               </div>
 
               {gym.description && (

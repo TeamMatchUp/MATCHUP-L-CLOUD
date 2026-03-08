@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { MatchProposalCard } from "@/components/fighter/MatchProposalCard";
+import { CreateFighterProfileForm } from "@/components/fighter/CreateFighterProfileForm";
 
 function formatEnum(val: string) {
   return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -13,7 +14,6 @@ export default function FighterDashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Get fighter profile for current user
   const { data: fighterProfile } = useQuery({
     queryKey: ["fighter-profile", user?.id],
     queryFn: async () => {
@@ -28,26 +28,22 @@ export default function FighterDashboard() {
     enabled: !!user,
   });
 
-  // Get proposals involving this fighter
   const { data: proposals = [] } = useQuery({
     queryKey: ["fighter-proposals", fighterProfile?.id],
     queryFn: async () => {
       if (!fighterProfile) return [];
-
       const { data: pA } = await supabase
         .from("match_proposals")
         .select("*, fighter_a:fighter_profiles!match_proposals_fighter_a_id_fkey(*), fighter_b:fighter_profiles!match_proposals_fighter_b_id_fkey(*), fight_slot:fight_slots!match_proposals_fight_slot_id_fkey(*, events(*))")
         .eq("fighter_a_id", fighterProfile.id)
         .neq("status", "declined")
         .neq("status", "withdrawn");
-
       const { data: pB } = await supabase
         .from("match_proposals")
         .select("*, fighter_a:fighter_profiles!match_proposals_fighter_a_id_fkey(*), fighter_b:fighter_profiles!match_proposals_fighter_b_id_fkey(*), fight_slot:fight_slots!match_proposals_fight_slot_id_fkey(*, events(*))")
         .eq("fighter_b_id", fighterProfile.id)
         .neq("status", "declined")
         .neq("status", "withdrawn");
-
       const map = new Map<string, any>();
       [...(pA || []), ...(pB || [])].forEach((p) => map.set(p.id, p));
       return Array.from(map.values());
@@ -71,6 +67,7 @@ export default function FighterDashboard() {
 
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ["fighter-proposals"] });
+    queryClient.invalidateQueries({ queryKey: ["fighter-profile"] });
   };
 
   return (
@@ -87,11 +84,11 @@ export default function FighterDashboard() {
             </p>
 
             {!fighterProfile ? (
-              <div className="rounded-lg border border-border bg-card p-8 text-center">
-                <p className="text-muted-foreground">
-                  No fighter profile is linked to your account yet. Ask your coach to create one for you.
-                </p>
-              </div>
+              <CreateFighterProfileForm
+                userId={user!.id}
+                userEmail={user!.email ?? ""}
+                onSuccess={handleRefresh}
+              />
             ) : (
               <>
                 {/* Profile Summary */}
@@ -119,7 +116,6 @@ export default function FighterDashboard() {
                   ))}
                 </div>
 
-                {/* Pending Proposals */}
                 {pendingProposals.length > 0 && (
                   <>
                     <h2 className="font-heading text-2xl text-foreground mb-4">
@@ -139,7 +135,6 @@ export default function FighterDashboard() {
                   </>
                 )}
 
-                {/* Confirmed Fights */}
                 {confirmedFights.length > 0 && (
                   <>
                     <h2 className="font-heading text-2xl text-foreground mb-4">
