@@ -352,21 +352,33 @@ export default function GymOwnerDashboard() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {myGyms.map((gym) => (
-                      <Link
+                      <div
                         key={gym.id}
-                        to={`/gyms/${gym.id}`}
                         className="rounded-lg border border-border bg-card p-5 hover:border-primary/30 transition-colors"
                       >
-                        <h3 className="font-heading text-lg text-foreground">
-                          {gym.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {gym.location} · {gym.country}
-                        </p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {gym.fighter_gym_links?.length ?? 0} fighters
-                        </p>
-                      </Link>
+                        <Link to={`/gyms/${gym.id}`}>
+                          <h3 className="font-heading text-lg text-foreground">
+                            {gym.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {gym.location} · {gym.country}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {gym.fighter_gym_links?.length ?? 0} fighters
+                          </p>
+                        </Link>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-3 gap-1 w-full"
+                          onClick={() => {
+                            setAddFighterGymId(gym.id);
+                            setShowAddFighter(true);
+                          }}
+                        >
+                          <Plus className="h-3 w-3" /> Add Fighter
+                        </Button>
+                      </div>
                     ))}
                   </div>
                 )}
