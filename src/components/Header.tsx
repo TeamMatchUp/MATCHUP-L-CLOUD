@@ -53,7 +53,7 @@ export function Header() {
   const dashboardPath = activeRole ? (ROLE_DASHBOARDS[activeRole] || "/") : "/";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-nav/90 backdrop-blur-xl border-b border-border">
       <div className="container flex h-20 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
           <img src={logo} alt="MatchUp" className="h-12" />
