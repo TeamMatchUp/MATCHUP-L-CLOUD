@@ -134,9 +134,42 @@ const Events = () => {
                   );
                 })}
                 {events.length < 5 && <BannerAd />}
+                {/* Register CTA */}
+                <motion.div
+                  className="flex justify-center py-12"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Link
+                    to="/auth"
+                    className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
+                  >
+                    <img src={iconImg} alt="" className="h-5 w-5" />
+                    register your event
+                  </Link>
+                </motion.div>
               </div>
             ) : (
               <p className="text-muted-foreground text-center py-12">No events found.</p>
+            )}
+            {/* CTA when no events */}
+            {(!events || events.length === 0) && !isLoading && (
+              <motion.div
+                className="flex justify-center py-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <Link
+                  to="/auth"
+                  className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
+                >
+                  <img src={iconImg} alt="" className="h-5 w-5" />
+                  register your event
+                </Link>
+              </motion.div>
             )}
           </div>
         </section>
