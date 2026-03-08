@@ -500,6 +500,17 @@ export default function EventManager() {
                 }}
               />
             )}
+
+            {/* Add Fight Slot Dialog */}
+            <AddFightSlotDialog
+              open={showAddSlot}
+              onOpenChange={setShowAddSlot}
+              eventId={id!}
+              nextSlotNumber={slots.length + 1}
+              onSuccess={() => {
+                queryClient.invalidateQueries({ queryKey: ["event-slots", id] });
+              }}
+            />
           </div>
         </section>
       </main>
