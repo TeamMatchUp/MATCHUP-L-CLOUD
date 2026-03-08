@@ -6,9 +6,10 @@ import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, FileText } from "lucide-react";
+import { Plus } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterDialog } from "@/components/coach/AddFighterDialog";
+import { FighterRosterPanel } from "@/components/coach/FighterRosterPanel";
 import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 
 function formatEnum(val: string) {
