@@ -39,6 +39,8 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, roles, activeRole, setActiveRole, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isLanding = location.pathname === "/";
 
   const handleSignOut = async () => {
     await signOut();
