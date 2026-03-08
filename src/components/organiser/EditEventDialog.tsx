@@ -168,6 +168,17 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
             <Label>Description</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
           </div>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="ticket_enabled"
+              checked={ticketEnabled}
+              onCheckedChange={(v) => setTicketEnabled(!!v)}
+            />
+            <Label htmlFor="ticket_enabled" className="cursor-pointer">
+              Show ticket sales on public event page
+            </Label>
+          </div>
         </div>
 
         <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">

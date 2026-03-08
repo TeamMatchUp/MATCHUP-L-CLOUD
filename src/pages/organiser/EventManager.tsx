@@ -431,6 +431,11 @@ export default function EventManager() {
               )}
             </div>
 
+            {/* Tickets Panel */}
+            <div className="mb-10">
+              <ManageTicketsPanel eventId={id!} />
+            </div>
+
             {/* AI Suggestions Panel */}
             {suggestSlot && (
               <div className="mb-8">
