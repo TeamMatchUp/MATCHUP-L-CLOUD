@@ -20,6 +20,7 @@ import EventManager from "./pages/organiser/EventManager";
 import GymOwnerDashboard from "./pages/GymOwnerDashboard";
 import RegisterGym from "./pages/RegisterGym";
 import FighterDashboard from "./pages/FighterDashboard";
+import AccountSettings from "./pages/AccountSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -105,6 +106,16 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="fighter">
                   <FighterDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected: Account Settings */}
+            <Route
+              path="/account/settings"
+              element={
+                <ProtectedRoute>
+                  <AccountSettings />
                 </ProtectedRoute>
               }
             />
