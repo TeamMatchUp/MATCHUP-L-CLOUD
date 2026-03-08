@@ -107,6 +107,116 @@ export default function EventManager() {
     enabled: activeProposalIds.length > 0,
   });
 
+  // Collect all user IDs we need to resolve names for (confirmation users + coaches + fighters)
+  const allRelevantUserIds = (() => {
+    const ids = new Set<string>();
+    confirmations.forEach((c) => ids.add(c.user_id));
+    proposals.forEach((p: any) => {
+      if (p.fighter_a?.user_id) ids.add(p.fighter_a.user_id);
+      if (p.fighter_b?.user_id) ids.add(p.fighter_b.user_id);
+      if (p.fighter_a?.created_by_coach_id) ids.add(p.fighter_a.created_by_coach_id);
+      if (p.fighter_b?.created_by_coach_id) ids.add(p.fighter_b.created_by_coach_id);
+    });
+    return Array.from(ids);
+  })();
+
+  // Fetch gym coach IDs for fighters in proposals
+  const proposalFighterIds = proposals.flatMap((p) => [p.fighter_a_id, p.fighter_b_id]);
+
+  const { data: fighterGymLinks = [] } = useQuery({
+    queryKey: ["event-fighter-gym-links", proposalFighterIds],
+    queryFn: async () => {
+      if (proposalFighterIds.length === 0) return [];
+      const { data } = await supabase
+        .from("fighter_gym_links")
+        .select("fighter_id, gym_id")
+        .in("fighter_id", proposalFighterIds)
+        .eq("status", "accepted");
+      return data ?? [];
+    },
+    enabled: proposalFighterIds.length > 0,
+  });
+
+  const gymIdsForProposals = fighterGymLinks.map((gl) => gl.gym_id);
+
+  const { data: gymsForProposals = [] } = useQuery({
+    queryKey: ["event-gyms-for-proposals", gymIdsForProposals],
+    queryFn: async () => {
+      if (gymIdsForProposals.length === 0) return [];
+      const { data } = await supabase
+        .from("gyms")
+        .select("id, coach_id")
+        .in("id", gymIdsForProposals);
+      return data ?? [];
+    },
+    enabled: gymIdsForProposals.length > 0,
+  });
+
+  // Build a combined set of all user IDs (including gym coaches)
+  const allUserIds = (() => {
+    const ids = new Set(allRelevantUserIds);
+    gymsForProposals.forEach((g) => { if (g.coach_id) ids.add(g.coach_id); });
+    return Array.from(ids);
+  })();
+
+  const { data: userProfiles = [] } = useQuery({
+    queryKey: ["event-user-profiles", allUserIds],
+    queryFn: async () => {
+      if (allUserIds.length === 0) return [];
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", allUserIds);
+      return data ?? [];
+    },
+    enabled: allUserIds.length > 0,
+  });
+
+  const profileMap = new Map(userProfiles.map((p) => [p.id, p.full_name || "Unknown"]));
+
+  // Compute required parties for a proposal (excluding organiser)
+  const getRequiredParties = (proposal: any) => {
+    const parties = new Map<string, { label: string }>(); // userId -> label
+    const fighterA = proposal.fighter_a;
+    const fighterB = proposal.fighter_b;
+
+    // Coaches via created_by_coach_id
+    if (fighterA?.created_by_coach_id) {
+      parties.set(fighterA.created_by_coach_id, { label: `Coach (${fighterA.name})` });
+    }
+    if (fighterB?.created_by_coach_id) {
+      parties.set(fighterB.created_by_coach_id, { label: `Coach (${fighterB.name})` });
+    }
+
+    // Coaches via gym links
+    const aGymLinks = fighterGymLinks.filter((gl) => gl.fighter_id === proposal.fighter_a_id);
+    const bGymLinks = fighterGymLinks.filter((gl) => gl.fighter_id === proposal.fighter_b_id);
+    aGymLinks.forEach((gl) => {
+      const gym = gymsForProposals.find((g) => g.id === gl.gym_id);
+      if (gym?.coach_id && !parties.has(gym.coach_id)) {
+        parties.set(gym.coach_id, { label: `Coach (${fighterA?.name})` });
+      }
+    });
+    bGymLinks.forEach((gl) => {
+      const gym = gymsForProposals.find((g) => g.id === gl.gym_id);
+      if (gym?.coach_id && !parties.has(gym.coach_id)) {
+        parties.set(gym.coach_id, { label: `Coach (${fighterB?.name})` });
+      }
+    });
+
+    // Registered fighters only
+    if (fighterA?.user_id) {
+      parties.set(fighterA.user_id, { label: fighterA.name });
+    }
+    if (fighterB?.user_id) {
+      parties.set(fighterB.user_id, { label: fighterB.name });
+    }
+
+    // Remove organiser
+    parties.delete(proposal.proposed_by);
+    return parties;
+  };
+
   const publishMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase
@@ -204,8 +314,6 @@ export default function EventManager() {
     const activeProposal = getActiveProposal(slot.id);
     const declinedCount = getDeclinedProposals(slot.id).length;
     const slotExtra = slot as any;
-    const proposalConfs = activeProposal ? getProposalConfirmations(activeProposal.id) : [];
-    const acceptedCount = proposalConfs.filter((c) => c.decision === "accepted").length;
 
     return (
       <div key={slot.id} className="rounded-lg border border-border bg-card p-4">
@@ -289,43 +397,82 @@ export default function EventManager() {
           </div>
         </div>
 
-        {activeProposal && (
-          <div className="mt-3 pt-3 border-t border-border">
-            <div className="flex items-center gap-2 text-sm flex-wrap">
-              <span className="text-foreground font-medium">
-                {(activeProposal as any).fighter_a?.name || "Fighter A"}
-              </span>
-              <span className="text-primary font-heading">VS</span>
-              <span className="text-foreground font-medium">
-                {(activeProposal as any).fighter_b?.name || "Fighter B"}
-              </span>
-              <Badge variant="outline" className="ml-2 text-xs">
-                {activeProposal.status === "pending"
-                  ? `${acceptedCount}/4 confirmed`
-                  : activeProposal.status === "confirmed"
-                  ? "Confirmed"
-                  : formatEnum(activeProposal.status)}
-              </Badge>
-            </div>
-            {activeProposal.status === "pending" && proposalConfs.length > 0 && (
-              <div className="flex gap-1 mt-2 flex-wrap">
-                {proposalConfs.map((c) => (
-                  <Badge
-                    key={c.id}
-                    variant="outline"
-                    className={
-                      c.decision === "accepted"
-                        ? "text-xs bg-success/10 text-success border-success/30"
-                        : "text-xs bg-destructive/10 text-destructive border-destructive/30"
-                    }
-                  >
-                    {formatEnum(c.role)} {c.decision}
-                  </Badge>
-                ))}
+        {activeProposal && (() => {
+          const proposalConfs = getProposalConfirmations(activeProposal.id);
+          const requiredParties = getRequiredParties(activeProposal);
+          const confirmedUserIds = new Set(proposalConfs.filter((c) => c.decision === "accepted").map((c) => c.user_id));
+          const declinedUserIds = new Set(proposalConfs.filter((c) => c.decision === "declined").map((c) => c.user_id));
+          const pendingParties = Array.from(requiredParties.entries()).filter(([uid]) => !confirmedUserIds.has(uid) && !declinedUserIds.has(uid));
+          const respondedParties = proposalConfs.map((c) => ({
+            userId: c.user_id,
+            decision: c.decision,
+            label: requiredParties.get(c.user_id)?.label || profileMap.get(c.user_id) || "Unknown",
+          }));
+          const totalRequired = requiredParties.size;
+          const totalAccepted = confirmedUserIds.size;
+
+          return (
+            <div className="mt-3 pt-3 border-t border-border">
+              <div className="flex items-center gap-2 text-sm flex-wrap">
+                <span className="text-foreground font-medium">
+                  {(activeProposal as any).fighter_a?.name || "Fighter A"}
+                </span>
+                <span className="text-primary font-heading">VS</span>
+                <span className="text-foreground font-medium">
+                  {(activeProposal as any).fighter_b?.name || "Fighter B"}
+                </span>
+                <Badge variant="outline" className="ml-2 text-xs">
+                  {activeProposal.status === "pending"
+                    ? `${totalAccepted}/${totalRequired} confirmed`
+                    : activeProposal.status === "confirmed"
+                    ? "Confirmed"
+                    : formatEnum(activeProposal.status)}
+                </Badge>
               </div>
-            )}
-          </div>
-        )}
+
+              {activeProposal.status === "pending" && (
+                <div className="mt-3 space-y-1.5">
+                  {respondedParties.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1">Responded</p>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {respondedParties.map((rp) => (
+                          <Badge
+                            key={rp.userId}
+                            variant="outline"
+                            className={
+                              rp.decision === "accepted"
+                                ? "text-xs bg-success/10 text-success border-success/30"
+                                : "text-xs bg-destructive/10 text-destructive border-destructive/30"
+                            }
+                          >
+                            {rp.label} · {rp.decision}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {pendingParties.length > 0 && (
+                    <div>
+                      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide mb-1">Awaiting</p>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {pendingParties.map(([uid, info]) => (
+                          <Badge
+                            key={uid}
+                            variant="outline"
+                            className="text-xs bg-muted text-muted-foreground"
+                          >
+                            {info.label} · pending
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     );
   };
