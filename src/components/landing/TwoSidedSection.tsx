@@ -36,21 +36,6 @@ export function TwoSidedSection() {
         </div>
       </div>
 
-      {/* Create Account CTA */}
-      <motion.div
-        className="flex justify-center py-16"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-      >
-        <Link
-          to="/auth"
-          className="inline-flex items-center gap-3 bg-primary text-primary-foreground font-medium text-sm px-8 py-3 rounded-full transition-all duration-200 shadow-[0_0_10px_hsl(var(--primary)/0.2)] hover:shadow-[0_0_16px_hsl(var(--primary)/0.35)]"
-        >
-          CREATE ACCOUNT
-        </Link>
-      </motion.div>
     </section>
   );
 }
