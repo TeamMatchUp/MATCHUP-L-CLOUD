@@ -141,6 +141,28 @@ export default function GymDetail() {
                 </div>
               )}
 
+              {/* Location Map */}
+              {gym.location && (
+                <div className="rounded-lg border border-border overflow-hidden mb-8">
+                  <iframe
+                    title="Gym Location"
+                    width="100%"
+                    height="300"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    allowFullScreen
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                      [gym.name, gym.address, gym.location, gym.city, gym.country].filter(Boolean).join(", ")
+                    )}&output=embed&z=14`}
+                  />
+                  <div className="bg-card px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    {[gym.address, gym.location, gym.city].filter(Boolean).join(", ")}
+                  </div>
+                </div>
+              )}
+
               {/* Fighter Roster */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-heading text-2xl text-foreground">
