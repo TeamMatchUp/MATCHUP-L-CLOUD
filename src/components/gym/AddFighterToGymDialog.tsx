@@ -184,18 +184,17 @@ export function AddFighterToGymDialog({
       .single();
 
     if (fullFighter?.user_id) {
-      // Fetch gym name for notification
       const { data: gymData } = await supabase
         .from("gyms")
         .select("name")
         .eq("id", gymId)
         .single();
 
-      await supabase.from("notifications").insert({
-        user_id: fullFighter.user_id,
-        title: `Gym Invite: ${gymData?.name ?? "A gym"}`,
-        message: `You've been invited to join ${gymData?.name ?? "a gym"}. Go to your Fighter Dashboard to accept or decline.`,
-        type: "system" as const,
+      await supabase.rpc("create_notification", {
+        _user_id: fullFighter.user_id,
+        _title: `Gym Invite: ${gymData?.name ?? "A gym"}`,
+        _message: `You've been invited to join ${gymData?.name ?? "a gym"}. Go to your Fighter Dashboard to accept or decline.`,
+        _type: "system",
       });
     }
 
