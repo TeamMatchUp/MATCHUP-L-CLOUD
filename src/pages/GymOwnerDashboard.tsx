@@ -59,6 +59,8 @@ export default function GymOwnerDashboard() {
   const [deleteFighter, setDeleteFighter] = useState<{ id: string; name: string } | null>(null);
   const [rosterGymFilter, setRosterGymFilter] = useState<string>("all");
   const [rosterSearch, setRosterSearch] = useState("");
+  const [proposalSearch, setProposalSearch] = useState("");
+  const [eventSearch, setEventSearch] = useState("");
 
   // Get owner's gyms
   const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
@@ -558,24 +560,42 @@ export default function GymOwnerDashboard() {
                 <h2 className="font-heading text-2xl text-foreground mb-4">
                   MATCH <span className="text-primary">PROPOSALS</span>
                 </h2>
-                {pendingProposals.length === 0 ? (
-                  <p className="text-muted-foreground">
-                    No proposals requiring your review.
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {pendingProposals.map((p: any) => (
-                      <ProposalCard
-                        key={p.id}
-                        proposal={p}
-                        userId={user!.id}
-                        userRole="coach"
-                        coachFighterIds={fighterIds}
-                        onActionComplete={handleRefresh}
-                      />
-                    ))}
-                  </div>
-                )}
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search proposals by fighter name..."
+                    value={proposalSearch}
+                    onChange={(e) => setProposalSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                {(() => {
+                  const q = proposalSearch.toLowerCase().trim();
+                  const filtered = q
+                    ? pendingProposals.filter((p: any) =>
+                        p.fighter_a?.name?.toLowerCase().includes(q) ||
+                        p.fighter_b?.name?.toLowerCase().includes(q)
+                      )
+                    : pendingProposals;
+                  return filtered.length === 0 ? (
+                    <p className="text-muted-foreground">
+                      {q ? "No proposals match your search." : "No proposals requiring your review."}
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {filtered.map((p: any) => (
+                        <ProposalCard
+                          key={p.id}
+                          proposal={p}
+                          userId={user!.id}
+                          userRole="coach"
+                          coachFighterIds={fighterIds}
+                          onActionComplete={handleRefresh}
+                        />
+                      ))}
+                    </div>
+                  );
+                })()}
               </TabsContent>
 
               {/* Events Tab */}
@@ -590,57 +610,80 @@ export default function GymOwnerDashboard() {
                     </Link>
                   </Button>
                 </div>
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search events by title or location..."
+                    value={eventSearch}
+                    onChange={(e) => setEventSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
 
-                {events.length === 0 ? (
-                  <div className="rounded-lg border border-border bg-card p-8 text-center">
-                    <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground mb-4">
-                      You haven't created any events yet.
-                    </p>
-                    <Button asChild>
-                      <Link to="/organiser/create-event">
-                        Create Your First Event
-                      </Link>
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {events.map((event: any) => {
-                      const eventSlots = event.fight_slots ?? [];
-                      const openSlots = eventSlots.filter(
-                        (s: any) => s.status === "open"
-                      ).length;
-                      return (
-                        <Link
-                          key={event.id}
-                          to={`/organiser/events/${event.id}`}
-                          className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors"
-                        >
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <p className="font-medium text-foreground">
-                                {event.title}
+                {(() => {
+                  const q = eventSearch.toLowerCase().trim();
+                  const filtered = q
+                    ? events.filter((e: any) =>
+                        e.title?.toLowerCase().includes(q) ||
+                        e.location?.toLowerCase().includes(q) ||
+                        e.promotion_name?.toLowerCase().includes(q)
+                      )
+                    : events;
+                  return filtered.length === 0 ? (
+                    events.length === 0 ? (
+                      <div className="rounded-lg border border-border bg-card p-8 text-center">
+                        <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                        <p className="text-muted-foreground mb-4">
+                          You haven't created any events yet.
+                        </p>
+                        <Button asChild>
+                          <Link to="/organiser/create-event">
+                            Create Your First Event
+                          </Link>
+                        </Button>
+                      </div>
+                    ) : (
+                      <p className="text-muted-foreground">No events match your search.</p>
+                    )
+                  ) : (
+                    <div className="space-y-3">
+                      {filtered.map((event: any) => {
+                        const eventSlots = event.fight_slots ?? [];
+                        const openSlots = eventSlots.filter(
+                          (s: any) => s.status === "open"
+                        ).length;
+                        return (
+                          <Link
+                            key={event.id}
+                            to={`/organiser/events/${event.id}`}
+                            className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors"
+                          >
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-foreground">
+                                  {event.title}
+                                </p>
+                                <Badge
+                                  variant="outline"
+                                  className={
+                                    STATUS_COLORS[event.status] || ""
+                                  }
+                                >
+                                  {event.status}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {event.date} · {event.location} ·{" "}
+                                {eventSlots.length} slots ({openSlots} open)
                               </p>
-                              <Badge
-                                variant="outline"
-                                className={
-                                  STATUS_COLORS[event.status] || ""
-                                }
-                              >
-                                {event.status}
-                              </Badge>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {event.date} · {event.location} ·{" "}
-                              {eventSlots.length} slots ({openSlots} open)
-                            </p>
-                          </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
+                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </TabsContent>
             </Tabs>
 
