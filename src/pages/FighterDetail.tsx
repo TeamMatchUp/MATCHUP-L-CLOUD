@@ -94,7 +94,7 @@ export default function FighterDetail() {
                     <h1 className="font-heading text-3xl md:text-4xl text-foreground">{fighter.name}</h1>
                     {fighter.verified && <ShieldCheck className="h-5 w-5 text-primary" />}
                   </div>
-                  <p className="text-primary font-bold text-2xl mt-1">{record}</p>
+                  <FightHistory fighterId={fighter.id} />
                   <span className={`inline-block mt-2 text-xs font-medium px-3 py-1 rounded-full ${fighter.available ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                     {fighter.available ? "Available for fights" : "Currently booked"}
                   </span>
