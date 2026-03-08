@@ -110,8 +110,8 @@ export default function GymDetail() {
       <main className="pt-16">
         <section className="py-16">
           <div className="container max-w-3xl">
-            <Button variant="ghost" size="sm" asChild className="mb-6">
-              <Link to="/gyms"><ArrowLeft className="h-4 w-4 mr-2" />All Gyms</Link>
+            <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Button>
 
             <motion.div
