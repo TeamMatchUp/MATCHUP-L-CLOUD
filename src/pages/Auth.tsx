@@ -179,8 +179,8 @@ export default function Auth() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Link to="/" className="font-heading text-3xl tracking-wider text-primary block text-center mb-8">
-          MATCHUP
+        <Link to="/" className="block text-center mb-8">
+          <img src={logoFull} alt="MatchUp" className="h-10 mx-auto" />
         </Link>
         <div className="rounded-lg border border-border bg-card p-8">
           <h2 className="font-heading text-2xl text-foreground mb-6">
