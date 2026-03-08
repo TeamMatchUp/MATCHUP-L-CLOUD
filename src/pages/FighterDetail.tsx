@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, ShieldCheck } from "lucide-react";
+import { FightHistory } from "@/components/fighter/FightHistory";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
