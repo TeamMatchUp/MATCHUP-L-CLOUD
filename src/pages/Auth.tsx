@@ -49,13 +49,24 @@ export default function Auth() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      setLoading(false);
       toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
-    } else {
-      navigate(from || "/", { replace: true });
+      return;
     }
+    
+    // Fetch user roles to determine dashboard
+    const { data: rolesData } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.user.id);
+    
+    setLoading(false);
+    const userRoles = (rolesData ?? []).map((r) => r.role);
+    const primaryRole = userRoles[0];
+    const dashboardPath = primaryRole ? ROLE_DASHBOARDS[primaryRole] : "/";
+    navigate(from || dashboardPath, { replace: true });
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
