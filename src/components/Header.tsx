@@ -78,6 +78,25 @@ export function Header() {
               Dashboard
             </Link>
           )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 uppercase tracking-wide">
+                Explore
+                <ChevronDown className="h-3 w-3" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-44">
+              <DropdownMenuItem asChild>
+                <Link to="/events" className="uppercase tracking-wide text-xs">View Events</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/fighters" className="uppercase tracking-wide text-xs">View Fighters</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/gyms" className="uppercase tracking-wide text-xs">View Gyms</Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
