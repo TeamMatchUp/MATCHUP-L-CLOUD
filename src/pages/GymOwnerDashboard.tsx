@@ -97,25 +97,33 @@ export default function GymOwnerDashboard() {
     enabled: !!user,
   });
 
+  // Get fighter-gym links for filtering
+  const { data: fighterGymLinks = [] } = useQuery({
+    queryKey: ["owner-fighter-gym-links", myGyms.map((g) => g.id)],
+    queryFn: async () => {
+      const gymIds = myGyms.map((g) => g.id);
+      const { data } = await supabase
+        .from("fighter_gym_links")
+        .select("fighter_id, gym_id")
+        .in("gym_id", gymIds);
+      return data ?? [];
+    },
+    enabled: myGyms.length > 0,
+  });
+
   // Get fighters linked via gyms
   const { data: gymFighters = [] } = useQuery({
-    queryKey: ["owner-gym-fighters", user?.id],
+    queryKey: ["owner-gym-fighters", fighterGymLinks.map((l) => l.fighter_id)],
     queryFn: async () => {
-      if (myGyms.length === 0) return [];
-      const gymIds = myGyms.map((g) => g.id);
-      const { data: links } = await supabase
-        .from("fighter_gym_links")
-        .select("fighter_id")
-        .in("gym_id", gymIds);
-      if (!links || links.length === 0) return [];
-      const fighterIds = links.map((l) => l.fighter_id);
+      if (fighterGymLinks.length === 0) return [];
+      const fighterIds = [...new Set(fighterGymLinks.map((l) => l.fighter_id))];
       const { data: fighters } = await supabase
         .from("fighter_profiles")
         .select("*")
         .in("id", fighterIds);
       return fighters ?? [];
     },
-    enabled: myGyms.length > 0,
+    enabled: fighterGymLinks.length > 0,
   });
 
   // Combine unique fighters
@@ -123,6 +131,28 @@ export default function GymOwnerDashboard() {
   [...myFighters, ...gymFighters].forEach((f) => allFighterMap.set(f.id, f));
   const allFighters = Array.from(allFighterMap.values());
   const fighterIds = allFighters.map((f) => f.id);
+
+  // Filter fighters by gym and search
+  const filteredRosterFighters = useMemo(() => {
+    let result = allFighters;
+    if (rosterGymFilter !== "all") {
+      const idsInGym = new Set(
+        fighterGymLinks.filter((l) => l.gym_id === rosterGymFilter).map((l) => l.fighter_id)
+      );
+      result = result.filter((f) => idsInGym.has(f.id));
+    }
+    if (rosterSearch.trim()) {
+      const q = rosterSearch.toLowerCase().trim();
+      result = result.filter(
+        (f) =>
+          f.name.toLowerCase().includes(q) ||
+          formatEnum(f.weight_class).toLowerCase().includes(q) ||
+          (f.style && formatEnum(f.style).toLowerCase().includes(q)) ||
+          f.country.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [allFighters, rosterGymFilter, rosterSearch, fighterGymLinks]);
 
   // Get proposals involving owner's fighters
   const { data: proposals = [] } = useQuery({
