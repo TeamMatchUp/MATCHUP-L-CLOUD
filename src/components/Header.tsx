@@ -60,15 +60,12 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
-            >
-              {link.label}
-            </Link>
-          ))}
+          <Link
+            to="/"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+          >
+            Home
+          </Link>
           {user && activeRole && (
             <Link
               to={dashboardPath}
