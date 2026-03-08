@@ -46,7 +46,7 @@ export function TwoSidedSection() {
       >
         <Link
           to="/auth"
-          className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-all duration-200 hover:shadow-[0_0_20px_hsl(46_93%_61%/0.1)]"
+          className="inline-flex items-center gap-3 bg-accent text-accent-foreground font-medium text-sm px-8 py-3 rounded-full transition-all duration-200 shadow-[0_0_20px_hsl(var(--accent)/0.3)] hover:shadow-[0_0_30px_hsl(var(--accent)/0.5)]"
         >
           create account
         </Link>
