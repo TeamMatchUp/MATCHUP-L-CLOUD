@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -67,12 +69,13 @@ export function ProposeMatchDialog({
   onSuccess,
 }: ProposeMatchDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const { toast } = useToast();
 
   const handlePropose = async () => {
     setLoading(true);
 
-    // Create the match proposal
+    // Create the match proposal with "pending" status (parallel confirmation)
     const { data: proposal, error: proposalError } = await supabase
       .from("match_proposals")
       .insert({
@@ -80,7 +83,8 @@ export function ProposeMatchDialog({
         fighter_a_id: fighterA.id,
         fighter_b_id: fighterB.id,
         proposed_by: proposedBy,
-        status: "pending_coach_a",
+        status: "pending",
+        message: message || null,
       })
       .select("id")
       .single();
@@ -101,16 +105,23 @@ export function ProposeMatchDialog({
       .update({ status: "proposed" })
       .eq("id", slot.id);
 
-    // Send notifications to coaches of both fighters
-    const coachIds = new Set<string>();
-    if (fighterA.created_by_coach_id) coachIds.add(fighterA.created_by_coach_id);
-    if (fighterB.created_by_coach_id) coachIds.add(fighterB.created_by_coach_id);
+    // Collect ALL parties to notify: coaches + fighters
+    const notifyIds = new Set<string>();
+
+    // Coach IDs from created_by_coach_id
+    if (fighterA.created_by_coach_id) notifyIds.add(fighterA.created_by_coach_id);
+    if (fighterB.created_by_coach_id) notifyIds.add(fighterB.created_by_coach_id);
+
+    // Fighter user IDs
+    if (fighterA.user_id) notifyIds.add(fighterA.user_id);
+    if (fighterB.user_id) notifyIds.add(fighterB.user_id);
 
     // Also check gym coaches
     const { data: gymLinks } = await supabase
       .from("fighter_gym_links")
-      .select("gym_id")
-      .in("fighter_id", [fighterA.id, fighterB.id]);
+      .select("gym_id, fighter_id")
+      .in("fighter_id", [fighterA.id, fighterB.id])
+      .eq("status", "accepted");
 
     if (gymLinks && gymLinks.length > 0) {
       const gymIds = gymLinks.map((gl) => gl.gym_id);
@@ -119,23 +130,27 @@ export function ProposeMatchDialog({
         .select("coach_id")
         .in("id", gymIds);
       gyms?.forEach((g) => {
-        if (g.coach_id) coachIds.add(g.coach_id);
+        if (g.coach_id) notifyIds.add(g.coach_id);
       });
     }
 
-    // Create notifications via security definer function
-    for (const coachId of coachIds) {
-      await supabase.rpc("create_notification", {
-        _user_id: coachId,
+    // Don't notify the organiser who proposed
+    notifyIds.delete(proposedBy);
+
+    // Send notifications to all parties
+    const notificationPromises = Array.from(notifyIds).map((uid) =>
+      supabase.rpc("create_notification", {
+        _user_id: uid,
         _title: "New Match Proposal",
-        _message: `${fighterA.name} vs ${fighterB.name} has been proposed.`,
+        _message: `${fighterA.name} vs ${fighterB.name} has been proposed. Please review and confirm.`,
         _type: "match_proposed",
         _reference_id: proposal.id,
-      });
-    }
+      })
+    );
+    await Promise.all(notificationPromises);
 
     setLoading(false);
-    toast({ title: "Match proposed", description: "Coaches have been notified." });
+    toast({ title: "Match proposed", description: "All coaches and fighters have been notified." });
     onSuccess();
   };
 
@@ -148,6 +163,7 @@ export function ProposeMatchDialog({
           </DialogTitle>
           <DialogDescription>
             Slot #{slot.slot_number} · {formatEnum(slot.weight_class)}
+            {(slot as any).card_position === "main_card" ? " · Main Card" : " · Undercard"}
           </DialogDescription>
         </DialogHeader>
 
@@ -158,6 +174,20 @@ export function ProposeMatchDialog({
           </div>
           <FighterCard fighter={fighterB} label="Fighter B" />
         </div>
+
+        <div className="space-y-2">
+          <Label className="text-sm">Message to coaches & fighters (optional)</Label>
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Any notes about this matchup..."
+            rows={2}
+          />
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          All coaches and fighters will be notified simultaneously. The match is confirmed once all parties accept.
+        </p>
 
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>

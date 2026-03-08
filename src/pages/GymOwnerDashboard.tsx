@@ -127,24 +127,14 @@ export default function GymOwnerDashboard() {
           "*, fighter_a:fighter_profiles!match_proposals_fighter_a_id_fkey(*), fighter_b:fighter_profiles!match_proposals_fighter_b_id_fkey(*), fight_slot:fight_slots!match_proposals_fight_slot_id_fkey(*, events(*))"
         )
         .in("fighter_a_id", fighterIds)
-        .in("status", [
-          "pending_coach_a",
-          "pending_coach_b",
-          "pending_fighter_a",
-          "pending_fighter_b",
-        ]);
+        .in("status", ["pending", "confirmed"]);
       const { data: pB } = await supabase
         .from("match_proposals")
         .select(
           "*, fighter_a:fighter_profiles!match_proposals_fighter_a_id_fkey(*), fighter_b:fighter_profiles!match_proposals_fighter_b_id_fkey(*), fight_slot:fight_slots!match_proposals_fight_slot_id_fkey(*, events(*))"
         )
         .in("fighter_b_id", fighterIds)
-        .in("status", [
-          "pending_coach_a",
-          "pending_coach_b",
-          "pending_fighter_a",
-          "pending_fighter_b",
-        ]);
+        .in("status", ["pending", "confirmed"]);
       const map = new Map<string, any>();
       [...(pA || []), ...(pB || [])].forEach((p) => map.set(p.id, p));
       return Array.from(map.values());
@@ -166,12 +156,8 @@ export default function GymOwnerDashboard() {
     enabled: !!user,
   });
 
-  const incomingProposals = proposals.filter((p: any) =>
-    ["pending_coach_a", "pending_coach_b"].includes(p.status)
-  );
-  const awaitingFighters = proposals.filter((p: any) =>
-    ["pending_fighter_a", "pending_fighter_b"].includes(p.status)
-  );
+  const pendingProposals = proposals.filter((p: any) => p.status === "pending");
+  const confirmedProposals = proposals.filter((p: any) => p.status === "confirmed");
 
   const createGymMutation = useMutation({
     mutationFn: async () => {
@@ -225,8 +211,8 @@ export default function GymOwnerDashboard() {
               {[
                 { label: "Gyms", value: myGyms.length },
                 { label: "Fighters", value: allFighters.length },
-                { label: "Proposals", value: incomingProposals.length },
-                { label: "Awaiting", value: awaitingFighters.length },
+                { label: "Pending", value: pendingProposals.length },
+                { label: "Confirmed", value: confirmedProposals.length },
                 { label: "Events", value: events.length },
               ].map((s) => (
                 <div
@@ -481,15 +467,15 @@ export default function GymOwnerDashboard() {
               {/* Proposals Tab */}
               <TabsContent value="proposals">
                 <h2 className="font-heading text-2xl text-foreground mb-4">
-                  INCOMING <span className="text-primary">PROPOSALS</span>
+                  MATCH <span className="text-primary">PROPOSALS</span>
                 </h2>
-                {incomingProposals.length === 0 ? (
+                {pendingProposals.length === 0 ? (
                   <p className="text-muted-foreground">
                     No proposals requiring your review.
                   </p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {incomingProposals.map((p: any) => (
+                    {pendingProposals.map((p: any) => (
                       <ProposalCard
                         key={p.id}
                         proposal={p}

@@ -1,13 +1,11 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Check, X } from "lucide-react";
-import type { Database } from "@/integrations/supabase/types";
-
-type MatchStatus = Database["public"]["Enums"]["match_status"];
 
 function formatEnum(val: string) {
   return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -41,10 +39,27 @@ export function MatchProposalCard({
   const isA = proposal.fighter_a_id === fighterProfileId;
   const opponent = isA ? fighterB : fighterA;
 
-  // Can act?
-  const canAct =
-    (proposal.status === "pending_fighter_a" && isA) ||
-    (proposal.status === "pending_fighter_b" && !isA);
+  // Fetch existing confirmations
+  const { data: existingConfirmations = [] } = useQuery({
+    queryKey: ["proposal-confirmations", proposal.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("confirmations")
+        .select("*")
+        .eq("match_proposal_id", proposal.id);
+      return data ?? [];
+    },
+  });
+
+  const hasAlreadyConfirmed = existingConfirmations.some(
+    (c) => c.user_id === userId
+  );
+
+  const canAct = proposal.status === "pending" && !hasAlreadyConfirmed;
+
+  const acceptedCount = existingConfirmations.filter(
+    (c) => c.decision === "accepted"
+  ).length;
 
   const handleAccept = async () => {
     setLoading(true);
@@ -57,55 +72,75 @@ export function MatchProposalCard({
       comment: comment || null,
     });
 
-    let nextStatus: MatchStatus;
-    if (proposal.status === "pending_fighter_a") {
-      nextStatus = "pending_fighter_b";
-    } else {
-      nextStatus = "confirmed";
+    // Determine required parties
+    const requiredParties = new Set<string>();
+    if (fighterA?.created_by_coach_id) requiredParties.add(fighterA.created_by_coach_id);
+    if (fighterB?.created_by_coach_id) requiredParties.add(fighterB.created_by_coach_id);
+    if (fighterA?.user_id) requiredParties.add(fighterA.user_id);
+    if (fighterB?.user_id) requiredParties.add(fighterB.user_id);
+
+    const { data: gymLinks } = await supabase
+      .from("fighter_gym_links")
+      .select("gym_id")
+      .in("fighter_id", [proposal.fighter_a_id, proposal.fighter_b_id])
+      .eq("status", "accepted");
+
+    if (gymLinks && gymLinks.length > 0) {
+      const { data: gyms } = await supabase
+        .from("gyms")
+        .select("coach_id")
+        .in("id", gymLinks.map((gl) => gl.gym_id));
+      gyms?.forEach((g) => {
+        if (g.coach_id) requiredParties.add(g.coach_id);
+      });
     }
 
-    await supabase
-      .from("match_proposals")
-      .update({ status: nextStatus })
-      .eq("id", proposal.id);
+    requiredParties.delete(proposal.proposed_by);
 
-    if (nextStatus === "confirmed") {
-      // Update fight slot
+    // Re-fetch confirmations
+    const { data: allConfs } = await supabase
+      .from("confirmations")
+      .select("user_id")
+      .eq("match_proposal_id", proposal.id)
+      .eq("decision", "accepted");
+
+    const confirmedUserIds = new Set((allConfs ?? []).map((c) => c.user_id));
+    const allConfirmed = Array.from(requiredParties).every((id) =>
+      confirmedUserIds.has(id)
+    );
+
+    if (allConfirmed) {
+      await supabase
+        .from("match_proposals")
+        .update({ status: "confirmed" })
+        .eq("id", proposal.id);
+
       await supabase
         .from("fight_slots")
         .update({ status: "confirmed" })
         .eq("id", proposal.fight_slot_id);
 
-      // Notify all parties
-      const notifyIds = new Set<string>();
+      const notifyIds = new Set(requiredParties);
       notifyIds.add(proposal.proposed_by);
-      if (fighterA?.created_by_coach_id) notifyIds.add(fighterA.created_by_coach_id);
-      if (fighterB?.created_by_coach_id) notifyIds.add(fighterB.created_by_coach_id);
-      if (fighterA?.user_id) notifyIds.add(fighterA.user_id);
-      if (fighterB?.user_id) notifyIds.add(fighterB.user_id);
-      notifyIds.delete(userId); // don't notify self
+      notifyIds.delete(userId);
 
-      for (const nid of notifyIds) {
-        await supabase.rpc("create_notification", {
+      const promises = Array.from(notifyIds).map((nid) =>
+        supabase.rpc("create_notification", {
           _user_id: nid,
           _title: "Match Confirmed!",
           _message: `${fighterA?.name} vs ${fighterB?.name} is confirmed for ${eventTitle}.`,
           _type: "match_confirmed",
           _reference_id: proposal.id,
-        });
-      }
-    } else if (nextStatus === "pending_fighter_b" && fighterB?.user_id) {
-      await supabase.rpc("create_notification", {
-        _user_id: fighterB.user_id,
-        _title: "Match Proposal Awaiting Your Confirmation",
-        _message: `${fighterA?.name} has accepted. Now it's your turn.`,
-        _type: "match_accepted",
-        _reference_id: proposal.id,
-      });
+        })
+      );
+      await Promise.all(promises);
+
+      toast({ title: "Match confirmed!", description: "All parties have accepted." });
+    } else {
+      toast({ title: "Accepted", description: `Waiting for ${requiredParties.size - confirmedUserIds.size} more confirmation(s).` });
     }
 
     setLoading(false);
-    toast({ title: nextStatus === "confirmed" ? "Match confirmed!" : "Accepted" });
     onActionComplete();
   };
 
@@ -130,22 +165,24 @@ export function MatchProposalCard({
       .update({ status: "open" })
       .eq("id", proposal.fight_slot_id);
 
-    // Notify organiser + coaches
     const notifyIds = new Set<string>();
     notifyIds.add(proposal.proposed_by);
     if (fighterA?.created_by_coach_id) notifyIds.add(fighterA.created_by_coach_id);
     if (fighterB?.created_by_coach_id) notifyIds.add(fighterB.created_by_coach_id);
+    if (fighterA?.user_id) notifyIds.add(fighterA.user_id);
+    if (fighterB?.user_id) notifyIds.add(fighterB.user_id);
     notifyIds.delete(userId);
 
-    for (const nid of notifyIds) {
-      await supabase.rpc("create_notification", {
+    const promises = Array.from(notifyIds).map((nid) =>
+      supabase.rpc("create_notification", {
         _user_id: nid,
         _title: "Match Declined",
-        _message: `${fighterA?.name} vs ${fighterB?.name} was declined by a fighter.`,
+        _message: `${fighterA?.name} vs ${fighterB?.name} was declined.`,
         _type: "match_declined",
         _reference_id: proposal.id,
-      });
-    }
+      })
+    );
+    await Promise.all(promises);
 
     setLoading(false);
     toast({ title: "Proposal declined" });
@@ -169,7 +206,9 @@ export function MatchProposalCard({
               : ""
           }
         >
-          {formatEnum(proposal.status)}
+          {proposal.status === "pending"
+            ? `${acceptedCount} confirmed`
+            : formatEnum(proposal.status)}
         </Badge>
       </div>
 
@@ -183,6 +222,10 @@ export function MatchProposalCard({
           {opponent?.reach && ` · ${opponent.reach} reach`}
         </p>
       </div>
+
+      {hasAlreadyConfirmed && proposal.status === "pending" && (
+        <p className="text-xs text-success mb-2">✓ You have confirmed. Waiting for others.</p>
+      )}
 
       {canAct && (
         <div className="space-y-3">
@@ -216,6 +259,12 @@ export function MatchProposalCard({
             </Button>
           </div>
         </div>
+      )}
+
+      {proposal.message && (
+        <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-border italic">
+          "{proposal.message}"
+        </p>
       )}
     </div>
   );
