@@ -116,21 +116,7 @@ export default function FighterDetail() {
                 ))}
               </div>
 
-              {/* Record Breakdown */}
-              <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="font-heading text-3xl text-success">{fighter.record_wins}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Wins</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="font-heading text-3xl text-destructive">{fighter.record_losses}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Losses</p>
-                </div>
-                <div className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="font-heading text-3xl text-muted-foreground">{fighter.record_draws}</p>
-                  <p className="text-xs text-muted-foreground mt-1">Draws</p>
-                </div>
-              </div>
+              {/* Record Breakdown removed - now shown dynamically via FightHistory */}
 
               {/* Bio */}
               {fighter.bio && (
