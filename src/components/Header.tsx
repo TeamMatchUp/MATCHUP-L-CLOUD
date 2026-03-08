@@ -56,10 +56,10 @@ export function Header() {
   const dashboardPath = activeRole ? (ROLE_DASHBOARDS[activeRole] || "/") : "/";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="font-heading text-2xl tracking-wider text-primary">
-          MATCHUP
+        <Link to="/" className="flex items-center gap-2">
+          <span className="font-heading text-2xl tracking-wider text-foreground">matchup.</span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
@@ -122,14 +122,9 @@ export function Header() {
             </DropdownMenu>
             </>
           ) : (
-            <>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/auth">Sign In</Link>
-              </Button>
-              <Button variant="hero" size="sm" asChild>
-                <Link to="/auth">Get Started</Link>
-              </Button>
-            </>
+            <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
+              <Link to="/auth">log in</Link>
+            </Button>
           )}
         </div>
 
@@ -169,14 +164,9 @@ export function Header() {
                   Sign Out
                 </Button>
               ) : (
-                <>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/auth" onClick={() => setMobileOpen(false)}>Sign In</Link>
-                  </Button>
-                  <Button variant="hero" size="sm" asChild>
-                    <Link to="/auth" onClick={() => setMobileOpen(false)}>Get Started</Link>
-                  </Button>
-                </>
+                <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
+                  <Link to="/auth" onClick={() => setMobileOpen(false)}>log in</Link>
+                </Button>
               )}
             </div>
           </div>

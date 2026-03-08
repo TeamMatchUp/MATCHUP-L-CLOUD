@@ -2,11 +2,11 @@ import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border bg-card">
+    <footer className="border-t border-border/30 bg-background">
       <div className="container py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <span className="font-heading text-xl tracking-wider text-primary">MATCHUP</span>
+            <span className="font-heading text-xl tracking-wider text-foreground">matchup.</span>
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
               The professional matchmaking platform for combat sports.
             </p>
@@ -34,7 +34,7 @@ export function Footer() {
             </div>
           </div>
         </div>
-        <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
+        <div className="mt-8 pt-8 border-t border-border/30 text-center text-sm text-muted-foreground">
           2026 MatchUp. All rights reserved.
         </div>
       </div>
