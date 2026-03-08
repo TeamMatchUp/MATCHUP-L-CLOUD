@@ -68,7 +68,7 @@ export function Header() {
             <Link
               key={link.to}
               to={link.to}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+              className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               {link.label}
             </Link>
