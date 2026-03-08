@@ -21,6 +21,10 @@ import GymOwnerDashboard from "./pages/GymOwnerDashboard";
 import RegisterGym from "./pages/RegisterGym";
 import FighterDashboard from "./pages/FighterDashboard";
 import AccountSettings from "./pages/AccountSettings";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RecordAccuracyPolicy from "./pages/RecordAccuracyPolicy";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +47,10 @@ const App = () => (
             <Route path="/gyms/:id" element={<GymDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/record-accuracy" element={<RecordAccuracyPolicy />} />
+            <Route path="/contact" element={<Contact />} />
 
             {/* Protected: Organiser */}
             <Route
