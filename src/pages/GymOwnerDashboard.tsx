@@ -434,33 +434,42 @@ export default function GymOwnerDashboard() {
                   <h2 className="font-heading text-2xl text-foreground">
                     FIGHTER <span className="text-primary">ROSTER</span>
                   </h2>
+                  <Button
+                    size="sm"
+                    className="gap-1"
+                    onClick={() => {
+                      if (!addFighterGymId && primaryGym) setAddFighterGymId(primaryGym.id);
+                      setShowAddFighter(true);
+                    }}
+                    disabled={myGyms.length === 0}
+                  >
+                    <Plus className="h-3 w-3" /> Add Fighter
+                  </Button>
+                </div>
+
+                {/* Search & Filter Bar */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search fighters..."
+                      value={rosterSearch}
+                      onChange={(e) => setRosterSearch(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
                   {myGyms.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Select
-                        value={addFighterGymId ?? primaryGym?.id ?? ""}
-                        onValueChange={(v) => setAddFighterGymId(v)}
-                      >
-                        <SelectTrigger className="w-[180px] h-8 text-xs">
-                          <SelectValue placeholder="Select gym" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {myGyms.map((g) => (
-                            <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        size="sm"
-                        className="gap-1"
-                        onClick={() => {
-                          if (!addFighterGymId && primaryGym) setAddFighterGymId(primaryGym.id);
-                          setShowAddFighter(true);
-                        }}
-                        disabled={!addFighterGymId && !primaryGym}
-                      >
-                        <Plus className="h-3 w-3" /> Add Fighter
-                      </Button>
-                    </div>
+                    <Select value={rosterGymFilter} onValueChange={setRosterGymFilter}>
+                      <SelectTrigger className="w-full sm:w-[200px]">
+                        <SelectValue placeholder="Filter by gym" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Gyms</SelectItem>
+                        {myGyms.map((g) => (
+                          <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   )}
                 </div>
 
@@ -476,9 +485,13 @@ export default function GymOwnerDashboard() {
                       <Plus className="h-4 w-4" /> Add Your First Fighter
                     </Button>
                   </div>
+                ) : filteredRosterFighters.length === 0 ? (
+                  <div className="rounded-lg border border-border bg-card p-8 text-center">
+                    <p className="text-muted-foreground">No fighters match your filters.</p>
+                  </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {allFighters.map((f) => (
+                    {filteredRosterFighters.map((f) => (
                       <div
                         key={f.id}
                         className="rounded-lg border border-border bg-card p-4"
