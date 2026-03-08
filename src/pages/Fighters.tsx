@@ -47,7 +47,22 @@ const Fighters = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+
+      // Fetch avatars for fighters with linked accounts
+      const userIds = (data ?? []).map((f) => f.user_id).filter(Boolean) as string[];
+      let avatarMap = new Map<string, string>();
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("id, avatar_url")
+          .in("id", userIds);
+        profiles?.forEach((p) => { if (p.avatar_url) avatarMap.set(p.id, p.avatar_url); });
+      }
+
+      return (data ?? []).map((f) => ({
+        ...f,
+        _avatar: f.profile_image || (f.user_id ? avatarMap.get(f.user_id) : null) || null,
+      }));
     },
   });
 
