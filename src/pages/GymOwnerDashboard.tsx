@@ -156,12 +156,8 @@ export default function GymOwnerDashboard() {
     enabled: !!user,
   });
 
-  const incomingProposals = proposals.filter((p: any) =>
-    ["pending_coach_a", "pending_coach_b"].includes(p.status)
-  );
-  const awaitingFighters = proposals.filter((p: any) =>
-    ["pending_fighter_a", "pending_fighter_b"].includes(p.status)
-  );
+  const pendingProposals = proposals.filter((p: any) => p.status === "pending");
+  const confirmedProposals = proposals.filter((p: any) => p.status === "confirmed");
 
   const createGymMutation = useMutation({
     mutationFn: async () => {
