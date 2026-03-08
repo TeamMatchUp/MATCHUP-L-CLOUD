@@ -33,6 +33,7 @@ interface FighterRosterPanelProps {
   fighters: Fighter[];
   gyms: Gym[];
   fighterGymLinks: FighterGymLink[];
+  fighterRecords: Map<string, { wins: number; losses: number; draws: number }>;
   onAddFighter: () => void;
   onAddFightResult: (fighter: { id: string; name: string }) => void;
 }
@@ -41,6 +42,7 @@ export function FighterRosterPanel({
   fighters,
   gyms,
   fighterGymLinks,
+  fighterRecords,
   onAddFighter,
   onAddFightResult,
 }: FighterRosterPanelProps) {
@@ -125,11 +127,13 @@ export function FighterRosterPanel({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-10">
-          {filteredFighters.map((f) => (
+          {filteredFighters.map((f) => {
+            const record = fighterRecords.get(f.id) || { wins: 0, losses: 0, draws: 0 };
+            return (
             <div key={f.id} className="rounded-lg border border-border bg-card p-4">
               <p className="font-medium text-foreground">{f.name}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                {f.record_wins}W-{f.record_losses}L-{f.record_draws}D · {formatEnum(f.weight_class)}
+                {record.wins}W-{record.losses}L-{record.draws}D · {formatEnum(f.weight_class)}
               </p>
               <div className="flex gap-1 mt-2 flex-wrap">
                 {f.style && (
@@ -152,7 +156,7 @@ export function FighterRosterPanel({
                 <FileText className="h-3 w-3" /> Add Fight Result
               </Button>
             </div>
-          ))}
+          )})}
         </div>
       )}
     </div>
