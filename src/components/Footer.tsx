@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logo from "@/assets/logo.png";
+import matchupIcon from "@/assets/matchup-icon.png";
 
 export function Footer() {
   return (
