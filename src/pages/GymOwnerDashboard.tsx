@@ -467,15 +467,15 @@ export default function GymOwnerDashboard() {
               {/* Proposals Tab */}
               <TabsContent value="proposals">
                 <h2 className="font-heading text-2xl text-foreground mb-4">
-                  INCOMING <span className="text-primary">PROPOSALS</span>
+                  MATCH <span className="text-primary">PROPOSALS</span>
                 </h2>
-                {incomingProposals.length === 0 ? (
+                {pendingProposals.length === 0 ? (
                   <p className="text-muted-foreground">
                     No proposals requiring your review.
                   </p>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {incomingProposals.map((p: any) => (
+                    {pendingProposals.map((p: any) => (
                       <ProposalCard
                         key={p.id}
                         proposal={p}
