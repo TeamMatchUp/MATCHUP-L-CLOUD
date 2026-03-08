@@ -67,7 +67,7 @@ export default function FighterDetail() {
     );
   }
 
-  const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
+  // Static record kept as fallback, but dynamic record from FightHistory will override visually
   const gyms = fighter.fighter_gym_links ?? [];
 
   return (
