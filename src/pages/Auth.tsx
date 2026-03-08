@@ -18,6 +18,14 @@ const ROLES: { value: AppRole; label: string; description: string }[] = [
   { value: "gym_owner", label: "Coach", description: "Manage gyms, rosters, fighter records, and organise events" },
 ];
 
+const ROLE_DASHBOARDS: Record<AppRole, string> = {
+  organiser: "/organiser/dashboard",
+  fighter: "/fighter/dashboard",
+  gym_owner: "/gym-owner/dashboard",
+  coach: "/coach/dashboard",
+  admin: "/admin/dashboard",
+};
+
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
