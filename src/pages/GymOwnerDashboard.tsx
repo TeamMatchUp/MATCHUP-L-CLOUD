@@ -18,9 +18,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Calendar, ArrowRight, Building2, Users, Inbox, Pencil } from "lucide-react";
+import { Plus, Calendar, ArrowRight, Building2, Users, Inbox, Pencil, FileText } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
+import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
@@ -51,6 +52,7 @@ export default function GymOwnerDashboard() {
   const [newGymLocation, setNewGymLocation] = useState("");
   const [newGymCountry, setNewGymCountry] = useState<CountryCode>("UK");
   const [newGymDescription, setNewGymDescription] = useState("");
+  const [fightResultFighter, setFightResultFighter] = useState<{ id: string; name: string } | null>(null);
 
   // Get owner's gyms
   const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
@@ -450,7 +452,7 @@ export default function GymOwnerDashboard() {
                           {f.record_wins}W-{f.record_losses}L-{f.record_draws}D
                           · {formatEnum(f.weight_class)}
                         </p>
-                        <div className="flex gap-1 mt-2">
+                        <div className="flex gap-1 mt-2 flex-wrap">
                           {f.style && (
                             <Badge variant="outline" className="text-xs">
                               {formatEnum(f.style)}
@@ -470,6 +472,14 @@ export default function GymOwnerDashboard() {
                             {f.available ? "Available" : "Unavailable"}
                           </Badge>
                         </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="mt-3 gap-1 text-xs"
+                          onClick={() => setFightResultFighter({ id: f.id, name: f.name })}
+                        >
+                          <FileText className="h-3 w-3" /> Add Fight Result
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -573,6 +583,16 @@ export default function GymOwnerDashboard() {
                 onOpenChange={setShowAddFighter}
                 coachId={user.id}
                 gymId={addFighterGymId || primaryGym!.id}
+                onSuccess={handleRefresh}
+              />
+            )}
+
+            {user && fightResultFighter && (
+              <AddFightResultDialog
+                open={!!fightResultFighter}
+                onOpenChange={(open) => { if (!open) setFightResultFighter(null); }}
+                fighter={fightResultFighter}
+                coachId={user.id}
                 onSuccess={handleRefresh}
               />
             )}
