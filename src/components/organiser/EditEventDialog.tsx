@@ -59,6 +59,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
   const [description, setDescription] = useState(event.description || "");
   const [venueName, setVenueName] = useState(event.venue_name || "");
   const [city, setCity] = useState(event.city || "");
+  const [ticketEnabled, setTicketEnabled] = useState(event.ticket_enabled ?? false);
 
   useEffect(() => {
     setTitle(event.title);
