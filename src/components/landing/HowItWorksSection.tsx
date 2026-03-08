@@ -49,7 +49,7 @@ export function HowItWorksSection() {
           {steps.map((s, i) => (
             <motion.div
               key={s.step}
-              className="relative text-center p-8 pt-12 rounded-lg border border-transparent hover:border-border transition-all duration-250 group overflow-visible"
+              className="relative text-center p-8 pt-12 overflow-visible group"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
