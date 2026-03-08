@@ -1,7 +1,5 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Calendar, Users, Shield } from "lucide-react";
-import iconGold from "@/assets/icon-gold.webp";
-import { useRef } from "react";
 
 const sides = [
   {
@@ -22,16 +20,6 @@ const sides = [
 ];
 
 export function ThreeSidesSection() {
-  const iconRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: iconRef,
-    offset: ["start end", "end start"],
-  });
-
-  const rotate = useTransform(scrollYProgress, [0.3, 0.8], [0, 180]);
-  const scale = useTransform(scrollYProgress, [0.3, 0.8], [1, 2.5]);
-  const opacity = useTransform(scrollYProgress, [0.3, 0.7], [0.6, 0]);
-
   return (
     <section className="py-24 relative overflow-hidden">
       {/* Subtle background glow */}
@@ -72,16 +60,6 @@ export function ThreeSidesSection() {
               <p className="text-sm text-muted-foreground leading-relaxed">{side.description}</p>
             </motion.div>
           ))}
-        </div>
-
-        {/* Central icon - rotates, scales, fades on scroll */}
-        <div ref={iconRef} className="flex justify-center mt-8 mb-0">
-          <motion.img
-            src={iconGold}
-            alt="MatchUp"
-            className="h-20 w-20"
-            style={{ rotate, scale, opacity }}
-          />
         </div>
       </div>
     </section>
