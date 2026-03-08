@@ -61,6 +61,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
   const [venueName, setVenueName] = useState(event.venue_name || "");
   const [city, setCity] = useState(event.city || "");
   const [ticketEnabled, setTicketEnabled] = useState(event.ticket_enabled ?? false);
+  const [status, setStatus] = useState<EventStatus>(event.status);
 
   useEffect(() => {
     setTitle(event.title);
@@ -71,6 +72,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
     setVenueName(event.venue_name || "");
     setCity(event.city || "");
     setTicketEnabled(event.ticket_enabled ?? false);
+    setStatus(event.status);
   }, [event]);
 
   const updateMutation = useMutation({
