@@ -107,7 +107,7 @@ export default function CoachDashboard() {
   });
 
   const incomingProposals = proposals.filter((p) =>
-    ["pending_coach_a", "pending_coach_b"].includes(p.status)
+    p.status === "pending"
   );
   const awaitingFighters = proposals.filter((p) =>
     ["pending_fighter_a", "pending_fighter_b"].includes(p.status)
