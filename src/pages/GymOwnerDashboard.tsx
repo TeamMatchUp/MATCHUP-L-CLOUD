@@ -561,12 +561,12 @@ export default function GymOwnerDashboard() {
               </TabsContent>
             </Tabs>
 
-            {user && (
-              <AddFighterDialog
+            {user && (addFighterGymId || primaryGym?.id) && (
+              <AddFighterToGymDialog
                 open={showAddFighter}
                 onOpenChange={setShowAddFighter}
                 coachId={user.id}
-                gymId={primaryGym?.id}
+                gymId={addFighterGymId || primaryGym!.id}
                 onSuccess={handleRefresh}
               />
             )}
