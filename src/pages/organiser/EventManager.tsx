@@ -363,16 +363,26 @@ export default function EventManager() {
                   </p>
                 )}
               </div>
-              {event.status === "draft" && (
+              <div className="flex gap-2 flex-wrap">
                 <Button
-                  onClick={() => publishMutation.mutate()}
-                  disabled={publishMutation.isPending}
-                  className="gap-2"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1"
+                  onClick={() => setShowEditEvent(true)}
                 >
-                  <Globe className="h-4 w-4" />
-                  {publishMutation.isPending ? "Publishing..." : "Publish Event"}
+                  <Pencil className="h-3 w-3" /> Edit Event
                 </Button>
-              )}
+                {event.status === "draft" && (
+                  <Button
+                    onClick={() => publishMutation.mutate()}
+                    disabled={publishMutation.isPending}
+                    className="gap-2"
+                  >
+                    <Globe className="h-4 w-4" />
+                    {publishMutation.isPending ? "Publishing..." : "Publish Event"}
+                  </Button>
+                )}
+              </div>
             </div>
 
             {event.description && (
