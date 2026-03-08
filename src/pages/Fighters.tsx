@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Filter, Search } from "lucide-react";
+import { Filter, Search, ShieldCheck } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
