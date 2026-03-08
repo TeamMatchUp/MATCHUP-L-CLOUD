@@ -57,7 +57,6 @@ export default function GymOwnerDashboard() {
   const [fightResultFighter, setFightResultFighter] = useState<{ id: string; name: string } | null>(null);
   const [editFighter, setEditFighter] = useState<any>(null);
   const [deleteFighter, setDeleteFighter] = useState<{ id: string; name: string } | null>(null);
-  const [rosterGymFilter, setRosterGymFilter] = useState<string>("all");
 
   // Get owner's gyms
   const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
@@ -96,33 +95,25 @@ export default function GymOwnerDashboard() {
     enabled: !!user,
   });
 
-  // Get fighters linked via gyms (with gym mapping)
-  const { data: gymFighterLinks = [] } = useQuery({
-    queryKey: ["owner-gym-fighter-links", user?.id, myGyms.map(g => g.id).join(",")],
+  // Get fighters linked via gyms
+  const { data: gymFighters = [] } = useQuery({
+    queryKey: ["owner-gym-fighters", user?.id],
     queryFn: async () => {
       if (myGyms.length === 0) return [];
       const gymIds = myGyms.map((g) => g.id);
       const { data: links } = await supabase
         .from("fighter_gym_links")
-        .select("fighter_id, gym_id")
+        .select("fighter_id")
         .in("gym_id", gymIds);
-      return links ?? [];
-    },
-    enabled: myGyms.length > 0,
-  });
-
-  const { data: gymFighters = [] } = useQuery({
-    queryKey: ["owner-gym-fighters", user?.id, gymFighterLinks.map(l => l.fighter_id).join(",")],
-    queryFn: async () => {
-      if (gymFighterLinks.length === 0) return [];
-      const fighterIds = [...new Set(gymFighterLinks.map((l) => l.fighter_id))];
+      if (!links || links.length === 0) return [];
+      const fighterIds = links.map((l) => l.fighter_id);
       const { data: fighters } = await supabase
         .from("fighter_profiles")
         .select("*")
         .in("id", fighterIds);
       return fighters ?? [];
     },
-    enabled: gymFighterLinks.length > 0,
+    enabled: myGyms.length > 0,
   });
 
   // Combine unique fighters
@@ -130,18 +121,6 @@ export default function GymOwnerDashboard() {
   [...myFighters, ...gymFighters].forEach((f) => allFighterMap.set(f.id, f));
   const allFighters = Array.from(allFighterMap.values());
   const fighterIds = allFighters.map((f) => f.id);
-
-  // Build gym-to-fighter mapping for filtering
-  const gymToFighterIds = new Map<string, Set<string>>();
-  gymFighterLinks.forEach((link) => {
-    if (!gymToFighterIds.has(link.gym_id)) gymToFighterIds.set(link.gym_id, new Set());
-    gymToFighterIds.get(link.gym_id)!.add(link.fighter_id);
-  });
-
-  // Filtered fighters for roster tab
-  const filteredRosterFighters = rosterGymFilter === "all"
-    ? allFighters
-    : allFighters.filter((f) => gymToFighterIds.get(rosterGymFilter)?.has(f.id));
 
   // Get proposals involving owner's fighters
   const { data: proposals = [] } = useQuery({
@@ -419,25 +398,10 @@ export default function GymOwnerDashboard() {
 
               {/* Roster Tab */}
               <TabsContent value="roster">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
-                  <div className="flex items-center gap-3">
-                    <h2 className="font-heading text-2xl text-foreground">
-                      FIGHTER <span className="text-primary">ROSTER</span>
-                    </h2>
-                    {myGyms.length > 1 && (
-                      <Select value={rosterGymFilter} onValueChange={setRosterGymFilter}>
-                        <SelectTrigger className="w-[180px] h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Gyms</SelectItem>
-                          {myGyms.map((g) => (
-                            <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-heading text-2xl text-foreground">
+                    FIGHTER <span className="text-primary">ROSTER</span>
+                  </h2>
                   {myGyms.length > 0 && (
                     <div className="flex items-center gap-2">
                       <Select
@@ -468,7 +432,7 @@ export default function GymOwnerDashboard() {
                   )}
                 </div>
 
-                {filteredRosterFighters.length === 0 ? (
+                {allFighters.length === 0 ? (
                   <div className="rounded-lg border border-border bg-card p-8 text-center">
                     <p className="text-muted-foreground mb-4">
                       No fighters in your roster yet.
@@ -482,7 +446,7 @@ export default function GymOwnerDashboard() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {filteredRosterFighters.map((f) => (
+                    {allFighters.map((f) => (
                       <div
                         key={f.id}
                         className="rounded-lg border border-border bg-card p-4"
