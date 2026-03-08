@@ -6,7 +6,7 @@ import { FightHistory } from "@/components/fighter/FightHistory";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -20,6 +20,7 @@ import { STYLE_LABELS } from "@/lib/format";
 
 export default function FighterDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   const { data: fighter, isLoading } = useQuery({
     queryKey: ["fighter", id],
@@ -67,8 +68,8 @@ export default function FighterDetail() {
         <main className="pt-16">
           <div className="container py-16 text-center">
             <h1 className="font-heading text-3xl text-foreground mb-4">Fighter Not Found</h1>
-            <Button variant="ghost" asChild>
-              <Link to="/fighters"><ArrowLeft className="h-4 w-4 mr-2" />Back to Fighters</Link>
+            <Button variant="ghost" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Button>
           </div>
         </main>
@@ -86,8 +87,8 @@ export default function FighterDetail() {
       <main className="pt-16">
         <section className="py-16">
           <div className="container max-w-3xl">
-            <Button variant="ghost" size="sm" asChild className="mb-6">
-              <Link to="/fighters"><ArrowLeft className="h-4 w-4 mr-2" />All Fighters</Link>
+            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6">
+              <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Button>
 
             <motion.div
