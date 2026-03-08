@@ -48,7 +48,7 @@ export function TwoSidedSection() {
           to="/auth"
           className="inline-flex items-center gap-3 bg-primary text-primary-foreground font-medium text-sm px-8 py-3 rounded-full transition-all duration-200 shadow-[0_0_10px_hsl(var(--primary)/0.2)] hover:shadow-[0_0_16px_hsl(var(--primary)/0.35)]"
         >
-          Create Account
+          CREATE ACCOUNT
         </Link>
       </motion.div>
     </section>
