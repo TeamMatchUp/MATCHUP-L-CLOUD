@@ -82,6 +82,52 @@ export default function CoachDashboard() {
   const allFighters = Array.from(allFighterMap.values());
   const coachFighterIds = allFighters.map((f) => f.id);
 
+  // Fetch all fights for the fighters to calculate dynamic records
+  const { data: allFights = [] } = useQuery({
+    queryKey: ["coach-fighter-fights", coachFighterIds],
+    queryFn: async () => {
+      if (coachFighterIds.length === 0) return [];
+      const { data: fightsA } = await supabase
+        .from("fights")
+        .select("*")
+        .in("fighter_a_id", coachFighterIds);
+      const { data: fightsB } = await supabase
+        .from("fights")
+        .select("*")
+        .in("fighter_b_id", coachFighterIds);
+      const map = new Map<string, any>();
+      [...(fightsA || []), ...(fightsB || [])].forEach((f) => map.set(f.id, f));
+      return Array.from(map.values());
+    },
+    enabled: coachFighterIds.length > 0,
+  });
+
+  // Calculate dynamic records for each fighter
+  const fighterRecords = new Map<string, { wins: number; losses: number; draws: number }>();
+  allFighters.forEach((fighter) => {
+    let wins = 0, losses = 0, draws = 0;
+    allFights.forEach((fight) => {
+      const isA = fight.fighter_a_id === fighter.id;
+      const isB = fight.fighter_b_id === fighter.id;
+      if (!isA && !isB) return;
+
+      const result = fight.result as string;
+      if (result === "draw") {
+        draws++;
+      } else if (result === "win") {
+        if (isA) wins++;
+        else losses++;
+      } else if (result === "loss") {
+        if (isA) losses++;
+        else wins++;
+      } else if (fight.winner_id) {
+        if (fight.winner_id === fighter.id) wins++;
+        else losses++;
+      }
+    });
+    fighterRecords.set(fighter.id, { wins, losses, draws });
+  });
+
   // Get proposals involving coach's fighters
   const { data: proposals = [] } = useQuery({
     queryKey: ["coach-proposals", coachFighterIds],
