@@ -6,47 +6,52 @@
 
 @layer base {
   :root {
-    --background: 220 20% 7%;
-    --foreground: 220 10% 92%;
+    --background: 213 30% 6%;
+    --foreground: 212 30% 93%;
 
-    --card: 222 18% 11%;
-    --card-foreground: 220 10% 92%;
+    --card: 212 27% 10%;
+    --card-foreground: 212 30% 93%;
 
-    --popover: 222 18% 11%;
-    --popover-foreground: 220 10% 92%;
+    --popover: 212 27% 10%;
+    --popover-foreground: 212 30% 93%;
 
-    --primary: 42 65% 52%;
-    --primary-foreground: 220 20% 7%;
+    --primary: 40 90% 61%;
+    --primary-foreground: 213 30% 6%;
 
-    --secondary: 216 54% 40%;
-    --secondary-foreground: 220 10% 92%;
+    --secondary: 173 60% 54%;
+    --secondary-foreground: 213 30% 6%;
 
-    --muted: 222 14% 16%;
-    --muted-foreground: 220 10% 55%;
+    --muted: 213 29% 8%;
+    --muted-foreground: 210 10% 47%;
 
-    --accent: 222 14% 16%;
-    --accent-foreground: 220 10% 92%;
+    --accent: 213 29% 8%;
+    --accent-foreground: 212 30% 93%;
 
-    --destructive: 4 60% 46%;
-    --destructive-foreground: 220 10% 92%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 212 30% 93%;
 
-    --success: 152 62% 30%;
-    --success-foreground: 220 10% 92%;
+    --success: 142 71% 45%;
+    --success-foreground: 212 30% 93%;
 
-    --border: 222 14% 20%;
-    --input: 222 14% 20%;
-    --ring: 42 65% 52%;
+    --border: 210 20% 21%;
+    --input: 210 20% 21%;
+    --ring: 40 90% 61%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 222 18% 9%;
-    --sidebar-foreground: 220 10% 80%;
-    --sidebar-primary: 42 65% 52%;
-    --sidebar-primary-foreground: 220 20% 7%;
-    --sidebar-accent: 222 14% 14%;
-    --sidebar-accent-foreground: 220 10% 92%;
-    --sidebar-border: 222 14% 16%;
-    --sidebar-ring: 42 65% 52%;
+    --nav-background: 213 29% 8%;
+
+    --text-secondary: 210 12% 66%;
+    --text-muted: 210 10% 47%;
+
+    --sidebar-background: 213 29% 8%;
+    --sidebar-foreground: 210 12% 66%;
+    --sidebar-primary: 40 90% 61%;
+    --sidebar-primary-foreground: 213 30% 6%;
+    --sidebar-accent: 212 27% 10%;
+    --sidebar-accent-foreground: 212 30% 93%;
+    --sidebar-border: 210 20% 21%;
+    --sidebar-ring: 40 90% 61%;
 
     --font-heading: 'Bebas Neue', sans-serif;
     --font-body: 'Inter', sans-serif;
