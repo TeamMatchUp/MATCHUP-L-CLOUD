@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { BannerAd } from "@/components/BannerAd";
 import { motion } from "framer-motion";
 import { MapPin, Calendar, ArrowRight, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
