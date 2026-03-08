@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, LogOut, User, Menu, X } from "lucide-react";
 import logoFull from "@/assets/logo-full.webp";
