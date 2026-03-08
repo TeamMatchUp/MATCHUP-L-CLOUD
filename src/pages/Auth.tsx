@@ -28,7 +28,8 @@ const ROLE_DASHBOARDS: Record<AppRole, string> = {
 };
 
 export default function Auth() {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const searchParams = new URLSearchParams(location.search);
+  const [isSignUp, setIsSignUp] = useState(searchParams.get("mode") === "signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
