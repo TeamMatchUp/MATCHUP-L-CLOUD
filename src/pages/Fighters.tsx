@@ -184,8 +184,12 @@ const Fighters = () => {
                           className="rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block"
                         >
                           <div className="flex items-center justify-between mb-4">
-                            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground">
-                              {fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)}
+                            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground overflow-hidden shrink-0">
+                              {fighter.profile_image ? (
+                                <img src={fighter.profile_image} alt={fighter.name} className="h-full w-full object-cover" />
+                              ) : (
+                                fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)
+                              )}
                             </div>
                             <span className={`text-xs font-medium px-2 py-1 rounded-full ${fighter.available ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                               {fighter.available ? "Available" : "Booked"}

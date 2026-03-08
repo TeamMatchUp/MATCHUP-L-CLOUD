@@ -1,10 +1,13 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ChevronDown, LogOut, User, Menu, X, Settings } from "lucide-react";
 import logoFull from "@/assets/logo-full.webp";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +44,23 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isLanding = location.pathname === "/";
+
+  const { data: profile } = useQuery({
+    queryKey: ["header-profile", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("avatar_url, full_name")
+        .eq("id", user!.id)
+        .single();
+      return data;
+    },
+    enabled: !!user,
+    staleTime: 60000,
+  });
+
+  const avatarUrl = profile?.avatar_url;
+  const initials = (profile?.full_name || user?.email || "U").slice(0, 2).toUpperCase();
 
   const handleSignOut = async () => {
     await signOut();
@@ -107,7 +127,12 @@ export function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2">
-                  <User className="h-4 w-4" />
+                  <Avatar className="h-7 w-7">
+                    {avatarUrl && <AvatarImage src={avatarUrl} alt="Profile" />}
+                    <AvatarFallback className="text-[10px] bg-muted text-muted-foreground">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
                   {activeRole && (
                     <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
                       {ROLE_LABELS[activeRole] || activeRole}
