@@ -46,7 +46,7 @@ export default function Auth() {
     if (error) {
       toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
     } else {
-      navigate(from, { replace: true });
+      navigate(from || "/", { replace: true });
     }
   };
 
