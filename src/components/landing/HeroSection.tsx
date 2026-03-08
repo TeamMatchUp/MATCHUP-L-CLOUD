@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
+    <section className="relative min-h-[40vh] flex items-center justify-center overflow-hidden">
       {/* Giant watermark text */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
         <span
