@@ -474,6 +474,21 @@ export default function EventManager() {
                 }}
               />
             )}
+
+            {/* Edit Event Dialog */}
+            {showEditEvent && event && (
+              <EditEventDialog
+                open={showEditEvent}
+                onOpenChange={setShowEditEvent}
+                event={event}
+                onSuccess={() => {
+                  queryClient.invalidateQueries({ queryKey: ["organiser-event", id] });
+                }}
+                onDelete={() => {
+                  navigate("/organiser/dashboard");
+                }}
+              />
+            )}
           </div>
         </section>
       </main>
