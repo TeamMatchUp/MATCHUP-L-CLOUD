@@ -92,7 +92,10 @@ export default function Gyms() {
                       <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground mb-4">
                         {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                       </div>
-                      <h3 className="font-heading text-xl text-foreground mb-1">{gym.name}</h3>
+                      <div className="flex items-center gap-1">
+                        <h3 className="font-heading text-xl text-foreground mb-1">{gym.name}</h3>
+                        {gym.verified && <ShieldCheck className="h-4 w-4 text-primary" />}
+                      </div>
                       {gym.location && (
                         <p className="text-xs text-muted-foreground flex items-center gap-1 mb-3">
                           <MapPin className="h-3 w-3" />{gym.location}

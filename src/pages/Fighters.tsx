@@ -174,7 +174,10 @@ const Fighters = () => {
                             {fighter.available ? "Available" : "Booked"}
                           </span>
                         </div>
-                        <h3 className="font-heading text-lg text-foreground">{fighter.name}</h3>
+                        <div className="flex items-center gap-1">
+                          <h3 className="font-heading text-lg text-foreground">{fighter.name}</h3>
+                          {fighter.verified && <ShieldCheck className="h-4 w-4 text-primary" />}
+                        </div>
                         <p className="text-primary font-bold text-lg mt-1">{record}</p>
                         <div className="mt-3 space-y-1 text-xs text-muted-foreground">
                           <p>{WEIGHT_CLASS_LABELS[fighter.weight_class]} · {fighter.style ? STYLE_LABELS[fighter.style] : "—"}</p>
