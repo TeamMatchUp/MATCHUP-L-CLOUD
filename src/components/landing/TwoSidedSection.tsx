@@ -1,60 +1,73 @@
 import { motion } from "framer-motion";
-import { Shield, Users } from "lucide-react";
-
-const sides = [
-  {
-    icon: Shield,
-    title: "FOR ORGANISERS",
-    description: "Create events, define fight slots, and use AI-powered smart matching to build the perfect card. Full control over every matchup.",
-    features: ["Event creation", "AI Smart Match", "Confirmation tracking"],
-  },
-  {
-    icon: Users,
-    title: "FOR COACHES",
-    description: "Manage your fighter roster, control availability, and review structured match proposals. Your fighters, your decisions.",
-    features: ["Roster management", "Availability control", "Proposal review"],
-  },
-];
+import { Link } from "react-router-dom";
+import boxingRingImg from "@/assets/boxing-ring-dark.jpg";
 
 export function TwoSidedSection() {
   return (
-    <section className="py-24 bg-card">
-      <div className="container">
-        <motion.h2
-          className="font-heading text-4xl md:text-5xl text-center text-foreground mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          TWO SIDES. <span className="text-primary">ONE PLATFORM.</span>
-        </motion.h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {sides.map((side, i) => (
-            <motion.div
-              key={side.title}
-              className="p-8 rounded-lg bg-background border border-border hover:gold-border-subtle transition-colors duration-250"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
+    <section className="py-0">
+      <div className="container px-0 sm:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-1">
+          {/* View Events — with boxing ring background */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <Link
+              to="/events"
+              className="relative block aspect-[4/3] overflow-hidden group"
             >
-              <side.icon className="h-8 w-8 text-primary mb-4" />
-              <h3 className="font-heading text-2xl text-foreground mb-3">{side.title}</h3>
-              <p className="text-muted-foreground text-base mb-6">{side.description}</p>
-              <ul className="space-y-2">
-                {side.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          ))}
+              <img
+                src={boxingRingImg}
+                alt="Boxing ring arena"
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 opacity-60"
+              />
+              <div className="absolute inset-0 bg-background/40" />
+              <div className="relative z-10 flex items-center justify-center h-full">
+                <h3 className="font-heading text-3xl md:text-4xl text-foreground tracking-wide">
+                  VIEW EVENTS
+                </h3>
+              </div>
+            </Link>
+          </motion.div>
+
+          {/* View Fighters — dark card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Link
+              to="/fighters"
+              className="relative block aspect-[4/3] overflow-hidden bg-card group"
+            >
+              <div className="relative z-10 flex items-center justify-center h-full">
+                <h3 className="font-heading text-3xl md:text-4xl text-foreground tracking-wide">
+                  VIEW FIGHTERS
+                </h3>
+              </div>
+            </Link>
+          </motion.div>
         </div>
       </div>
+
+      {/* Create Account CTA */}
+      <motion.div
+        className="flex justify-center py-16"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <Link
+          to="/auth"
+          className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
+        >
+          create account
+        </Link>
+      </motion.div>
     </section>
   );
 }
