@@ -21,6 +21,7 @@ import {
 import { Plus, Calendar, ArrowRight, Building2, Users, Inbox, Pencil, FileText } from "lucide-react";
 import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
+import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
