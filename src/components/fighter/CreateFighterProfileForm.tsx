@@ -82,7 +82,7 @@ export function CreateFighterProfileForm({ userId, userEmail, onSuccess }: Props
         CREATE YOUR <span className="text-primary">FIGHTER PROFILE</span>
       </h2>
       <p className="text-sm text-muted-foreground mb-6">
-        Set up your fighter profile to start receiving match proposals. Your official record will be managed by your gym owner.
+        Set up your fighter profile to start receiving match proposals. Your official record will be managed by your coach.
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">

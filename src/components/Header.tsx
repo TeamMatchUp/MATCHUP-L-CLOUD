@@ -18,7 +18,7 @@ type AppRole = Database["public"]["Enums"]["app_role"];
 
 const ROLE_LABELS: Partial<Record<AppRole, string>> = {
   organiser: "Organiser",
-  gym_owner: "Gym Owner",
+  gym_owner: "Coach",
   fighter: "Fighter",
   admin: "Admin",
   coach: "Coach",

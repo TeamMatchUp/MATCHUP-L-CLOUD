@@ -58,7 +58,7 @@ export function JoinGymButton({ gymId }: Props) {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Request sent", description: "Waiting for gym owner approval." });
+      toast({ title: "Request sent", description: "Waiting for coach approval." });
       refetch();
     },
     onError: (e: any) => {

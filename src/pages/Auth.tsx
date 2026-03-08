@@ -15,7 +15,7 @@ type AppRole = Database["public"]["Enums"]["app_role"];
 const ROLES: { value: AppRole; label: string; description: string }[] = [
   { value: "organiser", label: "Event Organiser", description: "Create events and matchmake fighters" },
   { value: "fighter", label: "Fighter", description: "Manage your profile and accept fight offers" },
-  { value: "gym_owner", label: "Gym Owner", description: "Manage gyms, rosters, fighter records, and organise events" },
+  { value: "gym_owner", label: "Coach", description: "Manage gyms, rosters, fighter records, and organise events" },
 ];
 
 export default function Auth() {
