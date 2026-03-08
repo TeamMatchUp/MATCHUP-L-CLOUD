@@ -42,6 +42,7 @@ export default function EventManager() {
   const [selectedFighterB, setSelectedFighterB] = useState<FighterProfile | null>(null);
   const [showProposeDialog, setShowProposeDialog] = useState(false);
   const [editingSlot, setEditingSlot] = useState<FightSlot | null>(null);
+  const [showEditEvent, setShowEditEvent] = useState(false);
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["organiser-event", id],
