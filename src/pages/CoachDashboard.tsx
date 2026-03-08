@@ -91,7 +91,7 @@ export default function CoachDashboard() {
         .from("match_proposals")
         .select("*, fighter_a:fighter_profiles!match_proposals_fighter_a_id_fkey(*), fighter_b:fighter_profiles!match_proposals_fighter_b_id_fkey(*), fight_slot:fight_slots!match_proposals_fight_slot_id_fkey(*, events(*))")
         .in("fighter_a_id", coachFighterIds)
-        .in("status", ["pending_coach_a", "pending_coach_b", "pending_fighter_a", "pending_fighter_b"]);
+        .in("status", ["pending", "pending_coach_a", "pending_coach_b", "pending_fighter_a", "pending_fighter_b"]);
       
       const { data: proposalsB } = await supabase
         .from("match_proposals")
