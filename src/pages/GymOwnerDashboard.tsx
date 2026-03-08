@@ -41,6 +41,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function GymOwnerDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [showAddFighter, setShowAddFighter] = useState(false);
@@ -52,7 +53,7 @@ export default function GymOwnerDashboard() {
   const [newGymDescription, setNewGymDescription] = useState("");
 
   // Get owner's gyms
-  const { data: myGyms = [] } = useQuery({
+  const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ["owner-gyms", user?.id],
     queryFn: async () => {
       const { data } = await supabase
@@ -64,6 +65,13 @@ export default function GymOwnerDashboard() {
     },
     enabled: !!user,
   });
+
+  // Redirect to gym registration if coach has no gyms
+  useEffect(() => {
+    if (!gymsLoading && myGyms.length === 0 && user) {
+      navigate("/register-gym", { replace: true });
+    }
+  }, [gymsLoading, myGyms.length, user, navigate]);
 
   const primaryGym = myGyms[0];
 

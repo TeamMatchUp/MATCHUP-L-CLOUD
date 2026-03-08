@@ -89,6 +89,16 @@ const App = () => (
               }
             />
 
+            {/* Protected: Coach – Register Gym */}
+            <Route
+              path="/register-gym"
+              element={
+                <ProtectedRoute requiredRole="gym_owner">
+                  <RegisterGym />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Protected: Fighter */}
             <Route
               path="/fighter/dashboard"
