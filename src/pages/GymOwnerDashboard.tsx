@@ -58,7 +58,7 @@ export default function GymOwnerDashboard() {
     queryFn: async () => {
       const { data } = await supabase
         .from("gyms")
-        .select("id, name, location, country, fighter_gym_links(fighter_id)")
+        .select("id, name, location, city, address, country, description, contact_email, phone, website, fighter_gym_links(fighter_id)")
         .eq("coach_id", user!.id)
         .order("name");
       return data ?? [];
