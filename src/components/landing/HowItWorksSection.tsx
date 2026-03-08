@@ -25,7 +25,7 @@ const sections = [
         description: "Coach approves, fighter confirms. Only when all parties agree does a match become official.",
       },
     ],
-    subtitle: "HOW IT WORKS",
+    subtitle: "SIMPLIFY MATCHMAKING HEADACHES",
     tagline: "Three steps to a confirmed fight. No shortcuts.",
   },
   {
