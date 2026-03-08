@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import boxingRingImg from "@/assets/boxing-ring-dark.jpg";
+import matchupIcon from "@/assets/matchup-icon.png";
 
 export function TwoSidedSection() {
   return (
