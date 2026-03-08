@@ -49,14 +49,14 @@ export function HowItWorksSection() {
           {steps.map((s, i) => (
             <motion.div
               key={s.step}
-              className="relative text-center p-8 rounded-lg border border-transparent hover:border-border transition-all duration-250 group"
+              className="relative text-center p-8 pt-12 rounded-lg border border-transparent hover:border-border transition-all duration-250 group overflow-visible"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.15 }}
             >
               {/* Step number glow */}
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 pointer-events-none z-10">
                 <span className="font-heading text-5xl text-primary/10">{s.step}</span>
               </div>
 
