@@ -68,7 +68,7 @@ export function Header() {
               to="/"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
-              Home
+              HOME
             </Link>
           )}
           {user && activeRole && (
