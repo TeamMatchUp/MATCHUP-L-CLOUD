@@ -179,27 +179,45 @@ export type Database = {
       }
       fight_slots: {
         Row: {
+          card_position: string
           created_at: string
           event_id: string
+          experience_level: string | null
           id: string
+          max_weight_kg: number | null
+          max_wins: number | null
+          min_weight_kg: number | null
+          min_wins: number | null
           slot_number: number
           status: Database["public"]["Enums"]["fight_slot_status"]
           updated_at: string
           weight_class: Database["public"]["Enums"]["weight_class"]
         }
         Insert: {
+          card_position?: string
           created_at?: string
           event_id: string
+          experience_level?: string | null
           id?: string
+          max_weight_kg?: number | null
+          max_wins?: number | null
+          min_weight_kg?: number | null
+          min_wins?: number | null
           slot_number?: number
           status?: Database["public"]["Enums"]["fight_slot_status"]
           updated_at?: string
           weight_class: Database["public"]["Enums"]["weight_class"]
         }
         Update: {
+          card_position?: string
           created_at?: string
           event_id?: string
+          experience_level?: string | null
           id?: string
+          max_weight_kg?: number | null
+          max_wins?: number | null
+          min_weight_kg?: number | null
+          min_wins?: number | null
           slot_number?: number
           status?: Database["public"]["Enums"]["fight_slot_status"]
           updated_at?: string
@@ -736,6 +754,7 @@ export type Database = {
         | "confirmed"
         | "declined"
         | "withdrawn"
+        | "pending"
       notification_type:
         | "match_proposed"
         | "match_accepted"
@@ -900,6 +919,7 @@ export const Constants = {
         "confirmed",
         "declined",
         "withdrawn",
+        "pending",
       ],
       notification_type: [
         "match_proposed",
