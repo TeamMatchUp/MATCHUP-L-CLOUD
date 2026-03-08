@@ -63,7 +63,5 @@ export function ThreeSidesSection() {
         </div>
       </div>
     </section>
-      </div>
-    </section>
   );
 }
