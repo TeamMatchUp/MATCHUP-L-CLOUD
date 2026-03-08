@@ -44,6 +44,7 @@ export default function GymOwnerDashboard() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [showAddFighter, setShowAddFighter] = useState(false);
+  const [addFighterGymId, setAddFighterGymId] = useState<string | undefined>();
   const [showCreateGym, setShowCreateGym] = useState(false);
   const [newGymName, setNewGymName] = useState("");
   const [newGymLocation, setNewGymLocation] = useState("");
