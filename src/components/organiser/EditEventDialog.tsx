@@ -34,9 +34,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2 } from "lucide-react";
+import { Trash2, Globe, EyeOff } from "lucide-react";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
+type EventStatus = Database["public"]["Enums"]["event_status"];
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
 const COUNTRIES = Constants.public.Enums.country_code;
 
@@ -60,6 +61,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
   const [venueName, setVenueName] = useState(event.venue_name || "");
   const [city, setCity] = useState(event.city || "");
   const [ticketEnabled, setTicketEnabled] = useState(event.ticket_enabled ?? false);
+  const [status, setStatus] = useState<EventStatus>(event.status);
 
   useEffect(() => {
     setTitle(event.title);
@@ -70,6 +72,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
     setVenueName(event.venue_name || "");
     setCity(event.city || "");
     setTicketEnabled(event.ticket_enabled ?? false);
+    setStatus(event.status);
   }, [event]);
 
   const updateMutation = useMutation({
@@ -85,6 +88,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
           venue_name: venueName || null,
           city: city || null,
           ticket_enabled: ticketEnabled,
+          status,
         })
         .eq("id", event.id);
       if (error) throw error;
@@ -178,6 +182,34 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
             <Label htmlFor="ticket_enabled" className="cursor-pointer">
               Show ticket sales on public event page
             </Label>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-border p-3">
+            <div className="flex items-center gap-2">
+              {status === "published" ? (
+                <Globe className="h-4 w-4 text-green-500" />
+              ) : (
+                <EyeOff className="h-4 w-4 text-muted-foreground" />
+              )}
+              <div>
+                <p className="text-sm font-medium">
+                  {status === "published" ? "Published" : "Draft"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {status === "published"
+                    ? "Visible to the public"
+                    : "Only visible to you"}
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant={status === "published" ? "outline" : "default"}
+              size="sm"
+              onClick={() => setStatus(status === "published" ? "draft" : "published")}
+            >
+              {status === "published" ? "Unpublish" : "Publish"}
+            </Button>
           </div>
         </div>
 
