@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function Contact() {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col pt-16">
       <Header />
       <main className="flex-1 container max-w-4xl py-12 px-4">
         <h1 className="text-4xl font-bold mb-8">Contact Us</h1>
