@@ -1,7 +1,10 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 export function HeroSection() {
+  const [exploreOpen, setExploreOpen] = useState(false);
+
   return (
     <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden -mt-8">
       {/* Giant watermark text */}
@@ -33,22 +36,49 @@ export function HeroSection() {
             promote, matchup, done. It's that simple...
           </motion.p>
 
-          {/* Left-aligned nav links */}
+          {/* Collapsible explore menu */}
           <motion.div
-            className="absolute left-0 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-3 pl-8"
+            className="absolute left-0 top-1/3 pl-8"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <Link to="/events" className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 uppercase tracking-wide">
-              View Events
-            </Link>
-            <Link to="/fighters" className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 uppercase tracking-wide">
-              View Fighters
-            </Link>
-            <Link to="/gyms" className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 uppercase tracking-wide">
-              View Gyms
-            </Link>
+            <button
+              onClick={() => setExploreOpen(!exploreOpen)}
+              className="flex items-center gap-3 group cursor-pointer"
+            >
+              {/* Three horizontal lines */}
+              <div className="flex flex-col justify-center gap-[5px]">
+                <span className={`block w-5 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${exploreOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
+                <span className={`block w-5 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${exploreOpen ? 'opacity-0' : ''}`} />
+                <span className={`block w-5 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${exploreOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
+              </div>
+              <span className="text-sm font-medium text-foreground uppercase tracking-wide group-hover:text-primary transition-colors duration-200">
+                explore
+              </span>
+            </button>
+
+            <AnimatePresence>
+              {exploreOpen && (
+                <motion.div
+                  className="flex flex-col gap-2 mt-4 pl-1"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                >
+                  <Link to="/events" className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 uppercase tracking-wide">
+                    View Events
+                  </Link>
+                  <Link to="/fighters" className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 uppercase tracking-wide">
+                    View Fighters
+                  </Link>
+                  <Link to="/gyms" className="text-sm font-medium text-foreground hover:text-primary transition-colors duration-200 uppercase tracking-wide">
+                    View Gyms
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </div>
       </div>
