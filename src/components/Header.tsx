@@ -75,7 +75,7 @@ export function Header() {
               to={dashboardPath}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
-              Dashboard
+              DASHBOARD
             </Link>
           )}
           <DropdownMenu>
