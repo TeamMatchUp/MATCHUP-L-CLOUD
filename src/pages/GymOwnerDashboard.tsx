@@ -560,24 +560,42 @@ export default function GymOwnerDashboard() {
                 <h2 className="font-heading text-2xl text-foreground mb-4">
                   MATCH <span className="text-primary">PROPOSALS</span>
                 </h2>
-                {pendingProposals.length === 0 ? (
-                  <p className="text-muted-foreground">
-                    No proposals requiring your review.
-                  </p>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {pendingProposals.map((p: any) => (
-                      <ProposalCard
-                        key={p.id}
-                        proposal={p}
-                        userId={user!.id}
-                        userRole="coach"
-                        coachFighterIds={fighterIds}
-                        onActionComplete={handleRefresh}
-                      />
-                    ))}
-                  </div>
-                )}
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search proposals by fighter name..."
+                    value={proposalSearch}
+                    onChange={(e) => setProposalSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                {(() => {
+                  const q = proposalSearch.toLowerCase().trim();
+                  const filtered = q
+                    ? pendingProposals.filter((p: any) =>
+                        p.fighter_a?.name?.toLowerCase().includes(q) ||
+                        p.fighter_b?.name?.toLowerCase().includes(q)
+                      )
+                    : pendingProposals;
+                  return filtered.length === 0 ? (
+                    <p className="text-muted-foreground">
+                      {q ? "No proposals match your search." : "No proposals requiring your review."}
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {filtered.map((p: any) => (
+                        <ProposalCard
+                          key={p.id}
+                          proposal={p}
+                          userId={user!.id}
+                          userRole="coach"
+                          coachFighterIds={fighterIds}
+                          onActionComplete={handleRefresh}
+                        />
+                      ))}
+                    </div>
+                  );
+                })()}
               </TabsContent>
 
               {/* Events Tab */}
