@@ -141,9 +141,36 @@ export function EditFightSlotDialog({ open, onOpenChange, slot, onSuccess }: Edi
             </div>
           </div>
 
-          <Button onClick={handleSave} disabled={loading} className="w-full">
-            {loading ? "Saving..." : "Save Changes"}
-          </Button>
+          <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" className="gap-1">
+                  <Trash2 className="h-3 w-3" /> Delete Fight
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete this fight slot?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently remove fight #{slot.slot_number} from the card. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {loading ? "Deleting..." : "Delete"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <Button onClick={handleSave} disabled={loading}>
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>
