@@ -45,6 +45,23 @@ export function Header() {
   const location = useLocation();
   const isLanding = location.pathname === "/";
 
+  const { data: profile } = useQuery({
+    queryKey: ["header-profile", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("avatar_url, full_name")
+        .eq("id", user!.id)
+        .single();
+      return data;
+    },
+    enabled: !!user,
+    staleTime: 60000,
+  });
+
+  const avatarUrl = profile?.avatar_url;
+  const initials = (profile?.full_name || user?.email || "U").slice(0, 2).toUpperCase();
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
