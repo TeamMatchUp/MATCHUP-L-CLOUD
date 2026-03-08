@@ -21,6 +21,10 @@ import GymOwnerDashboard from "./pages/GymOwnerDashboard";
 import RegisterGym from "./pages/RegisterGym";
 import FighterDashboard from "./pages/FighterDashboard";
 import AccountSettings from "./pages/AccountSettings";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RecordAccuracyPolicy from "./pages/RecordAccuracyPolicy";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
