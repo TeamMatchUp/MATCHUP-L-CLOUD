@@ -200,8 +200,8 @@ const Fighters = () => {
                         >
                           <div className="flex items-center justify-between mb-4">
                             <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground overflow-hidden shrink-0">
-                              {fighter.profile_image ? (
-                                <img src={fighter.profile_image} alt={fighter.name} className="h-full w-full object-cover" />
+                              {fighter._avatar ? (
+                                <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" />
                               ) : (
                                 fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)
                               )}

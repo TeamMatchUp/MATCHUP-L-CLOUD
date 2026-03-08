@@ -30,7 +30,19 @@ export default function FighterDetail() {
         .eq("id", id!)
         .single();
       if (error) throw error;
-      return data;
+
+      // Fetch avatar from linked user profile
+      let avatarUrl: string | null = null;
+      if (data.user_id) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("avatar_url")
+          .eq("id", data.user_id)
+          .single();
+        avatarUrl = profile?.avatar_url || null;
+      }
+
+      return { ...data, _avatar: data.profile_image || avatarUrl || null };
     },
     enabled: !!id,
   });
