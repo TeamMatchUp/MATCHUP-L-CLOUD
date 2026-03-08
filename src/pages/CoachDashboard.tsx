@@ -229,6 +229,17 @@ export default function CoachDashboard() {
                 onSuccess={handleRefresh}
               />
             )}
+
+            {/* Add Fight Result Dialog */}
+            {user && fightResultFighter && (
+              <AddFightResultDialog
+                open={!!fightResultFighter}
+                onOpenChange={(open) => { if (!open) setFightResultFighter(null); }}
+                fighter={fightResultFighter}
+                coachId={user.id}
+                onSuccess={handleRefresh}
+              />
+            )}
           </div>
         </section>
       </main>
