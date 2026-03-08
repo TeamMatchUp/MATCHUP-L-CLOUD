@@ -68,6 +68,19 @@ export function EditFightSlotDialog({ open, onOpenChange, slot, onSuccess }: Edi
     }
   };
 
+  const handleDelete = async () => {
+    setLoading(true);
+    const { error } = await supabase.from("fight_slots").delete().eq("id", slot.id);
+    setLoading(false);
+    if (error) {
+      toast({ title: "Error deleting slot", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Fight slot deleted" });
+      onSuccess();
+      onOpenChange(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
