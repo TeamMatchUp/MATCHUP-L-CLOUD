@@ -87,8 +87,8 @@ export default function FighterDetail() {
       <main className="pt-16">
         <section className="py-16">
           <div className="container max-w-3xl">
-            <Button variant="ghost" size="sm" asChild className="mb-6">
-              <Link to="/fighters"><ArrowLeft className="h-4 w-4 mr-2" />All Fighters</Link>
+            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6">
+              <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Button>
 
             <motion.div
