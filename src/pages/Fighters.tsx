@@ -1,10 +1,12 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { BannerAd } from "@/components/BannerAd";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Filter, Search, ShieldCheck } from "lucide-react";
@@ -156,38 +158,41 @@ const Fighters = () => {
                   const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
 
                   return (
-                    <motion.div
-                      key={fighter.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: i * 0.06 }}
-                    >
-                      <Link
-                        to={`/fighters/${fighter.id}`}
-                        className="rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block"
+                    <React.Fragment key={fighter.id}>
+                      {i > 0 && i % 5 === 0 && <BannerAd variant="grid-break" />}
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: i * 0.06 }}
                       >
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground">
-                            {fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)}
+                        <Link
+                          to={`/fighters/${fighter.id}`}
+                          className="rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block"
+                        >
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground">
+                              {fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)}
+                            </div>
+                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${fighter.available ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                              {fighter.available ? "Available" : "Booked"}
+                            </span>
                           </div>
-                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${fighter.available ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
-                            {fighter.available ? "Available" : "Booked"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <h3 className="font-heading text-lg text-foreground">{fighter.name}</h3>
-                          {fighter.verified && <ShieldCheck className="h-4 w-4 text-primary" />}
-                        </div>
-                        <p className="text-primary font-bold text-lg mt-1">{record}</p>
-                        <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-                          <p>{WEIGHT_CLASS_LABELS[fighter.weight_class]} · {fighter.style ? STYLE_LABELS[fighter.style] : "—"}</p>
-                          <p>{gymName}</p>
-                          {fighter.height && fighter.reach && <p>{fighter.height} · {fighter.reach} reach</p>}
-                        </div>
-                      </Link>
-                    </motion.div>
+                          <div className="flex items-center gap-1">
+                            <h3 className="font-heading text-lg text-foreground">{fighter.name}</h3>
+                            {fighter.verified && <ShieldCheck className="h-4 w-4 text-primary" />}
+                          </div>
+                          <p className="text-primary font-bold text-lg mt-1">{record}</p>
+                          <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                            <p>{WEIGHT_CLASS_LABELS[fighter.weight_class]} · {fighter.style ? STYLE_LABELS[fighter.style] : "—"}</p>
+                            <p>{gymName}</p>
+                            {fighter.height && fighter.reach && <p>{fighter.height} · {fighter.reach} reach</p>}
+                          </div>
+                        </Link>
+                      </motion.div>
+                    </React.Fragment>
                   );
                 })}
+                {filteredFighters.length < 5 && <BannerAd variant="grid-break" />}
               </div>
             ) : (
               <p className="text-muted-foreground text-center py-12">No fighters found.</p>
