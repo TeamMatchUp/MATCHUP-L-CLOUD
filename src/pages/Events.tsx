@@ -94,41 +94,44 @@ const Events = () => {
                   const openSlots = event.fight_slots?.filter((s: any) => s.status === "open").length ?? 0;
                   const confirmedFights = event.fight_slots?.filter((s: any) => s.status === "confirmed").length ?? 0;
                   return (
-                    <motion.div
-                      key={event.id}
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: i * 0.08 }}
-                    >
-                      <Link
-                        to={`/events/${event.id}`}
-                        className="flex flex-col md:flex-row md:items-center justify-between rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block"
+                    <React.Fragment key={event.id}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: i * 0.08 }}
                       >
-                        <div className="flex-1">
-                          <h3 className="font-heading text-xl text-foreground">{event.title}</h3>
-                          <p className="text-sm text-muted-foreground">{event.promotion_name}</p>
-                          <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3.5 w-3.5" />
-                              {new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="h-3.5 w-3.5" />
-                              {event.location}
-                            </span>
+                        <Link
+                          to={`/events/${event.id}`}
+                          className="flex flex-col md:flex-row md:items-center justify-between rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block"
+                        >
+                          <div className="flex-1">
+                            <h3 className="font-heading text-xl text-foreground">{event.title}</h3>
+                            <p className="text-sm text-muted-foreground">{event.promotion_name}</p>
+                            <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3.5 w-3.5" />
+                                {new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MapPin className="h-3.5 w-3.5" />
+                                {event.location}
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-6 mt-4 md:mt-0">
-                          <div className="text-right">
-                            <span className="block text-primary font-semibold text-sm">{openSlots} open</span>
-                            <span className="block text-xs text-muted-foreground">{confirmedFights} confirmed</span>
+                          <div className="flex items-center gap-6 mt-4 md:mt-0">
+                            <div className="text-right">
+                              <span className="block text-primary font-semibold text-sm">{openSlots} open</span>
+                              <span className="block text-xs text-muted-foreground">{confirmedFights} confirmed</span>
+                            </div>
+                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
                           </div>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      </Link>
-                    </motion.div>
+                        </Link>
+                      </motion.div>
+                      {(i + 1) % 5 === 0 && <BannerAd />}
+                    </React.Fragment>
                   );
                 })}
+                {events.length < 5 && <BannerAd />}
               </div>
             ) : (
               <p className="text-muted-foreground text-center py-12">No events found.</p>
