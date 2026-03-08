@@ -38,7 +38,7 @@ export function HeroSection() {
 
           {/* Collapsible explore menu */}
           <motion.div
-            className="absolute left-0 top-1/3 pl-8"
+            className="absolute left-0 top-0 pl-8 mt-4"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
