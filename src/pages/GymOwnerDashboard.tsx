@@ -419,10 +419,25 @@ export default function GymOwnerDashboard() {
 
               {/* Roster Tab */}
               <TabsContent value="roster">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-heading text-2xl text-foreground">
-                    FIGHTER <span className="text-primary">ROSTER</span>
-                  </h2>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-3">
+                    <h2 className="font-heading text-2xl text-foreground">
+                      FIGHTER <span className="text-primary">ROSTER</span>
+                    </h2>
+                    {myGyms.length > 1 && (
+                      <Select value={rosterGymFilter} onValueChange={setRosterGymFilter}>
+                        <SelectTrigger className="w-[180px] h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Gyms</SelectItem>
+                          {myGyms.map((g) => (
+                            <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
                   {myGyms.length > 0 && (
                     <div className="flex items-center gap-2">
                       <Select
