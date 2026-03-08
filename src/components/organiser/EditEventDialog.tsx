@@ -33,6 +33,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2 } from "lucide-react";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
@@ -58,6 +59,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
   const [description, setDescription] = useState(event.description || "");
   const [venueName, setVenueName] = useState(event.venue_name || "");
   const [city, setCity] = useState(event.city || "");
+  const [ticketEnabled, setTicketEnabled] = useState(event.ticket_enabled ?? false);
 
   useEffect(() => {
     setTitle(event.title);
@@ -67,6 +69,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
     setDescription(event.description || "");
     setVenueName(event.venue_name || "");
     setCity(event.city || "");
+    setTicketEnabled(event.ticket_enabled ?? false);
   }, [event]);
 
   const updateMutation = useMutation({
@@ -81,6 +84,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
           description: description || null,
           venue_name: venueName || null,
           city: city || null,
+          ticket_enabled: ticketEnabled,
         })
         .eq("id", event.id);
       if (error) throw error;
@@ -163,6 +167,17 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
           <div className="space-y-1">
             <Label>Description</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="ticket_enabled"
+              checked={ticketEnabled}
+              onCheckedChange={(v) => setTicketEnabled(!!v)}
+            />
+            <Label htmlFor="ticket_enabled" className="cursor-pointer">
+              Show ticket sales on public event page
+            </Label>
           </div>
         </div>
 

@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, ArrowLeft } from "lucide-react";
+import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +38,20 @@ export default function EventDetail() {
       return data;
     },
     enabled: !!id,
+  });
+
+  const { data: tickets = [] } = useQuery({
+    queryKey: ["event-tickets-public", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tickets")
+        .select("*")
+        .eq("event_id", id!)
+        .order("price");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id && !!event?.ticket_enabled,
   });
 
   if (isLoading) {
@@ -142,6 +156,40 @@ export default function EventDetail() {
                 </div>
               ))}
             </div>
+
+            {/* Tickets */}
+            {event.ticket_enabled && tickets.length > 0 && (
+              <>
+                <h2 className="font-heading text-2xl text-foreground mb-6">
+                  <Ticket className="inline h-5 w-5 mr-2 text-primary" />
+                  TICKETS
+                </h2>
+                <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+                  {tickets.map((ticket: any) => (
+                    <div key={ticket.id} className="rounded-lg border border-border bg-card p-5 flex flex-col">
+                      <Badge variant="outline" className="self-start mb-3 text-xs">{ticket.ticket_type}</Badge>
+                      {ticket.price != null && (
+                        <p className="font-heading text-3xl text-foreground mb-1">
+                          £{Number(ticket.price).toFixed(2)}
+                        </p>
+                      )}
+                      {ticket.quantity_available != null && (
+                        <p className="text-xs text-muted-foreground mb-4">
+                          {ticket.quantity_available} available
+                        </p>
+                      )}
+                      {ticket.external_link && (
+                        <Button asChild className="mt-auto gap-2">
+                          <a href={ticket.external_link} target="_blank" rel="noopener noreferrer">
+                            <ExternalLink className="h-4 w-4" /> Buy Tickets
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
 
             {/* Fight Slots */}
             <h2 className="font-heading text-2xl text-foreground mb-6">

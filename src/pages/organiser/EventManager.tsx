@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FighterSearchPanel } from "@/components/organiser/FighterSearchPanel";
 import { ProposeMatchDialog } from "@/components/organiser/ProposeMatchDialog";
 import { MatchSuggestionsPanel } from "@/components/organiser/MatchSuggestionsPanel";
+import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
 import type { Database } from "@/integrations/supabase/types";
 
 type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
@@ -428,6 +429,11 @@ export default function EventManager() {
               ) : (
                 undercardSlots.map(renderSlotCard)
               )}
+            </div>
+
+            {/* Tickets Panel */}
+            <div className="mb-10">
+              <ManageTicketsPanel eventId={id!} />
             </div>
 
             {/* AI Suggestions Panel */}
