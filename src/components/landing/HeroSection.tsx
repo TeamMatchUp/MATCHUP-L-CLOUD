@@ -29,7 +29,7 @@ export function HeroSection() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            promote, matchup, done. It's that simple...
+            PROMOTE, MATCHUP, DONE. IT'S THAT SIMPLE...
           </motion.p>
         </div>
       </div>
