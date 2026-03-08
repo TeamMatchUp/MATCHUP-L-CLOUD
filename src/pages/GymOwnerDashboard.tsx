@@ -211,8 +211,8 @@ export default function GymOwnerDashboard() {
               {[
                 { label: "Gyms", value: myGyms.length },
                 { label: "Fighters", value: allFighters.length },
-                { label: "Proposals", value: incomingProposals.length },
-                { label: "Awaiting", value: awaitingFighters.length },
+                { label: "Pending", value: pendingProposals.length },
+                { label: "Confirmed", value: confirmedProposals.length },
                 { label: "Events", value: events.length },
               ].map((s) => (
                 <div
