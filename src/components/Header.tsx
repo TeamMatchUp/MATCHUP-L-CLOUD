@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronDown, LogOut, User } from "lucide-react";
-import logo from "@/assets/logo.png";
+import { ChevronDown, LogOut, User, Menu, X } from "lucide-react";
+import logoFull from "@/assets/logo-full.webp";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -53,10 +53,10 @@ export function Header() {
   const dashboardPath = activeRole ? (ROLE_DASHBOARDS[activeRole] || "/") : "/";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-nav/90 backdrop-blur-xl border-b border-border">
-      <div className="container flex h-20 items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-nav/90 backdrop-blur-xl border-b border-border/50">
+      <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="MatchUp" className="h-12" />
+          <img src={logoFull} alt="MatchUp" className="h-7" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
@@ -64,7 +64,7 @@ export function Header() {
             <Link
               key={link.to}
               to={link.to}
-              className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               {link.label}
             </Link>
@@ -72,7 +72,7 @@ export function Header() {
           {user && activeRole && (
             <Link
               to={dashboardPath}
-              className="text-base font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
             >
               Dashboard
             </Link>
@@ -125,16 +125,20 @@ export function Header() {
           )}
         </div>
 
+        {/* Hamburger menu - three line expander */}
         <button
-          className="md:hidden text-foreground"
+          className="md:hidden flex flex-col justify-center items-center gap-[5px] w-8 h-8 group"
           onClick={() => setMobileOpen(!mobileOpen)}
+          aria-label="Toggle menu"
         >
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
+          <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? 'opacity-0' : ''}`} />
+          <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
         </button>
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-xl">
+        <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl">
           <div className="container py-4 flex flex-col gap-3">
             {navLinks.map((link) => (
               <Link

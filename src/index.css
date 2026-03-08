@@ -6,52 +6,52 @@
 
 @layer base {
   :root {
-    --background: 213 30% 6%;
-    --foreground: 212 30% 93%;
+    --background: 213 33% 6%;
+    --foreground: 210 33% 93%;
 
-    --card: 212 27% 10%;
-    --card-foreground: 212 30% 93%;
+    --card: 210 27% 11%;
+    --card-foreground: 210 33% 93%;
 
-    --popover: 212 27% 10%;
-    --popover-foreground: 212 30% 93%;
+    --popover: 210 27% 11%;
+    --popover-foreground: 210 33% 93%;
 
-    --primary: 40 90% 61%;
-    --primary-foreground: 213 30% 6%;
+    --primary: 46 93% 61%;
+    --primary-foreground: 213 33% 6%;
 
     --secondary: 173 60% 54%;
-    --secondary-foreground: 213 30% 6%;
+    --secondary-foreground: 213 33% 6%;
 
     --muted: 213 29% 8%;
-    --muted-foreground: 210 10% 47%;
+    --muted-foreground: 212 12% 47%;
 
     --accent: 213 29% 8%;
-    --accent-foreground: 212 30% 93%;
+    --accent-foreground: 210 33% 93%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 212 30% 93%;
+    --destructive-foreground: 210 33% 93%;
 
     --success: 142 71% 45%;
-    --success-foreground: 212 30% 93%;
+    --success-foreground: 210 33% 93%;
 
-    --border: 210 20% 21%;
-    --input: 210 20% 21%;
-    --ring: 40 90% 61%;
+    --border: 210 18% 21%;
+    --input: 210 18% 21%;
+    --ring: 46 93% 61%;
 
     --radius: 0.5rem;
 
     --nav-background: 213 29% 8%;
 
     --text-secondary: 210 12% 66%;
-    --text-muted: 210 10% 47%;
+    --text-muted: 212 12% 47%;
 
     --sidebar-background: 213 29% 8%;
     --sidebar-foreground: 210 12% 66%;
-    --sidebar-primary: 40 90% 61%;
-    --sidebar-primary-foreground: 213 30% 6%;
-    --sidebar-accent: 212 27% 10%;
-    --sidebar-accent-foreground: 212 30% 93%;
-    --sidebar-border: 210 20% 21%;
-    --sidebar-ring: 40 90% 61%;
+    --sidebar-primary: 46 93% 61%;
+    --sidebar-primary-foreground: 213 33% 6%;
+    --sidebar-accent: 210 27% 11%;
+    --sidebar-accent-foreground: 210 33% 93%;
+    --sidebar-border: 210 18% 21%;
+    --sidebar-ring: 46 93% 61%;
 
     --font-heading: 'Bebas Neue', sans-serif;
     --font-body: 'Inter', sans-serif;
@@ -80,7 +80,7 @@
 
 @layer utilities {
   .text-gold-glow {
-    text-shadow: 0 0 20px hsl(40 90% 61% / 0.3);
+    text-shadow: 0 0 20px hsl(46 93% 61% / 0.3);
   }
 
   .card-elevated {
@@ -88,6 +88,14 @@
   }
 
   .gold-border-subtle {
-    border-color: hsl(40 90% 61% / 0.2);
+    border-color: hsl(46 93% 61% / 0.2);
+  }
+
+  .gold-glow {
+    box-shadow: 0 0 20px hsl(46 93% 61% / 0.15), 0 0 40px hsl(46 93% 61% / 0.05);
+  }
+
+  .gold-glow-hover:hover {
+    box-shadow: 0 0 24px hsl(46 93% 61% / 0.25), 0 0 48px hsl(46 93% 61% / 0.08);
   }
 }

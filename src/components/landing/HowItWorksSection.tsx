@@ -24,7 +24,7 @@ const steps = [
 
 export function HowItWorksSection() {
   return (
-    <section className="py-24">
+    <section className="py-24 border-t border-border/30">
       <div className="container">
         <motion.h2
           className="font-heading text-4xl md:text-5xl text-center text-foreground mb-4"
@@ -36,7 +36,7 @@ export function HowItWorksSection() {
           HOW IT <span className="text-primary">WORKS</span>
         </motion.h2>
         <motion.p
-          className="text-center text-muted-foreground mb-16 max-w-md mx-auto"
+          className="text-center text-muted-foreground mb-16 max-w-md mx-auto text-sm"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -49,18 +49,22 @@ export function HowItWorksSection() {
           {steps.map((s, i) => (
             <motion.div
               key={s.step}
-              className="text-center p-8"
-              initial={{ opacity: 0, y: 20 }}
+              className="relative text-center p-8 rounded-lg border border-transparent hover:border-border transition-all duration-250 group"
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: i * 0.15 }}
             >
-              <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-primary/10 border border-primary/20 mb-6">
-                <s.icon className="h-7 w-7 text-primary" />
+              {/* Step number glow */}
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                <span className="font-heading text-5xl text-primary/10">{s.step}</span>
               </div>
-              <span className="block font-heading text-sm text-primary mb-2">{s.step}</span>
+
+              <div className="inline-flex items-center justify-center h-14 w-14 rounded-full bg-primary/10 border border-primary/20 mb-6 mt-4 transition-all duration-250 group-hover:bg-primary/15 group-hover:border-primary/30 group-hover:shadow-[0_0_20px_hsl(46_93%_61%/0.15)]">
+                <s.icon className="h-6 w-6 text-primary" />
+              </div>
               <h3 className="font-heading text-2xl text-foreground mb-3">{s.title}</h3>
-              <p className="text-muted-foreground text-sm">{s.description}</p>
+              <p className="text-muted-foreground text-sm leading-relaxed">{s.description}</p>
             </motion.div>
           ))}
         </div>
