@@ -97,8 +97,8 @@ export default function FighterDetail() {
             >
               <div className="flex items-start gap-6 mb-8">
                 <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center font-heading text-2xl text-muted-foreground shrink-0 overflow-hidden">
-                  {fighter.profile_image ? (
-                    <img src={fighter.profile_image} alt={fighter.name} className="h-full w-full object-cover" />
+                  {fighter._avatar ? (
+                    <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" />
                   ) : (
                     fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)
                   )}
