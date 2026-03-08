@@ -68,7 +68,7 @@ const App = () => (
               }
             />
 
-            {/* Protected: Gym Owner (inherits organiser + fighter) */}
+            {/* Protected: Coach (inherits organiser + fighter) */}
             <Route
               path="/gym-owner/dashboard"
               element={

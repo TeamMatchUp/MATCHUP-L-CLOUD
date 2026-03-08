@@ -206,7 +206,7 @@ export default function GymOwnerDashboard() {
         <section className="py-16">
           <div className="container">
             <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">
-              GYM OWNER <span className="text-primary">DASHBOARD</span>
+              COACH <span className="text-primary">DASHBOARD</span>
             </h1>
             <p className="text-muted-foreground mb-8">
               Manage your gyms, roster, proposals, and events.
