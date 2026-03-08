@@ -96,25 +96,33 @@ export default function GymOwnerDashboard() {
     enabled: !!user,
   });
 
-  // Get fighters linked via gyms
-  const { data: gymFighters = [] } = useQuery({
-    queryKey: ["owner-gym-fighters", user?.id],
+  // Get fighters linked via gyms (with gym mapping)
+  const { data: gymFighterLinks = [] } = useQuery({
+    queryKey: ["owner-gym-fighter-links", user?.id, myGyms.map(g => g.id).join(",")],
     queryFn: async () => {
       if (myGyms.length === 0) return [];
       const gymIds = myGyms.map((g) => g.id);
       const { data: links } = await supabase
         .from("fighter_gym_links")
-        .select("fighter_id")
+        .select("fighter_id, gym_id")
         .in("gym_id", gymIds);
-      if (!links || links.length === 0) return [];
-      const fighterIds = links.map((l) => l.fighter_id);
+      return links ?? [];
+    },
+    enabled: myGyms.length > 0,
+  });
+
+  const { data: gymFighters = [] } = useQuery({
+    queryKey: ["owner-gym-fighters", user?.id, gymFighterLinks.map(l => l.fighter_id).join(",")],
+    queryFn: async () => {
+      if (gymFighterLinks.length === 0) return [];
+      const fighterIds = [...new Set(gymFighterLinks.map((l) => l.fighter_id))];
       const { data: fighters } = await supabase
         .from("fighter_profiles")
         .select("*")
         .in("id", fighterIds);
       return fighters ?? [];
     },
-    enabled: myGyms.length > 0,
+    enabled: gymFighterLinks.length > 0,
   });
 
   // Combine unique fighters
