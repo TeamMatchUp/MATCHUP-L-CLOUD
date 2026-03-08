@@ -136,7 +136,13 @@ export default function GymDetail() {
                     )}
                   </div>
                 </div>
-                {!isOwner && <JoinGymButton gymId={gym.id} />}
+                {isOwner ? (
+                  <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowEditGym(true)}>
+                    <Pencil className="h-3 w-3" /> Edit Gym
+                  </Button>
+                ) : (
+                  <JoinGymButton gymId={gym.id} />
+                )}
               </div>
 
               {gym.description && (
