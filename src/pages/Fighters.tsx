@@ -38,7 +38,7 @@ const Fighters = () => {
     queryFn: async () => {
       let query = supabase
         .from("fighter_profiles")
-        .select("*, fighter_gym_links(gym_id, is_primary, gyms(name)), owner:profiles!fighter_profiles_user_id_fkey(avatar_url)")
+        .select("*, fighter_gym_links(gym_id, is_primary, gyms(name))")
         .order("name");
 
       if (countryFilter !== "all") query = query.eq("country", countryFilter as CountryCode);
