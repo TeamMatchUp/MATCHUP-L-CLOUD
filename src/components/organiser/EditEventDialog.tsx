@@ -69,6 +69,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
     setDescription(event.description || "");
     setVenueName(event.venue_name || "");
     setCity(event.city || "");
+    setTicketEnabled(event.ticket_enabled ?? false);
   }, [event]);
 
   const updateMutation = useMutation({
