@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown, LogOut, User } from "lucide-react";
-import icon from "@/assets/icon.png";
+import logo from "@/assets/logo.png";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
