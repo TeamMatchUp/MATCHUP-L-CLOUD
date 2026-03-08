@@ -8,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditFightSlotDialog } from "@/components/organiser/EditFightSlotDialog";
+import { EditEventDialog } from "@/components/organiser/EditEventDialog";
 import { ArrowLeft, Globe, Users, Sparkles, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FighterSearchPanel } from "@/components/organiser/FighterSearchPanel";
