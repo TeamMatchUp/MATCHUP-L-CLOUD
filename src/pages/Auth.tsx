@@ -30,7 +30,7 @@ export default function Auth() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/";
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
 
   const toggleRole = (role: AppRole) => {
     setSelectedRoles((prev) =>
