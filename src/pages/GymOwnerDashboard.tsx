@@ -55,6 +55,8 @@ export default function GymOwnerDashboard() {
   const [newGymCountry, setNewGymCountry] = useState<CountryCode>("UK");
   const [newGymDescription, setNewGymDescription] = useState("");
   const [fightResultFighter, setFightResultFighter] = useState<{ id: string; name: string } | null>(null);
+  const [editFighter, setEditFighter] = useState<any>(null);
+  const [deleteFighter, setDeleteFighter] = useState<{ id: string; name: string } | null>(null);
 
   // Get owner's gyms
   const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
