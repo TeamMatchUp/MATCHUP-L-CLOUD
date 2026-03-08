@@ -110,6 +110,16 @@ const App = () => (
               }
             />
 
+            {/* Protected: Account Settings */}
+            <Route
+              path="/account/settings"
+              element={
+                <ProtectedRoute>
+                  <AccountSettings />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
