@@ -6,7 +6,7 @@ import { FightHistory } from "@/components/fighter/FightHistory";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
