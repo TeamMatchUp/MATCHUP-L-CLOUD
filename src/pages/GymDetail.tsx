@@ -257,6 +257,16 @@ export default function GymDetail() {
                 onSuccess={() => queryClient.invalidateQueries({ queryKey: ["gym", id] })}
               />
             )}
+
+            {isOwner && gym && (
+              <EditGymDialog
+                open={showEditGym}
+                onOpenChange={setShowEditGym}
+                gym={gym}
+                onSuccess={() => queryClient.invalidateQueries({ queryKey: ["gym", id] })}
+                onDelete={() => navigate("/gym-owner/dashboard")}
+              />
+            )}
           </div>
         </section>
       </main>
