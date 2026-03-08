@@ -314,8 +314,6 @@ export default function EventManager() {
     const activeProposal = getActiveProposal(slot.id);
     const declinedCount = getDeclinedProposals(slot.id).length;
     const slotExtra = slot as any;
-    const proposalConfs = activeProposal ? getProposalConfirmations(activeProposal.id) : [];
-    const acceptedCount = proposalConfs.filter((c) => c.decision === "accepted").length;
 
     return (
       <div key={slot.id} className="rounded-lg border border-border bg-card p-4">
