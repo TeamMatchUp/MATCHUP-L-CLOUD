@@ -32,6 +32,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function EventManager() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
