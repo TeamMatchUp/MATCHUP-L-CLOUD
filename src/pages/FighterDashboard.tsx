@@ -95,6 +95,8 @@ export default function FighterDashboard() {
               <>
                 {/* Gym Invites */}
                 <GymInvitesPanel fighterProfileId={fighterProfile.id} />
+                {/* My Gyms */}
+                <MyGymsPanel fighterProfileId={fighterProfile.id} />
                 {/* Profile Summary */}
                 <div className="rounded-lg border border-border bg-card p-5 mb-8">
                   <div className="flex items-center gap-4">
