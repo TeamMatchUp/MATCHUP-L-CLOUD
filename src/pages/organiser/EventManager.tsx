@@ -449,6 +449,19 @@ export default function EventManager() {
                 onSuccess={handleProposalCreated}
               />
             )}
+
+            {/* Edit Fight Slot Dialog */}
+            {editingSlot && (
+              <EditFightSlotDialog
+                open={!!editingSlot}
+                onOpenChange={(open) => { if (!open) setEditingSlot(null); }}
+                slot={editingSlot}
+                onSuccess={() => {
+                  setEditingSlot(null);
+                  queryClient.invalidateQueries({ queryKey: ["event-slots", id] });
+                }}
+              />
+            )}
           </div>
         </section>
       </main>
