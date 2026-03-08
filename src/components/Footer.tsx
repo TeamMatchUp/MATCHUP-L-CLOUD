@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import matchupIcon from "@/assets/matchup-icon.png";
+import logo from "@/assets/logo.png";
 
 export function Footer() {
   return (
@@ -7,10 +7,7 @@ export function Footer() {
       <div className="container py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <div className="flex items-center gap-2">
-              <img src={matchupIcon} alt="MatchUp" className="h-7 w-7" />
-              <span className="font-heading text-lg text-foreground tracking-tight">matchup.</span>
-            </div>
+            <img src={logo} alt="MatchUp" className="h-7" />
             <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
               The professional matchmaking platform for combat sports.
             </p>

@@ -1,17 +1,12 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import boxingRingImg from "@/assets/boxing-ring-dark.jpg";
-import matchupIcon from "@/assets/matchup-icon.png";
 
 export function TwoSidedSection() {
   return (
     <section className="py-0">
       <div className="container px-0 sm:px-8">
-        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-1">
-          {/* Centered icon overlay */}
-          <div className="hidden md:flex absolute inset-0 z-20 items-center justify-center pointer-events-none">
-            <img src={matchupIcon} alt="MatchUp icon" className="w-28 h-28 drop-shadow-2xl" />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0 md:gap-1">
           {/* View Events — with boxing ring background */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -70,7 +65,6 @@ export function TwoSidedSection() {
           to="/auth"
           className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
         >
-          <img src={matchupIcon} alt="" className="h-5 w-5" />
           create account
         </Link>
       </motion.div>
