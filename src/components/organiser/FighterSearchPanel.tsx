@@ -11,7 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, X, Check } from "lucide-react";
+import { Search, X, Check, UserCheck } from "lucide-react";
+import { Toggle } from "@/components/ui/toggle";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -29,6 +30,7 @@ import { formatEnum } from "@/lib/format";
 
 interface FighterSearchPanelProps {
   slot: FightSlot;
+  eventId: string;
   selectedFighterA: FighterProfile | null;
   selectedFighterB: FighterProfile | null;
   onSelectFighter: (fighter: FighterProfile) => void;
