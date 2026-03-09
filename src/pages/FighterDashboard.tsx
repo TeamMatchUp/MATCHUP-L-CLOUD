@@ -124,10 +124,7 @@ export default function FighterDashboard() {
                   </TabsList>
 
                   <TabsContent value="gyms">
-                    <h2 className="font-heading text-2xl text-foreground mb-4">
-                      MY <span className="text-primary">GYMS</span>
-                    </h2>
-                    <p className="text-muted-foreground">Gym affiliations will be displayed here.</p>
+                    <MyGymsPanel fighterProfileId={fighterProfile.id} />
                   </TabsContent>
 
                   <TabsContent value="proposals">
