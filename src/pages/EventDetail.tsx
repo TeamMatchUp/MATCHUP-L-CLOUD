@@ -43,6 +43,7 @@ export default function EventDetail() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [sending, setSending] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Get fighter profile for the current user
   const { data: fighterProfile } = useQuery({
