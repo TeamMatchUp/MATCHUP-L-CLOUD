@@ -62,6 +62,7 @@ export default function GymOwnerDashboard() {
   const [proposalSearch, setProposalSearch] = useState("");
   const [showImport, setShowImport] = useState(false);
   const [eventSearch, setEventSearch] = useState("");
+  const [searchParams] = useSearchParams();
 
   // Get owner's gyms
   const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
