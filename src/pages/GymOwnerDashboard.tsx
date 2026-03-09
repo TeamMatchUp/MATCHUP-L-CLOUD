@@ -24,6 +24,7 @@ import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 import { EditFighterDialog } from "@/components/coach/EditFighterDialog";
 import { DeleteFighterDialog } from "@/components/coach/DeleteFighterDialog";
+import { NotificationHistory } from "@/components/NotificationHistory";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
@@ -265,8 +266,11 @@ export default function GymOwnerDashboard() {
               ))}
             </div>
 
-            <Tabs defaultValue="gyms" className="space-y-6">
+            <Tabs defaultValue="notifications" className="space-y-6">
               <TabsList className="bg-card border border-border">
+                <TabsTrigger value="notifications">
+                  <Inbox className="h-4 w-4 mr-1" /> Notifications
+                </TabsTrigger>
                 <TabsTrigger value="gyms">
                   <Building2 className="h-4 w-4 mr-1" /> Gyms
                 </TabsTrigger>
@@ -280,6 +284,11 @@ export default function GymOwnerDashboard() {
                   <Calendar className="h-4 w-4 mr-1" /> Events
                 </TabsTrigger>
               </TabsList>
+
+              {/* Notifications Tab */}
+              <TabsContent value="notifications">
+                <NotificationHistory />
+              </TabsContent>
 
               {/* Gyms Tab */}
               <TabsContent value="gyms">
