@@ -1,37 +1,54 @@
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 
-function useCountUp(target: number, duration = 1800) {
+function useCountUp(target: number, shouldStart: boolean, duration = 1600) {
   const [count, setCount] = useState(0);
-  const ref = useRef<number>();
+  const raf = useRef<number>();
 
   useEffect(() => {
-    if (target <= 0) return;
+    if (!shouldStart || target <= 0) { setCount(0); return; }
     const start = performance.now();
     const step = (now: number) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      // ease-out quad
+      const progress = Math.min((now - start) / duration, 1);
       const eased = 1 - (1 - progress) * (1 - progress);
       setCount(Math.round(eased * target));
-      if (progress < 1) ref.current = requestAnimationFrame(step);
+      if (progress < 1) raf.current = requestAnimationFrame(step);
     };
-    ref.current = requestAnimationFrame(step);
-    return () => { if (ref.current) cancelAnimationFrame(ref.current); };
-  }, [target, duration]);
+    raf.current = requestAnimationFrame(step);
+    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+  }, [target, shouldStart, duration]);
 
   return count;
 }
 
-function formatNumber(n: number) {
-  return n.toLocaleString();
+/** Splits a number string into individual characters for rolling digit animation */
+function RollingDigits({ value }: { value: string }) {
+  return (
+    <span className="inline-flex overflow-hidden">
+      {value.split("").map((char, i) => (
+        <span key={`${i}-${char}`} className="inline-block">
+          <motion.span
+            className="inline-block"
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: "0%", opacity: 1 }}
+            transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1], delay: i * 0.03 }}
+          >
+            {char}
+          </motion.span>
+        </span>
+      ))}
+    </span>
+  );
 }
 
 export function TwoSidedSection() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { once: true, amount: 0.9 });
+
   const { data: counts } = useQuery({
     queryKey: ["platform-counts"],
     queryFn: async () => {
@@ -48,63 +65,54 @@ export function TwoSidedSection() {
     },
   });
 
-  const eventCount = useCountUp(counts?.events ?? 0);
-  const fighterCount = useCountUp(counts?.fighters ?? 0);
-  const gymCount = useCountUp(counts?.gyms ?? 0);
+  const eventCount = useCountUp(counts?.events ?? 0, isInView);
+  const fighterCount = useCountUp(counts?.fighters ?? 0, isInView);
+  const gymCount = useCountUp(counts?.gyms ?? 0, isInView);
 
-  const tiles = [
-    { label: "Events", count: formatNumber(eventCount), suffix: "Active", to: "/events" },
-    { label: "Fighters", count: formatNumber(fighterCount), suffix: "Listed", to: "/fighters" },
-    { label: "Gyms", count: formatNumber(gymCount), suffix: "Registered", to: "/gyms" },
-  ];
+  const tiles = useMemo(() => [
+    { label: "Events", suffix: "Active", to: "/events" },
+    { label: "Fighters", suffix: "Listed", to: "/fighters" },
+    { label: "Gyms", suffix: "Registered", to: "/gyms" },
+  ], []);
+
+  const values = [eventCount, fighterCount, gymCount];
 
   return (
-    <section className="py-20 bg-card border-y border-border/30">
-      <div className="container">
-        <motion.h2
-          className="font-heading text-3xl md:text-4xl text-foreground text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          EXPLORE THE <span className="text-primary">NETWORK</span>
-        </motion.h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-10">
-          {tiles.map((tile, i) => (
-            <motion.div
-              key={tile.label}
-              className="text-center"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.12 }}
-            >
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3">
-                {tile.label}
-              </p>
-              <p className="font-heading text-5xl md:text-6xl text-primary tabular-nums leading-none mb-2">
-                {tile.count}
-              </p>
-              <p className="text-sm text-muted-foreground">{tile.suffix}</p>
-            </motion.div>
-          ))}
-        </div>
-
-        <motion.div
-          className="flex flex-wrap items-center justify-center gap-4"
+    <section className="py-16 bg-card border-y border-border/30">
+      <div className="container max-w-2xl" ref={sectionRef}>
+        <motion.p
+          className="font-heading text-2xl md:text-3xl text-foreground text-center mb-10"
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.4 }}
+          transition={{ duration: 0.25, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          {tiles.map((tile) => (
-            <Button key={tile.to} variant="heroOutline" asChild>
-              <Link to={tile.to}>View {tile.label}</Link>
-            </Button>
+          EXPLORE THE <span className="text-primary">NETWORK</span>
+        </motion.p>
+
+        <div className="grid grid-cols-3 gap-4">
+          {tiles.map((tile, i) => (
+            <motion.div
+              key={tile.label}
+              className="flex flex-col items-center text-center gap-1"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1], delay: i * 0.08 }}
+            >
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                {tile.label}
+              </p>
+              <p className="font-heading text-4xl md:text-5xl text-primary tabular-nums leading-none my-1">
+                <RollingDigits value={values[i].toLocaleString()} />
+              </p>
+              <p className="text-xs text-muted-foreground mb-3">{tile.suffix}</p>
+              <Button variant="heroOutline" size="sm" asChild>
+                <Link to={tile.to}>View {tile.label}</Link>
+              </Button>
+            </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
