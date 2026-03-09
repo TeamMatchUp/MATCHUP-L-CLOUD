@@ -221,11 +221,9 @@ export default function GymDetail() {
                     variant="outline" 
                     size="sm" 
                     className="gap-1 text-destructive hover:text-destructive"
-                    onClick={() => leaveGymMutation.mutate()}
-                    disabled={leaveGymMutation.isPending}
+                    onClick={() => setShowLeaveConfirm(true)}
                   >
-                    <LogOut className="h-3 w-3" /> 
-                    {leaveGymMutation.isPending ? "Leaving..." : "Leave Gym"}
+                    <LogOut className="h-3 w-3" /> Leave Gym
                   </Button>
                 ) : (
                   <JoinGymButton gymId={gym.id} />
