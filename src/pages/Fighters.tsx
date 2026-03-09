@@ -59,9 +59,58 @@ const Fighters = () => {
         profiles?.forEach((p) => { if (p.avatar_url) avatarMap.set(p.id, p.avatar_url); });
       }
 
+      // Fetch all fights for dynamic record calculation
+      const fighterIds = (data ?? []).map(f => f.id);
+      const { data: fightsA } = await supabase
+        .from("fights")
+        .select("*")
+        .in("fighter_a_id", fighterIds);
+      const { data: fightsB } = await supabase
+        .from("fights")
+        .select("*")
+        .in("fighter_b_id", fighterIds);
+      
+      const fightMap = new Map<string, any>();
+      [...(fightsA || []), ...(fightsB || [])].forEach((f) => fightMap.set(f.id, f));
+      const allFights = Array.from(fightMap.values());
+
+      // Calculate dynamic records
+      const recordMap = new Map<string, { wins: number; losses: number; draws: number }>();
+      (data ?? []).forEach((fighter) => {
+        let wins = 0, losses = 0, draws = 0;
+        allFights.forEach((fight) => {
+          const isA = fight.fighter_a_id === fighter.id;
+          const isB = fight.fighter_b_id === fighter.id;
+          if (!isA && !isB) return;
+          
+          // Skip truly invalid self-fights (no opponent_name means bad data)
+          if (fight.fighter_a_id === fight.fighter_b_id && !fight.opponent_name) return;
+
+          // For self-referencing fights (external opponent), treat as fighter_a's perspective
+          const isSelfRef = fight.fighter_a_id === fight.fighter_b_id;
+          const result = fight.result as string;
+
+          // Prioritize winner_id if set
+          if (fight.winner_id) {
+            if (fight.winner_id === fighter.id) wins++;
+            else losses++;
+          } else if (result === "draw") {
+            draws++;
+          } else if (result === "win") {
+            if (isSelfRef || isA) wins++;
+            else losses++;
+          } else if (result === "loss") {
+            if (isSelfRef || isA) losses++;
+            else wins++;
+          }
+        });
+        recordMap.set(fighter.id, { wins, losses, draws });
+      });
+
       return (data ?? []).map((f) => ({
         ...f,
         _avatar: f.profile_image || (f.user_id ? avatarMap.get(f.user_id) : null) || null,
+        _record: recordMap.get(f.id) || { wins: 0, losses: 0, draws: 0 },
       }));
     },
   });
