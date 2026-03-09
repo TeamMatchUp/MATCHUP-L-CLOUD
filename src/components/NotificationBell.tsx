@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Bell } from "lucide-react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +27,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export function NotificationBell() {
-  const { user } = useAuth();
+  const { user, effectiveRoles } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -58,27 +59,19 @@ export function NotificationBell() {
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
   };
 
-  const getNotificationRoute = (notification: any): string | null => {
-    switch (notification.type) {
-      case "match_proposed":
-      case "match_accepted":
-      case "match_declined":
-      case "match_confirmed":
-      case "match_withdrawn":
-        // reference_id is match_proposal_id - navigate to appropriate dashboard
-        return "/fighter-dashboard"; // Could be coach or fighter dashboard depending on user role
-      case "event_update":
-        // reference_id is event_id
-        return notification.reference_id ? `/events/${notification.reference_id}` : "/events";
-      case "gym_invite":
-        // Navigate to fighter dashboard where gym invites are shown
-        return "/fighter-dashboard";
-      case "system":
-        // reference_id could be fighter_id, gym_id, etc.
-        return null; // No specific route for generic system notifications
-      default:
-        return null;
-    }
+  const resolveEventFromProposal = async (proposalId: string): Promise<string | null> => {
+    const { data } = await supabase
+      .from("match_proposals")
+      .select("fight_slot_id")
+      .eq("id", proposalId)
+      .single();
+    if (!data) return null;
+    const { data: slot } = await supabase
+      .from("fight_slots")
+      .select("event_id")
+      .eq("id", data.fight_slot_id)
+      .single();
+    return slot?.event_id ?? null;
   };
 
   const handleNotificationClick = async (notification: any) => {
@@ -89,12 +82,40 @@ export function NotificationBell() {
       .eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
 
-    // Navigate to relevant page
-    const route = getNotificationRoute(notification);
-    if (route) {
+    const type = notification.type;
+    const refId = notification.reference_id;
+
+    // Match-related notifications
+    if (["match_proposed", "match_accepted", "match_declined", "match_confirmed", "match_withdrawn"].includes(type)) {
+      if (refId && effectiveRoles.includes("organiser")) {
+        // Organiser → resolve event and go to event manager
+        const eventId = await resolveEventFromProposal(refId);
+        if (eventId) {
+          setOpen(false);
+          navigate(`/organiser/events/${eventId}`);
+          return;
+        }
+      }
+      // Fallback for coaches/fighters
       setOpen(false);
-      navigate(route);
+      navigate(effectiveRoles.includes("fighter") ? "/fighter/dashboard" : "/gym-owner/dashboard");
+      return;
     }
+
+    if (type === "event_update") {
+      setOpen(false);
+      navigate(refId ? `/events/${refId}` : "/events");
+      return;
+    }
+
+    if (type === "gym_invite") {
+      setOpen(false);
+      navigate("/fighter/dashboard");
+      return;
+    }
+
+    // System / unknown – just mark read, no navigation
+    toast.info("Notification marked as read");
   };
 
   if (!user) return null;
