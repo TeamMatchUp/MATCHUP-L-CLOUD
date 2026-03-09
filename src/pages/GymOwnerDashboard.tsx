@@ -269,7 +269,7 @@ export default function GymOwnerDashboard() {
               ))}
             </div>
 
-            <Tabs defaultValue="gyms" className="space-y-6">
+            <Tabs defaultValue={searchParams.get("tab") || "gyms"} className="space-y-6">
               <TabsList className="bg-card border border-border">
                 <TabsTrigger value="gyms">
                   <Building2 className="h-4 w-4 mr-1" /> Gyms
