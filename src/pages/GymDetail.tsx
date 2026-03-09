@@ -14,6 +14,16 @@ import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { useToast } from "@/hooks/use-toast";
 import { EditGymDialog } from "@/components/gym/EditGymDialog";
 import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
