@@ -197,6 +197,18 @@ export default function EventDetail() {
                 <p className="text-muted-foreground max-w-2xl mb-8">{event.description}</p>
               )}
 
+              {/* Fighter Interest Button */}
+              {isFighter && fighterProfile && (
+                <Button
+                  variant="outline"
+                  className="mb-8 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  onClick={() => setShowConfirm(true)}
+                >
+                  <Star className="h-4 w-4" />
+                  I'm Interested
+                </Button>
+              )}
+
               {/* Location Map */}
               <div className="rounded-lg border border-border overflow-hidden mb-12">
                 <iframe
