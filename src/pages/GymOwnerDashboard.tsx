@@ -60,6 +60,7 @@ export default function GymOwnerDashboard() {
   const [rosterGymFilter, setRosterGymFilter] = useState<string>("all");
   const [rosterSearch, setRosterSearch] = useState("");
   const [proposalSearch, setProposalSearch] = useState("");
+  const [showImport, setShowImport] = useState(false);
   const [eventSearch, setEventSearch] = useState("");
 
   // Get owner's gyms
