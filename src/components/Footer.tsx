@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import logoFull from "@/assets/logo-full.webp";
+import { AppLogo } from "@/components/AppLogo";
 
 export function Footer() {
   return (
