@@ -374,6 +374,17 @@ export default function EventDetail() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Coach Put Forward Dialog */}
+      {isCoach && user && event && (
+        <PutForwardFightersDialog
+          open={showPutForward}
+          onOpenChange={setShowPutForward}
+          coachId={user.id}
+          eventId={id!}
+          eventTitle={event.title}
+        />
+      )}
+
       <Footer />
     </div>
   );
