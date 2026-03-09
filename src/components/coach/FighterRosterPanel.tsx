@@ -85,9 +85,16 @@ export function FighterRosterPanel({
         <h2 className="font-heading text-2xl text-foreground">
           FIGHTER <span className="text-primary">ROSTER</span>
         </h2>
-        <Button size="sm" className="gap-1" onClick={onAddFighter}>
-          <Plus className="h-3 w-3" /> Add Fighter
-        </Button>
+        <div className="flex gap-2">
+          {onImportFighters && (
+            <Button size="sm" variant="outline" className="gap-1" onClick={onImportFighters}>
+              <Upload className="h-3 w-3" /> Import CSV
+            </Button>
+          )}
+          <Button size="sm" className="gap-1" onClick={onAddFighter}>
+            <Plus className="h-3 w-3" /> Add Fighter
+          </Button>
+        </div>
       </div>
 
       {/* Search & Filter Bar */}
