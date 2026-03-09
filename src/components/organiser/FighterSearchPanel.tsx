@@ -47,6 +47,11 @@ export function FighterSearchPanel({
   const [style, setStyle] = useState<FightingStyle | "all">("all");
   const [searchName, setSearchName] = useState("");
 
+  // Reset filter when slot changes
+  useEffect(() => {
+    setWeightClass(slot.weight_class);
+  }, [slot.id, slot.weight_class]);
+
   const { data: fighters = [], isLoading } = useQuery({
     queryKey: ["fighter-search", weightClass, country, style, searchName],
     queryFn: async () => {
