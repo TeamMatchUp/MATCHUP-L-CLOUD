@@ -19,6 +19,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function OrganiserDashboard() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
 
   const { data: events = [] } = useQuery({
     queryKey: ["organiser-events", user?.id],
