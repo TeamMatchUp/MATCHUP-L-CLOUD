@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star } from "lucide-react";
+import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { PutForwardFightersDialog } from "@/components/coach/PutForwardFightersDialog";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -40,7 +41,9 @@ export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const { user, effectiveRoles } = useAuth();
   const isFighter = effectiveRoles.includes("fighter");
+  const isCoach = effectiveRoles.includes("coach");
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showPutForward, setShowPutForward] = useState(false);
   const [sending, setSending] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -239,6 +242,18 @@ export default function EventDetail() {
                 )
               )}
 
+              {/* Coach Put Forward Button */}
+              {isCoach && user && (
+                <Button
+                  variant="outline"
+                  className="mb-8 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  onClick={() => setShowPutForward(true)}
+                >
+                  <Users className="h-4 w-4" />
+                  Put Forward Fighters
+                </Button>
+              )}
+
               {/* Location Map */}
               <div className="rounded-lg border border-border overflow-hidden mb-12">
                 <iframe
@@ -358,6 +373,17 @@ export default function EventDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Coach Put Forward Dialog */}
+      {isCoach && user && event && (
+        <PutForwardFightersDialog
+          open={showPutForward}
+          onOpenChange={setShowPutForward}
+          coachId={user.id}
+          eventId={id!}
+          eventTitle={event.title}
+        />
+      )}
 
       <Footer />
     </div>
