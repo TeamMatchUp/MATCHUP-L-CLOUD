@@ -121,7 +121,7 @@ export function FighterSearchPanel({
       )}
 
       {/* Filters */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <Select value={weightClass} onValueChange={(v) => setWeightClass(v as WeightClass)}>
           <SelectTrigger>
             <SelectValue placeholder="Weight" />
@@ -166,6 +166,24 @@ export function FighterSearchPanel({
             className="pl-9"
           />
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 mb-4">
+        <Toggle
+          variant="outline"
+          size="sm"
+          pressed={coachNominatedOnly}
+          onPressedChange={setCoachNominatedOnly}
+          className="gap-1.5 data-[state=on]:bg-primary/10 data-[state=on]:text-primary data-[state=on]:border-primary/40"
+        >
+          <UserCheck className="h-3.5 w-3.5" />
+          Coach Nominated
+          {nominatedFighterIds.length > 0 && (
+            <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] h-4">
+              {nominatedFighterIds.length}
+            </Badge>
+          )}
+        </Toggle>
       </div>
 
       {/* Results */}
