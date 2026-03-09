@@ -36,6 +36,7 @@ interface FighterRosterPanelProps {
   fighterRecords: Map<string, { wins: number; losses: number; draws: number; eventVerified: number; coachVerified: number }>;
   onAddFighter: () => void;
   onAddFightResult: (fighter: { id: string; name: string }) => void;
+  onImportFighters?: () => void;
 }
 
 export function FighterRosterPanel({
