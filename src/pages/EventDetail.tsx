@@ -310,6 +310,25 @@ export default function EventDetail() {
           </div>
         </section>
       </main>
+
+      {/* Interest Confirmation Dialog */}
+      <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Interest</AlertDialogTitle>
+            <AlertDialogDescription>
+              A notification will be sent to your coach letting them know you're interested in this event. Do you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={sending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmInterest} disabled={sending}>
+              {sending ? "Sending..." : "Confirm"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Footer />
     </div>
   );
