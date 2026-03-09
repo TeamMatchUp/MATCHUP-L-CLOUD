@@ -16,6 +16,7 @@ import { Camera, Loader2, Save, User, Sun, Moon } from "lucide-react";
 
 export default function AccountSettings() {
   const { user, loading: authLoading } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
