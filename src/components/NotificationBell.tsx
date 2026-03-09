@@ -119,7 +119,10 @@ export function NotificationBell() {
   };
 
   const getDashboardNotificationsPath = () => {
-    if (effectiveRoles.includes("organiser") && !effectiveRoles.includes("fighter") && !effectiveRoles.includes("gym_owner")) {
+    if (effectiveRoles.includes("gym_owner")) {
+      return "/gym-owner/dashboard?tab=notifications";
+    }
+    if (effectiveRoles.includes("organiser")) {
       return "/organiser/dashboard?tab=notifications";
     }
     if (effectiveRoles.includes("fighter")) {
