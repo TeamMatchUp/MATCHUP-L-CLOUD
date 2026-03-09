@@ -38,6 +38,69 @@ const SLOT_STATUS_STYLES: Record<string, string> = {
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
+  const { user, effectiveRoles } = useAuth();
+  const isFighter = effectiveRoles.includes("fighter");
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  // Get fighter profile for the current user
+  const { data: fighterProfile } = useQuery({
+    queryKey: ["my-fighter-profile", user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fighter_profiles")
+        .select("id, name")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user && isFighter,
+  });
+
+  const handleConfirmInterest = async () => {
+    if (!fighterProfile || !event) return;
+    setSending(true);
+    try {
+      // Find all coaches linked to this fighter via gyms
+      const { data: gymLinks } = await supabase
+        .from("fighter_gym_links")
+        .select("gym_id, gyms(coach_id)")
+        .eq("fighter_id", fighterProfile.id)
+        .eq("status", "accepted");
+
+      const coachIds = new Set<string>();
+      (gymLinks ?? []).forEach((link: any) => {
+        if (link.gyms?.coach_id) coachIds.add(link.gyms.coach_id);
+      });
+
+      if (coachIds.size === 0) {
+        toast.error("No linked coaches found to notify.");
+        setSending(false);
+        setShowConfirm(false);
+        return;
+      }
+
+      // Send notification to each coach
+      for (const coachId of coachIds) {
+        await supabase.rpc("create_notification", {
+          _user_id: coachId,
+          _title: `${fighterProfile.name} is interested in an event`,
+          _message: `${fighterProfile.name} is interested in "${event.title}" on ${new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}.`,
+          _type: "event_update",
+          _reference_id: id!,
+        });
+      }
+
+      toast.success("Your interest has been registered and your coach has been notified!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setSending(false);
+      setShowConfirm(false);
+    }
+  };
 
   const { data: event, isLoading } = useQuery({
     queryKey: ["event", id],
