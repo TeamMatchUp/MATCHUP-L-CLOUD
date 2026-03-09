@@ -36,10 +36,11 @@ export function FightHistory({ fighterId }: FightHistoryProps) {
   let eventVerified = 0, coachVerified = 0;
 
   fights.forEach((f) => {
-    // Skip invalid fights where fighter fought themselves
-    if (f.fighter_a_id === f.fighter_b_id) return;
+    // Skip truly invalid self-fights (no opponent_name means bad data)
+    if (f.fighter_a_id === f.fighter_b_id && !f.opponent_name) return;
     
     const isA = f.fighter_a_id === fighterId;
+    const isSelfRef = f.fighter_a_id === f.fighter_b_id;
     const result = f.result as string;
 
     // Prioritize winner_id if set
@@ -49,12 +50,10 @@ export function FightHistory({ fighterId }: FightHistoryProps) {
     } else if (result === "draw") {
       draws++;
     } else if (result === "win") {
-      // result is from fighter_a's perspective
-      if (isA) wins++;
+      if (isSelfRef || isA) wins++;
       else losses++;
     } else if (result === "loss") {
-      // result is from fighter_a's perspective
-      if (isA) losses++;
+      if (isSelfRef || isA) losses++;
       else wins++;
     }
 

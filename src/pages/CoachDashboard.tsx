@@ -127,12 +127,10 @@ export default function CoachDashboard() {
       } else if (result === "draw") {
         draws++;
       } else if (result === "win") {
-        // result is from fighter_a's perspective
-        if (isA) wins++;
+        if (isSelfRef || isA) wins++;
         else losses++;
       } else if (result === "loss") {
-        // result is from fighter_a's perspective
-        if (isA) losses++;
+        if (isSelfRef || isA) losses++;
         else wins++;
       }
 
