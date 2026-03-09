@@ -58,12 +58,43 @@ export function NotificationBell() {
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
   };
 
-  const markRead = async (id: string) => {
+  const getNotificationRoute = (notification: any): string | null => {
+    switch (notification.type) {
+      case "match_proposed":
+      case "match_accepted":
+      case "match_declined":
+      case "match_confirmed":
+      case "match_withdrawn":
+        // reference_id is match_proposal_id - navigate to appropriate dashboard
+        return "/fighter-dashboard"; // Could be coach or fighter dashboard depending on user role
+      case "event_update":
+        // reference_id is event_id
+        return notification.reference_id ? `/events/${notification.reference_id}` : "/events";
+      case "gym_invite":
+        // Navigate to fighter dashboard where gym invites are shown
+        return "/fighter-dashboard";
+      case "system":
+        // reference_id could be fighter_id, gym_id, etc.
+        return null; // No specific route for generic system notifications
+      default:
+        return null;
+    }
+  };
+
+  const handleNotificationClick = async (notification: any) => {
+    // Mark as read
     await supabase
       .from("notifications")
       .update({ read: true })
-      .eq("id", id);
+      .eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+
+    // Navigate to relevant page
+    const route = getNotificationRoute(notification);
+    if (route) {
+      setOpen(false);
+      navigate(route);
+    }
   };
 
   if (!user) return null;
