@@ -9,6 +9,7 @@ import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
 import { NotificationHistory } from "@/components/NotificationHistory";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Building2, Inbox, Bell } from "lucide-react";
 import { formatEnum } from "@/lib/format";
 
 export default function FighterDashboard() {
