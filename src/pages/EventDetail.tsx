@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useParams, Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
