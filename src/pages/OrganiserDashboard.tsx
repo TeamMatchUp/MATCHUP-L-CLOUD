@@ -108,15 +108,17 @@ export default function OrganiserDashboard() {
               ))}
             </div>
 
-            {/* Notification History */}
-            <div className="mb-10">
-              <NotificationHistory />
-            </div>
+            {/* View Selector */}
+            <Tabs defaultValue="events" className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+                <TabsTrigger value="events">Events</TabsTrigger>
+                <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              </TabsList>
 
-            {/* Events List */}
-            <h2 className="font-heading text-2xl text-foreground mb-4">
-              MY <span className="text-primary">EVENTS</span>
-            </h2>
+              <TabsContent value="events">
+                <h2 className="font-heading text-2xl text-foreground mb-4">
+                  MY <span className="text-primary">EVENTS</span>
+                </h2>
 
             {events.length === 0 ? (
               <div className="rounded-lg border border-border bg-card p-8 text-center">
