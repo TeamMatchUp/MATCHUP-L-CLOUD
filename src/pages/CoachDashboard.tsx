@@ -113,9 +113,11 @@ export default function CoachDashboard() {
       const isB = fight.fighter_b_id === fighter.id;
       if (!isA && !isB) return;
       
-      // Skip invalid fights where fighter fought themselves
-      if (fight.fighter_a_id === fight.fighter_b_id) return;
+      // Skip truly invalid self-fights (no opponent_name means bad data)
+      if (fight.fighter_a_id === fight.fighter_b_id && !fight.opponent_name) return;
 
+      // For self-referencing fights (external opponent), treat as fighter_a's perspective
+      const isSelfRef = fight.fighter_a_id === fight.fighter_b_id;
       const result = fight.result as string;
       
       // Prioritize winner_id if set
