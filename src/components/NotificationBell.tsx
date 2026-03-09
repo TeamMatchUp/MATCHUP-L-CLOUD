@@ -28,6 +28,7 @@ const TYPE_LABELS: Record<string, string> = {
 export function NotificationBell() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   const { data: notifications = [] } = useQuery({
