@@ -36,21 +36,26 @@ export function FightHistory({ fighterId }: FightHistoryProps) {
   let eventVerified = 0, coachVerified = 0;
 
   fights.forEach((f) => {
+    // Skip invalid fights where fighter fought themselves
+    if (f.fighter_a_id === f.fighter_b_id) return;
+    
     const isA = f.fighter_a_id === fighterId;
     const result = f.result as string;
 
-    if (result === "draw") {
+    // Prioritize winner_id if set
+    if (f.winner_id) {
+      if (f.winner_id === fighterId) wins++;
+      else losses++;
+    } else if (result === "draw") {
       draws++;
     } else if (result === "win") {
-      // If this fight was recorded for fighter_a and result is "win", fighter_a won
+      // result is from fighter_a's perspective
       if (isA) wins++;
       else losses++;
     } else if (result === "loss") {
+      // result is from fighter_a's perspective
       if (isA) losses++;
       else wins++;
-    } else if (f.winner_id) {
-      if (f.winner_id === fighterId) wins++;
-      else losses++;
     }
 
     if (f.verification_status === "event_verified") eventVerified++;
