@@ -192,7 +192,6 @@ export default function EventDetail() {
             <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Button>
-            </Button>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
