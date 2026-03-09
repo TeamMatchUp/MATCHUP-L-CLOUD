@@ -11,7 +11,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, X, Check } from "lucide-react";
+import { Search, X, Check, UserCheck } from "lucide-react";
+import { Toggle } from "@/components/ui/toggle";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -29,6 +30,7 @@ import { formatEnum } from "@/lib/format";
 
 interface FighterSearchPanelProps {
   slot: FightSlot;
+  eventId: string;
   selectedFighterA: FighterProfile | null;
   selectedFighterB: FighterProfile | null;
   onSelectFighter: (fighter: FighterProfile) => void;
@@ -37,6 +39,7 @@ interface FighterSearchPanelProps {
 
 export function FighterSearchPanel({
   slot,
+  eventId,
   selectedFighterA,
   selectedFighterB,
   onSelectFighter,
@@ -46,14 +49,30 @@ export function FighterSearchPanel({
   const [country, setCountry] = useState<CountryCode | "all">("all");
   const [style, setStyle] = useState<FightingStyle | "all">("all");
   const [searchName, setSearchName] = useState("");
+  const [coachNominatedOnly, setCoachNominatedOnly] = useState(false);
 
   // Reset filter when slot changes
   useEffect(() => {
     setWeightClass(slot.weight_class);
   }, [slot.id, slot.weight_class]);
 
+  // Fetch coach-nominated fighter IDs for this event
+  const { data: nominatedFighterIds = [] } = useQuery({
+    queryKey: ["coach-nominations-for-event", eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("coach_event_nominations")
+        .select("fighter_id")
+        .eq("event_id", eventId);
+      if (error) throw error;
+      return data.map((n) => n.fighter_id);
+    },
+  });
+
+  const nominatedSet = new Set(nominatedFighterIds);
+
   const { data: fighters = [], isLoading } = useQuery({
-    queryKey: ["fighter-search", weightClass, country, style, searchName],
+    queryKey: ["fighter-search", weightClass, country, style, searchName, coachNominatedOnly, nominatedFighterIds],
     queryFn: async () => {
       let q = supabase
         .from("fighter_profiles")
@@ -65,6 +84,11 @@ export function FighterSearchPanel({
       if (country !== "all") q = q.eq("country", country);
       if (style !== "all") q = q.eq("style", style);
       if (searchName.trim()) q = q.ilike("name", `%${searchName.trim()}%`);
+      if (coachNominatedOnly && nominatedFighterIds.length > 0) {
+        q = q.in("id", nominatedFighterIds);
+      } else if (coachNominatedOnly && nominatedFighterIds.length === 0) {
+        return [];
+      }
 
       const { data, error } = await q.limit(50);
       if (error) throw error;
@@ -97,7 +121,7 @@ export function FighterSearchPanel({
       )}
 
       {/* Filters */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <Select value={weightClass} onValueChange={(v) => setWeightClass(v as WeightClass)}>
           <SelectTrigger>
             <SelectValue placeholder="Weight" />
@@ -144,6 +168,24 @@ export function FighterSearchPanel({
         </div>
       </div>
 
+      <div className="flex items-center gap-2 mb-4">
+        <Toggle
+          variant="outline"
+          size="sm"
+          pressed={coachNominatedOnly}
+          onPressedChange={setCoachNominatedOnly}
+          className="gap-1.5 data-[state=on]:bg-primary/10 data-[state=on]:text-primary data-[state=on]:border-primary/40"
+        >
+          <UserCheck className="h-3.5 w-3.5" />
+          Coach Nominated
+          {nominatedFighterIds.length > 0 && (
+            <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] h-4">
+              {nominatedFighterIds.length}
+            </Badge>
+          )}
+        </Toggle>
+      </div>
+
       {/* Results */}
       {isLoading ? (
         <p className="text-sm text-muted-foreground animate-pulse">Searching...</p>
@@ -166,7 +208,12 @@ export function FighterSearchPanel({
               <p className="text-xs text-muted-foreground">
                 {f.record_wins}W-{f.record_losses}L-{f.record_draws}D · {f.country}
               </p>
-              <div className="flex gap-1 mt-1">
+              <div className="flex gap-1 mt-1 flex-wrap">
+                {nominatedSet.has(f.id) && (
+                  <Badge className="text-[10px] px-1 py-0 bg-primary/15 text-primary border-primary/30">
+                    <UserCheck className="h-2.5 w-2.5 mr-0.5" />Nominated
+                  </Badge>
+                )}
                 {f.style && (
                   <Badge variant="outline" className="text-[10px] px-1 py-0">
                     {formatEnum(f.style)}

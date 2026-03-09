@@ -604,6 +604,7 @@ export default function EventManager() {
             {activeSlot && !showProposeDialog && (
               <FighterSearchPanel
                 slot={activeSlot}
+                eventId={id!}
                 selectedFighterA={selectedFighterA}
                 selectedFighterB={selectedFighterB}
                 onSelectFighter={handleSelectFighter}
