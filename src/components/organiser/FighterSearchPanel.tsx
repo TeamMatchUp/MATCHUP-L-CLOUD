@@ -77,9 +77,13 @@ export function FighterSearchPanel({
       let q = supabase
         .from("fighter_profiles")
         .select("*")
-        .eq("weight_class", weightClass)
         .eq("available", true)
         .order("name");
+
+      // Skip weight class filter when showing coach-nominated fighters
+      if (!coachNominatedOnly) {
+        q = q.eq("weight_class", weightClass);
+      }
 
       if (country !== "all") q = q.eq("country", country);
       if (style !== "all") q = q.eq("style", style);
