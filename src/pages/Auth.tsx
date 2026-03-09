@@ -68,7 +68,9 @@ export default function Auth() {
     const userRoles = (rolesData ?? []).map((r) => r.role);
     const primaryRole = userRoles[0];
     const dashboardPath = primaryRole ? ROLE_DASHBOARDS[primaryRole] : "/";
-    navigate(from || dashboardPath, { replace: true });
+    // Only use 'from' if it's a meaningful path (not home page)
+    const redirectTo = from && from !== "/" ? from : dashboardPath;
+    navigate(redirectTo, { replace: true });
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
