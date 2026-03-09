@@ -112,19 +112,26 @@ export default function CoachDashboard() {
       const isA = fight.fighter_a_id === fighter.id;
       const isB = fight.fighter_b_id === fighter.id;
       if (!isA && !isB) return;
+      
+      // Skip invalid fights where fighter fought themselves
+      if (fight.fighter_a_id === fight.fighter_b_id) return;
 
       const result = fight.result as string;
-      if (result === "draw") {
+      
+      // Prioritize winner_id if set
+      if (fight.winner_id) {
+        if (fight.winner_id === fighter.id) wins++;
+        else losses++;
+      } else if (result === "draw") {
         draws++;
       } else if (result === "win") {
+        // result is from fighter_a's perspective
         if (isA) wins++;
         else losses++;
       } else if (result === "loss") {
+        // result is from fighter_a's perspective
         if (isA) losses++;
         else wins++;
-      } else if (fight.winner_id) {
-        if (fight.winner_id === fighter.id) wins++;
-        else losses++;
       }
 
       // Count verification types
