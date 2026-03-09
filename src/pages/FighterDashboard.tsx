@@ -9,6 +9,7 @@ import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
 import { NotificationHistory } from "@/components/NotificationHistory";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Building2, Inbox, Bell } from "lucide-react";
 import { formatEnum } from "@/lib/format";
 
 export default function FighterDashboard() {
@@ -116,11 +117,17 @@ export default function FighterDashboard() {
                 </div>
 
                 {/* View Selector */}
-                <Tabs defaultValue="gyms" className="w-full">
-                  <TabsList className="grid w-full max-w-md grid-cols-3 mb-6">
-                    <TabsTrigger value="gyms">Gyms</TabsTrigger>
-                    <TabsTrigger value="proposals">Proposals</TabsTrigger>
-                    <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                <Tabs defaultValue="gyms" className="space-y-6">
+                  <TabsList className="bg-card border border-border">
+                    <TabsTrigger value="gyms">
+                      <Building2 className="h-4 w-4 mr-1" /> Gyms
+                    </TabsTrigger>
+                    <TabsTrigger value="proposals">
+                      <Inbox className="h-4 w-4 mr-1" /> Proposals
+                    </TabsTrigger>
+                    <TabsTrigger value="notifications">
+                      <Bell className="h-4 w-4 mr-1" /> Notifications
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="gyms">
