@@ -48,6 +48,7 @@ export default function GymDetail() {
   const queryClient = useQueryClient();
   const [showAddFighter, setShowAddFighter] = useState(false);
   const [showEditGym, setShowEditGym] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const navigate = useNavigate();
 
   const { data: gym, isLoading } = useQuery({
