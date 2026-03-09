@@ -11,9 +11,9 @@ const Index = () => {
       <Header />
       <main className="pt-16">
         <HeroSection />
-        <TwoSidedSection />
         <ThreeSidesSection />
         <HowItWorksSection />
+        <TwoSidedSection />
       </main>
       <Footer />
     </div>

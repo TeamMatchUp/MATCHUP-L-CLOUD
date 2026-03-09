@@ -25,24 +25,10 @@ function useCountUp(target: number, shouldStart: boolean, duration = 1600) {
   return count;
 }
 
-/** Splits a number string into individual characters for rolling digit animation */
-function RollingDigits({ value }: { value: string }) {
-  return (
-    <span className="inline-flex overflow-hidden">
-      {value.split("").map((char, i) => (
-        <span key={`${i}-${char}`} className="inline-block">
-          <motion.span
-            className="inline-block"
-            initial={{ y: "100%", opacity: 0 }}
-            animate={{ y: "0%", opacity: 1 }}
-            transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1], delay: i * 0.03 }}
-          >
-            {char}
-          </motion.span>
-        </span>
-      ))}
-    </span>
-  );
+/** Displays count with smooth number transitions */
+function AnimatedNumber({ value, isInView }: { value: number; isInView: boolean }) {
+  const count = useCountUp(value, isInView);
+  return <span className="tabular-nums">{count.toLocaleString()}</span>;
 }
 
 export function TwoSidedSection() {
@@ -65,17 +51,12 @@ export function TwoSidedSection() {
     },
   });
 
-  const eventCount = useCountUp(counts?.events ?? 0, isInView);
-  const fighterCount = useCountUp(counts?.fighters ?? 0, isInView);
-  const gymCount = useCountUp(counts?.gyms ?? 0, isInView);
 
   const tiles = useMemo(() => [
-    { label: "Events", suffix: "Active", to: "/events" },
-    { label: "Fighters", suffix: "Listed", to: "/fighters" },
-    { label: "Gyms", suffix: "Registered", to: "/gyms" },
+    { label: "Events", suffix: "Active", to: "/events", key: "events" as const },
+    { label: "Fighters", suffix: "Listed", to: "/fighters", key: "fighters" as const },
+    { label: "Gyms", suffix: "Registered", to: "/gyms", key: "gyms" as const },
   ], []);
-
-  const values = [eventCount, fighterCount, gymCount];
 
   return (
     <section className="py-16 bg-card border-y border-border/30">
@@ -103,8 +84,8 @@ export function TwoSidedSection() {
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 {tile.label}
               </p>
-              <p className="font-heading text-4xl md:text-5xl text-primary tabular-nums leading-none my-1">
-                <RollingDigits value={values[i].toLocaleString()} />
+              <p className="font-heading text-4xl md:text-5xl text-primary leading-none my-1">
+                <AnimatedNumber value={counts?.[tile.key] ?? 0} isInView={isInView} />
               </p>
               <p className="text-xs text-muted-foreground mb-3">{tile.suffix}</p>
               <Button variant="heroOutline" size="sm" asChild>
