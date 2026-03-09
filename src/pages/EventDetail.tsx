@@ -42,6 +42,7 @@ export default function EventDetail() {
   const isFighter = effectiveRoles.includes("fighter");
   const [showConfirm, setShowConfirm] = useState(false);
   const [sending, setSending] = useState(false);
+  const queryClient = useQueryClient();
 
   // Get fighter profile for the current user
   const { data: fighterProfile } = useQuery({
@@ -58,10 +59,32 @@ export default function EventDetail() {
     enabled: !!user && isFighter,
   });
 
+  // Check if already interested
+  const { data: existingInterest } = useQuery({
+    queryKey: ["fighter-event-interest", fighterProfile?.id, id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fighter_event_interests")
+        .select("id")
+        .eq("fighter_id", fighterProfile!.id)
+        .eq("event_id", id!)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!fighterProfile && !!id,
+  });
+
   const handleConfirmInterest = async () => {
     if (!fighterProfile || !event) return;
     setSending(true);
     try {
+      // Persist interest
+      const { error: insertError } = await supabase
+        .from("fighter_event_interests")
+        .insert({ fighter_id: fighterProfile.id, event_id: id! });
+      if (insertError) throw insertError;
+
       // Find all coaches linked to this fighter via gyms
       const { data: gymLinks } = await supabase
         .from("fighter_gym_links")
@@ -74,13 +97,6 @@ export default function EventDetail() {
         if (link.gyms?.coach_id) coachIds.add(link.gyms.coach_id);
       });
 
-      if (coachIds.size === 0) {
-        toast.error("No linked coaches found to notify.");
-        setSending(false);
-        setShowConfirm(false);
-        return;
-      }
-
       // Send notification to each coach
       for (const coachId of coachIds) {
         await supabase.rpc("create_notification", {
@@ -92,6 +108,8 @@ export default function EventDetail() {
         });
       }
 
+      queryClient.invalidateQueries({ queryKey: ["fighter-event-interest", fighterProfile.id, id] });
+      queryClient.invalidateQueries({ queryKey: ["fighter-event-interests"] });
       toast.success("Your interest has been registered and your coach has been notified!");
     } catch (err) {
       console.error(err);

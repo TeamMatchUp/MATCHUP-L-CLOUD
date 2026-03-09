@@ -178,6 +178,10 @@ export default function FighterDashboard() {
                     )}
                   </TabsContent>
 
+                  <TabsContent value="interests">
+                    <InterestedEventsPanel fighterProfileId={fighterProfile.id} />
+                  </TabsContent>
+
                   <TabsContent value="notifications">
                     <NotificationHistory />
                   </TabsContent>
