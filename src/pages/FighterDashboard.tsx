@@ -8,6 +8,7 @@ import { CreateFighterProfileForm } from "@/components/fighter/CreateFighterProf
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
 import { NotificationHistory } from "@/components/NotificationHistory";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatEnum } from "@/lib/format";
 
 export default function FighterDashboard() {
