@@ -78,7 +78,7 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-nav/90 backdrop-blur-xl border-b border-border/50">
       <div className="container flex h-16 items-center justify-between relative">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logoFull} alt="MatchUp" className="h-10" />
+          <AppLogo className="h-10" />
         </Link>
 
         {/* Center-aligned Explore + optional links */}
