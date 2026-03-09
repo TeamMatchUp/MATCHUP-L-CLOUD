@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      coach_event_nominations: {
+        Row: {
+          coach_id: string
+          created_at: string
+          event_id: string
+          fighter_id: string
+          id: string
+        }
+        Insert: {
+          coach_id: string
+          created_at?: string
+          event_id: string
+          fighter_id: string
+          id?: string
+        }
+        Update: {
+          coach_id?: string
+          created_at?: string
+          event_id?: string
+          fighter_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_event_nominations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coach_event_nominations_fighter_id_fkey"
+            columns: ["fighter_id"]
+            isOneToOne: false
+            referencedRelation: "fighter_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       confirmations: {
         Row: {
           comment: string | null
