@@ -118,6 +118,16 @@ export function NotificationBell() {
     toast.info("Notification marked as read");
   };
 
+  const getDashboardNotificationsPath = () => {
+    if (effectiveRoles.includes("organiser") && !effectiveRoles.includes("fighter") && !effectiveRoles.includes("gym_owner")) {
+      return "/organiser/dashboard?tab=notifications";
+    }
+    if (effectiveRoles.includes("fighter")) {
+      return "/fighter/dashboard?tab=notifications";
+    }
+    return "/gym-owner/dashboard?tab=notifications";
+  };
+
   if (!user) return null;
 
   return (
