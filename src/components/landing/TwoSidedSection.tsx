@@ -51,17 +51,12 @@ export function TwoSidedSection() {
     },
   });
 
-  const eventCount = useCountUp(counts?.events ?? 0, isInView);
-  const fighterCount = useCountUp(counts?.fighters ?? 0, isInView);
-  const gymCount = useCountUp(counts?.gyms ?? 0, isInView);
 
   const tiles = useMemo(() => [
-    { label: "Events", suffix: "Active", to: "/events" },
-    { label: "Fighters", suffix: "Listed", to: "/fighters" },
-    { label: "Gyms", suffix: "Registered", to: "/gyms" },
+    { label: "Events", suffix: "Active", to: "/events", key: "events" as const },
+    { label: "Fighters", suffix: "Listed", to: "/fighters", key: "fighters" as const },
+    { label: "Gyms", suffix: "Registered", to: "/gyms", key: "gyms" as const },
   ], []);
-
-  const values = [eventCount, fighterCount, gymCount];
 
   return (
     <section className="py-16 bg-card border-y border-border/30">
