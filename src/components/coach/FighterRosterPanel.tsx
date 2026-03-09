@@ -33,7 +33,7 @@ interface FighterRosterPanelProps {
   fighters: Fighter[];
   gyms: Gym[];
   fighterGymLinks: FighterGymLink[];
-  fighterRecords: Map<string, { wins: number; losses: number; draws: number }>;
+  fighterRecords: Map<string, { wins: number; losses: number; draws: number; eventVerified: number; coachVerified: number }>;
   onAddFighter: () => void;
   onAddFightResult: (fighter: { id: string; name: string }) => void;
 }
