@@ -247,7 +247,7 @@ const Fighters = () => {
                           to={`/fighters/${fighter.id}`}
                           className="rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block"
                         >
-                          <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3 mb-3">
                             <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground overflow-hidden shrink-0">
                               {fighter._avatar ? (
                                 <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" />
@@ -255,19 +255,12 @@ const Fighters = () => {
                                 fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)
                               )}
                             </div>
-                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${fighter.available ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
-                              {fighter.available ? "Available" : "Booked"}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
                             <h3 className="font-heading text-lg text-foreground">{fighter.name}</h3>
-                            {fighter.verified && <ShieldCheck className="h-4 w-4 text-primary" />}
                           </div>
-                          <p className="text-primary font-bold text-lg mt-1">{record}</p>
-                          <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                          <p className="text-primary font-bold text-lg">{record}</p>
+                          <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                             <p>{WEIGHT_CLASS_LABELS[fighter.weight_class]} · {fighter.style ? STYLE_LABELS[fighter.style] : "—"}</p>
                             <p>{gymName}</p>
-                            {fighter.height && fighter.reach && <p>{fighter.height} · {fighter.reach} reach</p>}
                           </div>
                         </Link>
                       </motion.div>
