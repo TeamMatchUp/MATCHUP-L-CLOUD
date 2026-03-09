@@ -10,7 +10,8 @@ export const STYLE_LABELS: Record<string, string> = {
   bjj: "BJJ",
 };
 
-export function formatEnum(val: string): string {
+export function formatEnum(val: string | null | undefined): string {
+  if (!val) return "—";
   // Check style labels first for correct casing
   if (val in STYLE_LABELS) return STYLE_LABELS[val];
   return val.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
