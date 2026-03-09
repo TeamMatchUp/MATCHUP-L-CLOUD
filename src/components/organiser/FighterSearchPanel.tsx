@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,11 @@ export function FighterSearchPanel({
   const [country, setCountry] = useState<CountryCode | "all">("all");
   const [style, setStyle] = useState<FightingStyle | "all">("all");
   const [searchName, setSearchName] = useState("");
+
+  // Reset filter when slot changes
+  useEffect(() => {
+    setWeightClass(slot.weight_class);
+  }, [slot.id, slot.weight_class]);
 
   const { data: fighters = [], isLoading } = useQuery({
     queryKey: ["fighter-search", weightClass, country, style, searchName],
