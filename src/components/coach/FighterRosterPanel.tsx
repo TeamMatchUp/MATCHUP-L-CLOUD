@@ -128,13 +128,27 @@ export function FighterRosterPanel({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-10">
           {filteredFighters.map((f) => {
-            const record = fighterRecords.get(f.id) || { wins: 0, losses: 0, draws: 0 };
+            const record = fighterRecords.get(f.id) || { wins: 0, losses: 0, draws: 0, eventVerified: 0, coachVerified: 0 };
             return (
             <div key={f.id} className="rounded-lg border border-border bg-card p-4">
               <p className="font-medium text-foreground">{f.name}</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {record.wins}W-{record.losses}L-{record.draws}D · {formatEnum(f.weight_class)}
               </p>
+              {(record.eventVerified > 0 || record.coachVerified > 0) && (
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {record.eventVerified > 0 && (
+                    <span className="flex items-center gap-1 text-[10px] text-primary">
+                      <ShieldCheck className="h-3 w-3" /> {record.eventVerified} Event Verified
+                    </span>
+                  )}
+                  {record.coachVerified > 0 && (
+                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <UserCheck className="h-3 w-3" /> {record.coachVerified} Coach Verified
+                    </span>
+                  )}
+                </div>
+              )}
               <div className="flex gap-1 mt-2 flex-wrap">
                 {f.style && (
                   <Badge variant="outline" className="text-xs">{formatEnum(f.style)}</Badge>
