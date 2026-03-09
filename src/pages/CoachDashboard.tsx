@@ -220,6 +220,7 @@ export default function CoachDashboard() {
               fighterRecords={fighterRecords}
               onAddFighter={() => setShowAddFighter(true)}
               onAddFightResult={(fighter) => setFightResultFighter(fighter)}
+              onImportFighters={myGym ? () => setShowImport(true) : undefined}
             />
 
             {/* Incoming Proposals */}
