@@ -5,7 +5,7 @@ import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star } from "lucide-
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -43,6 +43,7 @@ export default function EventDetail() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [sending, setSending] = useState(false);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Get fighter profile for the current user
   const { data: fighterProfile } = useQuery({
@@ -169,8 +170,8 @@ export default function EventDetail() {
         <main className="pt-16">
           <div className="container py-16 text-center">
             <h1 className="font-heading text-3xl text-foreground mb-4">Event Not Found</h1>
-            <Button variant="ghost" asChild>
-              <Link to="/events"><ArrowLeft className="h-4 w-4 mr-2" />Back to Events</Link>
+            <Button variant="ghost" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Button>
           </div>
         </main>
@@ -188,8 +189,8 @@ export default function EventDetail() {
       <main className="pt-16">
         <section className="py-16">
           <div className="container">
-            <Button variant="ghost" size="sm" asChild className="mb-6">
-              <Link to="/events"><ArrowLeft className="h-4 w-4 mr-2" />All Events</Link>
+            <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Button>
 
             <motion.div
