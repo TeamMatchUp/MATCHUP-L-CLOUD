@@ -217,14 +217,25 @@ export default function EventDetail() {
 
               {/* Fighter Interest Button */}
               {isFighter && fighterProfile && (
-                <Button
-                  variant="outline"
-                  className="mb-8 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                  onClick={() => setShowConfirm(true)}
-                >
-                  <Star className="h-4 w-4" />
-                  I'm Interested
-                </Button>
+                existingInterest ? (
+                  <Button
+                    variant="outline"
+                    className="mb-8 gap-2 border-primary/50 text-primary cursor-default"
+                    disabled
+                  >
+                    <Star className="h-4 w-4 fill-primary" />
+                    Interested
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="mb-8 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                    onClick={() => setShowConfirm(true)}
+                  >
+                    <Star className="h-4 w-4" />
+                    I'm Interested
+                  </Button>
+                )
               )}
 
               {/* Location Map */}
