@@ -85,7 +85,7 @@ export function TwoSidedSection() {
                 {tile.label}
               </p>
               <p className="font-heading text-4xl md:text-5xl text-primary leading-none my-1">
-                <AnimatedNumber value={counts?.[["events","fighters","gyms"][i] as "events"|"fighters"|"gyms"] ?? 0} isInView={isInView} />
+                <AnimatedNumber value={counts?.[tile.key] ?? 0} isInView={isInView} />
               </p>
               <p className="text-xs text-muted-foreground mb-3">{tile.suffix}</p>
               <Button variant="heroOutline" size="sm" asChild>
