@@ -265,6 +265,18 @@ export default function CoachDashboard() {
                 onSuccess={handleRefresh}
               />
             )}
+
+            {/* Import Fighters Dialog */}
+            {user && myGym && (
+              <ImportFightersDialog
+                open={showImport}
+                onOpenChange={setShowImport}
+                coachId={user.id}
+                gymId={myGym.id}
+                gymName={myGym.name}
+                onSuccess={handleRefresh}
+              />
+            )}
           </div>
         </section>
       </main>
