@@ -87,6 +87,7 @@ export default function GymDetail() {
   });
 
   const isOwner = !!user && !!gym && gym.coach_id === user.id;
+  const isMember = !!myGymLink;
 
   const removeFighterMutation = useMutation({
     mutationFn: async (linkId: string) => {
@@ -99,6 +100,41 @@ export default function GymDetail() {
     },
     onError: (e: any) => {
       toast({ title: "Failed to remove fighter", description: e.message, variant: "destructive" });
+    },
+  });
+
+  const leaveGymMutation = useMutation({
+    mutationFn: async () => {
+      if (!myGymLink?.id || !gym?.coach_id || !myFighterProfile) return;
+      
+      // Delete the gym link
+      const { error: deleteError } = await supabase
+        .from("fighter_gym_links")
+        .delete()
+        .eq("id", myGymLink.id);
+      
+      if (deleteError) throw deleteError;
+
+      // Send notification to gym owner
+      const { error: notifError } = await supabase.rpc("create_notification", {
+        _user_id: gym.coach_id,
+        _title: `${myFighterProfile.name} left ${gym.name}`,
+        _message: `${myFighterProfile.name} has left your gym.`,
+        _type: "system",
+        _reference_id: gym.id,
+      });
+
+      if (notifError) console.error("Failed to send notification:", notifError);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["gym", id] });
+      queryClient.invalidateQueries({ queryKey: ["my-gym-link"] });
+      queryClient.invalidateQueries({ queryKey: ["fighter-gym-memberships"] });
+      toast({ title: "Left gym successfully" });
+      navigate("/fighter/dashboard");
+    },
+    onError: (e: any) => {
+      toast({ title: "Failed to leave gym", description: e.message, variant: "destructive" });
     },
   });
 
