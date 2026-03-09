@@ -208,7 +208,12 @@ export function FighterSearchPanel({
               <p className="text-xs text-muted-foreground">
                 {f.record_wins}W-{f.record_losses}L-{f.record_draws}D · {f.country}
               </p>
-              <div className="flex gap-1 mt-1">
+              <div className="flex gap-1 mt-1 flex-wrap">
+                {nominatedSet.has(f.id) && (
+                  <Badge className="text-[10px] px-1 py-0 bg-primary/15 text-primary border-primary/30">
+                    <UserCheck className="h-2.5 w-2.5 mr-0.5" />Nominated
+                  </Badge>
+                )}
                 {f.style && (
                   <Badge variant="outline" className="text-[10px] px-1 py-0">
                     {formatEnum(f.style)}
