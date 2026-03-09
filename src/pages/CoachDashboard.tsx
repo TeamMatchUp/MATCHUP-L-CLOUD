@@ -103,9 +103,11 @@ export default function CoachDashboard() {
   });
 
   // Calculate dynamic records for each fighter
-  const fighterRecords = new Map<string, { wins: number; losses: number; draws: number }>();
+  const fighterRecords = new Map<string, { wins: number; losses: number; draws: number; eventVerified: number; coachVerified: number }>();
   allFighters.forEach((fighter) => {
     let wins = 0, losses = 0, draws = 0;
+    let eventVerified = 0, coachVerified = 0;
+
     allFights.forEach((fight) => {
       const isA = fight.fighter_a_id === fighter.id;
       const isB = fight.fighter_b_id === fighter.id;
@@ -124,8 +126,12 @@ export default function CoachDashboard() {
         if (fight.winner_id === fighter.id) wins++;
         else losses++;
       }
+
+      // Count verification types
+      if (fight.verification_status === "event_verified") eventVerified++;
+      else coachVerified++;
     });
-    fighterRecords.set(fighter.id, { wins, losses, draws });
+    fighterRecords.set(fighter.id, { wins, losses, draws, eventVerified, coachVerified });
   });
 
   // Get proposals involving coach's fighters
