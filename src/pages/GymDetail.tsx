@@ -206,6 +206,17 @@ export default function GymDetail() {
                   <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowEditGym(true)}>
                     <Pencil className="h-3 w-3" /> Edit Gym
                   </Button>
+                ) : isMember ? (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-1 text-destructive hover:text-destructive"
+                    onClick={() => leaveGymMutation.mutate()}
+                    disabled={leaveGymMutation.isPending}
+                  >
+                    <LogOut className="h-3 w-3" /> 
+                    {leaveGymMutation.isPending ? "Leaving..." : "Leave Gym"}
+                  </Button>
                 ) : (
                   <JoinGymButton gymId={gym.id} />
                 )}
