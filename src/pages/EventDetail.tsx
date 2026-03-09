@@ -170,8 +170,8 @@ export default function EventDetail() {
         <main className="pt-16">
           <div className="container py-16 text-center">
             <h1 className="font-heading text-3xl text-foreground mb-4">Event Not Found</h1>
-            <Button variant="ghost" asChild>
-              <Link to="/events"><ArrowLeft className="h-4 w-4 mr-2" />Back to Events</Link>
+            <Button variant="ghost" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Button>
           </div>
         </main>
