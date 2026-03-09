@@ -8,8 +8,9 @@ import { CreateFighterProfileForm } from "@/components/fighter/CreateFighterProf
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
 import { NotificationHistory } from "@/components/NotificationHistory";
+import { InterestedEventsPanel } from "@/components/fighter/InterestedEventsPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Inbox, Bell } from "lucide-react";
+import { Building2, Inbox, Bell, Star } from "lucide-react";
 import { formatEnum } from "@/lib/format";
 
 export default function FighterDashboard() {
@@ -125,6 +126,9 @@ export default function FighterDashboard() {
                     <TabsTrigger value="proposals">
                       <Inbox className="h-4 w-4 mr-1" /> Proposals
                     </TabsTrigger>
+                    <TabsTrigger value="interests">
+                      <Star className="h-4 w-4 mr-1" /> Interested Events
+                    </TabsTrigger>
                     <TabsTrigger value="notifications">
                       <Bell className="h-4 w-4 mr-1" /> Notifications
                     </TabsTrigger>
@@ -172,6 +176,10 @@ export default function FighterDashboard() {
                         </div>
                       </>
                     )}
+                  </TabsContent>
+
+                  <TabsContent value="interests">
+                    <InterestedEventsPanel fighterProfileId={fighterProfile.id} />
                   </TabsContent>
 
                   <TabsContent value="notifications">
