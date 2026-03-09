@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileText, Search, ShieldCheck, UserCheck } from "lucide-react";
+import { Plus, FileText, Search, ShieldCheck, UserCheck, Upload } from "lucide-react";
 
 import { formatEnum } from "@/lib/format";
 
@@ -36,6 +36,7 @@ interface FighterRosterPanelProps {
   fighterRecords: Map<string, { wins: number; losses: number; draws: number; eventVerified: number; coachVerified: number }>;
   onAddFighter: () => void;
   onAddFightResult: (fighter: { id: string; name: string }) => void;
+  onImportFighters?: () => void;
 }
 
 export function FighterRosterPanel({
@@ -45,6 +46,7 @@ export function FighterRosterPanel({
   fighterRecords,
   onAddFighter,
   onAddFightResult,
+  onImportFighters,
 }: FighterRosterPanelProps) {
   const [selectedGymId, setSelectedGymId] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -83,9 +85,16 @@ export function FighterRosterPanel({
         <h2 className="font-heading text-2xl text-foreground">
           FIGHTER <span className="text-primary">ROSTER</span>
         </h2>
-        <Button size="sm" className="gap-1" onClick={onAddFighter}>
-          <Plus className="h-3 w-3" /> Add Fighter
-        </Button>
+        <div className="flex gap-2">
+          {onImportFighters && (
+            <Button size="sm" variant="outline" className="gap-1" onClick={onImportFighters}>
+              <Upload className="h-3 w-3" /> Import CSV
+            </Button>
+          )}
+          <Button size="sm" className="gap-1" onClick={onAddFighter}>
+            <Plus className="h-3 w-3" /> Add Fighter
+          </Button>
+        </div>
       </div>
 
       {/* Search & Filter Bar */}

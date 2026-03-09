@@ -8,11 +8,13 @@ import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterDialog } from "@/components/coach/AddFighterDialog";
 import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 import { FighterRosterPanel } from "@/components/coach/FighterRosterPanel";
+import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
 
 export default function CoachDashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [showAddFighter, setShowAddFighter] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [fightResultFighter, setFightResultFighter] = useState<{ id: string; name: string } | null>(null);
 
   // Get coach's gyms
@@ -218,6 +220,7 @@ export default function CoachDashboard() {
               fighterRecords={fighterRecords}
               onAddFighter={() => setShowAddFighter(true)}
               onAddFightResult={(fighter) => setFightResultFighter(fighter)}
+              onImportFighters={myGym ? () => setShowImport(true) : undefined}
             />
 
             {/* Incoming Proposals */}
@@ -259,6 +262,18 @@ export default function CoachDashboard() {
                 onOpenChange={(open) => { if (!open) setFightResultFighter(null); }}
                 fighter={fightResultFighter}
                 coachId={user.id}
+                onSuccess={handleRefresh}
+              />
+            )}
+
+            {/* Import Fighters Dialog */}
+            {user && myGym && (
+              <ImportFightersDialog
+                open={showImport}
+                onOpenChange={setShowImport}
+                coachId={user.id}
+                gymId={myGym.id}
+                gymName={myGym.name}
                 onSuccess={handleRefresh}
               />
             )}
