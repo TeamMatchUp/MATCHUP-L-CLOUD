@@ -110,10 +110,14 @@ export default function OrganiserDashboard() {
             </div>
 
             {/* View Selector */}
-            <Tabs defaultValue="events" className="w-full">
-              <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
-                <TabsTrigger value="events">Events</TabsTrigger>
-                <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <Tabs defaultValue="events" className="space-y-6">
+              <TabsList className="bg-card border border-border">
+                <TabsTrigger value="events">
+                  <Calendar className="h-4 w-4 mr-1" /> Events
+                </TabsTrigger>
+                <TabsTrigger value="notifications">
+                  <Bell className="h-4 w-4 mr-1" /> Notifications
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="events">

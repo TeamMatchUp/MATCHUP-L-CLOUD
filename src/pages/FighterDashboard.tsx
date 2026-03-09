@@ -117,11 +117,17 @@ export default function FighterDashboard() {
                 </div>
 
                 {/* View Selector */}
-                <Tabs defaultValue="gyms" className="w-full">
-                  <TabsList className="grid w-full max-w-md grid-cols-3 mb-6">
-                    <TabsTrigger value="gyms">Gyms</TabsTrigger>
-                    <TabsTrigger value="proposals">Proposals</TabsTrigger>
-                    <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                <Tabs defaultValue="gyms" className="space-y-6">
+                  <TabsList className="bg-card border border-border">
+                    <TabsTrigger value="gyms">
+                      <Building2 className="h-4 w-4 mr-1" /> Gyms
+                    </TabsTrigger>
+                    <TabsTrigger value="proposals">
+                      <Inbox className="h-4 w-4 mr-1" /> Proposals
+                    </TabsTrigger>
+                    <TabsTrigger value="notifications">
+                      <Bell className="h-4 w-4 mr-1" /> Notifications
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="gyms">
