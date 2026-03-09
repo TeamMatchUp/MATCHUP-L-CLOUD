@@ -737,6 +737,17 @@ export default function GymOwnerDashboard() {
               />
             )}
 
+            {user && primaryGym && (
+              <ImportFightersDialog
+                open={showImport}
+                onOpenChange={setShowImport}
+                coachId={user.id}
+                gymId={primaryGym.id}
+                gymName={primaryGym.name}
+                onSuccess={handleRefresh}
+              />
+            )}
+
             {deleteFighter && (
               <DeleteFighterDialog
                 open={!!deleteFighter}
