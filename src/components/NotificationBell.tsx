@@ -188,6 +188,19 @@ export function NotificationBell() {
             </div>
           )}
         </ScrollArea>
+        <div className="border-t border-border px-4 py-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-xs text-primary"
+            onClick={() => {
+              setOpen(false);
+              navigate(getDashboardNotificationsPath());
+            }}
+          >
+            See all notifications
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );
