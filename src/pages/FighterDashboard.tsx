@@ -8,6 +8,7 @@ import { CreateFighterProfileForm } from "@/components/fighter/CreateFighterProf
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
 import { NotificationHistory } from "@/components/NotificationHistory";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatEnum } from "@/lib/format";
 
 export default function FighterDashboard() {
@@ -116,48 +117,65 @@ export default function FighterDashboard() {
                   ))}
                 </div>
 
-                {/* Notification History */}
-                <div className="mb-10">
-                  <NotificationHistory />
-                </div>
+                {/* View Selector */}
+                <Tabs defaultValue="gyms" className="w-full">
+                  <TabsList className="grid w-full max-w-md grid-cols-3 mb-6">
+                    <TabsTrigger value="gyms">Gyms</TabsTrigger>
+                    <TabsTrigger value="proposals">Proposals</TabsTrigger>
+                    <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                  </TabsList>
 
-                {pendingProposals.length > 0 && (
-                  <>
+                  <TabsContent value="gyms">
                     <h2 className="font-heading text-2xl text-foreground mb-4">
-                      AWAITING YOUR <span className="text-primary">DECISION</span>
+                      MY <span className="text-primary">GYMS</span>
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
-                      {pendingProposals.map((p) => (
-                        <MatchProposalCard
-                          key={p.id}
-                          proposal={p}
-                          fighterProfileId={fighterProfile.id}
-                          userId={user!.id}
-                          onActionComplete={handleRefresh}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
+                    <p className="text-muted-foreground">Gym affiliations will be displayed here.</p>
+                  </TabsContent>
 
-                {confirmedFights.length > 0 && (
-                  <>
-                    <h2 className="font-heading text-2xl text-foreground mb-4">
-                      UPCOMING <span className="text-primary">FIGHTS</span>
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {confirmedFights.map((p) => (
-                        <MatchProposalCard
-                          key={p.id}
-                          proposal={p}
-                          fighterProfileId={fighterProfile.id}
-                          userId={user!.id}
-                          onActionComplete={handleRefresh}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
+                  <TabsContent value="proposals">
+                    {pendingProposals.length > 0 && (
+                      <>
+                        <h2 className="font-heading text-2xl text-foreground mb-4">
+                          AWAITING YOUR <span className="text-primary">DECISION</span>
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+                          {pendingProposals.map((p) => (
+                            <MatchProposalCard
+                              key={p.id}
+                              proposal={p}
+                              fighterProfileId={fighterProfile.id}
+                              userId={user!.id}
+                              onActionComplete={handleRefresh}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {confirmedFights.length > 0 && (
+                      <>
+                        <h2 className="font-heading text-2xl text-foreground mb-4">
+                          UPCOMING <span className="text-primary">FIGHTS</span>
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {confirmedFights.map((p) => (
+                            <MatchProposalCard
+                              key={p.id}
+                              proposal={p}
+                              fighterProfileId={fighterProfile.id}
+                              userId={user!.id}
+                              onActionComplete={handleRefresh}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="notifications">
+                    <NotificationHistory />
+                  </TabsContent>
+                </Tabs>
               </>
             )}
           </div>

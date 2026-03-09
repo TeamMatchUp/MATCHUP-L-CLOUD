@@ -266,11 +266,8 @@ export default function GymOwnerDashboard() {
               ))}
             </div>
 
-            <Tabs defaultValue="notifications" className="space-y-6">
+            <Tabs defaultValue="gyms" className="space-y-6">
               <TabsList className="bg-card border border-border">
-                <TabsTrigger value="notifications">
-                  <Inbox className="h-4 w-4 mr-1" /> Notifications
-                </TabsTrigger>
                 <TabsTrigger value="gyms">
                   <Building2 className="h-4 w-4 mr-1" /> Gyms
                 </TabsTrigger>
@@ -282,6 +279,9 @@ export default function GymOwnerDashboard() {
                 </TabsTrigger>
                 <TabsTrigger value="events">
                   <Calendar className="h-4 w-4 mr-1" /> Events
+                </TabsTrigger>
+                <TabsTrigger value="notifications">
+                  <Inbox className="h-4 w-4 mr-1" /> Notifications
                 </TabsTrigger>
               </TabsList>
 

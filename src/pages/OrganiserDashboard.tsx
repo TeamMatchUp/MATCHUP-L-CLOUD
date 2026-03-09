@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Calendar, ArrowRight } from "lucide-react";
 import { NotificationHistory } from "@/components/NotificationHistory";
 
@@ -108,15 +109,17 @@ export default function OrganiserDashboard() {
               ))}
             </div>
 
-            {/* Notification History */}
-            <div className="mb-10">
-              <NotificationHistory />
-            </div>
+            {/* View Selector */}
+            <Tabs defaultValue="events" className="w-full">
+              <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+                <TabsTrigger value="events">Events</TabsTrigger>
+                <TabsTrigger value="notifications">Notifications</TabsTrigger>
+              </TabsList>
 
-            {/* Events List */}
-            <h2 className="font-heading text-2xl text-foreground mb-4">
-              MY <span className="text-primary">EVENTS</span>
-            </h2>
+              <TabsContent value="events">
+                <h2 className="font-heading text-2xl text-foreground mb-4">
+                  MY <span className="text-primary">EVENTS</span>
+                </h2>
 
             {events.length === 0 ? (
               <div className="rounded-lg border border-border bg-card p-8 text-center">
@@ -151,9 +154,15 @@ export default function OrganiserDashboard() {
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </Link>
                   );
-                })}
+                 })}
               </div>
             )}
+              </TabsContent>
+
+              <TabsContent value="notifications">
+                <NotificationHistory />
+              </TabsContent>
+            </Tabs>
           </div>
         </section>
       </main>
