@@ -354,6 +354,27 @@ export default function GymDetail() {
                 onDelete={() => navigate("/gym-owner/dashboard")}
               />
             )}
+
+            {/* Leave Gym Confirmation Dialog */}
+            <AlertDialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Leave {gym?.name}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to leave this gym? Your affiliation will be removed and the gym owner will be notified.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => leaveGymMutation.mutate()}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {leaveGymMutation.isPending ? "Leaving..." : "Leave Gym"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </section>
       </main>
