@@ -7,7 +7,7 @@ import { MatchProposalCard } from "@/components/fighter/MatchProposalCard";
 import { CreateFighterProfileForm } from "@/components/fighter/CreateFighterProfileForm";
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
-
+import { NotificationHistory } from "@/components/NotificationHistory";
 import { formatEnum } from "@/lib/format";
 
 export default function FighterDashboard() {
