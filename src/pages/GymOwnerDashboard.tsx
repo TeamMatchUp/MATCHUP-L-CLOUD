@@ -445,17 +445,29 @@ export default function GymOwnerDashboard() {
                   <h2 className="font-heading text-2xl text-foreground">
                     FIGHTER <span className="text-primary">ROSTER</span>
                   </h2>
-                  <Button
-                    size="sm"
-                    className="gap-1"
-                    onClick={() => {
-                      if (!addFighterGymId && primaryGym) setAddFighterGymId(primaryGym.id);
-                      setShowAddFighter(true);
-                    }}
-                    disabled={myGyms.length === 0}
-                  >
-                    <Plus className="h-3 w-3" /> Add Fighter
-                  </Button>
+                  <div className="flex gap-2">
+                    {primaryGym && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1"
+                        onClick={() => setShowImport(true)}
+                      >
+                        <Upload className="h-3 w-3" /> Import CSV
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => {
+                        if (!addFighterGymId && primaryGym) setAddFighterGymId(primaryGym.id);
+                        setShowAddFighter(true);
+                      }}
+                      disabled={myGyms.length === 0}
+                    >
+                      <Plus className="h-3 w-3" /> Add Fighter
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Search & Filter Bar */}
