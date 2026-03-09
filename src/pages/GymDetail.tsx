@@ -14,6 +14,16 @@ import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { useToast } from "@/hooks/use-toast";
 import { EditGymDialog } from "@/components/gym/EditGymDialog";
 import { useNavigate } from "react-router-dom";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -38,6 +48,7 @@ export default function GymDetail() {
   const queryClient = useQueryClient();
   const [showAddFighter, setShowAddFighter] = useState(false);
   const [showEditGym, setShowEditGym] = useState(false);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const navigate = useNavigate();
 
   const { data: gym, isLoading } = useQuery({
@@ -211,11 +222,9 @@ export default function GymDetail() {
                     variant="outline" 
                     size="sm" 
                     className="gap-1 text-destructive hover:text-destructive"
-                    onClick={() => leaveGymMutation.mutate()}
-                    disabled={leaveGymMutation.isPending}
+                    onClick={() => setShowLeaveConfirm(true)}
                   >
-                    <LogOut className="h-3 w-3" /> 
-                    {leaveGymMutation.isPending ? "Leaving..." : "Leave Gym"}
+                    <LogOut className="h-3 w-3" /> Leave Gym
                   </Button>
                 ) : (
                   <JoinGymButton gymId={gym.id} />
@@ -344,6 +353,27 @@ export default function GymDetail() {
                 onDelete={() => navigate("/gym-owner/dashboard")}
               />
             )}
+
+            {/* Leave Gym Confirmation Dialog */}
+            <AlertDialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Leave {gym?.name}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to leave this gym? Your affiliation will be removed and the gym owner will be notified.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => leaveGymMutation.mutate()}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {leaveGymMutation.isPending ? "Leaving..." : "Leave Gym"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </section>
       </main>
