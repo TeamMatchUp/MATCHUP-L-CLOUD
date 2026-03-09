@@ -41,7 +41,9 @@ export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
   const { user, effectiveRoles } = useAuth();
   const isFighter = effectiveRoles.includes("fighter");
+  const isCoach = effectiveRoles.includes("coach");
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showPutForward, setShowPutForward] = useState(false);
   const [sending, setSending] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
