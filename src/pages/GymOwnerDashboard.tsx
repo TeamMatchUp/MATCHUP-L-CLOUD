@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -62,6 +62,7 @@ export default function GymOwnerDashboard() {
   const [proposalSearch, setProposalSearch] = useState("");
   const [showImport, setShowImport] = useState(false);
   const [eventSearch, setEventSearch] = useState("");
+  const [searchParams] = useSearchParams();
 
   // Get owner's gyms
   const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
@@ -268,7 +269,7 @@ export default function GymOwnerDashboard() {
               ))}
             </div>
 
-            <Tabs defaultValue="gyms" className="space-y-6">
+            <Tabs defaultValue={searchParams.get("tab") || "gyms"} className="space-y-6">
               <TabsList className="bg-card border border-border">
                 <TabsTrigger value="gyms">
                   <Building2 className="h-4 w-4 mr-1" /> Gyms

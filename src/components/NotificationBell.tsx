@@ -40,7 +40,7 @@ export function NotificationBell() {
         .select("*")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false })
-        .limit(10);
+        .limit(3);
       return data ?? [];
     },
     enabled: !!user,
@@ -118,6 +118,16 @@ export function NotificationBell() {
     toast.info("Notification marked as read");
   };
 
+  const getDashboardNotificationsPath = () => {
+    if (effectiveRoles.includes("organiser") && !effectiveRoles.includes("fighter") && !effectiveRoles.includes("gym_owner")) {
+      return "/organiser/dashboard?tab=notifications";
+    }
+    if (effectiveRoles.includes("fighter")) {
+      return "/fighter/dashboard?tab=notifications";
+    }
+    return "/gym-owner/dashboard?tab=notifications";
+  };
+
   if (!user) return null;
 
   return (
@@ -178,6 +188,19 @@ export function NotificationBell() {
             </div>
           )}
         </ScrollArea>
+        <div className="border-t border-border px-4 py-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-xs text-primary"
+            onClick={() => {
+              setOpen(false);
+              navigate(getDashboardNotificationsPath());
+            }}
+          >
+            See all notifications
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );

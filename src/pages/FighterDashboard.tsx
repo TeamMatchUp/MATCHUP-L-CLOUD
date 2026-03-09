@@ -1,3 +1,4 @@
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -16,6 +17,7 @@ import { formatEnum } from "@/lib/format";
 export default function FighterDashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
 
   const { data: fighterProfile } = useQuery({
     queryKey: ["fighter-profile", user?.id],
@@ -118,7 +120,7 @@ export default function FighterDashboard() {
                 </div>
 
                 {/* View Selector */}
-                <Tabs defaultValue="gyms" className="space-y-6">
+                <Tabs defaultValue={searchParams.get("tab") || "gyms"} className="space-y-6">
                   <TabsList className="bg-card border border-border">
                     <TabsTrigger value="gyms">
                       <Building2 className="h-4 w-4 mr-1" /> Gyms
