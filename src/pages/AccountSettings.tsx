@@ -326,6 +326,26 @@ export default function AccountSettings() {
 
           <Separator className="mb-8" />
 
+          {/* Appearance */}
+          <section className="space-y-4 mb-8">
+            <h2 className="text-lg font-semibold text-foreground">Appearance</h2>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {theme === "dark" ? <Moon className="h-5 w-5 text-muted-foreground" /> : <Sun className="h-5 w-5 text-muted-foreground" />}
+                <div>
+                  <p className="text-sm font-medium text-foreground">Dark Mode</p>
+                  <p className="text-xs text-muted-foreground">Toggle between light and dark themes</p>
+                </div>
+              </div>
+              <Switch
+                checked={theme === "dark"}
+                onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+              />
+            </div>
+          </section>
+
+          <Separator className="mb-8" />
+
           {/* Save Button */}
           <div className="flex justify-end">
             <Button variant="hero" onClick={handleSave} disabled={saving} className="min-w-[140px]">
