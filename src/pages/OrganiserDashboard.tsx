@@ -154,9 +154,15 @@ export default function OrganiserDashboard() {
                       <ArrowRight className="h-4 w-4 text-muted-foreground" />
                     </Link>
                   );
-                })}
+                 })}
               </div>
             )}
+              </TabsContent>
+
+              <TabsContent value="notifications">
+                <NotificationHistory />
+              </TabsContent>
+            </Tabs>
           </div>
         </section>
       </main>
