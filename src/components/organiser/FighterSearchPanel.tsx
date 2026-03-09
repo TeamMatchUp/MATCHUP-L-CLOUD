@@ -39,6 +39,7 @@ interface FighterSearchPanelProps {
 
 export function FighterSearchPanel({
   slot,
+  eventId,
   selectedFighterA,
   selectedFighterB,
   onSelectFighter,
@@ -48,14 +49,30 @@ export function FighterSearchPanel({
   const [country, setCountry] = useState<CountryCode | "all">("all");
   const [style, setStyle] = useState<FightingStyle | "all">("all");
   const [searchName, setSearchName] = useState("");
+  const [coachNominatedOnly, setCoachNominatedOnly] = useState(false);
 
   // Reset filter when slot changes
   useEffect(() => {
     setWeightClass(slot.weight_class);
   }, [slot.id, slot.weight_class]);
 
+  // Fetch coach-nominated fighter IDs for this event
+  const { data: nominatedFighterIds = [] } = useQuery({
+    queryKey: ["coach-nominations-for-event", eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("coach_event_nominations")
+        .select("fighter_id")
+        .eq("event_id", eventId);
+      if (error) throw error;
+      return data.map((n) => n.fighter_id);
+    },
+  });
+
+  const nominatedSet = new Set(nominatedFighterIds);
+
   const { data: fighters = [], isLoading } = useQuery({
-    queryKey: ["fighter-search", weightClass, country, style, searchName],
+    queryKey: ["fighter-search", weightClass, country, style, searchName, coachNominatedOnly, nominatedFighterIds],
     queryFn: async () => {
       let q = supabase
         .from("fighter_profiles")
@@ -67,6 +84,11 @@ export function FighterSearchPanel({
       if (country !== "all") q = q.eq("country", country);
       if (style !== "all") q = q.eq("style", style);
       if (searchName.trim()) q = q.ilike("name", `%${searchName.trim()}%`);
+      if (coachNominatedOnly && nominatedFighterIds.length > 0) {
+        q = q.in("id", nominatedFighterIds);
+      } else if (coachNominatedOnly && nominatedFighterIds.length === 0) {
+        return [];
+      }
 
       const { data, error } = await q.limit(50);
       if (error) throw error;
