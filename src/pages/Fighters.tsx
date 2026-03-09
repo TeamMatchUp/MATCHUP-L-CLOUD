@@ -233,7 +233,7 @@ const Fighters = () => {
                 {filteredFighters.map((fighter, i) => {
                   const primaryGym = fighter.fighter_gym_links?.find((l: any) => l.is_primary);
                   const gymName = primaryGym?.gyms?.name ?? "Independent";
-                  const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
+                  const record = `${fighter._record.wins}-${fighter._record.losses}-${fighter._record.draws}`;
 
                   return (
                     <React.Fragment key={fighter.id}>
