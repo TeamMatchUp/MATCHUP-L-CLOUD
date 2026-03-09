@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ChevronDown, LogOut, User, Menu, X, Settings } from "lucide-react";
-import logoFull from "@/assets/logo-full.webp";
+import { AppLogo } from "@/components/AppLogo";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -78,7 +78,7 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-nav/90 backdrop-blur-xl border-b border-border/50">
       <div className="container flex h-16 items-center justify-between relative">
         <Link to="/" className="flex items-center gap-2">
-          <img src={logoFull} alt="MatchUp" className="h-10" />
+          <AppLogo className="h-10" />
         </Link>
 
         {/* Center-aligned Explore + optional links */}

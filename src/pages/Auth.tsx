@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import logoFull from "@/assets/logo-full.webp";
+import { AppLogo } from "@/components/AppLogo";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -151,7 +151,7 @@ export default function Auth() {
           transition={{ duration: 0.4 }}
         >
           <Link to="/" className="block text-center mb-8">
-            <img src={logoFull} alt="MatchUp" className="h-10 mx-auto" />
+            <AppLogo className="h-10 mx-auto" />
           </Link>
           <div className="rounded-lg border border-border bg-card p-8">
             <h2 className="font-heading text-2xl text-foreground mb-2">Reset Password</h2>
@@ -183,7 +183,7 @@ export default function Auth() {
         transition={{ duration: 0.4 }}
       >
         <Link to="/" className="block text-center mb-8">
-          <img src={logoFull} alt="MatchUp" className="h-10 mx-auto" />
+          <AppLogo className="h-10 mx-auto" />
         </Link>
         <div className="rounded-lg border border-border bg-card p-8">
           <h2 className="font-heading text-2xl text-foreground mb-6">
