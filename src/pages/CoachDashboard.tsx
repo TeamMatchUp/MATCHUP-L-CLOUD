@@ -8,6 +8,7 @@ import { ProposalCard } from "@/components/coach/ProposalCard";
 import { AddFighterDialog } from "@/components/coach/AddFighterDialog";
 import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 import { FighterRosterPanel } from "@/components/coach/FighterRosterPanel";
+import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
 
 export default function CoachDashboard() {
   const { user } = useAuth();
