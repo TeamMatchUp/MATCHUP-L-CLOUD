@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { ArrowLeft, MapPin, ShieldCheck, Plus, Trash2, Pencil } from "lucide-react";
+import { ArrowLeft, MapPin, ShieldCheck, Plus, Trash2, Pencil, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -54,7 +54,40 @@ export default function GymDetail() {
     enabled: !!id,
   });
 
+  // Get current user's fighter profile
+  const { data: myFighterProfile } = useQuery({
+    queryKey: ["my-fighter-profile", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("fighter_profiles")
+        .select("id, name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Check if current user is affiliated with this gym
+  const { data: myGymLink } = useQuery({
+    queryKey: ["my-gym-link", myFighterProfile?.id, id],
+    queryFn: async () => {
+      if (!myFighterProfile?.id || !id) return null;
+      const { data } = await supabase
+        .from("fighter_gym_links")
+        .select("id, status")
+        .eq("fighter_id", myFighterProfile.id)
+        .eq("gym_id", id)
+        .eq("status", "accepted")
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!myFighterProfile?.id && !!id,
+  });
+
   const isOwner = !!user && !!gym && gym.coach_id === user.id;
+  const isMember = !!myGymLink;
 
   const removeFighterMutation = useMutation({
     mutationFn: async (linkId: string) => {
@@ -67,6 +100,41 @@ export default function GymDetail() {
     },
     onError: (e: any) => {
       toast({ title: "Failed to remove fighter", description: e.message, variant: "destructive" });
+    },
+  });
+
+  const leaveGymMutation = useMutation({
+    mutationFn: async () => {
+      if (!myGymLink?.id || !gym?.coach_id || !myFighterProfile) return;
+      
+      // Delete the gym link
+      const { error: deleteError } = await supabase
+        .from("fighter_gym_links")
+        .delete()
+        .eq("id", myGymLink.id);
+      
+      if (deleteError) throw deleteError;
+
+      // Send notification to gym owner
+      const { error: notifError } = await supabase.rpc("create_notification", {
+        _user_id: gym.coach_id,
+        _title: `${myFighterProfile.name} left ${gym.name}`,
+        _message: `${myFighterProfile.name} has left your gym.`,
+        _type: "system",
+        _reference_id: gym.id,
+      });
+
+      if (notifError) console.error("Failed to send notification:", notifError);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["gym", id] });
+      queryClient.invalidateQueries({ queryKey: ["my-gym-link"] });
+      queryClient.invalidateQueries({ queryKey: ["fighter-gym-memberships"] });
+      toast({ title: "Left gym successfully" });
+      navigate("/fighter/dashboard");
+    },
+    onError: (e: any) => {
+      toast({ title: "Failed to leave gym", description: e.message, variant: "destructive" });
     },
   });
 
@@ -137,6 +205,17 @@ export default function GymDetail() {
                 {isOwner ? (
                   <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowEditGym(true)}>
                     <Pencil className="h-3 w-3" /> Edit Gym
+                  </Button>
+                ) : isMember ? (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="gap-1 text-destructive hover:text-destructive"
+                    onClick={() => leaveGymMutation.mutate()}
+                    disabled={leaveGymMutation.isPending}
+                  >
+                    <LogOut className="h-3 w-3" /> 
+                    {leaveGymMutation.isPending ? "Leaving..." : "Leave Gym"}
                   </Button>
                 ) : (
                   <JoinGymButton gymId={gym.id} />
