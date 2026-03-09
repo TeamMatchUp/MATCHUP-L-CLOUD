@@ -126,6 +126,9 @@ export default function FighterDashboard() {
                     <TabsTrigger value="proposals">
                       <Inbox className="h-4 w-4 mr-1" /> Proposals
                     </TabsTrigger>
+                    <TabsTrigger value="interests">
+                      <Star className="h-4 w-4 mr-1" /> Interested Events
+                    </TabsTrigger>
                     <TabsTrigger value="notifications">
                       <Bell className="h-4 w-4 mr-1" /> Notifications
                     </TabsTrigger>
