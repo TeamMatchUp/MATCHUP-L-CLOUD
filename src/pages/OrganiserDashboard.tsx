@@ -108,6 +108,11 @@ export default function OrganiserDashboard() {
               ))}
             </div>
 
+            {/* Notification History */}
+            <div className="mb-10">
+              <NotificationHistory />
+            </div>
+
             {/* Events List */}
             <h2 className="font-heading text-2xl text-foreground mb-4">
               MY <span className="text-primary">EVENTS</span>
