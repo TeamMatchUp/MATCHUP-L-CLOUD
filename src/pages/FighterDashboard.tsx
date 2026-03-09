@@ -17,6 +17,7 @@ import { formatEnum } from "@/lib/format";
 export default function FighterDashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
 
   const { data: fighterProfile } = useQuery({
     queryKey: ["fighter-profile", user?.id],

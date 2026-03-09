@@ -111,7 +111,7 @@ export default function OrganiserDashboard() {
             </div>
 
             {/* View Selector */}
-            <Tabs defaultValue="events" className="space-y-6">
+            <Tabs defaultValue={searchParams.get("tab") || "events"} className="space-y-6">
               <TabsList className="bg-card border border-border">
                 <TabsTrigger value="events">
                   <Calendar className="h-4 w-4 mr-1" /> Events
