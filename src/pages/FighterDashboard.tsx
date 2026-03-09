@@ -75,7 +75,7 @@ export default function FighterDashboard() {
         <section className="py-16">
           <div className="container">
             <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">
-              FIGHTER <span className="text-primary">PORTAL</span>
+              FIGHTER <span className="text-primary">DASHBOARD</span>
             </h1>
             <p className="text-muted-foreground mb-8">
               Your fight proposals, upcoming bouts, and profile.
