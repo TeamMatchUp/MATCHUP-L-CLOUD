@@ -25,24 +25,10 @@ function useCountUp(target: number, shouldStart: boolean, duration = 1600) {
   return count;
 }
 
-/** Splits a number string into individual characters for rolling digit animation */
-function RollingDigits({ value }: { value: string }) {
-  return (
-    <span className="inline-flex overflow-hidden">
-      {value.split("").map((char, i) => (
-        <span key={`${i}-${char}`} className="inline-block">
-          <motion.span
-            className="inline-block"
-            initial={{ y: "100%", opacity: 0 }}
-            animate={{ y: "0%", opacity: 1 }}
-            transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1], delay: i * 0.03 }}
-          >
-            {char}
-          </motion.span>
-        </span>
-      ))}
-    </span>
-  );
+/** Displays count with smooth number transitions */
+function AnimatedNumber({ value, isInView }: { value: number; isInView: boolean }) {
+  const count = useCountUp(value, isInView);
+  return <span className="tabular-nums">{count.toLocaleString()}</span>;
 }
 
 export function TwoSidedSection() {
