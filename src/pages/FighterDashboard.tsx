@@ -116,6 +116,11 @@ export default function FighterDashboard() {
                   ))}
                 </div>
 
+                {/* Notification History */}
+                <div className="mb-10">
+                  <NotificationHistory />
+                </div>
+
                 {pendingProposals.length > 0 && (
                   <>
                     <h2 className="font-heading text-2xl text-foreground mb-4">
