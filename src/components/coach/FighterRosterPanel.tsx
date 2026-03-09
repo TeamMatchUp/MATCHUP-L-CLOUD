@@ -46,6 +46,7 @@ export function FighterRosterPanel({
   fighterRecords,
   onAddFighter,
   onAddFightResult,
+  onImportFighters,
 }: FighterRosterPanelProps) {
   const [selectedGymId, setSelectedGymId] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
