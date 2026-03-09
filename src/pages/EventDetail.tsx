@@ -242,6 +242,18 @@ export default function EventDetail() {
                 )
               )}
 
+              {/* Coach Put Forward Button */}
+              {isCoach && user && (
+                <Button
+                  variant="outline"
+                  className="mb-8 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                  onClick={() => setShowPutForward(true)}
+                >
+                  <Users className="h-4 w-4" />
+                  Put Forward Fighters
+                </Button>
+              )}
+
               {/* Location Map */}
               <div className="rounded-lg border border-border overflow-hidden mb-12">
                 <iframe
