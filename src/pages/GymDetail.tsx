@@ -54,6 +54,38 @@ export default function GymDetail() {
     enabled: !!id,
   });
 
+  // Get current user's fighter profile
+  const { data: myFighterProfile } = useQuery({
+    queryKey: ["my-fighter-profile", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("fighter_profiles")
+        .select("id, name")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Check if current user is affiliated with this gym
+  const { data: myGymLink } = useQuery({
+    queryKey: ["my-gym-link", myFighterProfile?.id, id],
+    queryFn: async () => {
+      if (!myFighterProfile?.id || !id) return null;
+      const { data } = await supabase
+        .from("fighter_gym_links")
+        .select("id, status")
+        .eq("fighter_id", myFighterProfile.id)
+        .eq("gym_id", id)
+        .eq("status", "accepted")
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!myFighterProfile?.id && !!id,
+  });
+
   const isOwner = !!user && !!gym && gym.coach_id === user.id;
 
   const removeFighterMutation = useMutation({
