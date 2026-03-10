@@ -111,9 +111,9 @@ export function Footer() {
       <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Account type required</DialogTitle>
+            <DialogTitle>Access level required</DialogTitle>
             <DialogDescription>
-              Your current account doesn't have permission to {roleDialogAction}. You'll need to log out and register a new account with the appropriate role.
+              Your current account doesn't have the access level needed to {roleDialogAction}. To continue, you'll need to create a new account with the appropriate role.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
@@ -121,7 +121,7 @@ export function Footer() {
               Cancel
             </Button>
             <Button onClick={handleLogoutAndRegister}>
-              Log out &amp; Register
+              Create New Account
             </Button>
           </DialogFooter>
         </DialogContent>
