@@ -160,10 +160,14 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
               <Label>Location</Label>
               <Input value={location} onChange={(e) => setLocation(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label>Postcode *</Label>
+              <Input value={postcode} onChange={(e) => setPostcode(e.target.value)} placeholder="e.g. E2 9PJ" />
             </div>
             <div className="space-y-1">
               <Label>Country</Label>
