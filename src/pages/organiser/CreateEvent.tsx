@@ -349,15 +349,27 @@ export default function CreateEvent() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="location">Location / Venue</Label>
-                <Input
-                  id="location"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g. York Hall, London"
-                  required
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location / Venue</Label>
+                  <Input
+                    id="location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="e.g. York Hall, London"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postcode">Postcode *</Label>
+                  <Input
+                    id="postcode"
+                    value={postcode}
+                    onChange={(e) => setPostcode(e.target.value)}
+                    placeholder="e.g. E2 9PJ"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
