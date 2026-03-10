@@ -1,4 +1,5 @@
 import { ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface BannerAdProps {
   variant?: "horizontal" | "grid-break";
@@ -6,8 +7,9 @@ interface BannerAdProps {
 
 export function BannerAd({ variant = "horizontal" }: BannerAdProps) {
   return (
-    <div
-      className={`relative overflow-hidden rounded-lg border border-border bg-card ${
+    <Link
+      to="/advertise"
+      className={`relative overflow-hidden rounded-lg border border-border bg-card block hover:border-primary/30 transition-colors ${
         variant === "grid-break" ? "col-span-full" : ""
       }`}
     >
@@ -30,6 +32,6 @@ export function BannerAd({ variant = "horizontal" }: BannerAdProps) {
       </div>
       {/* Decorative accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-    </div>
+    </Link>
   );
 }
