@@ -10,7 +10,8 @@ import { useState } from "react";
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Filter, Search, ShieldCheck } from "lucide-react";
+import { Filter, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { Database } from "@/integrations/supabase/types";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
