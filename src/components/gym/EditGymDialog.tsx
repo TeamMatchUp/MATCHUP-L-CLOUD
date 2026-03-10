@@ -45,6 +45,7 @@ interface GymData {
   location: string | null;
   city: string | null;
   address: string | null;
+  postcode?: string | null;
   country: CountryCode;
   description: string | null;
   contact_email: string | null;
