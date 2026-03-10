@@ -209,24 +209,25 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
       )}
 
       <Dialog open={showDialog} onOpenChange={(o) => { if (!o) closeDialog(); }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md w-[calc(100vw-2rem)] p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="font-heading text-2xl">
+            <DialogTitle className="font-heading text-xl sm:text-2xl">
               {editingTicket ? "EDIT TICKET" : "ADD TICKET"}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div className="space-y-1">
-              <Label>Ticket Type</Label>
+              <Label className="text-xs sm:text-sm">Ticket Type</Label>
               <Input
                 value={form.ticket_type}
                 onChange={(e) => setForm({ ...form, ticket_type: e.target.value })}
-                placeholder="e.g. General Admission, VIP, Ringside"
+                placeholder="e.g. General Admission, VIP"
+                className="text-sm"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               <div className="space-y-1">
-                <Label>Price (£)</Label>
+                <Label className="text-xs sm:text-sm">Price (£)</Label>
                 <Input
                   type="number"
                   min="0"
@@ -234,33 +235,37 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
                   value={form.price}
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
                   placeholder="0.00"
+                  className="text-sm"
                 />
               </div>
               <div className="space-y-1">
-                <Label>Quantity Available</Label>
+                <Label className="text-xs sm:text-sm">Qty Available</Label>
                 <Input
                   type="number"
                   min="0"
                   value={form.quantity_available}
                   onChange={(e) => setForm({ ...form, quantity_available: e.target.value })}
                   placeholder="100"
+                  className="text-sm"
                 />
               </div>
             </div>
             <div className="space-y-1">
-              <Label>External Purchase Link</Label>
+              <Label className="text-xs sm:text-sm">External Purchase Link</Label>
               <Input
                 type="url"
                 value={form.external_link}
                 onChange={(e) => setForm({ ...form, external_link: e.target.value })}
                 placeholder="https://tickets.example.com/..."
+                className="text-sm"
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="pt-2">
             <Button
               onClick={() => upsertMutation.mutate()}
               disabled={!form.ticket_type || upsertMutation.isPending}
+              className="w-full sm:w-auto"
             >
               {upsertMutation.isPending ? "Saving..." : editingTicket ? "Save Changes" : "Add Ticket"}
             </Button>

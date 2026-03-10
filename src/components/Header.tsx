@@ -186,16 +186,19 @@ export function Header() {
           )}
         </div>
 
-        {/* Hamburger menu - three line expander */}
-        <button
-          className="md:hidden flex flex-col justify-center items-center gap-[5px] w-8 h-8 group"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
-        >
-          <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
-          <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? 'opacity-0' : ''}`} />
-          <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
-        </button>
+        {/* Mobile: notification bell + hamburger */}
+        <div className="md:hidden flex items-center gap-2">
+          {user && <NotificationBell />}
+          <button
+            className="flex flex-col justify-center items-center gap-[5px] w-8 h-8 group"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
+            <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? 'opacity-0' : ''}`} />
+            <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {mobileOpen && (
@@ -213,18 +216,32 @@ export function Header() {
             {user && activeRole && (
               <Link
                 to={dashboardPath}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide"
                 onClick={() => setMobileOpen(false)}
               >
-                Dashboard
+                DASHBOARD
               </Link>
             )}
             <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Events</Link>
             <Link to="/fighters" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Fighters</Link>
             <Link to="/gyms" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Gyms</Link>
+            {user && (
+              <>
+                <div className="border-t border-border/50 my-1" />
+                <Link
+                  to="/account/settings"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide flex items-center gap-2"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  <Settings className="h-4 w-4" />
+                  Account Settings
+                </Link>
+              </>
+            )}
             <div className="flex gap-3 pt-2">
               {user ? (
-                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                <Button variant="ghost" size="sm" className="gap-2 uppercase tracking-wide" onClick={() => { handleSignOut(); setMobileOpen(false); }}>
+                  <LogOut className="h-4 w-4" />
                   Sign Out
                 </Button>
               ) : (
@@ -232,9 +249,13 @@ export function Header() {
                   <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
                     <Link to="/auth" onClick={() => setMobileOpen(false)}>Log In</Link>
                   </Button>
-                  <Button variant="outline" size="sm" className="rounded-full px-6" asChild>
-                    <Link to="/auth?mode=signup" onClick={() => setMobileOpen(false)}>Create Account</Link>
-                  </Button>
+                  <Link
+                    to="/auth?mode=signup"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-[0_0_12px_hsl(var(--foreground)/0.15)] transition-all duration-200 px-4 py-1.5 rounded-full"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    CREATE ACCOUNT
+                  </Link>
                 </>
               )}
             </div>
