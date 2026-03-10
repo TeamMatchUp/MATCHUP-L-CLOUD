@@ -146,11 +146,11 @@
     box-shadow: 0 0 24px hsl(46 93% 61% / 0.25), 0 0 48px hsl(46 93% 61% / 0.08);
   }
 
-  /* Centre notification dropdown on mobile */
   @media (max-width: 639px) {
-    .notification-dropdown[data-radix-popper-content-wrapper] {
+    div:has(> .notification-dropdown) {
       left: 50% !important;
-      transform: translateX(-50%) !important;
+      right: auto !important;
+      transform: translate(-50%, 0) !important;
     }
   }
 }
