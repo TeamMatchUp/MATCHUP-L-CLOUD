@@ -100,7 +100,7 @@ export function HowItWorksSection() {
               <div key={section.title}>
                 <button
                   onClick={() => toggle(i)}
-                  className={`w-full flex items-center justify-between px-6 py-4 rounded-md border font-heading text-lg tracking-wider transition-all duration-200 ${
+                  className={`w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 rounded-md border font-heading text-base sm:text-lg tracking-wider transition-all duration-200 ${
                     isOpen
                       ? "bg-primary/10 border-primary/40 text-primary shadow-[0_0_15px_hsl(var(--primary)/0.15)]"
                       : "bg-muted/50 border-border/50 text-foreground hover:border-primary/30 hover:bg-muted"
