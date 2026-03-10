@@ -16,12 +16,10 @@ import Gyms from "./pages/Gyms";
 import GymDetail from "./pages/GymDetail";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
-import OrganiserDashboard from "./pages/OrganiserDashboard";
+import Dashboard from "./pages/Dashboard";
 import CreateEvent from "./pages/organiser/CreateEvent";
 import EventManager from "./pages/organiser/EventManager";
-import GymOwnerDashboard from "./pages/GymOwnerDashboard";
 import RegisterGym from "./pages/RegisterGym";
-import FighterDashboard from "./pages/FighterDashboard";
 import AccountSettings from "./pages/AccountSettings";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -64,12 +62,20 @@ const App = () => (
             <Route path="/advertise" element={<AdvertiseEnquiry />} />
             <Route path="/contact" element={<Contact />} />
 
-            {/* Protected: Organiser */}
+            {/* Unified Dashboard */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/organiser/dashboard"
               element={
                 <ProtectedRoute requiredRole="organiser">
-                  <OrganiserDashboard />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
@@ -89,28 +95,22 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-
-            {/* Protected: Coach (inherits organiser + fighter) */}
             <Route
               path="/gym-owner/dashboard"
               element={
                 <ProtectedRoute requiredRole="gym_owner">
-                  <GymOwnerDashboard />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
-
-            {/* Backward compat: /coach/dashboard redirects to gym-owner */}
             <Route
               path="/coach/dashboard"
               element={
                 <ProtectedRoute requiredRole="gym_owner">
-                  <GymOwnerDashboard />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
-
-            {/* Protected: Coach – Register Gym */}
             <Route
               path="/register-gym"
               element={
@@ -119,13 +119,11 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-
-            {/* Protected: Fighter */}
             <Route
               path="/fighter/dashboard"
               element={
                 <ProtectedRoute requiredRole="fighter">
-                  <FighterDashboard />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
