@@ -17,7 +17,8 @@ import {
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Trash2 } from "lucide-react";
+import { CalendarIcon, Plus, Trash2, MapPin } from "lucide-react";
+import { geocodePostcode } from "@/hooks/use-postcode-search";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -68,6 +69,7 @@ export default function CreateEvent() {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState<Date>();
   const [location, setLocation] = useState("");
+  const [postcode, setPostcode] = useState("");
   const [country, setCountry] = useState<CountryCode>("UK");
   const [promotionName, setPromotionName] = useState("");
   const [description, setDescription] = useState("");
@@ -94,9 +96,20 @@ export default function CreateEvent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !user) return;
+    if (!date || !user || !postcode.trim()) return;
 
     setLoading(true);
+
+    // Geocode postcode
+    let latitude: number | null = null;
+    let longitude: number | null = null;
+    if (postcode.trim()) {
+      const coords = await geocodePostcode(postcode);
+      if (coords) {
+        latitude = coords.latitude;
+        longitude = coords.longitude;
+      }
+    }
 
     const { data: event, error: eventError } = await supabase
       .from("events")
@@ -104,12 +117,15 @@ export default function CreateEvent() {
         title,
         date: format(date, "yyyy-MM-dd"),
         location,
+        postcode: postcode.trim(),
+        latitude,
+        longitude,
         country,
         promotion_name: promotionName || null,
         description: description || null,
         organiser_id: user.id,
         status: "draft",
-      })
+      } as any)
       .select("id")
       .single();
 
@@ -333,15 +349,27 @@ export default function CreateEvent() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="location">Location / Venue</Label>
-                <Input
-                  id="location"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="e.g. York Hall, London"
-                  required
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location / Venue</Label>
+                  <Input
+                    id="location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    placeholder="e.g. York Hall, London"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postcode">Postcode *</Label>
+                  <Input
+                    id="postcode"
+                    value={postcode}
+                    onChange={(e) => setPostcode(e.target.value)}
+                    placeholder="e.g. E2 9PJ"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -427,7 +455,7 @@ export default function CreateEvent() {
                 type="submit"
                 variant="hero"
                 className="w-full"
-                disabled={loading || !date}
+                disabled={loading || !date || !postcode.trim()}
               >
                 {loading ? "Creating..." : "Create Event"}
               </Button>

@@ -241,7 +241,13 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
             </AlertDialogContent>
           </AlertDialog>
 
-          <Button onClick={() => updateMutation.mutate()} disabled={!name || updateMutation.isPending}>
+          <Button onClick={() => {
+            if (!postcode.trim()) {
+              toast({ title: "Postcode is required", description: "Please enter a valid postcode for location search.", variant: "destructive" });
+              return;
+            }
+            updateMutation.mutate();
+          }} disabled={!name || !postcode.trim() || updateMutation.isPending}>
             {updateMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>

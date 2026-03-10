@@ -34,7 +34,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Globe, EyeOff } from "lucide-react";
+import { Trash2, Globe, EyeOff, MapPin } from "lucide-react";
+import { geocodePostcode } from "@/hooks/use-postcode-search";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type EventStatus = Database["public"]["Enums"]["event_status"];
@@ -55,6 +56,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
 
   const [title, setTitle] = useState(event.title);
   const [location, setLocation] = useState(event.location);
+  const [postcode, setPostcode] = useState((event as any).postcode || "");
   const [country, setCountry] = useState<CountryCode>(event.country);
   const [promotionName, setPromotionName] = useState(event.promotion_name || "");
   const [description, setDescription] = useState(event.description || "");
@@ -66,6 +68,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
   useEffect(() => {
     setTitle(event.title);
     setLocation(event.location);
+    setPostcode((event as any).postcode || "");
     setCountry(event.country);
     setPromotionName(event.promotion_name || "");
     setDescription(event.description || "");
@@ -77,11 +80,23 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
 
   const updateMutation = useMutation({
     mutationFn: async () => {
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      if (postcode.trim()) {
+        const coords = await geocodePostcode(postcode);
+        if (coords) {
+          latitude = coords.latitude;
+          longitude = coords.longitude;
+        }
+      }
       const { error } = await supabase
         .from("events")
         .update({
           title,
           location,
+          postcode: postcode.trim() || null,
+          latitude,
+          longitude,
           country,
           promotion_name: promotionName || null,
           description: description || null,
@@ -89,7 +104,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
           city: city || null,
           ticket_enabled: ticketEnabled,
           status,
-        })
+        } as any)
         .eq("id", event.id);
       if (error) throw error;
     },
@@ -145,10 +160,14 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
               <Label>Location</Label>
               <Input value={location} onChange={(e) => setLocation(e.target.value)} />
+            </div>
+            <div className="space-y-1">
+              <Label>Postcode *</Label>
+              <Input value={postcode} onChange={(e) => setPostcode(e.target.value)} placeholder="e.g. E2 9PJ" />
             </div>
             <div className="space-y-1">
               <Label>Country</Label>
@@ -239,7 +258,13 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
             </AlertDialogContent>
           </AlertDialog>
 
-          <Button onClick={() => updateMutation.mutate()} disabled={!title || updateMutation.isPending}>
+          <Button onClick={() => {
+            if (!postcode.trim()) {
+              toast({ title: "Postcode is required", description: "Please enter a valid postcode for location search.", variant: "destructive" });
+              return;
+            }
+            updateMutation.mutate();
+          }} disabled={!title || !postcode.trim() || updateMutation.isPending}>
             {updateMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
