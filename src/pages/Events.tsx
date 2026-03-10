@@ -3,27 +3,29 @@ import { Footer } from "@/components/Footer";
 import { BannerAd } from "@/components/BannerAd";
 import iconImg from "@/assets/icon-gold.webp";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, ArrowRight, Filter, Search, Ticket, Swords } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MapPin, Calendar, ArrowRight, Filter, Search, Ticket, Swords, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { useState, useMemo } from "react";
 import React from "react";
 import type { Database } from "@/integrations/supabase/types";
+import { usePostcodeSearch, haversineDistance } from "@/hooks/use-postcode-search";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 
 const Events = () => {
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [cityFilter, setCityFilter] = useState("");
   const [ticketsOnly, setTicketsOnly] = useState(false);
   const [unmatchedOnly, setUnmatchedOnly] = useState(false);
+  const pc = usePostcodeSearch();
 
   const { data: events, isLoading } = useQuery({
     queryKey: ["events", countryFilter],
@@ -44,21 +46,9 @@ const Events = () => {
     },
   });
 
-  // Derive unique cities for the city filter dropdown
-  const cities = useMemo(() => {
-    if (!events) return [];
-    const set = new Set<string>();
-    events.forEach((e) => {
-      if (e.city) set.add(e.city);
-    });
-    return Array.from(set).sort();
-  }, [events]);
-
-  // Client-side filtering
   const filteredEvents = useMemo(() => {
     if (!events) return [];
     return events.filter((event) => {
-      // Text search
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const match =
@@ -69,26 +59,23 @@ const Events = () => {
           event.city?.toLowerCase().includes(q);
         if (!match) return false;
       }
-
-      // City filter
-      if (cityFilter && cityFilter !== "all") {
-        if (event.city !== cityFilter) return false;
+      if (pc.coords && event.latitude != null && event.longitude != null) {
+        const dist = haversineDistance(pc.coords.latitude, pc.coords.longitude, event.latitude, event.longitude);
+        if (dist > pc.radius) return false;
+      } else if (pc.coords) {
+        // If postcode search active but event has no coords, exclude it
+        return false;
       }
-
-      // Tickets available
       if (ticketsOnly) {
         if (!event.tickets || event.tickets.length === 0) return false;
       }
-
-      // Unmatched fights (has open slots)
       if (unmatchedOnly) {
         const openSlots = event.fight_slots?.filter((s: any) => s.status === "open").length ?? 0;
         if (openSlots === 0) return false;
       }
-
       return true;
     });
-  }, [events, searchQuery, cityFilter, ticketsOnly, unmatchedOnly]);
+  }, [events, searchQuery, pc.coords, pc.radius, ticketsOnly, unmatchedOnly]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,6 +111,7 @@ const Events = () => {
                   className="pl-9"
                 />
               </div>
+
               <div className="flex flex-wrap gap-3 items-center">
                 <Select value={countryFilter} onValueChange={setCountryFilter}>
                   <SelectTrigger className="w-[140px] sm:w-[160px]">
@@ -138,21 +126,6 @@ const Events = () => {
                   </SelectContent>
                 </Select>
 
-                {cities.length > 0 && (
-                  <Select value={cityFilter || "all"} onValueChange={(v) => setCityFilter(v === "all" ? "" : v)}>
-                    <SelectTrigger className="w-[140px] sm:w-[160px]">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="City" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Cities</SelectItem>
-                      {cities.map((city) => (
-                        <SelectItem key={city} value={city}>{city}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-
                 <div className="flex items-center gap-2">
                   <Switch id="tickets-filter" checked={ticketsOnly} onCheckedChange={setTicketsOnly} />
                   <Label htmlFor="tickets-filter" className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer">
@@ -166,6 +139,53 @@ const Events = () => {
                     <Swords className="h-3.5 w-3.5" /> Open Slots
                   </Label>
                 </div>
+              </div>
+
+              {/* Postcode radius search */}
+              <div className="rounded-lg border border-border bg-card p-3 sm:p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Location Search</span>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter UK postcode..."
+                    value={pc.postcode}
+                    onChange={(e) => pc.setPostcode(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && pc.lookup()}
+                    className="flex-1 text-sm"
+                  />
+                  <Button size="sm" onClick={pc.lookup} disabled={pc.isGeocoding || !pc.postcode.trim()}>
+                    {pc.isGeocoding ? "..." : "Search"}
+                  </Button>
+                  {pc.coords && (
+                    <Button size="sm" variant="ghost" onClick={pc.clear}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                {pc.error && <p className="text-xs text-destructive">{pc.error}</p>}
+                {pc.coords && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        Within <span className="text-foreground font-medium">{pc.radius} miles</span> of {pc.coords.postcode}
+                      </span>
+                    </div>
+                    <Slider
+                      value={[pc.radius]}
+                      onValueChange={([v]) => pc.setRadius(v)}
+                      min={1}
+                      max={100}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span>1 mi</span>
+                      <span>100 mi</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -244,7 +264,7 @@ const Events = () => {
             ) : (
               <p className="text-muted-foreground text-center py-12">No events found matching your filters.</p>
             )}
-            {(!filteredEvents || filteredEvents.length === 0) && !isLoading && (
+            {filteredEvents.length === 0 && !isLoading && (
               <motion.div
                 className="flex justify-center py-4"
                 initial={{ opacity: 0, y: 20 }}
