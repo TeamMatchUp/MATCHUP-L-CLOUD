@@ -91,6 +91,15 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
 
   const updateMutation = useMutation({
     mutationFn: async () => {
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      if (postcode.trim()) {
+        const coords = await geocodePostcode(postcode);
+        if (coords) {
+          latitude = coords.latitude;
+          longitude = coords.longitude;
+        }
+      }
       const { error } = await supabase
         .from("gyms")
         .update({
@@ -98,12 +107,15 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
           location: location || null,
           city: city || null,
           address: address || null,
+          postcode: postcode.trim() || null,
+          latitude,
+          longitude,
           country,
           description: description || null,
           contact_email: contactEmail || null,
           phone: phone || null,
           website: website || null,
-        })
+        } as any)
         .eq("id", gym.id);
       if (error) throw error;
     },
