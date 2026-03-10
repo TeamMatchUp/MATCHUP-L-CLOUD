@@ -29,11 +29,11 @@ const ROLE_LABELS: Partial<Record<AppRole, string>> = {
 };
 
 const ROLE_DASHBOARDS: Partial<Record<AppRole, string>> = {
-  organiser: "/organiser/dashboard",
-  gym_owner: "/gym-owner/dashboard",
-  fighter: "/fighter/dashboard",
-  admin: "/organiser/dashboard",
-  coach: "/gym-owner/dashboard",
+  organiser: "/dashboard",
+  gym_owner: "/dashboard",
+  fighter: "/dashboard",
+  admin: "/dashboard",
+  coach: "/dashboard",
 };
 
 const navLinks: { label: string; to: string }[] = [];

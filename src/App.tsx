@@ -62,12 +62,20 @@ const App = () => (
             <Route path="/advertise" element={<AdvertiseEnquiry />} />
             <Route path="/contact" element={<Contact />} />
 
-            {/* Protected: Organiser */}
+            {/* Unified Dashboard */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/organiser/dashboard"
               element={
                 <ProtectedRoute requiredRole="organiser">
-                  <OrganiserDashboard />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
@@ -87,28 +95,22 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-
-            {/* Protected: Coach (inherits organiser + fighter) */}
             <Route
               path="/gym-owner/dashboard"
               element={
                 <ProtectedRoute requiredRole="gym_owner">
-                  <GymOwnerDashboard />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
-
-            {/* Backward compat: /coach/dashboard redirects to gym-owner */}
             <Route
               path="/coach/dashboard"
               element={
                 <ProtectedRoute requiredRole="gym_owner">
-                  <GymOwnerDashboard />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
-
-            {/* Protected: Coach – Register Gym */}
             <Route
               path="/register-gym"
               element={
@@ -117,13 +119,11 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-
-            {/* Protected: Fighter */}
             <Route
               path="/fighter/dashboard"
               element={
                 <ProtectedRoute requiredRole="fighter">
-                  <FighterDashboard />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />
