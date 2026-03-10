@@ -101,91 +101,113 @@ const Events = () => {
 
             {/* Search & Filters */}
             <div className="space-y-3 mb-8">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search events, promotions, venues..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-
-              <div className="flex flex-wrap gap-3 items-center">
-                <Select value={countryFilter} onValueChange={setCountryFilter}>
-                  <SelectTrigger className="w-[140px] sm:w-[160px]">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Countries</SelectItem>
-                    <SelectItem value="UK">UK</SelectItem>
-                    <SelectItem value="USA">USA</SelectItem>
-                    <SelectItem value="AUS">Australia</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <div className="flex items-center gap-2">
-                  <Switch id="tickets-filter" checked={ticketsOnly} onCheckedChange={setTicketsOnly} />
-                  <Label htmlFor="tickets-filter" className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer">
-                    <Ticket className="h-3.5 w-3.5" /> Tickets
-                  </Label>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Switch id="unmatched-filter" checked={unmatchedOnly} onCheckedChange={setUnmatchedOnly} />
-                  <Label htmlFor="unmatched-filter" className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer">
-                    <Swords className="h-3.5 w-3.5" /> Open Slots
-                  </Label>
-                </div>
-              </div>
-
-              {/* Postcode radius search */}
-              <div className="rounded-lg border border-border bg-card p-3 sm:p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Location Search</span>
-                </div>
-                <div className="flex gap-2">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Enter UK postcode..."
-                    value={pc.postcode}
-                    onChange={(e) => pc.setPostcode(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && pc.lookup()}
-                    className="flex-1 text-sm"
+                    placeholder="Search events, promotions, venues..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
                   />
-                  <Button size="sm" onClick={pc.lookup} disabled={pc.isGeocoding || !pc.postcode.trim()}>
-                    {pc.isGeocoding ? "..." : "Search"}
-                  </Button>
-                  {pc.coords && (
-                    <Button size="sm" variant="ghost" onClick={pc.clear}>
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
                 </div>
-                {pc.error && <p className="text-xs text-destructive">{pc.error}</p>}
-                {pc.coords && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">
-                        Within <span className="text-foreground font-medium">{pc.radius} miles</span> of {pc.coords.postcode}
-                      </span>
-                    </div>
-                    <Slider
-                      value={[pc.radius]}
-                      onValueChange={([v]) => pc.setRadius(v)}
-                      min={1}
-                      max={100}
-                      step={1}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-[10px] text-muted-foreground">
-                      <span>1 mi</span>
-                      <span>100 mi</span>
-                    </div>
-                  </div>
-                )}
+                <Button
+                  variant={filtersOpen ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setFiltersOpen(!filtersOpen)}
+                  className="shrink-0 h-10 w-10"
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                </Button>
               </div>
+
+              <AnimatePresence>
+                {filtersOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="rounded-lg border border-border bg-card p-3 sm:p-4 space-y-4">
+                      <div className="flex flex-wrap gap-3 items-center">
+                        <Select value={countryFilter} onValueChange={setCountryFilter}>
+                          <SelectTrigger className="w-[140px] sm:w-[160px]">
+                            <Filter className="h-4 w-4 mr-2" />
+                            <SelectValue placeholder="Country" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Countries</SelectItem>
+                            <SelectItem value="UK">UK</SelectItem>
+                            <SelectItem value="USA">USA</SelectItem>
+                            <SelectItem value="AUS">Australia</SelectItem>
+                          </SelectContent>
+                        </Select>
+
+                        <div className="flex items-center gap-2">
+                          <Switch id="tickets-filter" checked={ticketsOnly} onCheckedChange={setTicketsOnly} />
+                          <Label htmlFor="tickets-filter" className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer">
+                            <Ticket className="h-3.5 w-3.5" /> Tickets
+                          </Label>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <Switch id="unmatched-filter" checked={unmatchedOnly} onCheckedChange={setUnmatchedOnly} />
+                          <Label htmlFor="unmatched-filter" className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer">
+                            <Swords className="h-3.5 w-3.5" /> Open Slots
+                          </Label>
+                        </div>
+                      </div>
+
+                      {/* Postcode radius search */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Location Search</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Enter UK postcode..."
+                            value={pc.postcode}
+                            onChange={(e) => pc.setPostcode(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && pc.lookup()}
+                            className="flex-1 text-sm"
+                          />
+                          <Button size="sm" onClick={pc.lookup} disabled={pc.isGeocoding || !pc.postcode.trim()}>
+                            {pc.isGeocoding ? "..." : "Search"}
+                          </Button>
+                          {pc.coords && (
+                            <Button size="sm" variant="ghost" onClick={pc.clear}>
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        {pc.error && <p className="text-xs text-destructive">{pc.error}</p>}
+                        {pc.coords && (
+                          <div className="space-y-2">
+                            <span className="text-xs text-muted-foreground">
+                              Within <span className="text-foreground font-medium">{pc.radius} miles</span> of {pc.coords.postcode}
+                            </span>
+                            <Slider
+                              value={[pc.radius]}
+                              onValueChange={([v]) => pc.setRadius(v)}
+                              min={1}
+                              max={100}
+                              step={1}
+                              className="w-full"
+                            />
+                            <div className="flex justify-between text-[10px] text-muted-foreground">
+                              <span>1 mi</span>
+                              <span>100 mi</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {isLoading ? (
