@@ -455,7 +455,7 @@ export default function CreateEvent() {
                 type="submit"
                 variant="hero"
                 className="w-full"
-                disabled={loading || !date}
+                disabled={loading || !date || !postcode.trim()}
               >
                 {loading ? "Creating..." : "Create Event"}
               </Button>
