@@ -152,19 +152,6 @@ const Fighters = () => {
               >
                 FIGHTER <span className="text-primary">ROSTER</span>
               </motion.h1>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <Link
-                  to="/auth"
-                  className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
-                >
-                  <img src={iconImg} alt="" className="h-5 w-5" />
-                  create account
-                </Link>
-              </motion.div>
             </div>
             <motion.p
               className="text-muted-foreground mb-8"
