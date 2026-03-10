@@ -1,11 +1,12 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Filter, Users, ShieldCheck } from "lucide-react";
+import { MapPin, Filter, Users, ShieldCheck, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -13,6 +14,8 @@ type CountryCode = Database["public"]["Enums"]["country_code"];
 
 export default function Gyms() {
   const [countryFilter, setCountryFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
 
   const { data: gyms, isLoading } = useQuery({
     queryKey: ["gyms", countryFilter],
@@ -31,6 +34,37 @@ export default function Gyms() {
       return data;
     },
   });
+
+  // Derive unique cities
+  const cities = useMemo(() => {
+    if (!gyms) return [];
+    const set = new Set<string>();
+    gyms.forEach((g) => {
+      if (g.city) set.add(g.city);
+    });
+    return Array.from(set).sort();
+  }, [gyms]);
+
+  // Client-side filtering
+  const filteredGyms = useMemo(() => {
+    if (!gyms) return [];
+    return gyms.filter((gym) => {
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const match =
+          gym.name.toLowerCase().includes(q) ||
+          gym.location?.toLowerCase().includes(q) ||
+          gym.city?.toLowerCase().includes(q) ||
+          gym.address?.toLowerCase().includes(q) ||
+          gym.description?.toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      if (cityFilter && cityFilter !== "all") {
+        if (gym.city !== cityFilter) return false;
+      }
+      return true;
+    });
+  }, [gyms, searchQuery, cityFilter]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -55,19 +89,46 @@ export default function Gyms() {
               Browse registered gyms and coaching teams.
             </motion.p>
 
-            <div className="flex flex-wrap gap-3 mb-8">
-              <Select value={countryFilter} onValueChange={setCountryFilter}>
-                <SelectTrigger className="w-[160px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Country" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
-                  <SelectItem value="UK">UK</SelectItem>
-                  <SelectItem value="USA">USA</SelectItem>
-                  <SelectItem value="AUS">Australia</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Search & Filters */}
+            <div className="space-y-3 mb-8">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search gyms by name, location..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <div className="flex flex-wrap gap-3 items-center">
+                <Select value={countryFilter} onValueChange={setCountryFilter}>
+                  <SelectTrigger className="w-[140px] sm:w-[160px]">
+                    <Filter className="h-4 w-4 mr-2" />
+                    <SelectValue placeholder="Country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Countries</SelectItem>
+                    <SelectItem value="UK">UK</SelectItem>
+                    <SelectItem value="USA">USA</SelectItem>
+                    <SelectItem value="AUS">Australia</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {cities.length > 0 && (
+                  <Select value={cityFilter || "all"} onValueChange={(v) => setCityFilter(v === "all" ? "" : v)}>
+                    <SelectTrigger className="w-[140px] sm:w-[160px]">
+                      <MapPin className="h-4 w-4 mr-2" />
+                      <SelectValue placeholder="City" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Cities</SelectItem>
+                      {cities.map((city) => (
+                        <SelectItem key={city} value={city}>{city}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </div>
 
             {isLoading ? (
@@ -76,9 +137,9 @@ export default function Gyms() {
                   <div key={i} className="h-40 rounded-lg bg-card animate-pulse" />
                 ))}
               </div>
-            ) : gyms && gyms.length > 0 ? (
+            ) : filteredGyms.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {gyms.map((gym, i) => (
+                {filteredGyms.map((gym, i) => (
                   <motion.div
                     key={gym.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -96,9 +157,10 @@ export default function Gyms() {
                         <h3 className="font-heading text-xl text-foreground mb-1">{gym.name}</h3>
                         {gym.verified && <ShieldCheck className="h-4 w-4 text-primary" />}
                       </div>
-                      {gym.location && (
+                      {(gym.city || gym.location) && (
                         <p className="text-xs text-muted-foreground flex items-center gap-1 mb-3">
-                          <MapPin className="h-3 w-3" />{gym.location}
+                          <MapPin className="h-3 w-3" />
+                          {gym.city ? `${gym.city}, ${gym.location || gym.country}` : gym.location}
                         </p>
                       )}
                       {gym.description && (
@@ -113,7 +175,7 @@ export default function Gyms() {
                 ))}
               </div>
             ) : (
-              <p className="text-muted-foreground text-center py-12">No gyms found.</p>
+              <p className="text-muted-foreground text-center py-12">No gyms found matching your filters.</p>
             )}
           </div>
         </section>
