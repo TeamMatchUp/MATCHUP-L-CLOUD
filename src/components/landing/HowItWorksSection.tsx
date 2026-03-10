@@ -90,7 +90,7 @@ export function HowItWorksSection() {
   return (
     <section className="py-24 border-t border-border/30">
       <div className="container max-w-3xl">
-        <h2 className="font-heading text-4xl md:text-5xl text-center text-foreground mb-10">
+        <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl text-center text-foreground mb-8 sm:mb-10">
           HOW IT <span className="text-primary">WORKS</span>
         </h2>
         <div className="flex flex-col gap-3">
