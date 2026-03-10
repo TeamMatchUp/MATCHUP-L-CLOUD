@@ -1,0 +1,414 @@
+import { useState } from "react";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppLogo } from "@/components/AppLogo";
+import { NotificationBell } from "@/components/NotificationBell";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, Settings, LogOut, Building2, Users, Inbox, Check, Calendar, Bell } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useDashboardData } from "@/hooks/useDashboardData";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
+import { DashboardGyms } from "@/components/dashboard/DashboardGyms";
+import { DashboardRoster } from "@/components/dashboard/DashboardRoster";
+import { DashboardProposals } from "@/components/dashboard/DashboardProposals";
+import { DashboardEvents } from "@/components/dashboard/DashboardEvents";
+import { NotificationHistory } from "@/components/NotificationHistory";
+import { CreateFighterProfileForm } from "@/components/fighter/CreateFighterProfileForm";
+import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
+import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
+import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
+import { EditFighterDialog } from "@/components/coach/EditFighterDialog";
+import { DeleteFighterDialog } from "@/components/coach/DeleteFighterDialog";
+import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
+import type { Database } from "@/integrations/supabase/types";
+
+type AppRole = Database["public"]["Enums"]["app_role"];
+
+const ROLE_LABELS: Partial<Record<AppRole, string>> = {
+  organiser: "Organiser",
+  gym_owner: "Coach",
+  fighter: "Fighter",
+  admin: "Admin",
+  coach: "Coach",
+};
+
+export default function Dashboard() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeSection = searchParams.get("section") || "overview";
+  const navigate = useNavigate();
+  const { user, roles, activeRole, setActiveRole, signOut } = useAuth();
+
+  const data = useDashboardData();
+  const {
+    effectiveRoles,
+    isCoachOrOwner,
+    isOrganiser,
+    isFighter,
+    myGyms,
+    primaryGym,
+    fighterProfile,
+    allFighters,
+    allFighterIds,
+    fighterGymLinks,
+    pendingProposals,
+    confirmedProposals,
+    events,
+    calendarEvents,
+    notifications,
+    unreadNotifications,
+    handleRefresh,
+  } = data;
+
+  // Dialog states
+  const [showAddFighter, setShowAddFighter] = useState(false);
+  const [addFighterGymId, setAddFighterGymId] = useState<string | undefined>();
+  const [fightResultFighter, setFightResultFighter] = useState<{ id: string; name: string } | null>(null);
+  const [editFighter, setEditFighter] = useState<any>(null);
+  const [deleteFighter, setDeleteFighter] = useState<{ id: string; name: string } | null>(null);
+  const [showImport, setShowImport] = useState(false);
+
+  // Profile for top bar
+  const { data: profile } = useQuery({
+    queryKey: ["dash-topbar-profile", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("avatar_url, full_name")
+        .eq("id", user!.id)
+        .single();
+      return data;
+    },
+    enabled: !!user,
+    staleTime: 60000,
+  });
+
+  const initials = (profile?.full_name || user?.email || "U").slice(0, 2).toUpperCase();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  const handleRoleSwitch = (role: AppRole) => {
+    setActiveRole(role);
+  };
+
+  const navigateToSection = (section: string) => {
+    setSearchParams({ section });
+  };
+
+  // Compute metrics
+  const openSlots = events
+    .flatMap((e: any) => e.fight_slots || [])
+    .filter((s: any) => s.status === "open").length;
+
+  const metrics = [
+    { label: "Gyms", value: myGyms.length, sub: "Under your management", icon: Building2, section: "gyms" },
+    { label: "Fighters", value: allFighters.length, sub: "In your roster", icon: Users, section: "roster" },
+    { label: "Pending", value: pendingProposals.length, sub: "Awaiting review", icon: Inbox, section: "proposals" },
+    { label: "Confirmed", value: confirmedProposals.length, sub: "Locked in", icon: Check, section: "proposals" },
+    { label: "Events", value: events.length, sub: "Created by you", icon: Calendar, section: "events" },
+    { label: "Unread", value: unreadNotifications.length, sub: "Notifications", icon: Bell, section: "notifications" },
+  ];
+
+  const renderContent = () => {
+    // Fighter profile creation prompt
+    if (isFighter && !fighterProfile && activeSection === "overview") {
+      return (
+        <div className="space-y-6">
+          <h2 className="font-heading text-2xl text-foreground">
+            CREATE YOUR <span className="text-primary">FIGHTER PROFILE</span>
+          </h2>
+          <CreateFighterProfileForm
+            userId={user!.id}
+            userEmail={user!.email ?? ""}
+            onSuccess={handleRefresh}
+          />
+        </div>
+      );
+    }
+
+    switch (activeSection) {
+      case "overview":
+        return (
+          <div className="space-y-6">
+            {/* Fighter gym invites banner */}
+            {isFighter && fighterProfile && (
+              <GymInvitesPanel fighterProfileId={fighterProfile.id} />
+            )}
+            <DashboardOverview
+              metrics={metrics}
+              calendarEvents={calendarEvents}
+              notifications={notifications}
+              effectiveRoles={effectiveRoles as string[]}
+              onNavigateSection={navigateToSection}
+            />
+          </div>
+        );
+
+      case "gyms":
+        return (
+          <DashboardGyms
+            isCoachOrOwner={isCoachOrOwner}
+            isFighter={isFighter}
+            fighterProfileId={fighterProfile?.id}
+            myGyms={myGyms}
+            userId={user!.id}
+            onAddFighter={(gymId) => {
+              setAddFighterGymId(gymId);
+              setShowAddFighter(true);
+            }}
+            onRefresh={handleRefresh}
+          />
+        );
+
+      case "roster":
+        return (
+          <DashboardRoster
+            allFighters={allFighters}
+            myGyms={myGyms}
+            fighterGymLinks={fighterGymLinks}
+            primaryGymId={primaryGym?.id}
+            onAddFighter={() => {
+              if (!addFighterGymId && primaryGym) setAddFighterGymId(primaryGym.id);
+              setShowAddFighter(true);
+            }}
+            onEditFighter={(f) => setEditFighter(f)}
+            onDeleteFighter={(f) => setDeleteFighter(f)}
+            onAddFightResult={(f) => setFightResultFighter(f)}
+            onImportFighters={primaryGym ? () => setShowImport(true) : undefined}
+          />
+        );
+
+      case "proposals":
+        return (
+          <DashboardProposals
+            isCoachOrOwner={isCoachOrOwner}
+            isFighter={isFighter}
+            pendingProposals={pendingProposals}
+            confirmedProposals={confirmedProposals}
+            userId={user!.id}
+            fighterIds={allFighterIds}
+            fighterProfileId={fighterProfile?.id}
+            onRefresh={handleRefresh}
+          />
+        );
+
+      case "events":
+        return (
+          <DashboardEvents
+            isCoachOrOwner={isCoachOrOwner}
+            isOrganiser={isOrganiser}
+            isFighter={isFighter}
+            events={events}
+            fighterProfileId={fighterProfile?.id}
+          />
+        );
+
+      case "interests":
+        return (
+          <DashboardEvents
+            isCoachOrOwner={false}
+            isOrganiser={false}
+            isFighter={true}
+            events={[]}
+            fighterProfileId={fighterProfile?.id}
+          />
+        );
+
+      case "notifications":
+        return <NotificationHistory />;
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <DashboardSidebar
+          pendingCount={pendingProposals.length}
+          unreadCount={unreadNotifications.length}
+        />
+
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Top Bar */}
+          <header className="h-14 flex items-center justify-between border-b border-border bg-card/50 backdrop-blur-sm px-4 shrink-0 sticky top-0 z-40">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger className="text-muted-foreground" />
+              <Link to="/" className="hidden sm:block">
+                <AppLogo className="h-7" />
+              </Link>
+              <nav className="hidden md:flex items-center gap-6 ml-4">
+                <Link
+                  to="/"
+                  className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide"
+                >
+                  Home
+                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide">
+                      Explore
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-40">
+                    <DropdownMenuItem asChild>
+                      <Link to="/events" className="text-xs uppercase tracking-wide">Events</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/fighters" className="text-xs uppercase tracking-wide">Fighters</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/gyms" className="text-xs uppercase tracking-wide">Gyms</Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </nav>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="gap-2">
+                    <Avatar className="h-7 w-7">
+                      {profile?.avatar_url && <AvatarImage src={profile.avatar_url} alt="Profile" />}
+                      <AvatarFallback className="text-[10px] bg-muted text-muted-foreground">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    {activeRole && (
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium hidden sm:inline">
+                        {ROLE_LABELS[activeRole] || activeRole}
+                      </span>
+                    )}
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {roles.length > 1 && (
+                    <>
+                      <DropdownMenuLabel className="text-xs text-muted-foreground">
+                        Switch Role
+                      </DropdownMenuLabel>
+                      {roles.map((role) => (
+                        <DropdownMenuItem
+                          key={role}
+                          onClick={() => handleRoleSwitch(role)}
+                          className={role === activeRole ? "bg-primary/10 text-primary" : ""}
+                        >
+                          {ROLE_LABELS[role] || role}
+                        </DropdownMenuItem>
+                      ))}
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link to="/account/settings">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Account Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <div className="mb-6">
+              <h1 className="font-heading text-3xl md:text-4xl text-foreground">
+                {activeSection === "overview" ? (
+                  <>
+                    <span className="text-primary">MATCHUP</span> DASHBOARD
+                  </>
+                ) : (
+                  activeSection.replace("_", " ").toUpperCase()
+                )}
+              </h1>
+              {activeSection === "overview" && (
+                <p className="text-muted-foreground text-sm mt-1">
+                  Your operations control panel for combat sports matchmaking.
+                </p>
+              )}
+            </div>
+
+            {renderContent()}
+          </main>
+        </div>
+      </div>
+
+      {/* Dialogs */}
+      {user && (addFighterGymId || primaryGym?.id) && (
+        <AddFighterToGymDialog
+          open={showAddFighter}
+          onOpenChange={setShowAddFighter}
+          coachId={user.id}
+          gymId={addFighterGymId || primaryGym!.id}
+          onSuccess={handleRefresh}
+        />
+      )}
+
+      {user && fightResultFighter && (
+        <AddFightResultDialog
+          open={!!fightResultFighter}
+          onOpenChange={(open) => { if (!open) setFightResultFighter(null); }}
+          fighter={fightResultFighter}
+          coachId={user.id}
+          onSuccess={handleRefresh}
+        />
+      )}
+
+      {editFighter && (
+        <EditFighterDialog
+          open={!!editFighter}
+          onOpenChange={(open) => { if (!open) setEditFighter(null); }}
+          fighter={editFighter}
+          onSuccess={handleRefresh}
+        />
+      )}
+
+      {user && primaryGym && (
+        <ImportFightersDialog
+          open={showImport}
+          onOpenChange={setShowImport}
+          coachId={user.id}
+          gymId={primaryGym.id}
+          gymName={primaryGym.name}
+          onSuccess={handleRefresh}
+        />
+      )}
+
+      {deleteFighter && (
+        <DeleteFighterDialog
+          open={!!deleteFighter}
+          onOpenChange={(open) => { if (!open) setDeleteFighter(null); }}
+          fighter={deleteFighter}
+          gymId={primaryGym?.id}
+          removeFromGymOnly={false}
+          onSuccess={handleRefresh}
+        />
+      )}
+    </SidebarProvider>
+  );
+}
