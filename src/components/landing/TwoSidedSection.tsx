@@ -62,7 +62,7 @@ export function TwoSidedSection() {
     <section className="py-16 bg-card border-y border-border/30">
       <div className="container max-w-2xl" ref={sectionRef}>
         <motion.p
-          className="font-heading text-2xl md:text-3xl text-foreground text-center mb-10"
+          className="font-heading text-xl sm:text-2xl md:text-3xl text-foreground text-center mb-8 sm:mb-10"
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
