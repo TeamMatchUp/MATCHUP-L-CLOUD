@@ -9,7 +9,7 @@ interface PostcodeCoords {
 /**
  * Geocode a UK postcode using the free postcodes.io API.
  */
-async function geocodePostcode(postcode: string): Promise<PostcodeCoords | null> {
+export async function geocodePostcode(postcode: string): Promise<PostcodeCoords | null> {
   const trimmed = postcode.trim().replace(/\s+/g, "");
   if (!trimmed) return null;
   try {
