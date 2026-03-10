@@ -11,6 +11,10 @@ const Index = () => {
       <Header />
       <main className="pt-16">
         <HeroSection />
+        {/* Visual separator */}
+        <div className="container">
+          <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        </div>
         <ThreeSidesSection />
         <HowItWorksSection />
         <TwoSidedSection />
