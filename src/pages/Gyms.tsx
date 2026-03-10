@@ -1,21 +1,24 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Filter, Users, ShieldCheck, Search } from "lucide-react";
+import { MapPin, Filter, Users, ShieldCheck, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { useState, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Database } from "@/integrations/supabase/types";
+import { usePostcodeSearch, haversineDistance } from "@/hooks/use-postcode-search";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 
 export default function Gyms() {
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [cityFilter, setCityFilter] = useState("");
+  const pc = usePostcodeSearch();
 
   const { data: gyms, isLoading } = useQuery({
     queryKey: ["gyms", countryFilter],
@@ -35,17 +38,6 @@ export default function Gyms() {
     },
   });
 
-  // Derive unique cities
-  const cities = useMemo(() => {
-    if (!gyms) return [];
-    const set = new Set<string>();
-    gyms.forEach((g) => {
-      if (g.city) set.add(g.city);
-    });
-    return Array.from(set).sort();
-  }, [gyms]);
-
-  // Client-side filtering
   const filteredGyms = useMemo(() => {
     if (!gyms) return [];
     return gyms.filter((gym) => {
@@ -59,12 +51,15 @@ export default function Gyms() {
           gym.description?.toLowerCase().includes(q);
         if (!match) return false;
       }
-      if (cityFilter && cityFilter !== "all") {
-        if (gym.city !== cityFilter) return false;
+      if (pc.coords && (gym as any).latitude != null && (gym as any).longitude != null) {
+        const dist = haversineDistance(pc.coords.latitude, pc.coords.longitude, (gym as any).latitude, (gym as any).longitude);
+        if (dist > pc.radius) return false;
+      } else if (pc.coords) {
+        return false;
       }
       return true;
     });
-  }, [gyms, searchQuery, cityFilter]);
+  }, [gyms, searchQuery, pc.coords, pc.radius]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -100,6 +95,7 @@ export default function Gyms() {
                   className="pl-9"
                 />
               </div>
+
               <div className="flex flex-wrap gap-3 items-center">
                 <Select value={countryFilter} onValueChange={setCountryFilter}>
                   <SelectTrigger className="w-[140px] sm:w-[160px]">
@@ -113,20 +109,52 @@ export default function Gyms() {
                     <SelectItem value="AUS">Australia</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
 
-                {cities.length > 0 && (
-                  <Select value={cityFilter || "all"} onValueChange={(v) => setCityFilter(v === "all" ? "" : v)}>
-                    <SelectTrigger className="w-[140px] sm:w-[160px]">
-                      <MapPin className="h-4 w-4 mr-2" />
-                      <SelectValue placeholder="City" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Cities</SelectItem>
-                      {cities.map((city) => (
-                        <SelectItem key={city} value={city}>{city}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              {/* Postcode radius search */}
+              <div className="rounded-lg border border-border bg-card p-3 sm:p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Location Search</span>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter UK postcode..."
+                    value={pc.postcode}
+                    onChange={(e) => pc.setPostcode(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && pc.lookup()}
+                    className="flex-1 text-sm"
+                  />
+                  <Button size="sm" onClick={pc.lookup} disabled={pc.isGeocoding || !pc.postcode.trim()}>
+                    {pc.isGeocoding ? "..." : "Search"}
+                  </Button>
+                  {pc.coords && (
+                    <Button size="sm" variant="ghost" onClick={pc.clear}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                {pc.error && <p className="text-xs text-destructive">{pc.error}</p>}
+                {pc.coords && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        Within <span className="text-foreground font-medium">{pc.radius} miles</span> of {pc.coords.postcode}
+                      </span>
+                    </div>
+                    <Slider
+                      value={[pc.radius]}
+                      onValueChange={([v]) => pc.setRadius(v)}
+                      min={1}
+                      max={100}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span>1 mi</span>
+                      <span>100 mi</span>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
