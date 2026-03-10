@@ -96,7 +96,7 @@ export default function CreateEvent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !user) return;
+    if (!date || !user || !postcode.trim()) return;
 
     setLoading(true);
 
