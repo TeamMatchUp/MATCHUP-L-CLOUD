@@ -68,6 +68,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
   useEffect(() => {
     setTitle(event.title);
     setLocation(event.location);
+    setPostcode((event as any).postcode || "");
     setCountry(event.country);
     setPromotionName(event.promotion_name || "");
     setDescription(event.description || "");
