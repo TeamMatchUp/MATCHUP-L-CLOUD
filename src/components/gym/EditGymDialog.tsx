@@ -81,6 +81,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
     setLocation(gym.location || "");
     setCity(gym.city || "");
     setAddress(gym.address || "");
+    setPostcode(gym.postcode || "");
     setCountry(gym.country);
     setDescription(gym.description || "");
     setContactEmail(gym.contact_email || "");
