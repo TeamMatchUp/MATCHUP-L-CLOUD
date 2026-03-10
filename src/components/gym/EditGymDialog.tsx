@@ -69,6 +69,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
   const [location, setLocation] = useState(gym.location || "");
   const [city, setCity] = useState(gym.city || "");
   const [address, setAddress] = useState(gym.address || "");
+  const [postcode, setPostcode] = useState(gym.postcode || "");
   const [country, setCountry] = useState<CountryCode>(gym.country);
   const [description, setDescription] = useState(gym.description || "");
   const [contactEmail, setContactEmail] = useState(gym.contact_email || "");
