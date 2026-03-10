@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { geocodePostcode } from "@/hooks/use-postcode-search";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +36,7 @@ export default function RegisterGym() {
   const [country, setCountry] = useState<CountryCode>("UK");
   const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
+  const [postcode, setPostcode] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [website, setWebsite] = useState("");
@@ -42,18 +44,31 @@ export default function RegisterGym() {
 
   const createGymMutation = useMutation({
     mutationFn: async () => {
+      // Geocode postcode for lat/lng
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      if (postcode.trim()) {
+        const coords = await geocodePostcode(postcode);
+        if (coords) {
+          latitude = coords.latitude;
+          longitude = coords.longitude;
+        }
+      }
       const { error } = await supabase.from("gyms").insert({
         name,
         location: location || null,
         country,
         city: city || null,
         address: address || null,
+        postcode: postcode.trim() || null,
+        latitude,
+        longitude,
         contact_email: contactEmail || null,
         phone: phone || null,
         website: website || null,
         description: description || null,
         coach_id: user!.id,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -126,6 +141,14 @@ export default function RegisterGym() {
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label>Postcode *</Label>
+                    <Input
+                      value={postcode}
+                      onChange={(e) => setPostcode(e.target.value)}
+                      placeholder="e.g. SW1A 1AA"
+                    />
+                  </div>
+                  <div className="space-y-2">
                     <Label>Location / Area</Label>
                     <Input
                       value={location}
@@ -172,7 +195,7 @@ export default function RegisterGym() {
                   variant="hero"
                   className="w-full"
                   onClick={() => createGymMutation.mutate()}
-                  disabled={!name || createGymMutation.isPending}
+                  disabled={!name || !postcode.trim() || createGymMutation.isPending}
                 >
                   {createGymMutation.isPending ? "Registering..." : "Register Gym & Continue"}
                 </Button>

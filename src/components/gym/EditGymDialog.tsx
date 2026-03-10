@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { geocodePostcode } from "@/hooks/use-postcode-search";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ interface GymData {
   location: string | null;
   city: string | null;
   address: string | null;
+  postcode?: string | null;
   country: CountryCode;
   description: string | null;
   contact_email: string | null;
@@ -67,6 +69,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
   const [location, setLocation] = useState(gym.location || "");
   const [city, setCity] = useState(gym.city || "");
   const [address, setAddress] = useState(gym.address || "");
+  const [postcode, setPostcode] = useState(gym.postcode || "");
   const [country, setCountry] = useState<CountryCode>(gym.country);
   const [description, setDescription] = useState(gym.description || "");
   const [contactEmail, setContactEmail] = useState(gym.contact_email || "");
@@ -78,6 +81,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
     setLocation(gym.location || "");
     setCity(gym.city || "");
     setAddress(gym.address || "");
+    setPostcode(gym.postcode || "");
     setCountry(gym.country);
     setDescription(gym.description || "");
     setContactEmail(gym.contact_email || "");
@@ -87,6 +91,15 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
 
   const updateMutation = useMutation({
     mutationFn: async () => {
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      if (postcode.trim()) {
+        const coords = await geocodePostcode(postcode);
+        if (coords) {
+          latitude = coords.latitude;
+          longitude = coords.longitude;
+        }
+      }
       const { error } = await supabase
         .from("gyms")
         .update({
@@ -94,12 +107,15 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
           location: location || null,
           city: city || null,
           address: address || null,
+          postcode: postcode.trim() || null,
+          latitude,
+          longitude,
           country,
           description: description || null,
           contact_email: contactEmail || null,
           phone: phone || null,
           website: website || null,
-        })
+        } as any)
         .eq("id", gym.id);
       if (error) throw error;
     },
@@ -155,10 +171,14 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
               <Label>Address</Label>
               <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full address" />
+            </div>
+            <div className="space-y-1">
+              <Label>Postcode *</Label>
+              <Input value={postcode} onChange={(e) => setPostcode(e.target.value)} placeholder="e.g. SW1A 1AA" />
             </div>
             <div className="space-y-1">
               <Label>Country</Label>
