@@ -204,10 +204,10 @@ export function Header() {
             {!isLanding && (
               <Link
                 to="/"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide"
                 onClick={() => setMobileOpen(false)}
               >
-                Home
+                HOME
               </Link>
             )}
             {user && activeRole && (
@@ -228,9 +228,14 @@ export function Header() {
                   Sign Out
                 </Button>
               ) : (
-                <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
-                  <Link to="/auth" onClick={() => setMobileOpen(false)}>log in</Link>
-                </Button>
+                <>
+                  <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
+                    <Link to="/auth" onClick={() => setMobileOpen(false)}>Log In</Link>
+                  </Button>
+                  <Button variant="outline" size="sm" className="rounded-full px-6" asChild>
+                    <Link to="/auth?mode=signup" onClick={() => setMobileOpen(false)}>Create Account</Link>
+                  </Button>
+                </>
               )}
             </div>
           </div>

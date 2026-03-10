@@ -175,17 +175,17 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
       <motion.div
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Link to="/" className="block text-center mb-8">
-          <AppLogo className="h-10 mx-auto" />
+        <Link to="/" className="block text-center mb-6 sm:mb-8">
+          <AppLogo className="h-8 sm:h-10 mx-auto" />
         </Link>
-        <div className="rounded-lg border border-border bg-card p-8">
+        <div className="rounded-lg border border-border bg-card p-5 sm:p-8">
           <h2 className="font-heading text-2xl text-foreground mb-6">
             {isSignUp ? "Create Account" : "Sign In"}
           </h2>
