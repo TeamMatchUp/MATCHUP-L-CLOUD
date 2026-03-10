@@ -44,18 +44,31 @@ export default function RegisterGym() {
 
   const createGymMutation = useMutation({
     mutationFn: async () => {
+      // Geocode postcode for lat/lng
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      if (postcode.trim()) {
+        const coords = await geocodePostcode(postcode);
+        if (coords) {
+          latitude = coords.latitude;
+          longitude = coords.longitude;
+        }
+      }
       const { error } = await supabase.from("gyms").insert({
         name,
         location: location || null,
         country,
         city: city || null,
         address: address || null,
+        postcode: postcode.trim() || null,
+        latitude,
+        longitude,
         contact_email: contactEmail || null,
         phone: phone || null,
         website: website || null,
         description: description || null,
         coach_id: user!.id,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {
