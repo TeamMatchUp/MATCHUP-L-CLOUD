@@ -90,7 +90,7 @@ export function HowItWorksSection() {
   return (
     <section className="py-24 border-t border-border/30">
       <div className="container max-w-3xl">
-        <h2 className="font-heading text-4xl md:text-5xl text-center text-foreground mb-10">
+        <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl text-center text-foreground mb-8 sm:mb-10">
           HOW IT <span className="text-primary">WORKS</span>
         </h2>
         <div className="flex flex-col gap-3">
@@ -100,7 +100,7 @@ export function HowItWorksSection() {
               <div key={section.title}>
                 <button
                   onClick={() => toggle(i)}
-                  className={`w-full flex items-center justify-between px-6 py-4 rounded-md border font-heading text-lg tracking-wider transition-all duration-200 ${
+                  className={`w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 rounded-md border font-heading text-base sm:text-lg tracking-wider transition-all duration-200 ${
                     isOpen
                       ? "bg-primary/10 border-primary/40 text-primary shadow-[0_0_15px_hsl(var(--primary)/0.15)]"
                       : "bg-muted/50 border-border/50 text-foreground hover:border-primary/30 hover:bg-muted"
@@ -122,7 +122,7 @@ export function HowItWorksSection() {
                       className="overflow-hidden"
                     >
                       <div className="pt-8 pb-6 px-2">
-                        <h2 className="font-heading text-3xl md:text-4xl text-center text-foreground mb-2">
+                        <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl text-center text-foreground mb-2">
                           {section.subtitle.split(" ").map((word, wi, arr) =>
                             wi === arr.length - 1 ? (
                               <span key={wi} className="text-primary">{word}</span>

@@ -60,7 +60,7 @@ export function Footer() {
     <>
       <footer className="border-t border-border/30 bg-background">
         <div className="container py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
             <div>
               <AppLogo className="h-6" />
               <p className="mt-3 text-sm text-muted-foreground leading-relaxed">

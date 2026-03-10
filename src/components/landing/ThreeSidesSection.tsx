@@ -35,7 +35,7 @@ export function ThreeSidesSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="font-heading text-4xl md:text-5xl text-foreground mb-3">
+          <h2 className="font-heading text-3xl sm:text-4xl md:text-5xl text-foreground mb-3">
             THREE SIDES. <span className="text-primary">ONE PLATFORM.</span>
           </h2>
           <p className="text-muted-foreground text-sm max-w-lg mx-auto">
