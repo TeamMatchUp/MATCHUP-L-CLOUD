@@ -18,6 +18,7 @@ type CountryCode = Database["public"]["Enums"]["country_code"];
 export default function Gyms() {
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const pc = usePostcodeSearch();
 
   const { data: gyms, isLoading } = useQuery({
