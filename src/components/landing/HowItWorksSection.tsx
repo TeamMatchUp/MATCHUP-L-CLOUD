@@ -122,7 +122,7 @@ export function HowItWorksSection() {
                       className="overflow-hidden"
                     >
                       <div className="pt-8 pb-6 px-2">
-                        <h2 className="font-heading text-3xl md:text-4xl text-center text-foreground mb-2">
+                        <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl text-center text-foreground mb-2">
                           {section.subtitle.split(" ").map((word, wi, arr) =>
                             wi === arr.length - 1 ? (
                               <span key={wi} className="text-primary">{word}</span>

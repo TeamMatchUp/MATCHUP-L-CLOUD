@@ -84,7 +84,7 @@ export function TwoSidedSection() {
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 {tile.label}
               </p>
-              <p className="font-heading text-4xl md:text-5xl text-primary leading-none my-1">
+              <p className="font-heading text-3xl sm:text-4xl md:text-5xl text-primary leading-none my-1">
                 <AnimatedNumber value={counts?.[tile.key] ?? 0} isInView={isInView} />
               </p>
               <p className="text-xs text-muted-foreground mb-3">{tile.suffix}</p>
