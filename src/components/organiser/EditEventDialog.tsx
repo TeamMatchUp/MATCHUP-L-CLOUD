@@ -258,7 +258,13 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
             </AlertDialogContent>
           </AlertDialog>
 
-          <Button onClick={() => updateMutation.mutate()} disabled={!title || updateMutation.isPending}>
+          <Button onClick={() => {
+            if (!postcode.trim()) {
+              toast({ title: "Postcode is required", description: "Please enter a valid postcode for location search.", variant: "destructive" });
+              return;
+            }
+            updateMutation.mutate();
+          }} disabled={!title || !postcode.trim() || updateMutation.isPending}>
             {updateMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
