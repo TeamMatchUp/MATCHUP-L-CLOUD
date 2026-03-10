@@ -204,10 +204,10 @@ export function Header() {
             {!isLanding && (
               <Link
                 to="/"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide"
                 onClick={() => setMobileOpen(false)}
               >
-                Home
+                HOME
               </Link>
             )}
             {user && activeRole && (
