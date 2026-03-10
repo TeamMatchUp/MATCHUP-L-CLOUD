@@ -231,6 +231,23 @@ export default function Dashboard() {
       case "notifications":
         return <NotificationHistory />;
 
+      case "create-profile":
+        return (
+          <div className="space-y-6">
+            <h2 className="font-heading text-2xl text-foreground">
+              CREATE YOUR <span className="text-primary">FIGHTER PROFILE</span>
+            </h2>
+            <CreateFighterProfileForm
+              userId={user!.id}
+              userEmail={user!.email ?? ""}
+              onSuccess={() => {
+                handleRefresh();
+                navigateToSection("overview");
+              }}
+            />
+          </div>
+        );
+
       default:
         return null;
     }
