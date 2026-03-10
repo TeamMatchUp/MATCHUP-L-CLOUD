@@ -56,6 +56,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
 
   const [title, setTitle] = useState(event.title);
   const [location, setLocation] = useState(event.location);
+  const [postcode, setPostcode] = useState((event as any).postcode || "");
   const [country, setCountry] = useState<CountryCode>(event.country);
   const [promotionName, setPromotionName] = useState(event.promotion_name || "");
   const [description, setDescription] = useState(event.description || "");
