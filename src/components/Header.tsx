@@ -228,9 +228,14 @@ export function Header() {
                   Sign Out
                 </Button>
               ) : (
-                <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
-                  <Link to="/auth" onClick={() => setMobileOpen(false)}>log in</Link>
-                </Button>
+                <>
+                  <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
+                    <Link to="/auth" onClick={() => setMobileOpen(false)}>Log In</Link>
+                  </Button>
+                  <Button variant="outline" size="sm" className="rounded-full px-6" asChild>
+                    <Link to="/auth?mode=signup" onClick={() => setMobileOpen(false)}>Create Account</Link>
+                  </Button>
+                </>
               )}
             </div>
           </div>

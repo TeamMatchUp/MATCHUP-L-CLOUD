@@ -353,13 +353,13 @@ export default function EventManager() {
             )}
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 sm:gap-2 flex-wrap">
             {slot.status === "open" && (
               <>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-1"
+                  className="gap-1 text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-9"
                   onClick={() => {
                     setSuggestSlot(slot);
                     setActiveSlot(null);
@@ -367,12 +367,12 @@ export default function EventManager() {
                     setSelectedFighterB(null);
                   }}
                 >
-                  <Sparkles className="h-3 w-3" /> Suggestions
+                  <Sparkles className="h-3 w-3" /> <span className="hidden sm:inline">Suggestions</span><span className="sm:hidden">Suggest</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="gap-1"
+                  className="gap-1 text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-9"
                   onClick={() => {
                     setActiveSlot(slot);
                     setSuggestSlot(null);
@@ -380,7 +380,7 @@ export default function EventManager() {
                     setSelectedFighterB(null);
                   }}
                 >
-                  <Users className="h-3 w-3" /> Manual Search
+                  <Users className="h-3 w-3" /> <span className="hidden sm:inline">Manual Search</span><span className="sm:hidden">Search</span>
                 </Button>
               </>
             )}
@@ -388,7 +388,7 @@ export default function EventManager() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-1"
+                className="gap-1 text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-9"
                 onClick={() => setEditingSlot(slot)}
               >
                 <Pencil className="h-3 w-3" /> Edit
