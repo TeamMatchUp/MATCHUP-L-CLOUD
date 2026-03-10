@@ -33,6 +33,7 @@ const Fighters = () => {
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [weightFilter, setWeightFilter] = useState<string>("all");
   const [styleFilter, setStyleFilter] = useState<string>("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const { data: fighters, isLoading } = useQuery({
     queryKey: ["fighters", countryFilter, weightFilter, styleFilter],
