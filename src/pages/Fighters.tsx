@@ -2,7 +2,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BannerAd } from "@/components/BannerAd";
 import iconImg from "@/assets/icon-gold.webp";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -10,7 +10,8 @@ import { useState } from "react";
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Filter, Search, ShieldCheck } from "lucide-react";
+import { Filter, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { Database } from "@/integrations/supabase/types";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
@@ -32,6 +33,7 @@ const Fighters = () => {
   const [countryFilter, setCountryFilter] = useState<string>("all");
   const [weightFilter, setWeightFilter] = useState<string>("all");
   const [styleFilter, setStyleFilter] = useState<string>("all");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const { data: fighters, isLoading } = useQuery({
     queryKey: ["fighters", countryFilter, weightFilter, styleFilter],
@@ -173,53 +175,78 @@ const Fighters = () => {
               Explore active fighters across weight classes and disciplines.
             </motion.p>
 
-            {/* Search Bar */}
-            <div className="relative mb-4">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input
-                placeholder="Search by name, gym, weight class, style, record..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 h-12 text-base bg-card border-border"
-              />
-            </div>
+            {/* Search & Filters */}
+            <div className="space-y-3 mb-8">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    placeholder="Search by name, gym, weight class, style, record..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-12 h-12 text-base bg-card border-border"
+                  />
+                </div>
+                <Button
+                  variant={filtersOpen ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setFiltersOpen(!filtersOpen)}
+                  className="shrink-0 h-12 w-12"
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                </Button>
+              </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap gap-3 mb-8">
-              <Select value={countryFilter} onValueChange={setCountryFilter}>
-                <SelectTrigger className="w-[160px]">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Country" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
-                  <SelectItem value="UK">UK</SelectItem>
-                  <SelectItem value="USA">USA</SelectItem>
-                  <SelectItem value="AUS">Australia</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={weightFilter} onValueChange={setWeightFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Weight Class" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Weights</SelectItem>
-                  {Object.entries(WEIGHT_CLASS_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={styleFilter} onValueChange={setStyleFilter}>
-                <SelectTrigger className="w-[160px]">
-                  <SelectValue placeholder="Style" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Styles</SelectItem>
-                  {Object.entries(STYLE_LABELS).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>{label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <AnimatePresence>
+                {filtersOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="rounded-lg border border-border bg-card p-3 sm:p-4">
+                      <div className="flex flex-wrap gap-3">
+                        <Select value={countryFilter} onValueChange={setCountryFilter}>
+                          <SelectTrigger className="w-[160px]">
+                            <Filter className="h-4 w-4 mr-2" />
+                            <SelectValue placeholder="Country" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Countries</SelectItem>
+                            <SelectItem value="UK">UK</SelectItem>
+                            <SelectItem value="USA">USA</SelectItem>
+                            <SelectItem value="AUS">Australia</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select value={weightFilter} onValueChange={setWeightFilter}>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Weight Class" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Weights</SelectItem>
+                            {Object.entries(WEIGHT_CLASS_LABELS).map(([value, label]) => (
+                              <SelectItem key={value} value={value}>{label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Select value={styleFilter} onValueChange={setStyleFilter}>
+                          <SelectTrigger className="w-[160px]">
+                            <SelectValue placeholder="Style" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Styles</SelectItem>
+                            {Object.entries(STYLE_LABELS).map(([value, label]) => (
+                              <SelectItem key={value} value={value}>{label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {isLoading ? (
