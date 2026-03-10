@@ -152,19 +152,6 @@ const Fighters = () => {
               >
                 FIGHTER <span className="text-primary">ROSTER</span>
               </motion.h1>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <Link
-                  to="/auth"
-                  className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
-                >
-                  <img src={iconImg} alt="" className="h-5 w-5" />
-                  create account
-                </Link>
-              </motion.div>
             </div>
             <motion.p
               className="text-muted-foreground mb-8"
@@ -179,19 +166,19 @@ const Fighters = () => {
             <div className="space-y-3 mb-8">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search by name, gym, weight class, style, record..."
+                    placeholder="Search fighters..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-12 h-12 text-base bg-card border-border"
+                    className="pl-9"
                   />
                 </div>
                 <Button
                   variant={filtersOpen ? "default" : "outline"}
                   size="icon"
                   onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="shrink-0 h-12 w-12"
+                  className="shrink-0"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
                 </Button>
