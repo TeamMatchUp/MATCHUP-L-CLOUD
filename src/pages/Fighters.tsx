@@ -178,7 +178,7 @@ const Fighters = () => {
                   variant={filtersOpen ? "default" : "outline"}
                   size="icon"
                   onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="shrink-0 h-12 w-12"
+                  className="shrink-0"
                 >
                   <SlidersHorizontal className="h-4 w-4" />
                 </Button>
