@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_enquiries: {
+        Row: {
+          budget_range: string | null
+          company_name: string
+          company_website: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          proposal: string
+          status: string
+        }
+        Insert: {
+          budget_range?: string | null
+          company_name: string
+          company_website?: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          proposal: string
+          status?: string
+        }
+        Update: {
+          budget_range?: string | null
+          company_name?: string
+          company_website?: string | null
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          proposal?: string
+          status?: string
+        }
+        Relationships: []
+      }
       coach_event_nominations: {
         Row: {
           coach_id: string
