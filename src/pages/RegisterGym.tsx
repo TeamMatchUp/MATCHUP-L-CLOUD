@@ -194,7 +194,13 @@ export default function RegisterGym() {
                 <Button
                   variant="hero"
                   className="w-full"
-                  onClick={() => createGymMutation.mutate()}
+                  onClick={() => {
+                    if (!postcode.trim()) {
+                      toast({ title: "Postcode is required", description: "Please enter a valid postcode for location search.", variant: "destructive" });
+                      return;
+                    }
+                    createGymMutation.mutate();
+                  }}
                   disabled={!name || !postcode.trim() || createGymMutation.isPending}
                 >
                   {createGymMutation.isPending ? "Registering..." : "Register Gym & Continue"}

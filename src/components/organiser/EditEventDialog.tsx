@@ -34,7 +34,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, Globe, EyeOff } from "lucide-react";
+import { Trash2, Globe, EyeOff, MapPin } from "lucide-react";
+import { geocodePostcode } from "@/hooks/use-postcode-search";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type EventStatus = Database["public"]["Enums"]["event_status"];
