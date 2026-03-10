@@ -25,6 +25,7 @@ const Events = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [ticketsOnly, setTicketsOnly] = useState(false);
   const [unmatchedOnly, setUnmatchedOnly] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const pc = usePostcodeSearch();
 
   const { data: events, isLoading } = useQuery({
