@@ -61,6 +61,7 @@ const App = () => (
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/record-accuracy" element={<RecordAccuracyPolicy />} />
+            <Route path="/advertise" element={<AdvertiseEnquiry />} />
             <Route path="/contact" element={<Contact />} />
 
             {/* Protected: Organiser */}
