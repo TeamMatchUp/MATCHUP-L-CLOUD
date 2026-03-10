@@ -295,9 +295,9 @@ export default function EventDetail() {
               <>
                 <h2 className="font-heading text-2xl text-foreground mb-6">
                   <Ticket className="inline h-5 w-5 mr-2 text-primary" />
-                  TICKETS
+                  TICKETS AVAILABLE
                 </h2>
-                <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-12">
                   {tickets.map((ticket: any) => (
                     <div key={ticket.id} className="rounded-lg border border-border bg-card p-5 flex flex-col">
                       <Badge variant="outline" className="self-start mb-3 text-xs">{ticket.ticket_type}</Badge>
@@ -311,11 +311,15 @@ export default function EventDetail() {
                           {ticket.quantity_available} available
                         </p>
                       )}
-                      {ticket.external_link && (
-                        <Button asChild className="mt-auto gap-2">
+                      {ticket.external_link ? (
+                        <Button asChild className="mt-auto gap-2 w-full">
                           <a href={ticket.external_link} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="h-4 w-4" /> Buy Tickets
                           </a>
+                        </Button>
+                      ) : (
+                        <Button variant="outline" className="mt-auto gap-2 w-full" disabled>
+                          <Ticket className="h-4 w-4" /> Coming Soon
                         </Button>
                       )}
                     </div>
