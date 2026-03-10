@@ -100,18 +100,32 @@ export default function CreateEvent() {
 
     setLoading(true);
 
+    // Geocode postcode
+    let latitude: number | null = null;
+    let longitude: number | null = null;
+    if (postcode.trim()) {
+      const coords = await geocodePostcode(postcode);
+      if (coords) {
+        latitude = coords.latitude;
+        longitude = coords.longitude;
+      }
+    }
+
     const { data: event, error: eventError } = await supabase
       .from("events")
       .insert({
         title,
         date: format(date, "yyyy-MM-dd"),
         location,
+        postcode: postcode.trim(),
+        latitude,
+        longitude,
         country,
         promotion_name: promotionName || null,
         description: description || null,
         organiser_id: user.id,
         status: "draft",
-      })
+      } as any)
       .select("id")
       .single();
 
