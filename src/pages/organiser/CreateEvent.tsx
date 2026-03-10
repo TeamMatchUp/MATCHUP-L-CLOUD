@@ -69,6 +69,7 @@ export default function CreateEvent() {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState<Date>();
   const [location, setLocation] = useState("");
+  const [postcode, setPostcode] = useState("");
   const [country, setCountry] = useState<CountryCode>("UK");
   const [promotionName, setPromotionName] = useState("");
   const [description, setDescription] = useState("");
