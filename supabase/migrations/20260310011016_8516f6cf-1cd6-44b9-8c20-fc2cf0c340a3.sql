@@ -1,0 +1,1 @@
+ALTER TABLE public.gyms ADD COLUMN IF NOT EXISTS postcode text;

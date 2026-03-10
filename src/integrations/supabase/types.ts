@@ -581,6 +581,7 @@ export type Database = {
           longitude: number | null
           name: string
           phone: string | null
+          postcode: string | null
           updated_at: string
           verified: boolean
           website: string | null
@@ -600,6 +601,7 @@ export type Database = {
           longitude?: number | null
           name: string
           phone?: string | null
+          postcode?: string | null
           updated_at?: string
           verified?: boolean
           website?: string | null
@@ -619,6 +621,7 @@ export type Database = {
           longitude?: number | null
           name?: string
           phone?: string | null
+          postcode?: string | null
           updated_at?: string
           verified?: boolean
           website?: string | null
