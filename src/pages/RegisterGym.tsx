@@ -141,6 +141,14 @@ export default function RegisterGym() {
                     />
                   </div>
                   <div className="space-y-2">
+                    <Label>Postcode *</Label>
+                    <Input
+                      value={postcode}
+                      onChange={(e) => setPostcode(e.target.value)}
+                      placeholder="e.g. SW1A 1AA"
+                    />
+                  </div>
+                  <div className="space-y-2">
                     <Label>Location / Area</Label>
                     <Input
                       value={location}
