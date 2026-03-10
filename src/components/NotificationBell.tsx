@@ -145,7 +145,7 @@ export function NotificationBell() {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" sideOffset={8} className="w-[calc(100vw-2rem)] max-w-80 p-0">
+      <PopoverContent align="end" sideOffset={8} className="notification-dropdown w-80 max-w-[calc(100vw-2rem)] p-0">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <p className="font-heading text-sm text-foreground">Notifications</p>
           {unreadCount > 0 && (
