@@ -195,7 +195,7 @@ export default function RegisterGym() {
                   variant="hero"
                   className="w-full"
                   onClick={() => createGymMutation.mutate()}
-                  disabled={!name || createGymMutation.isPending}
+                  disabled={!name || !postcode.trim() || createGymMutation.isPending}
                 >
                   {createGymMutation.isPending ? "Registering..." : "Register Gym & Continue"}
                 </Button>
