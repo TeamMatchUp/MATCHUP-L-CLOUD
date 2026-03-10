@@ -36,6 +36,7 @@ export default function RegisterGym() {
   const [country, setCountry] = useState<CountryCode>("UK");
   const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
+  const [postcode, setPostcode] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [website, setWebsite] = useState("");
