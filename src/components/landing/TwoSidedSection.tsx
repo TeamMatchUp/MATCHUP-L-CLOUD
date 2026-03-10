@@ -71,11 +71,11 @@ export function TwoSidedSection() {
           EXPLORE THE <span className="text-primary">NETWORK</span>
         </motion.p>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           {tiles.map((tile, i) => (
             <motion.div
               key={tile.label}
-              className="flex flex-col items-center text-center gap-1"
+              className="flex flex-col items-center text-center gap-1 min-w-0"
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -84,11 +84,11 @@ export function TwoSidedSection() {
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 {tile.label}
               </p>
-              <p className="font-heading text-3xl sm:text-4xl md:text-5xl text-primary leading-none my-1">
+              <p className="font-heading text-2xl sm:text-4xl md:text-5xl text-primary leading-none my-1">
                 <AnimatedNumber value={counts?.[tile.key] ?? 0} isInView={isInView} />
               </p>
-              <p className="text-xs text-muted-foreground mb-3">{tile.suffix}</p>
-              <Button variant="heroOutline" size="sm" asChild>
+              <p className="text-xs text-muted-foreground mb-2 sm:mb-3">{tile.suffix}</p>
+              <Button variant="heroOutline" size="sm" className="text-[11px] sm:text-sm px-2 sm:px-3 h-7 sm:h-9 whitespace-nowrap" asChild>
                 <Link to={tile.to}>View {tile.label}</Link>
               </Button>
             </motion.div>
