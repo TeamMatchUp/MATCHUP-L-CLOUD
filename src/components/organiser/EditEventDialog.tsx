@@ -80,11 +80,23 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
 
   const updateMutation = useMutation({
     mutationFn: async () => {
+      let latitude: number | null = null;
+      let longitude: number | null = null;
+      if (postcode.trim()) {
+        const coords = await geocodePostcode(postcode);
+        if (coords) {
+          latitude = coords.latitude;
+          longitude = coords.longitude;
+        }
+      }
       const { error } = await supabase
         .from("events")
         .update({
           title,
           location,
+          postcode: postcode.trim() || null,
+          latitude,
+          longitude,
           country,
           promotion_name: promotionName || null,
           description: description || null,
@@ -92,7 +104,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
           city: city || null,
           ticket_enabled: ticketEnabled,
           status,
-        })
+        } as any)
         .eq("id", event.id);
       if (error) throw error;
     },
