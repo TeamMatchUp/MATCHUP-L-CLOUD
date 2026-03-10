@@ -124,26 +124,26 @@ export default function Dashboard() {
   ];
 
   const renderContent = () => {
-    // Fighter profile creation prompt
-    if (isFighter && !fighterProfile && activeSection === "overview") {
-      return (
-        <div className="space-y-6">
-          <h2 className="font-heading text-2xl text-foreground">
-            CREATE YOUR <span className="text-primary">FIGHTER PROFILE</span>
-          </h2>
-          <CreateFighterProfileForm
-            userId={user!.id}
-            userEmail={user!.email ?? ""}
-            onSuccess={handleRefresh}
-          />
-        </div>
-      );
-    }
-
     switch (activeSection) {
       case "overview":
         return (
           <div className="space-y-6">
+            {/* Fighter profile creation prompt - compact banner */}
+            {isFighter && !fighterProfile && (
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex items-center justify-between">
+                <div>
+                  <p className="font-heading text-sm text-foreground">
+                    CREATE YOUR <span className="text-primary">FIGHTER PROFILE</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Set up your profile to start receiving match proposals.
+                  </p>
+                </div>
+                <Button size="sm" onClick={() => navigateToSection("create-profile")}>
+                  Create Profile
+                </Button>
+              </div>
+            )}
             {/* Fighter gym invites banner */}
             {isFighter && fighterProfile && (
               <GymInvitesPanel fighterProfileId={fighterProfile.id} />
