@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { motion } from "framer-motion";
-import { MapPin, Filter, Users, ShieldCheck, Search, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapPin, Filter, Users, ShieldCheck, Search, X, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
