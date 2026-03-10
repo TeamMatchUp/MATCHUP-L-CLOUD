@@ -99,7 +99,9 @@ export type Database = {
           date: string
           description: string | null
           id: string
+          latitude: number | null
           location: string
+          longitude: number | null
           organiser_id: string | null
           promotion_name: string | null
           promotion_status: string | null
@@ -116,7 +118,9 @@ export type Database = {
           date: string
           description?: string | null
           id?: string
+          latitude?: number | null
           location: string
+          longitude?: number | null
           organiser_id?: string | null
           promotion_name?: string | null
           promotion_status?: string | null
@@ -133,7 +137,9 @@ export type Database = {
           date?: string
           description?: string | null
           id?: string
+          latitude?: number | null
           location?: string
+          longitude?: number | null
           organiser_id?: string | null
           promotion_name?: string | null
           promotion_status?: string | null
@@ -569,8 +575,10 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          latitude: number | null
           location: string | null
           logo_url: string | null
+          longitude: number | null
           name: string
           phone: string | null
           updated_at: string
@@ -586,8 +594,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          latitude?: number | null
           location?: string | null
           logo_url?: string | null
+          longitude?: number | null
           name: string
           phone?: string | null
           updated_at?: string
@@ -603,8 +613,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          latitude?: number | null
           location?: string | null
           logo_url?: string | null
+          longitude?: number | null
           name?: string
           phone?: string | null
           updated_at?: string
