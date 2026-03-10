@@ -13,7 +13,7 @@ export function HeroSection() {
       <div className="container relative z-10">
         <div className="flex flex-col items-center text-center">
           <motion.h1
-            className="font-heading text-[13vw] sm:text-7xl md:text-8xl lg:text-9xl text-foreground leading-[0.9] mb-4"
+            className="font-heading text-[13vw] sm:text-7xl md:text-8xl lg:text-9xl text-foreground leading-[0.85] mb-2 sm:mb-4"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
