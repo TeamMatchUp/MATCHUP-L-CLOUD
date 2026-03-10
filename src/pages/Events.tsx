@@ -62,10 +62,8 @@ const Events = () => {
       if (pc.coords && event.latitude != null && event.longitude != null) {
         const dist = haversineDistance(pc.coords.latitude, pc.coords.longitude, event.latitude, event.longitude);
         if (dist > pc.radius) return false;
-      } else if (pc.coords) {
-        // If postcode search active but event has no coords, exclude it
-        return false;
       }
+      // Items without coords are kept (not excluded) so results still show
       if (ticketsOnly) {
         if (!event.tickets || event.tickets.length === 0) return false;
       }
