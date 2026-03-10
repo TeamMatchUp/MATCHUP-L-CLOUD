@@ -171,7 +171,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1">
               <Label>Address</Label>
               <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full address" />
