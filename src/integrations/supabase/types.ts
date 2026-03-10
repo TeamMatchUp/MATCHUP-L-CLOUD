@@ -103,6 +103,7 @@ export type Database = {
           location: string
           longitude: number | null
           organiser_id: string | null
+          postcode: string | null
           promotion_name: string | null
           promotion_status: string | null
           status: Database["public"]["Enums"]["event_status"]
@@ -122,6 +123,7 @@ export type Database = {
           location: string
           longitude?: number | null
           organiser_id?: string | null
+          postcode?: string | null
           promotion_name?: string | null
           promotion_status?: string | null
           status?: Database["public"]["Enums"]["event_status"]
@@ -141,6 +143,7 @@ export type Database = {
           location?: string
           longitude?: number | null
           organiser_id?: string | null
+          postcode?: string | null
           promotion_name?: string | null
           promotion_status?: string | null
           status?: Database["public"]["Enums"]["event_status"]
