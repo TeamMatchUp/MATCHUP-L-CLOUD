@@ -24,7 +24,7 @@ export function HeroSection() {
           </motion.h1>
 
           <motion.p
-            className="text-foreground text-base md:text-lg max-w-md mt-4"
+            className="text-foreground text-[3.5vw] sm:text-base md:text-lg max-w-md mt-2 sm:mt-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
