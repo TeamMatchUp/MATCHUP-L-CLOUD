@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EventCalendar } from "./EventCalendar";
 import { ActivityFeed } from "./ActivityFeed";
@@ -44,43 +44,51 @@ export function DashboardOverview({
   const quickActions = [
     ...(isCoachOrOwner
       ? [
-          { label: "Create Gym", icon: Building2, to: "/register-gym" },
-          { label: "Add Fighter", icon: Plus, section: "roster" },
+          { label: "Create gym", icon: Building2, to: "/register-gym" },
+          { label: "Add fighter", icon: Plus, section: "roster" },
         ]
       : []),
-    { label: "View Proposals", icon: Inbox, section: "proposals" },
+    { label: "View proposals", icon: Inbox, section: "proposals" },
     ...(isOrganiser || isCoachOrOwner
-      ? [{ label: "Create Event", icon: Calendar, to: "/organiser/create-event" }]
+      ? [{ label: "Create event", icon: Calendar, to: "/organiser/create-event" }]
       : []),
-    { label: "Browse Events", icon: Search, to: "/events" },
+    { label: "Browse events", icon: Search, to: "/events" },
   ];
 
   return (
     <div className="space-y-6">
       {/* Summary Metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {metrics.map((m) => (
-          <button
-            key={m.label}
-            onClick={() => m.section && onNavigateSection(m.section)}
-            className={`rounded-lg border border-border bg-card p-4 text-left transition-colors ${
-              m.section ? "hover:border-primary/30 cursor-pointer" : ""
-            }`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
-                {m.label}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+        {metrics.map((m) => {
+          const isZero = m.value === 0;
+          const isConfirmed = m.label === "Confirmed";
+          return (
+            <button
+              key={m.label}
+              onClick={() => m.section && onNavigateSection(m.section)}
+              className={`mu-card p-4 text-left transition-colors duration-150 ${
+                m.section ? "hover:border-[var(--mu-gold-b)] cursor-pointer" : ""
+              } ${isZero ? "opacity-[0.42]" : ""} ${
+                isConfirmed && !isZero ? "border-[var(--mu-gold-b)]" : ""
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <p className="mu-section-label mb-0">
+                  {m.label}
+                </p>
+                {m.section && (
+                  <ArrowUpRight className="h-3.5 w-3.5 text-[var(--mu-t3)]" />
+                )}
+              </div>
+              <p className={`font-heading text-3xl tabular-nums ${
+                isConfirmed && !isZero ? "text-[var(--mu-gold)]" : "text-[var(--mu-t1)]"
+              }`}>
+                {m.value}
               </p>
-              {m.section && (
-                <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
-              )}
-            </div>
-            <p className="font-heading text-3xl text-foreground tabular-nums">
-              {m.value}
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-1">{m.sub}</p>
-          </button>
-        ))}
+              <p className="text-[11px] text-[var(--mu-t3)] mt-1">{m.sub}</p>
+            </button>
+          );
+        })}
       </div>
 
       {/* Calendar + Quick Actions + Activity Feed */}
@@ -93,34 +101,30 @@ export function DashboardOverview({
         {/* Right column */}
         <div className="space-y-4">
           {/* Quick Actions */}
-          <div className="rounded-lg border border-border bg-card p-4">
-            <h3 className="font-heading text-lg text-foreground mb-3">
-              QUICK <span className="text-primary">ACTIONS</span>
+          <div className="mu-card p-4">
+            <h3 className="text-[var(--mu-t1)] text-sm font-medium mb-3">
+              Quick <span className="text-[var(--mu-gold)]">actions</span>
             </h3>
             <div className="grid grid-cols-1 gap-2">
               {quickActions.map((action) =>
                 action.to ? (
-                  <Button
+                  <Link
                     key={action.label}
-                    variant="outline"
-                    className="justify-start gap-2 h-10"
-                    asChild
+                    to={action.to}
+                    className="mu-btn-ghost flex items-center gap-2 text-left"
                   >
-                    <Link to={action.to}>
-                      <action.icon className="h-4 w-4 text-primary" />
-                      {action.label}
-                    </Link>
-                  </Button>
+                    <action.icon className="h-4 w-4 text-[var(--mu-gold)]" />
+                    {action.label}
+                  </Link>
                 ) : (
-                  <Button
+                  <button
                     key={action.label}
-                    variant="outline"
-                    className="justify-start gap-2 h-10"
+                    className="mu-btn-ghost flex items-center gap-2 text-left w-full"
                     onClick={() => action.section && onNavigateSection(action.section)}
                   >
-                    <action.icon className="h-4 w-4 text-primary" />
+                    <action.icon className="h-4 w-4 text-[var(--mu-gold)]" />
                     {action.label}
-                  </Button>
+                  </button>
                 )
               )}
             </div>
