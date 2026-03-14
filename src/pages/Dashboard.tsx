@@ -32,6 +32,7 @@ import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 import { EditFighterDialog } from "@/components/coach/EditFighterDialog";
 import { DeleteFighterDialog } from "@/components/coach/DeleteFighterDialog";
 import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
+import { BottomTabBar } from "@/components/BottomTabBar";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -128,20 +129,20 @@ export default function Dashboard() {
       case "overview":
         return (
           <div className="space-y-6">
-            {/* Fighter profile creation prompt - compact banner */}
+            {/* Fighter profile creation prompt */}
             {isFighter && !fighterProfile && (
-              <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex items-center justify-between">
+              <div className="mu-card mu-card-featured p-4 flex items-center justify-between">
                 <div>
-                  <p className="font-heading text-sm text-foreground">
-                    CREATE YOUR <span className="text-primary">FIGHTER PROFILE</span>
+                  <p className="text-sm font-medium text-[var(--mu-t1)]">
+                    Create your <span className="text-[var(--mu-gold)]">fighter profile</span>
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-xs text-[var(--mu-t3)] mt-0.5">
                     Set up your profile to start receiving match proposals.
                   </p>
                 </div>
-                <Button size="sm" onClick={() => navigateToSection("create-profile")}>
-                  Create Profile
-                </Button>
+                <button className="mu-btn-primary" onClick={() => navigateToSection("create-profile")}>
+                  Create profile
+                </button>
               </div>
             )}
             {/* Fighter gym invites banner */}
@@ -234,8 +235,8 @@ export default function Dashboard() {
       case "create-profile":
         return (
           <div className="space-y-6">
-            <h2 className="font-heading text-2xl text-foreground">
-              CREATE YOUR <span className="text-primary">FIGHTER PROFILE</span>
+            <h2 className="text-2xl font-medium text-[var(--mu-t1)]">
+              Create your <span className="text-[var(--mu-gold)]">fighter profile</span>
             </h2>
             <CreateFighterProfileForm
               userId={user!.id}
@@ -253,9 +254,22 @@ export default function Dashboard() {
     }
   };
 
+  const sectionTitle = () => {
+    if (activeSection === "overview") return null;
+    const titles: Record<string, React.ReactNode> = {
+      gyms: <>My <span className="text-[var(--mu-gold)]">gyms</span></>,
+      roster: <><span className="text-[var(--mu-gold)]">Roster</span></>,
+      proposals: <><span className="text-[var(--mu-gold)]">Proposals</span></>,
+      events: <><span className="text-[var(--mu-gold)]">Events</span></>,
+      interests: <>Interested <span className="text-[var(--mu-gold)]">events</span></>,
+      notifications: <><span className="text-[var(--mu-gold)]">Notifications</span></>,
+    };
+    return titles[activeSection] || activeSection;
+  };
+
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-screen flex w-full bg-[var(--mu-bg)]">
         <DashboardSidebar
           pendingCount={pendingProposals.length}
           unreadCount={unreadNotifications.length}
@@ -263,35 +277,35 @@ export default function Dashboard() {
 
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar */}
-          <header className="h-14 flex items-center justify-between border-b border-border bg-card/50 backdrop-blur-sm px-4 shrink-0 sticky top-0 z-40">
+          <header className="h-14 flex items-center justify-between border-b border-[var(--mu-border)] bg-[var(--mu-bg)] px-4 shrink-0 sticky top-0 z-40">
             <div className="flex items-center gap-3">
-              <SidebarTrigger className="text-muted-foreground" />
+              <SidebarTrigger className="text-[var(--mu-t2)]" />
               <Link to="/" className="hidden sm:block">
                 <AppLogo className="h-7" />
               </Link>
               <nav className="hidden md:flex items-center gap-6 ml-4">
                 <Link
                   to="/"
-                  className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide"
+                  className="text-xs font-medium text-[var(--mu-t2)] hover:text-[var(--mu-t1)] transition-colors duration-150"
                 >
                   Home
                 </Link>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide">
+                    <button className="flex items-center gap-1 text-xs font-medium text-[var(--mu-t2)] hover:text-[var(--mu-t1)] transition-colors duration-150">
                       Explore
                       <ChevronDown className="h-3 w-3" />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-40">
                     <DropdownMenuItem asChild>
-                      <Link to="/events" className="text-xs uppercase tracking-wide">Events</Link>
+                      <Link to="/events" className="text-xs">Events</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/fighters" className="text-xs uppercase tracking-wide">Fighters</Link>
+                      <Link to="/fighters" className="text-xs">Fighters</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/gyms" className="text-xs uppercase tracking-wide">Gyms</Link>
+                      <Link to="/gyms" className="text-xs">Gyms</Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -305,12 +319,12 @@ export default function Dashboard() {
                   <Button variant="ghost" size="sm" className="gap-2">
                     <Avatar className="h-7 w-7">
                       {profile?.avatar_url && <AvatarImage src={profile.avatar_url} alt="Profile" />}
-                      <AvatarFallback className="text-[10px] bg-muted text-muted-foreground">
+                      <AvatarFallback className="text-[10px] bg-[var(--mu-raised)] text-[var(--mu-t2)]">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                     {activeRole && (
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium hidden sm:inline">
+                      <span className="text-xs bg-[var(--mu-gold-t)] text-[var(--mu-gold)] px-2 py-0.5 rounded-full font-medium hidden sm:inline">
                         {ROLE_LABELS[activeRole] || activeRole}
                       </span>
                     )}
@@ -320,14 +334,14 @@ export default function Dashboard() {
                 <DropdownMenuContent align="end" className="w-48">
                   {roles.length > 1 && (
                     <>
-                      <DropdownMenuLabel className="text-xs text-muted-foreground">
-                        Switch Role
+                      <DropdownMenuLabel className="text-xs text-[var(--mu-t3)]">
+                        Switch role
                       </DropdownMenuLabel>
                       {roles.map((role) => (
                         <DropdownMenuItem
                           key={role}
                           onClick={() => handleRoleSwitch(role)}
-                          className={role === activeRole ? "bg-primary/10 text-primary" : ""}
+                          className={role === activeRole ? "bg-[var(--mu-gold-t)] text-[var(--mu-gold)]" : ""}
                         >
                           {ROLE_LABELS[role] || role}
                         </DropdownMenuItem>
@@ -338,13 +352,13 @@ export default function Dashboard() {
                   <DropdownMenuItem asChild>
                     <Link to="/account/settings">
                       <Settings className="h-4 w-4 mr-2" />
-                      Account Settings
+                      Account settings
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                     <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                    Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -352,21 +366,22 @@ export default function Dashboard() {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          <main className="flex-1 overflow-y-auto p-4 md:p-6 pb-24 md:pb-6">
             <div className="mb-6">
-              <h1 className="font-heading text-3xl md:text-4xl text-foreground">
-                {activeSection === "overview" ? (
-                  <>
-                    <span className="text-primary">MATCHUP</span> DASHBOARD
-                  </>
-                ) : (
-                  activeSection.replace("_", " ").toUpperCase()
-                )}
-              </h1>
-              {activeSection === "overview" && (
-                <p className="text-muted-foreground text-sm mt-1">
-                  Your operations control panel for combat sports matchmaking.
-                </p>
+              {activeSection === "overview" ? (
+                <>
+                  <p className="mu-eyebrow">Welcome back</p>
+                  <h1 className="text-2xl font-medium text-[var(--mu-t1)]">
+                    <span className="text-[var(--mu-gold)]">Match</span>up
+                  </h1>
+                  <p className="text-mu-md text-[var(--mu-t3)] mt-1">
+                    Operations dashboard
+                  </p>
+                </>
+              ) : (
+                <h1 className="text-2xl font-medium text-[var(--mu-t1)]">
+                  {sectionTitle()}
+                </h1>
               )}
             </div>
 
@@ -374,6 +389,9 @@ export default function Dashboard() {
           </main>
         </div>
       </div>
+
+      {/* Bottom Tab Bar — mobile only */}
+      <BottomTabBar />
 
       {/* Dialogs */}
       {user && (addFighterGymId || primaryGym?.id) && (
