@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -24,17 +23,17 @@ import { PutForwardFightersDialog } from "@/components/coach/PutForwardFightersD
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
-  featherweight: "Featherweight", lightweight: "Lightweight", super_lightweight: "Super Lightweight",
-  welterweight: "Welterweight", super_welterweight: "Super Welterweight", middleweight: "Middleweight",
-  super_middleweight: "Super Middleweight", light_heavyweight: "Light Heavyweight",
-  cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
+  featherweight: "Featherweight", lightweight: "Lightweight", super_lightweight: "Super lightweight",
+  welterweight: "Welterweight", super_welterweight: "Super welterweight", middleweight: "Middleweight",
+  super_middleweight: "Super middleweight", light_heavyweight: "Light heavyweight",
+  cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super heavyweight",
 };
 
-const SLOT_STATUS_STYLES: Record<string, string> = {
-  open: "bg-primary/10 text-primary",
-  proposed: "bg-secondary/10 text-secondary",
-  confirmed: "bg-success/10 text-success",
-  cancelled: "bg-destructive/10 text-destructive",
+const SLOT_STATUS_CLASS: Record<string, string> = {
+  open: "mu-pill mu-pill-open",
+  proposed: "mu-pill mu-pill-proposed",
+  confirmed: "mu-pill mu-pill-confirmed",
+  cancelled: "mu-pill mu-pill-pending",
 };
 
 export default function EventDetail() {
@@ -48,7 +47,6 @@ export default function EventDetail() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Get fighter profile for the current user
   const { data: fighterProfile } = useQuery({
     queryKey: ["my-fighter-profile", user?.id],
     queryFn: async () => {
@@ -63,7 +61,6 @@ export default function EventDetail() {
     enabled: !!user && isFighter,
   });
 
-  // Check if already interested
   const { data: existingInterest } = useQuery({
     queryKey: ["fighter-event-interest", fighterProfile?.id, id],
     queryFn: async () => {
@@ -83,13 +80,11 @@ export default function EventDetail() {
     if (!fighterProfile || !event) return;
     setSending(true);
     try {
-      // Persist interest
       const { error: insertError } = await supabase
         .from("fighter_event_interests")
         .insert({ fighter_id: fighterProfile.id, event_id: id! });
       if (insertError) throw insertError;
 
-      // Find all coaches linked to this fighter via gyms
       const { data: gymLinks } = await supabase
         .from("fighter_gym_links")
         .select("gym_id, gyms(coach_id)")
@@ -101,7 +96,6 @@ export default function EventDetail() {
         if (link.gyms?.coach_id) coachIds.add(link.gyms.coach_id);
       });
 
-      // Send notification to each coach
       for (const coachId of coachIds) {
         await supabase.rpc("create_notification", {
           _user_id: coachId,
@@ -114,7 +108,7 @@ export default function EventDetail() {
 
       queryClient.invalidateQueries({ queryKey: ["fighter-event-interest", fighterProfile.id, id] });
       queryClient.invalidateQueries({ queryKey: ["fighter-event-interests"] });
-      toast.success("Your interest has been registered and your coach has been notified!");
+      toast.success("Your interest has been registered and your coach has been notified.");
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong. Please try again.");
@@ -154,12 +148,12 @@ export default function EventDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[var(--mu-bg)]">
         <Header />
         <main className="pt-16">
           <div className="container py-16">
-            <div className="h-8 w-64 bg-card animate-pulse rounded mb-4" />
-            <div className="h-4 w-48 bg-card animate-pulse rounded" />
+            <div className="h-8 w-64 bg-[var(--mu-sur)] animate-pulse rounded-mu-md mb-4" />
+            <div className="h-4 w-48 bg-[var(--mu-sur)] animate-pulse rounded-mu-md" />
           </div>
         </main>
       </div>
@@ -168,14 +162,14 @@ export default function EventDetail() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[var(--mu-bg)]">
         <Header />
         <main className="pt-16">
           <div className="container py-16 text-center">
-            <h1 className="font-heading text-3xl text-foreground mb-4">Event Not Found</h1>
-            <Button variant="ghost" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />Back
-            </Button>
+            <h1 className="text-2xl font-medium text-[var(--mu-t1)] mb-4">Event not found</h1>
+            <button className="mu-btn-ghost inline-flex items-center gap-2" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-4 w-4" />Back
+            </button>
           </div>
         </main>
         <Footer />
@@ -186,25 +180,35 @@ export default function EventDetail() {
   const openSlots = event.fight_slots?.filter((s: any) => s.status === "open") ?? [];
   const confirmedSlots = event.fight_slots?.filter((s: any) => s.status === "confirmed") ?? [];
 
+  // Group by card position
+  const mainCard = event.fight_slots?.filter((s: any) => s.card_position === "main") ?? [];
+  const underCard = event.fight_slots?.filter((s: any) => s.card_position !== "main") ?? [];
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[var(--mu-bg)]">
       <Header />
       <main className="pt-16">
-        <section className="py-16">
+        <section className="py-10 md:py-16">
           <div className="container">
-            <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />Back
-            </Button>
+            <button className="mu-btn-inline mb-6" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-3.5 w-3.5" />Back
+            </button>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>
-              <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>
+              <h1 className="text-2xl md:text-4xl font-medium text-[var(--mu-t1)] mb-2">{event.title}</h1>
+              <p className="text-[var(--mu-t2)] mb-4">{event.promotion_name}</p>
 
-              <div className="flex flex-wrap gap-6 text-sm text-muted-foreground mb-8">
+              <div className="flex flex-wrap gap-4 mb-6">
+                <span className="mu-pill mu-pill-published">
+                  {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-6 text-sm text-[var(--mu-t3)] mb-8">
                 <span className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
                   {new Date(event.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
@@ -216,50 +220,45 @@ export default function EventDetail() {
               </div>
 
               {event.description && (
-                <p className="text-muted-foreground max-w-2xl mb-8">{event.description}</p>
+                <p className="text-[var(--mu-t2)] max-w-2xl mb-8 text-sm">{event.description}</p>
               )}
 
-              {/* Fighter Interest Button */}
-              {isFighter && fighterProfile && (
-                existingInterest ? (
-                  <Button
-                    variant="outline"
-                    className="mb-8 gap-2 border-primary/50 text-primary cursor-default"
-                    disabled
-                  >
-                    <Star className="h-4 w-4 fill-primary" />
-                    Interested
-                  </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    className="mb-8 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                    onClick={() => setShowConfirm(true)}
-                  >
-                    <Star className="h-4 w-4" />
-                    I'm Interested
-                  </Button>
-                )
-              )}
+              {/* Action buttons */}
+              <div className="flex flex-wrap gap-3 mb-8">
+                {isFighter && fighterProfile && (
+                  existingInterest ? (
+                    <span className="mu-btn-secondary inline-flex items-center gap-2 cursor-default opacity-70">
+                      <Star className="h-4 w-4 fill-[var(--mu-gold)]" />
+                      Interested
+                    </span>
+                  ) : (
+                    <button
+                      className="mu-btn-secondary inline-flex items-center gap-2"
+                      onClick={() => setShowConfirm(true)}
+                    >
+                      <Star className="h-4 w-4" />
+                      I'm interested
+                    </button>
+                  )
+                )}
 
-              {/* Coach Put Forward Button */}
-              {isCoach && user && (
-                <Button
-                  variant="outline"
-                  className="mb-8 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                  onClick={() => setShowPutForward(true)}
-                >
-                  <Users className="h-4 w-4" />
-                  Put Forward Fighters
-                </Button>
-              )}
+                {isCoach && user && (
+                  <button
+                    className="mu-btn-ghost inline-flex items-center gap-2"
+                    onClick={() => setShowPutForward(true)}
+                  >
+                    <Users className="h-4 w-4" />
+                    Put forward fighters
+                  </button>
+                )}
+              </div>
 
               {/* Location Map */}
-              <div className="rounded-lg border border-border overflow-hidden mb-12">
+              <div className="mu-card overflow-hidden mb-8">
                 <iframe
                   title="Event Location"
                   width="100%"
-                  height="300"
+                  height="250"
                   style={{ border: 0 }}
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
@@ -268,24 +267,30 @@ export default function EventDetail() {
                     [event.venue_name, event.location, event.city, event.country].filter(Boolean).join(", ")
                   )}&output=embed&z=14`}
                 />
-                <div className="bg-card px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4 text-primary" />
+                <div className="px-4 py-3 flex items-center gap-2 text-sm text-[var(--mu-t2)]">
+                  <MapPin className="h-4 w-4 text-[var(--mu-gold)]" />
                   {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
                 </div>
               </div>
             </motion.div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-8">
               {[
-                { label: "Total Slots", value: event.fight_slots?.length ?? 0 },
+                { label: "Total slots", value: event.fight_slots?.length ?? 0 },
                 { label: "Open", value: openSlots.length },
                 { label: "Confirmed", value: confirmedSlots.length },
                 { label: "Country", value: event.country },
               ].map((stat) => (
-                <div key={stat.label} className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  <p className="font-heading text-2xl text-foreground mt-1">{stat.value}</p>
+                <div key={stat.label} className={`mu-card p-4 text-center ${
+                  stat.label === "Confirmed" && typeof stat.value === "number" && stat.value > 0 ? "border-[var(--mu-gold-b)]" : ""
+                }`}>
+                  <p className="mu-section-label mb-1">{stat.label}</p>
+                  <p className={`font-heading text-2xl ${
+                    stat.label === "Confirmed" && typeof stat.value === "number" && stat.value > 0
+                      ? "text-[var(--mu-gold)]"
+                      : "text-[var(--mu-t1)]"
+                  }`}>{stat.value}</p>
                 </div>
               ))}
             </div>
@@ -293,34 +298,37 @@ export default function EventDetail() {
             {/* Tickets */}
             {event.ticket_enabled && tickets.length > 0 && (
               <>
-                <h2 className="font-heading text-2xl text-foreground mb-6">
-                  <Ticket className="inline h-5 w-5 mr-2 text-primary" />
-                  TICKETS AVAILABLE
+                <h2 className="text-lg font-medium text-[var(--mu-t1)] mb-4">
+                  <Ticket className="inline h-5 w-5 mr-2 text-[var(--mu-gold)]" />
+                  Tickets <span className="text-[var(--mu-gold)]">available</span>
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-8">
                   {tickets.map((ticket: any) => (
-                    <div key={ticket.id} className="rounded-lg border border-border bg-card p-5 flex flex-col">
-                      <Badge variant="outline" className="self-start mb-3 text-xs">{ticket.ticket_type}</Badge>
+                    <div key={ticket.id} className="mu-card p-5 flex flex-col">
+                      <span className="mu-pill mu-pill-open self-start mb-3">{ticket.ticket_type}</span>
                       {ticket.price != null && (
-                        <p className="font-heading text-3xl text-foreground mb-1">
+                        <p className="font-heading text-3xl text-[var(--mu-t1)] mb-1">
                           £{Number(ticket.price).toFixed(2)}
                         </p>
                       )}
                       {ticket.quantity_available != null && (
-                        <p className="text-xs text-muted-foreground mb-4">
+                        <p className="text-xs text-[var(--mu-t3)] mb-4">
                           {ticket.quantity_available} available
                         </p>
                       )}
                       {ticket.external_link ? (
-                        <Button asChild className="mt-auto gap-2 w-full">
-                          <a href={ticket.external_link} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="h-4 w-4" /> Buy Tickets
-                          </a>
-                        </Button>
+                        <a
+                          href={ticket.external_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mu-btn-primary mt-auto inline-flex items-center justify-center gap-2 w-full text-center"
+                        >
+                          <ExternalLink className="h-4 w-4" /> Buy tickets
+                        </a>
                       ) : (
-                        <Button variant="outline" className="mt-auto gap-2 w-full" disabled>
-                          <Ticket className="h-4 w-4" /> Coming Soon
-                        </Button>
+                        <span className="mu-btn-ghost mt-auto inline-flex items-center justify-center gap-2 w-full text-center opacity-50 cursor-default">
+                          <Ticket className="h-4 w-4" /> Coming soon
+                        </span>
                       )}
                     </div>
                   ))}
@@ -328,33 +336,33 @@ export default function EventDetail() {
               </>
             )}
 
-            {/* Fight Slots */}
-            <h2 className="font-heading text-2xl text-foreground mb-6">
-              FIGHT <span className="text-primary">CARD</span>
+            {/* Fight Card */}
+            <h2 className="text-lg font-medium text-[var(--mu-t1)] mb-4">
+              Fight <span className="text-[var(--mu-gold)]">card</span>
             </h2>
             {event.fight_slots && event.fight_slots.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {event.fight_slots
                   .sort((a: any, b: any) => a.slot_number - b.slot_number)
                   .map((slot: any) => (
                     <div
                       key={slot.id}
-                      className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
+                      className="mu-card flex items-center justify-between p-4"
                     >
                       <div className="flex items-center gap-4">
-                        <span className="font-heading text-lg text-muted-foreground w-8">#{slot.slot_number}</span>
+                        <span className="text-[var(--mu-t3)] text-sm font-medium w-8">#{slot.slot_number}</span>
                         <div>
-                          <p className="text-sm font-medium text-foreground">{WEIGHT_CLASS_LABELS[slot.weight_class]}</p>
+                          <p className="text-sm font-medium text-[var(--mu-t1)]">{WEIGHT_CLASS_LABELS[slot.weight_class]}</p>
                         </div>
                       </div>
-                      <Badge className={SLOT_STATUS_STYLES[slot.status] ?? ""} variant="outline">
+                      <span className={SLOT_STATUS_CLASS[slot.status] ?? "mu-pill mu-pill-pending"}>
                         {slot.status.charAt(0).toUpperCase() + slot.status.slice(1)}
-                      </Badge>
+                      </span>
                     </div>
                   ))}
               </div>
             ) : (
-              <p className="text-muted-foreground">No fight slots defined yet.</p>
+              <p className="text-[var(--mu-t3)]">No fight slots defined yet.</p>
             )}
           </div>
         </section>
@@ -364,7 +372,7 @@ export default function EventDetail() {
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Interest</AlertDialogTitle>
+            <AlertDialogTitle>Confirm interest</AlertDialogTitle>
             <AlertDialogDescription>
               A notification will be sent to your coach letting them know you're interested in this event. Do you want to continue?
             </AlertDialogDescription>
@@ -378,7 +386,6 @@ export default function EventDetail() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Coach Put Forward Dialog */}
       {isCoach && user && event && (
         <PutForwardFightersDialog
           open={showPutForward}
