@@ -12,7 +12,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -72,11 +71,11 @@ export function DashboardSidebar({ pendingCount, unreadCount }: DashboardSidebar
 
   const navItems: NavItem[] = [
     { key: "overview", label: "Dashboard", icon: LayoutDashboard },
-    { key: "gyms", label: "My Gyms", icon: Building2, roles: ["gym_owner", "coach", "fighter"] },
+    { key: "gyms", label: "My gyms", icon: Building2, roles: ["gym_owner", "coach", "fighter"] },
     { key: "roster", label: "Roster", icon: Users, roles: ["gym_owner", "coach"] },
     { key: "proposals", label: "Proposals", icon: Inbox, badgeCount: pendingCount },
     { key: "events", label: "Events", icon: Calendar, roles: ["gym_owner", "coach", "organiser"] },
-    { key: "interests", label: "Interested Events", icon: Star, roles: ["fighter"] },
+    { key: "interests", label: "Interested events", icon: Star, roles: ["fighter"] },
     { key: "notifications", label: "Notifications", icon: Bell, badgeCount: unreadCount },
   ];
 
@@ -95,30 +94,30 @@ export function DashboardSidebar({ pendingCount, unreadCount }: DashboardSidebar
   };
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader className="p-4 border-b border-sidebar-border">
+    <Sidebar collapsible="icon" className="bg-[var(--sidebar-background)]">
+      <SidebarHeader className="p-4 border-b border-[var(--mu-border)]">
         {!collapsed ? (
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 shrink-0">
+          <div className="flex items-center gap-3 pb-1">
+            <Avatar className="h-9 w-9 shrink-0 border border-[var(--mu-border2)]">
               {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-              <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+              <AvatarFallback className="bg-[var(--mu-raised)] text-[var(--mu-t2)] text-sm font-medium">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-accent-foreground truncate">
+              <p className="text-[13px] font-medium text-[var(--mu-t1)] truncate">
                 {profile?.full_name || "User"}
               </p>
-              <p className="text-xs text-sidebar-foreground truncate">
+              <p className="text-[10px] text-[var(--mu-t3)] truncate">
                 {user?.email}
               </p>
             </div>
           </div>
         ) : (
           <div className="flex justify-center">
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-8 w-8 border border-[var(--mu-border2)]">
               {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-              <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+              <AvatarFallback className="bg-[var(--mu-raised)] text-[var(--mu-t2)] text-xs font-medium">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -126,9 +125,9 @@ export function DashboardSidebar({ pendingCount, unreadCount }: DashboardSidebar
         )}
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2 py-3">
         <SidebarGroup>
-          <SidebarGroupLabel>MENU</SidebarGroupLabel>
+          <SidebarGroupLabel className="mu-section-label px-2.5">Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {filteredNavItems.map((item) => {
@@ -139,19 +138,24 @@ export function DashboardSidebar({ pendingCount, unreadCount }: DashboardSidebar
                       onClick={() => handleNav(item.key)}
                       isActive={isActive}
                       tooltip={item.label}
-                      className={isActive ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary" : ""}
+                      className={`flex items-center gap-2.5 px-2.5 py-[9px] rounded-[9px] mb-0.5 transition-colors duration-150 ${
+                        isActive
+                          ? "bg-[var(--mu-gold-t)] text-[var(--mu-gold)] font-medium hover:bg-[var(--mu-gold-t)] hover:text-[var(--mu-gold)]"
+                          : "hover:bg-white/[0.04]"
+                      }`}
                     >
-                      <item.icon className="h-4 w-4" />
+                      <span className={`w-7 h-7 rounded-[7px] flex items-center justify-center shrink-0 ${
+                        isActive ? "bg-[var(--mu-gold-t)]" : "bg-white/[0.04]"
+                      }`}>
+                        <item.icon className="h-4 w-4" />
+                      </span>
                       {!collapsed && (
                         <span className="flex-1">{item.label}</span>
                       )}
                       {!collapsed && item.badgeCount && item.badgeCount > 0 ? (
-                        <Badge
-                          variant="outline"
-                          className="ml-auto h-5 min-w-5 flex items-center justify-center text-[10px] bg-primary/10 text-primary border-primary/30"
-                        >
+                        <span className="ml-auto text-[9px] font-medium bg-[var(--mu-gold-t)] text-[var(--mu-gold)] px-1.5 py-0.5 rounded-[5px]">
                           {item.badgeCount}
-                        </Badge>
+                        </span>
                       ) : null}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -162,13 +166,19 @@ export function DashboardSidebar({ pendingCount, unreadCount }: DashboardSidebar
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>GENERAL</SidebarGroupLabel>
+          <SidebarGroupLabel className="mu-section-label px-2.5">General</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Settings">
+                <SidebarMenuButton
+                  asChild
+                  tooltip="Settings"
+                  className="flex items-center gap-2.5 px-2.5 py-[9px] rounded-[9px] mb-0.5 hover:bg-white/[0.04] transition-colors duration-150"
+                >
                   <Link to="/account/settings">
-                    <Settings className="h-4 w-4" />
+                    <span className="w-7 h-7 rounded-[7px] bg-white/[0.04] flex items-center justify-center shrink-0">
+                      <Settings className="h-4 w-4" />
+                    </span>
                     {!collapsed && <span>Settings</span>}
                   </Link>
                 </SidebarMenuButton>
@@ -177,10 +187,12 @@ export function DashboardSidebar({ pendingCount, unreadCount }: DashboardSidebar
                 <SidebarMenuButton
                   onClick={handleSignOut}
                   tooltip="Logout"
-                  className="text-destructive hover:text-destructive"
+                  className="flex items-center gap-2.5 px-2.5 py-[9px] rounded-[9px] mt-auto hover:bg-white/[0.04] transition-colors duration-150"
                 >
-                  <LogOut className="h-4 w-4" />
-                  {!collapsed && <span>Logout</span>}
+                  <span className="w-7 h-7 rounded-[7px] bg-red-500/[0.08] flex items-center justify-center shrink-0">
+                    <LogOut className="h-4 w-4 text-red-400/70" />
+                  </span>
+                  {!collapsed && <span className="text-red-400/70">Logout</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
