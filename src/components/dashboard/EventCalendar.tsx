@@ -25,9 +25,9 @@ export function EventCalendar({ events }: EventCalendarProps) {
     .slice(0, 5);
 
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <h3 className="font-heading text-lg text-foreground mb-3">
-        EVENTS <span className="text-primary">CALENDAR</span>
+    <div className="mu-card p-4">
+      <h3 className="text-[var(--mu-t1)] text-sm font-medium mb-3">
+        Events <span className="text-[var(--mu-gold)]">calendar</span>
       </h3>
       <Calendar
         mode="single"
@@ -38,23 +38,23 @@ export function EventCalendar({ events }: EventCalendarProps) {
           event: (day) => eventDateSet.has(format(day, "yyyy-MM-dd")),
         }}
         modifiersClassNames={{
-          event: "bg-primary/20 text-primary font-semibold",
+          event: "bg-[var(--mu-gold)] text-[#111] font-medium rounded-lg",
         }}
       />
 
       {eventsOnDate.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-border space-y-2">
-          <p className="text-xs text-muted-foreground font-medium uppercase">
+        <div className="mt-3 pt-3 border-t border-[var(--mu-border)] space-y-2">
+          <p className="mu-section-label">
             Events on {format(date!, "MMM d, yyyy")}
           </p>
           {eventsOnDate.map((e) => (
             <Link
               key={e.id}
               to={`/events/${e.id}`}
-              className="block p-2 rounded-md hover:bg-muted/50 transition-colors"
+              className="block p-2 rounded-mu-sm hover:bg-white/[0.04] transition-colors duration-150"
             >
-              <p className="text-sm font-medium text-foreground">{e.title}</p>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <p className="text-sm font-medium text-[var(--mu-t1)]">{e.title}</p>
+              <p className="text-xs text-[var(--mu-t3)] flex items-center gap-1">
                 <MapPin className="h-3 w-3" /> {e.location}
               </p>
             </Link>
@@ -63,23 +63,23 @@ export function EventCalendar({ events }: EventCalendarProps) {
       )}
 
       {eventsOnDate.length === 0 && upcomingEvents.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-border space-y-2">
-          <p className="text-xs text-muted-foreground font-medium uppercase">
-            Upcoming Events
+        <div className="mt-3 pt-3 border-t border-[var(--mu-border)] space-y-2">
+          <p className="mu-section-label">
+            Upcoming events
           </p>
           {upcomingEvents.map((e) => (
             <Link
               key={e.id}
               to={`/events/${e.id}`}
-              className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors"
+              className="flex items-center justify-between p-2 rounded-mu-sm hover:bg-white/[0.04] transition-colors duration-150"
             >
               <div>
-                <p className="text-sm font-medium text-foreground">{e.title}</p>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <p className="text-sm font-medium text-[var(--mu-t1)]">{e.title}</p>
+                <p className="text-xs text-[var(--mu-t3)] flex items-center gap-1">
                   <MapPin className="h-3 w-3" /> {e.location}
                 </p>
               </div>
-              <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+              <span className="text-xs text-[var(--mu-t3)] whitespace-nowrap ml-2">
                 {format(new Date(e.date + "T00:00:00"), "MMM d")}
               </span>
             </Link>

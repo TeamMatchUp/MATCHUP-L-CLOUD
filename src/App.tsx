@@ -37,7 +37,7 @@ function ScrollToTop() {
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="matchup-theme">
+  <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} forcedTheme="dark" storageKey="matchup-theme">
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />

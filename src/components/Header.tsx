@@ -75,46 +75,46 @@ export function Header() {
   const dashboardPath = activeRole ? (ROLE_DASHBOARDS[activeRole] || "/") : "/";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-nav/90 backdrop-blur-xl border-b border-border/50">
-      <div className="container flex h-16 items-center justify-between relative">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--mu-bg)] border-b border-[var(--mu-border)] md:bg-nav/90 md:backdrop-blur-xl md:border-border/50">
+      <div className="container flex h-14 items-center justify-between relative">
         <Link to="/" className="flex items-center gap-2">
           <AppLogo className="h-10" />
         </Link>
 
-        {/* Center-aligned Explore + optional links */}
+        {/* Center-aligned Explore + optional links — desktop only */}
         <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
           {!isLanding && (
             <Link
               to="/"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150"
             >
-              HOME
+              Home
             </Link>
           )}
           {user && activeRole && (
             <Link
               to={dashboardPath}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150"
             >
-              DASHBOARD
+              Dashboard
             </Link>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 uppercase tracking-wide">
+              <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-150">
                 Explore
                 <ChevronDown className="h-3 w-3" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-44">
               <DropdownMenuItem asChild>
-                <Link to="/events" className="uppercase tracking-wide text-xs">View Events</Link>
+                <Link to="/events" className="text-xs">View events</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/fighters" className="uppercase tracking-wide text-xs">View Fighters</Link>
+                <Link to="/fighters" className="text-xs">View fighters</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/gyms" className="uppercase tracking-wide text-xs">View Gyms</Link>
+                <Link to="/gyms" className="text-xs">View gyms</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -144,7 +144,7 @@ export function Header() {
               <DropdownMenuContent align="end" className="w-48">
                 {roles.length > 1 && (
                   <>
-                    <DropdownMenuLabel className="text-xs text-muted-foreground">Switch Role</DropdownMenuLabel>
+                    <DropdownMenuLabel className="text-xs text-muted-foreground">Switch role</DropdownMenuLabel>
                     {roles.map((role) => (
                       <DropdownMenuItem
                         key={role}
@@ -160,13 +160,13 @@ export function Header() {
                 <DropdownMenuItem asChild>
                   <Link to="/account/settings">
                     <Settings className="h-4 w-4 mr-2" />
-                    Account Settings
+                    Account settings
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                   <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
+                  Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -175,12 +175,12 @@ export function Header() {
             <>
               <Link
                 to="/auth?mode=signup"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-[0_0_12px_hsl(var(--foreground)/0.15)] transition-all duration-200 px-4 py-1.5 rounded-full"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-150 px-4 py-1.5 rounded-full"
               >
-                CREATE ACCOUNT
+                Create account
               </Link>
               <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
-                <Link to="/auth">log in</Link>
+                <Link to="/auth">Log in</Link>
               </Button>
             </>
           )}
@@ -190,71 +190,71 @@ export function Header() {
         <div className="md:hidden flex items-center gap-2">
           {user && <NotificationBell />}
           <button
-            className="flex flex-col justify-center items-center gap-[5px] w-8 h-8 group"
+            className="flex flex-col justify-center items-center gap-1 w-8 h-8 group"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
-            <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? 'rotate-45 translate-y-[7px]' : ''}`} />
-            <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? 'opacity-0' : ''}`} />
-            <span className={`block w-6 h-[2px] bg-foreground transition-all duration-250 ease-in-out ${mobileOpen ? '-rotate-45 -translate-y-[7px]' : ''}`} />
+            <span className={`block h-[1.5px] bg-[var(--mu-t2)] rounded-full transition-all duration-200 ease-in-out ${mobileOpen ? 'w-5 rotate-45 translate-y-[5.5px]' : 'w-5'}`} />
+            <span className={`block h-[1.5px] bg-[var(--mu-t2)] rounded-full transition-all duration-200 ease-in-out ${mobileOpen ? 'w-5 opacity-0' : 'w-5'}`} />
+            <span className={`block h-[1.5px] bg-[var(--mu-t2)] rounded-full transition-all duration-200 ease-in-out ${mobileOpen ? 'w-5 -rotate-45 -translate-y-[5.5px]' : 'w-[13px] self-start ml-[6px]'}`} />
           </button>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl">
+        <div className="md:hidden border-t border-[var(--mu-border)] bg-[var(--mu-bg)]">
           <div className="container py-4 flex flex-col gap-3">
             {!isLanding && (
               <Link
                 to="/"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide"
+                className="text-sm font-medium text-[var(--mu-t2)] hover:text-[var(--mu-t1)] py-2 transition-colors duration-150"
                 onClick={() => setMobileOpen(false)}
               >
-                HOME
+                Home
               </Link>
             )}
             {user && activeRole && (
               <Link
                 to={dashboardPath}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide"
+                className="text-sm font-medium text-[var(--mu-t2)] hover:text-[var(--mu-t1)] py-2 transition-colors duration-150"
                 onClick={() => setMobileOpen(false)}
               >
-                DASHBOARD
+                Dashboard
               </Link>
             )}
-            <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Events</Link>
-            <Link to="/fighters" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Fighters</Link>
-            <Link to="/gyms" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Gyms</Link>
+            <Link to="/events" className="text-sm font-medium text-[var(--mu-t2)] hover:text-[var(--mu-t1)] py-2 transition-colors duration-150" onClick={() => setMobileOpen(false)}>View events</Link>
+            <Link to="/fighters" className="text-sm font-medium text-[var(--mu-t2)] hover:text-[var(--mu-t1)] py-2 transition-colors duration-150" onClick={() => setMobileOpen(false)}>View fighters</Link>
+            <Link to="/gyms" className="text-sm font-medium text-[var(--mu-t2)] hover:text-[var(--mu-t1)] py-2 transition-colors duration-150" onClick={() => setMobileOpen(false)}>View gyms</Link>
             {user && (
               <>
-                <div className="border-t border-border/50 my-1" />
+                <div className="mu-divider" />
                 <Link
                   to="/account/settings"
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide flex items-center gap-2"
+                  className="text-sm font-medium text-[var(--mu-t2)] hover:text-[var(--mu-t1)] py-2 flex items-center gap-2 transition-colors duration-150"
                   onClick={() => setMobileOpen(false)}
                 >
                   <Settings className="h-4 w-4" />
-                  Account Settings
+                  Account settings
                 </Link>
               </>
             )}
             <div className="flex gap-3 pt-2">
               {user ? (
-                <Button variant="ghost" size="sm" className="gap-2 uppercase tracking-wide" onClick={() => { handleSignOut(); setMobileOpen(false); }}>
+                <button className="mu-btn-ghost flex items-center gap-2" onClick={() => { handleSignOut(); setMobileOpen(false); }}>
                   <LogOut className="h-4 w-4" />
-                  Sign Out
-                </Button>
+                  Sign out
+                </button>
               ) : (
                 <>
                   <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
-                    <Link to="/auth" onClick={() => setMobileOpen(false)}>Log In</Link>
+                    <Link to="/auth" onClick={() => setMobileOpen(false)}>Log in</Link>
                   </Button>
                   <Link
                     to="/auth?mode=signup"
-                    className="text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-[0_0_12px_hsl(var(--foreground)/0.15)] transition-all duration-200 px-4 py-1.5 rounded-full"
+                    className="text-sm font-medium text-[var(--mu-t2)] hover:text-[var(--mu-t1)] transition-all duration-150 px-4 py-1.5 rounded-full"
                     onClick={() => setMobileOpen(false)}
                   >
-                    CREATE ACCOUNT
+                    Create account
                   </Link>
                 </>
               )}

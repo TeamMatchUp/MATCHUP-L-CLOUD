@@ -64,7 +64,6 @@ const Events = () => {
         const dist = haversineDistance(pc.coords.latitude, pc.coords.longitude, event.latitude, event.longitude);
         if (dist > pc.radius) return false;
       }
-      // Items without coords are kept (not excluded) so results still show
       if (ticketsOnly) {
         if (!event.tickets || event.tickets.length === 0) return false;
       }
@@ -77,21 +76,21 @@ const Events = () => {
   }, [events, searchQuery, pc.coords, pc.radius, ticketsOnly, unmatchedOnly]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[var(--mu-bg)]">
       <Header />
       <main className="pt-16">
-        <section className="py-16">
+        <section className="py-10 md:py-16">
           <div className="container">
             <motion.h1
-              className="font-heading text-5xl md:text-6xl text-foreground mb-2"
+              className="text-3xl md:text-5xl font-medium text-[var(--mu-t1)] mb-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              ALL <span className="text-primary">EVENTS</span>
+              All <span className="text-[var(--mu-gold)]">events</span>
             </motion.h1>
             <motion.p
-              className="text-muted-foreground mb-8"
+              className="text-[var(--mu-t3)] text-mu-md mb-8"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -103,22 +102,22 @@ const Events = () => {
             <div className="space-y-3 mb-8">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mu-t3)]" />
+                  <input
                     placeholder="Search events, promotions, venues..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9"
+                    className="mu-input pl-9"
                   />
                 </div>
-                <Button
-                  variant={filtersOpen ? "default" : "outline"}
-                  size="icon"
+                <button
                   onClick={() => setFiltersOpen(!filtersOpen)}
-                  className="shrink-0 h-10 w-10"
+                  className={`mu-card flex items-center justify-center w-10 h-10 shrink-0 cursor-pointer transition-colors duration-150 ${
+                    filtersOpen ? "border-[var(--mu-gold-b)]" : ""
+                  }`}
                 >
-                  <SlidersHorizontal className="h-4 w-4" />
-                </Button>
+                  <SlidersHorizontal className="h-4 w-4 text-[var(--mu-t2)]" />
+                </button>
               </div>
 
               <AnimatePresence>
@@ -130,7 +129,7 @@ const Events = () => {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="rounded-lg border border-border bg-card p-3 sm:p-4 space-y-4">
+                    <div className="mu-card p-3 sm:p-4 space-y-4">
                       <div className="flex flex-wrap gap-3 items-center">
                         <Select value={countryFilter} onValueChange={setCountryFilter}>
                           <SelectTrigger className="w-[140px] sm:w-[160px]">
@@ -138,7 +137,7 @@ const Events = () => {
                             <SelectValue placeholder="Country" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="all">All Countries</SelectItem>
+                            <SelectItem value="all">All countries</SelectItem>
                             <SelectItem value="UK">UK</SelectItem>
                             <SelectItem value="USA">USA</SelectItem>
                             <SelectItem value="AUS">Australia</SelectItem>
@@ -147,15 +146,15 @@ const Events = () => {
 
                         <div className="flex items-center gap-2">
                           <Switch id="tickets-filter" checked={ticketsOnly} onCheckedChange={setTicketsOnly} />
-                          <Label htmlFor="tickets-filter" className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer">
+                          <Label htmlFor="tickets-filter" className="text-xs text-[var(--mu-t2)] flex items-center gap-1 cursor-pointer">
                             <Ticket className="h-3.5 w-3.5" /> Tickets
                           </Label>
                         </div>
 
                         <div className="flex items-center gap-2">
                           <Switch id="unmatched-filter" checked={unmatchedOnly} onCheckedChange={setUnmatchedOnly} />
-                          <Label htmlFor="unmatched-filter" className="text-xs text-muted-foreground flex items-center gap-1 cursor-pointer">
-                            <Swords className="h-3.5 w-3.5" /> Open Slots
+                          <Label htmlFor="unmatched-filter" className="text-xs text-[var(--mu-t2)] flex items-center gap-1 cursor-pointer">
+                            <Swords className="h-3.5 w-3.5" /> Open slots
                           </Label>
                         </div>
                       </div>
@@ -163,31 +162,31 @@ const Events = () => {
                       {/* Postcode radius search */}
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Location Search</span>
+                          <MapPin className="h-4 w-4 text-[var(--mu-t3)] shrink-0" />
+                          <span className="mu-section-label mb-0">Location search</span>
                         </div>
                         <div className="flex gap-2">
-                          <Input
+                          <input
                             placeholder="Enter UK postcode..."
                             value={pc.postcode}
                             onChange={(e) => pc.setPostcode(e.target.value)}
                             onKeyDown={(e) => e.key === "Enter" && pc.lookup()}
-                            className="flex-1 text-sm"
+                            className="mu-input flex-1"
                           />
-                          <Button size="sm" onClick={pc.lookup} disabled={pc.isGeocoding || !pc.postcode.trim()}>
+                          <button className="mu-btn-primary" onClick={pc.lookup} disabled={pc.isGeocoding || !pc.postcode.trim()}>
                             {pc.isGeocoding ? "..." : "Search"}
-                          </Button>
+                          </button>
                           {pc.coords && (
-                            <Button size="sm" variant="ghost" onClick={pc.clear}>
+                            <button className="mu-btn-ghost" onClick={pc.clear}>
                               <X className="h-4 w-4" />
-                            </Button>
+                            </button>
                           )}
                         </div>
                         {pc.error && <p className="text-xs text-destructive">{pc.error}</p>}
                         {pc.coords && (
                           <div className="space-y-2">
-                            <span className="text-xs text-muted-foreground">
-                              Within <span className="text-foreground font-medium">{pc.radius} miles</span> of {pc.coords.postcode}
+                            <span className="text-xs text-[var(--mu-t2)]">
+                              Within <span className="text-[var(--mu-t1)] font-medium">{pc.radius} miles</span> of {pc.coords.postcode}
                             </span>
                             <Slider
                               value={[pc.radius]}
@@ -197,7 +196,7 @@ const Events = () => {
                               step={1}
                               className="w-full"
                             />
-                            <div className="flex justify-between text-[10px] text-muted-foreground">
+                            <div className="flex justify-between text-[10px] text-[var(--mu-t3)]">
                               <span>1 mi</span>
                               <span>100 mi</span>
                             </div>
@@ -210,14 +209,21 @@ const Events = () => {
               </AnimatePresence>
             </div>
 
+            {/* Count label */}
+            {!isLoading && (
+              <p className="mu-section-label mb-4">
+                {filteredEvents.length} event{filteredEvents.length !== 1 ? "s" : ""} found
+              </p>
+            )}
+
             {isLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-24 rounded-lg bg-card animate-pulse" />
+                  <div key={i} className="h-24 rounded-mu-lg bg-[var(--mu-sur)] animate-pulse" />
                 ))}
               </div>
             ) : filteredEvents.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {filteredEvents.map((event, i) => {
                   const openSlots = event.fight_slots?.filter((s: any) => s.status === "open").length ?? 0;
                   const confirmedFights = event.fight_slots?.filter((s: any) => s.status === "confirmed").length ?? 0;
@@ -231,33 +237,37 @@ const Events = () => {
                       >
                         <Link
                           to={`/events/${event.id}`}
-                          className="flex flex-col md:flex-row md:items-center justify-between rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block"
+                          className={`mu-card block p-4 md:p-6 hover:border-[var(--mu-gold-b)] transition-all duration-150 ${
+                            openSlots > 0 ? "mu-card-featured" : ""
+                          }`}
                         >
-                          <div className="flex-1">
-                            <h3 className="font-heading text-xl text-foreground">{event.title}</h3>
-                            <p className="text-sm text-muted-foreground">{event.promotion_name}</p>
-                            <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3.5 w-3.5" />
-                                {new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <MapPin className="h-3.5 w-3.5" />
-                                {event.city ? `${event.city}, ${event.location}` : event.location}
-                              </span>
-                              {hasTickets && (
-                                <span className="flex items-center gap-1 text-primary">
-                                  <Ticket className="h-3.5 w-3.5" /> Tickets Available
+                          <div className="flex flex-col md:flex-row md:items-center justify-between">
+                            <div className="flex-1">
+                              <h3 className="text-[var(--mu-t1)] font-medium text-base">{event.title}</h3>
+                              <p className="text-mu-md text-[var(--mu-t2)]">{event.promotion_name}</p>
+                              <div className="flex flex-wrap gap-4 mt-2 text-xs text-[var(--mu-t3)]">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3.5 w-3.5" />
+                                  {new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
                                 </span>
-                              )}
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="h-3.5 w-3.5" />
+                                  {event.city ? `${event.city}, ${event.location}` : event.location}
+                                </span>
+                                {hasTickets && (
+                                  <span className="flex items-center gap-1 text-[var(--mu-gold)] text-[10px]">
+                                    <Ticket className="h-3.5 w-3.5" /> Tickets available
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-6 mt-4 md:mt-0">
-                            <div className="text-right">
-                              <span className="block text-primary font-semibold text-sm">{openSlots} open</span>
-                              <span className="block text-xs text-muted-foreground">{confirmedFights} confirmed</span>
+                            <div className="flex items-center gap-6 mt-4 md:mt-0">
+                              <div className="text-right">
+                                <span className="block text-[var(--mu-gold)] font-medium text-[13px]">{openSlots} open</span>
+                                <span className="block text-xs text-[var(--mu-t3)]">{confirmedFights} confirmed</span>
+                              </div>
+                              <ArrowRight className="h-4 w-4 text-[var(--mu-t3)]" />
                             </div>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground" />
                           </div>
                         </Link>
                       </motion.div>
@@ -275,15 +285,15 @@ const Events = () => {
                 >
                   <Link
                     to="/auth"
-                    className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
+                    className="mu-btn-secondary inline-flex items-center gap-3"
                   >
                     <img src={iconImg} alt="" className="h-5 w-5" />
-                    register your event
+                    Register your event
                   </Link>
                 </motion.div>
               </div>
             ) : (
-              <p className="text-muted-foreground text-center py-12">No events found matching your filters.</p>
+              <p className="text-[var(--mu-t3)] text-center py-12">No events found matching your filters.</p>
             )}
             {filteredEvents.length === 0 && !isLoading && (
               <motion.div
@@ -294,10 +304,10 @@ const Events = () => {
               >
                 <Link
                   to="/auth"
-                  className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
+                  className="mu-btn-secondary inline-flex items-center gap-3"
                 >
                   <img src={iconImg} alt="" className="h-5 w-5" />
-                  register your event
+                  Register your event
                 </Link>
               </motion.div>
             )}

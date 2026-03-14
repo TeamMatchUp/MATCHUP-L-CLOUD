@@ -6,7 +6,6 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -17,14 +16,13 @@ import {
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus, Trash2, MapPin } from "lucide-react";
+import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { geocodePostcode } from "@/hooks/use-postcode-search";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
-import { Badge } from "@/components/ui/badge";
 
 type WeightClass = Database["public"]["Enums"]["weight_class"];
 type CountryCode = Database["public"]["Enums"]["country_code"];
@@ -33,7 +31,6 @@ const WEIGHT_CLASSES = Constants.public.Enums.weight_class;
 const COUNTRIES = Constants.public.Enums.country_code;
 
 const EXPERIENCE_LEVELS = ["debut", "amateur", "semi-pro", "professional"] as const;
-const CARD_POSITIONS = ["main_card", "undercard"] as const;
 
 import { formatEnum } from "@/lib/format";
 
@@ -61,11 +58,15 @@ function createSlot(cardPosition: string = "undercard"): SlotRow {
   };
 }
 
+// Steps for progress bar
+const STEPS = ["Details", "Fight card", "Review"];
+
 export default function CreateEvent() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const [step, setStep] = useState(0);
   const [title, setTitle] = useState("");
   const [date, setDate] = useState<Date>();
   const [location, setLocation] = useState("");
@@ -100,7 +101,6 @@ export default function CreateEvent() {
 
     setLoading(true);
 
-    // Geocode postcode
     let latitude: number | null = null;
     let longitude: number | null = null;
     if (postcode.trim()) {
@@ -174,27 +174,25 @@ export default function CreateEvent() {
   const renderSlotRow = (slot: SlotRow, index: number) => (
     <div
       key={slot.id}
-      className="rounded-md border border-border bg-card p-4 space-y-3"
+      className="mu-card p-4 space-y-3"
     >
       <div className="flex items-center justify-between">
-        <span className="text-sm font-heading text-muted-foreground">
+        <span className="text-sm text-[var(--mu-t2)] font-medium">
           Fight #{index + 1}
         </span>
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
           onClick={() => removeSlot(slot.id)}
           disabled={slots.length <= 1}
-          className="text-muted-foreground hover:text-destructive"
+          className="mu-btn-inline text-[var(--mu-t3)] hover:text-destructive disabled:opacity-30"
         >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <div className="space-y-1">
-          <Label className="text-xs">Weight Class</Label>
+          <label className="mu-label">Weight class</label>
           <Select
             value={slot.weight_class}
             onValueChange={(v) => updateSlot(slot.id, "weight_class", v)}
@@ -213,7 +211,7 @@ export default function CreateEvent() {
         </div>
 
         <div className="space-y-1">
-          <Label className="text-xs">Experience Level</Label>
+          <label className="mu-label">Experience level</label>
           <Select
             value={slot.experience_level || "any"}
             onValueChange={(v) => updateSlot(slot.id, "experience_level", v === "any" ? "" : v)}
@@ -233,41 +231,41 @@ export default function CreateEvent() {
         </div>
 
         <div className="space-y-1">
-          <Label className="text-xs">Weight Range (kg)</Label>
+          <label className="mu-label">Weight range (kg)</label>
           <div className="flex gap-1">
-            <Input
+            <input
               type="number"
               placeholder="Min"
               value={slot.min_weight_kg}
               onChange={(e) => updateSlot(slot.id, "min_weight_kg", e.target.value)}
-              className="h-9 text-xs"
+              className="mu-input h-9 text-xs"
             />
-            <Input
+            <input
               type="number"
               placeholder="Max"
               value={slot.max_weight_kg}
               onChange={(e) => updateSlot(slot.id, "max_weight_kg", e.target.value)}
-              className="h-9 text-xs"
+              className="mu-input h-9 text-xs"
             />
           </div>
         </div>
 
         <div className="space-y-1 col-span-2 md:col-span-1">
-          <Label className="text-xs">Win Record Range</Label>
+          <label className="mu-label">Win record range</label>
           <div className="flex gap-1">
-            <Input
+            <input
               type="number"
               placeholder="Min wins"
               value={slot.min_wins}
               onChange={(e) => updateSlot(slot.id, "min_wins", e.target.value)}
-              className="h-9 text-xs"
+              className="mu-input h-9 text-xs"
             />
-            <Input
+            <input
               type="number"
               placeholder="Max wins"
               value={slot.max_wins}
               onChange={(e) => updateSlot(slot.id, "max_wins", e.target.value)}
-              className="h-9 text-xs"
+              className="mu-input h-9 text-xs"
             />
           </div>
         </div>
@@ -276,40 +274,52 @@ export default function CreateEvent() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[var(--mu-bg)]">
       <Header />
       <main className="pt-16">
-        <section className="py-16">
+        <section className="py-10 md:py-16">
           <div className="container max-w-2xl">
-            <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">
-              CREATE <span className="text-primary">EVENT</span>
+            <h1 className="text-2xl md:text-4xl font-medium text-[var(--mu-t1)] mb-2">
+              Create <span className="text-[var(--mu-gold)]">event</span>
             </h1>
-            <p className="text-muted-foreground mb-8">
+            <p className="text-[var(--mu-t3)] text-mu-md mb-6">
               Set up a new event with main card and undercard fights.
             </p>
 
+            {/* Progress bar */}
+            <div className="mu-progress">
+              {STEPS.map((s, i) => (
+                <div
+                  key={s}
+                  className={`mu-progress-step ${i < step ? "done" : i === step ? "active" : ""}`}
+                />
+              ))}
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="title">Event Title</Label>
-                <Input
+                <label htmlFor="title" className="mu-label">Event title</label>
+                <input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. London Fight Night"
                   required
+                  className="mu-input"
+                  onFocus={() => setStep(0)}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Date</Label>
+                  <label className="mu-label">Date</label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
-                          !date && "text-muted-foreground"
+                          !date && "text-[var(--mu-t3)]"
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
@@ -330,7 +340,7 @@ export default function CreateEvent() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Country</Label>
+                  <label className="mu-label">Country</label>
                   <Select
                     value={country}
                     onValueChange={(v) => setCountry(v as CountryCode)}
@@ -351,71 +361,71 @@ export default function CreateEvent() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location / Venue</Label>
-                  <Input
+                  <label htmlFor="location" className="mu-label">Location / Venue</label>
+                  <input
                     id="location"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="e.g. York Hall, London"
                     required
+                    className="mu-input"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="postcode">Postcode *</Label>
-                  <Input
+                  <label htmlFor="postcode" className="mu-label">Postcode *</label>
+                  <input
                     id="postcode"
                     value={postcode}
                     onChange={(e) => setPostcode(e.target.value)}
                     placeholder="e.g. E2 9PJ"
                     required
+                    className="mu-input"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="promotion">Promotion Name (optional)</Label>
-                <Input
+                <label htmlFor="promotion" className="mu-label">Promotion name (optional)</label>
+                <input
                   id="promotion"
                   value={promotionName}
                   onChange={(e) => setPromotionName(e.target.value)}
                   placeholder="e.g. Cage Warriors"
+                  className="mu-input"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description (optional)</Label>
+                <label htmlFor="description" className="mu-label">Description (optional)</label>
                 <Textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Event details, rules, etc."
                   rows={3}
+                  className="bg-[var(--mu-sur)] border-[var(--mu-border)] text-[var(--mu-t1)] focus:border-[var(--mu-gold-b)] transition-colors duration-150"
                 />
               </div>
 
               {/* Main Card */}
-              <div className="space-y-3">
+              <div className="space-y-3" onFocus={() => setStep(1)}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Label className="text-lg font-heading">MAIN CARD</Label>
-                    <Badge className="bg-primary/20 text-primary border-primary/30">
-                      {mainCardSlots.length} fights
-                    </Badge>
+                    <span className="text-sm font-medium text-[var(--mu-t1)]">Main card</span>
+                    <span className="mu-pill mu-pill-proposed">{mainCardSlots.length} fights</span>
                   </div>
-                  <Button
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
+                    className="mu-btn-inline"
                     onClick={() => addSlot("main_card")}
-                    className="gap-1"
                   >
-                    <Plus className="h-3 w-3" /> Add Fight
-                  </Button>
+                    <Plus className="h-3 w-3" /> Add fight
+                  </button>
                 </div>
                 <div className="space-y-2">
                   {mainCardSlots.map((slot, i) => renderSlotRow(slot, i))}
                   {mainCardSlots.length === 0 && (
-                    <p className="text-sm text-muted-foreground p-4 border border-dashed border-border rounded-md text-center">
+                    <p className="text-sm text-[var(--mu-t3)] p-4 border border-dashed border-[var(--mu-border)] rounded-mu-md text-center">
                       No main card fights yet.
                     </p>
                   )}
@@ -426,39 +436,34 @@ export default function CreateEvent() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Label className="text-lg font-heading">UNDERCARD</Label>
-                    <Badge variant="outline">
-                      {undercardSlots.length} fights
-                    </Badge>
+                    <span className="text-sm font-medium text-[var(--mu-t1)]">Undercard</span>
+                    <span className="mu-pill mu-pill-pending">{undercardSlots.length} fights</span>
                   </div>
-                  <Button
+                  <button
                     type="button"
-                    variant="outline"
-                    size="sm"
+                    className="mu-btn-inline"
                     onClick={() => addSlot("undercard")}
-                    className="gap-1"
                   >
-                    <Plus className="h-3 w-3" /> Add Fight
-                  </Button>
+                    <Plus className="h-3 w-3" /> Add fight
+                  </button>
                 </div>
                 <div className="space-y-2">
                   {undercardSlots.map((slot, i) => renderSlotRow(slot, i))}
                   {undercardSlots.length === 0 && (
-                    <p className="text-sm text-muted-foreground p-4 border border-dashed border-border rounded-md text-center">
+                    <p className="text-sm text-[var(--mu-t3)] p-4 border border-dashed border-[var(--mu-border)] rounded-mu-md text-center">
                       No undercard fights yet.
                     </p>
                   )}
                 </div>
               </div>
 
-              <Button
+              <button
                 type="submit"
-                variant="hero"
-                className="w-full"
+                className="mu-btn-primary w-full text-center"
                 disabled={loading || !date || !postcode.trim()}
               >
-                {loading ? "Creating..." : "Create Event"}
-              </Button>
+                {loading ? "Creating..." : "Create event"}
+              </button>
             </form>
           </div>
         </section>
