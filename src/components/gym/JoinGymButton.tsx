@@ -15,19 +15,19 @@ export function JoinGymButton({ gymId }: Props) {
   const { toast } = useToast();
 
   const isFighter = effectiveRoles.includes("fighter");
-  if (!user || !isFighter) return null;
 
   // Check if fighter profile exists
   const { data: fighterProfile } = useQuery({
-    queryKey: ["fighter-profile", user.id],
+    queryKey: ["fighter-profile", user?.id],
     queryFn: async () => {
       const { data } = await supabase
         .from("fighter_profiles")
         .select("id")
-        .eq("user_id", user.id)
+        .eq("user_id", user!.id)
         .maybeSingle();
       return data;
     },
+    enabled: !!user && isFighter,
   });
 
   // Check existing link

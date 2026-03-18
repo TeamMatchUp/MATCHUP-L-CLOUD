@@ -83,9 +83,9 @@ export function Header() {
   const handleDashboardClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (!user) return;
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-    const role = data?.[0]?.role as AppRole | undefined;
-    navigate(role ? (ROLE_PATHS[role] ?? "/dashboard") : "/dashboard");
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id).maybeSingle();
+    const role = data?.role as AppRole | undefined;
+    navigate(role ? (ROLE_PATHS[role] ?? "/coach/dashboard") : "/coach/dashboard");
   };
 
   return (
