@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AppLogo } from "@/components/AppLogo";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, CalendarIcon, Plus, Search } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -43,10 +47,10 @@ const DISCIPLINES = ["Boxing", "Muay Thai", "MMA", "BJJ", "Kickboxing", "Wrestli
 const STANCES = ["Orthodox", "Southpaw", "Switch"];
 
 const FIGHTING_SUBSTYLES: Record<string, string[]> = {
-  Boxing: ["Out-Boxer", "Pressure", "Swarmer", "Counter Puncher", "Brawler"],
-  "Muay Thai": ["Teep", "Rhythm", "Aggressive", "Forward", "Clinch", "Knee", "Counter", "Timing"],
-  MMA: ["Pure Striker", "Wrestler", "Takedown", "BJJ", "Sub Grappler", "Dirty Boxer"],
-  Kickboxing: ["Out-Fighter", "Pressure", "Combo", "Power", "Counter"],
+  Boxing: ["Out-Boxer", "Pressure", "In-Fighter", "Counter-Puncher", "Brawler"],
+  "Muay Thai": ["Teep", "Rhythm", "Aggressive", "Forward", "Clinch-Heavy", "Aggressive Striker", "All-Range"],
+  MMA: ["Striker", "Wrestler", "BJJ-Submission", "Kickboxer-based", "Balanced"],
+  Kickboxing: ["Out-Fighter", "Pressure", "Combo", "Counter", "Switch Kicker"],
 };
 
 const ROSTER_SIZES = ["1–5", "6–15", "16–30", "30+"];
@@ -80,6 +84,16 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
   const [stance, setStance] = useState("");
   const [fightingSubstyle, setFightingSubstyle] = useState("");
   const [postcode, setPostcode] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState<Date>();
+  const [walkAroundWeight, setWalkAroundWeight] = useState("");
+  const [heightCm, setHeightCm] = useState("");
+  const [reachCm, setReachCm] = useState("");
+  const [amateurWins, setAmateurWins] = useState("0");
+  const [amateurLosses, setAmateurLosses] = useState("0");
+  const [amateurDraws, setAmateurDraws] = useState("0");
+  const [proWins, setProWins] = useState("0");
+  const [proLosses, setProLosses] = useState("0");
+  const [proDraws, setProDraws] = useState("0");
   const [hasGym, setHasGym] = useState(false);
   const [gymSearch, setGymSearch] = useState("");
   const [gymResults, setGymResults] = useState<GymResult[]>([]);
@@ -143,12 +157,22 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
         style: styleValue,
         stance: stance || null,
         fighting_substyle: fightingSubstyle || null,
-      } as any).select("id").single();
+        discipline: discipline,
+        date_of_birth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
+        walk_around_weight_kg: walkAroundWeight ? parseFloat(walkAroundWeight) : null,
+        height: heightCm ? parseInt(heightCm) : null,
+        reach: reachCm ? parseInt(reachCm) : null,
+        amateur_wins: parseInt(amateurWins) || 0,
+        amateur_losses: parseInt(amateurLosses) || 0,
+        amateur_draws: parseInt(amateurDraws) || 0,
+        record_wins: parseInt(proWins) || 0,
+        record_losses: parseInt(proLosses) || 0,
+        record_draws: parseInt(proDraws) || 0,
+      }).select("id").single();
       if (error) console.error("Fighter profile error:", error);
       fighterId = created?.id;
     }
 
-    // If gym selected, create a pending fighter_gym_link
     if (hasGym && selectedGym && fighterId) {
       await supabase.from("fighter_gym_links").insert({
         fighter_id: fighterId,
@@ -166,55 +190,131 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
     <div className="space-y-5">
       <h3 className="font-heading text-xl text-foreground">Fighter Setup</h3>
 
-      <div className="space-y-2">
-        <Label>Weight Class *</Label>
-        <Select value={weightClass} onValueChange={(v) => setWeightClass(v as WeightClass)}>
-          <SelectTrigger><SelectValue placeholder="Select weight class" /></SelectTrigger>
-          <SelectContent>
-            {WEIGHT_CLASSES.map((wc) => (
-              <SelectItem key={wc.value} value={wc.value}>{wc.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-2 col-span-2">
+          <Label>Date of Birth</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn("w-full justify-start text-left font-normal", !dateOfBirth && "text-muted-foreground")}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateOfBirth ? format(dateOfBirth, "PPP") : "Select date"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateOfBirth}
+                onSelect={setDateOfBirth}
+                disabled={(date) => date > new Date() || date < new Date("1940-01-01")}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
 
-      <div className="space-y-2">
-        <Label>Discipline *</Label>
-        <Select value={discipline} onValueChange={setDiscipline}>
-          <SelectTrigger><SelectValue placeholder="Select discipline" /></SelectTrigger>
-          <SelectContent>
-            {DISCIPLINES.map((d) => (
-              <SelectItem key={d} value={d}>{d}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Stance</Label>
-        <Select value={stance} onValueChange={setStance}>
-          <SelectTrigger><SelectValue placeholder="Select stance" /></SelectTrigger>
-          <SelectContent>
-            {STANCES.map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {substyleOptions.length > 0 && (
-        <div className="space-y-2">
-          <Label>Fighting Style</Label>
-          <Select value={fightingSubstyle} onValueChange={setFightingSubstyle}>
-            <SelectTrigger><SelectValue placeholder="Select fighting style" /></SelectTrigger>
+        <div className="space-y-2 col-span-2">
+          <Label>Weight Class *</Label>
+          <Select value={weightClass} onValueChange={(v) => setWeightClass(v as WeightClass)}>
+            <SelectTrigger><SelectValue placeholder="Select weight class" /></SelectTrigger>
             <SelectContent>
-              {substyleOptions.map((s) => (
+              {WEIGHT_CLASSES.map((wc) => (
+                <SelectItem key={wc.value} value={wc.value}>{wc.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Walk-around Weight (kg)</Label>
+          <Input type="number" min="0" value={walkAroundWeight} onChange={(e) => setWalkAroundWeight(e.target.value)} placeholder="e.g. 75" />
+        </div>
+        <div className="space-y-2">
+          <Label>Height (cm)</Label>
+          <Input type="number" min="0" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} placeholder="e.g. 178" />
+        </div>
+        <div className="space-y-2 col-span-2">
+          <Label>Reach (cm)</Label>
+          <Input type="number" min="0" value={reachCm} onChange={(e) => setReachCm(e.target.value)} placeholder="e.g. 183" />
+        </div>
+
+        <div className="space-y-2 col-span-2">
+          <Label>Discipline *</Label>
+          <Select value={discipline} onValueChange={setDiscipline}>
+            <SelectTrigger><SelectValue placeholder="Select discipline" /></SelectTrigger>
+            <SelectContent>
+              {DISCIPLINES.map((d) => (
+                <SelectItem key={d} value={d}>{d}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2 col-span-2">
+          <Label>Stance</Label>
+          <Select value={stance} onValueChange={setStance}>
+            <SelectTrigger><SelectValue placeholder="Select stance" /></SelectTrigger>
+            <SelectContent>
+              {STANCES.map((s) => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-      )}
+
+        {substyleOptions.length > 0 && (
+          <div className="space-y-2 col-span-2">
+            <Label>Fighting Style</Label>
+            <Select value={fightingSubstyle} onValueChange={setFightingSubstyle}>
+              <SelectTrigger><SelectValue placeholder="Select fighting style" /></SelectTrigger>
+              <SelectContent>
+                {substyleOptions.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Amateur Record</Label>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Wins</Label>
+            <Input type="number" min="0" value={amateurWins} onChange={(e) => setAmateurWins(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Losses</Label>
+            <Input type="number" min="0" value={amateurLosses} onChange={(e) => setAmateurLosses(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Draws</Label>
+            <Input type="number" min="0" value={amateurDraws} onChange={(e) => setAmateurDraws(e.target.value)} />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">Pro Record</Label>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Wins</Label>
+            <Input type="number" min="0" value={proWins} onChange={(e) => setProWins(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Losses</Label>
+            <Input type="number" min="0" value={proLosses} onChange={(e) => setProLosses(e.target.value)} />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Draws</Label>
+            <Input type="number" min="0" value={proDraws} onChange={(e) => setProDraws(e.target.value)} />
+          </div>
+        </div>
+      </div>
 
       <div className="space-y-2">
         <Label>Postcode</Label>
@@ -362,6 +462,57 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
   );
 }
 
+function OrganiserLanding() {
+  const navigate = useNavigate();
+
+  const handleCreateEvent = async () => {
+    await markOnboardingComplete();
+    navigate("/organiser/create-event", { replace: true });
+  };
+
+  const handleBrowseEvents = async () => {
+    await markOnboardingComplete();
+    navigate("/events", { replace: true });
+  };
+
+  return (
+    <div className="space-y-6">
+      <h3 className="font-heading text-xl text-foreground text-center">
+        WELCOME, <span className="text-primary">ORGANISER</span>
+      </h3>
+      <p className="text-sm text-muted-foreground text-center">What would you like to do first?</p>
+
+      <div className="grid grid-cols-1 gap-4">
+        <button
+          onClick={handleCreateEvent}
+          className="group rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-6 text-left space-y-3"
+        >
+          <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <Plus className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h4 className="font-heading text-lg text-foreground">Create your first event</h4>
+            <p className="text-sm text-muted-foreground">Set up a fight night, build a card, and start matchmaking.</p>
+          </div>
+        </button>
+
+        <button
+          onClick={handleBrowseEvents}
+          className="group rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-6 text-left space-y-3"
+        >
+          <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <Search className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h4 className="font-heading text-lg text-foreground">Browse existing events</h4>
+            <p className="text-sm text-muted-foreground">See what's coming up and explore the fight calendar.</p>
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Onboarding() {
   const { user, roles, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -377,14 +528,15 @@ export default function Onboarding() {
     }
   }, [authLoading, user, roles]);
 
-  // Determine primary role
   const primaryRole: AppRole | null = roles.includes("gym_owner")
     ? "gym_owner"
     : roles.includes("fighter")
       ? "fighter"
       : roles.includes("organiser")
         ? "organiser"
-        : roles[0] ?? null;
+        : roles.includes("coach")
+          ? "coach"
+          : roles[0] ?? null;
 
   const goToDashboard = () => {
     const path = primaryRole ? (ROLE_PATHS[primaryRole] ?? "/coach/dashboard") : "/dashboard";
@@ -395,15 +547,6 @@ export default function Onboarding() {
     await markOnboardingComplete();
     goToDashboard();
   };
-
-  // Organisers skip onboarding entirely — redirect to events page
-  useEffect(() => {
-    if (rolesLoaded && primaryRole === "organiser") {
-      markOnboardingComplete().then(() => {
-        navigate("/events", { replace: true });
-      });
-    }
-  }, [rolesLoaded, primaryRole, navigate]);
 
   if (authLoading || !rolesLoaded) {
     return (
@@ -416,15 +559,6 @@ export default function Onboarding() {
   if (!user) {
     navigate("/auth", { replace: true });
     return null;
-  }
-
-  // If organiser, show loading while we redirect
-  if (primaryRole === "organiser") {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Redirecting...</div>
-      </div>
-    );
   }
 
   return (
@@ -444,8 +578,11 @@ export default function Onboarding() {
           {primaryRole === "fighter" && (
             <FighterForm onComplete={goToDashboard} onSkip={handleSkip} />
           )}
-          {primaryRole === "gym_owner" && (
+          {(primaryRole === "coach" || primaryRole === "gym_owner") && (
             <CoachForm onComplete={goToDashboard} onSkip={handleSkip} />
+          )}
+          {primaryRole === "organiser" && (
+            <OrganiserLanding />
           )}
           {!primaryRole && (
             <div className="text-center space-y-4">
