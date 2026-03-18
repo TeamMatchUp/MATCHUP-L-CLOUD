@@ -116,7 +116,14 @@ export default function FighterDashboard() {
                         {fighterProfile.record_wins}W-{fighterProfile.record_losses}L-{fighterProfile.record_draws}D ·{" "}
                         {formatEnum(fighterProfile.weight_class)} · {fighterProfile.country}
                         {fighterProfile.style && ` · ${formatEnum(fighterProfile.style)}`}
-                        {affiliatedGym && ` · ${affiliatedGym.name}`}
+                        {gymLinks.length > 0 && gymLinks.map((gl: any) => (
+                          <span key={gl.id}>
+                            {` · ${gl.gym?.name ?? "Gym"}`}
+                            {gl.status === "pending" && (
+                              <span className="text-xs text-amber-500 ml-1">(Pending approval)</span>
+                            )}
+                          </span>
+                        ))}
                       </p>
                     </div>
                   </div>
