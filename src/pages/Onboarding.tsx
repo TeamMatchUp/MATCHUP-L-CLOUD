@@ -398,7 +398,7 @@ export default function Onboarding() {
     goToDashboard();
   };
 
-  if (authLoading) {
+  if (authLoading || !rolesLoaded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>

@@ -123,6 +123,7 @@ export default function FighterDashboard() {
                         {fighterProfile.record_wins}W-{fighterProfile.record_losses}L-{fighterProfile.record_draws}D ·{" "}
                         {formatEnum(fighterProfile.weight_class)} · {fighterProfile.country}
                         {fighterProfile.style && ` · ${formatEnum(fighterProfile.style)}`}
+                        {affiliatedGym && ` · ${affiliatedGym.name}`}
                       </p>
                     </div>
                   </div>
