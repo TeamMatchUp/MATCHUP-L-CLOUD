@@ -835,6 +835,7 @@ export type Database = {
           country: string | null
           created_at: string
           full_name: string | null
+          gym_id: string | null
           id: string
           marketing_opt_in: boolean
           notification_event_updates: boolean
@@ -849,6 +850,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           full_name?: string | null
+          gym_id?: string | null
           id: string
           marketing_opt_in?: boolean
           notification_event_updates?: boolean
@@ -863,6 +865,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           full_name?: string | null
+          gym_id?: string | null
           id?: string
           marketing_opt_in?: boolean
           notification_event_updates?: boolean
@@ -872,7 +875,15 @@ export type Database = {
           onboarding_completed?: boolean
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       promotions: {
         Row: {

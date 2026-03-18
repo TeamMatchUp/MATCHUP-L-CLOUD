@@ -33,6 +33,26 @@ export default function FighterDashboard() {
     enabled: !!user,
   });
 
+  // Fetch affiliated gym from profiles.gym_id
+  const { data: affiliatedGym } = useQuery({
+    queryKey: ["fighter-affiliated-gym", user?.id],
+    queryFn: async () => {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("gym_id")
+        .eq("id", user!.id)
+        .maybeSingle();
+      if (!profile?.gym_id) return null;
+      const { data: gym } = await supabase
+        .from("gyms")
+        .select("id, name")
+        .eq("id", profile.gym_id)
+        .maybeSingle();
+      return gym;
+    },
+    enabled: !!user,
+  });
+
   const { data: proposals = [] } = useQuery({
     queryKey: ["fighter-proposals", fighterProfile?.id],
     queryFn: async () => {
@@ -103,6 +123,7 @@ export default function FighterDashboard() {
                         {fighterProfile.record_wins}W-{fighterProfile.record_losses}L-{fighterProfile.record_draws}D ·{" "}
                         {formatEnum(fighterProfile.weight_class)} · {fighterProfile.country}
                         {fighterProfile.style && ` · ${formatEnum(fighterProfile.style)}`}
+                        {affiliatedGym && ` · ${affiliatedGym.name}`}
                       </p>
                     </div>
                   </div>

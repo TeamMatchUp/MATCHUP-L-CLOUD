@@ -99,21 +99,23 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
       .eq("user_id", user!.id)
       .maybeSingle();
 
+    let fighterId = existing?.id;
+
     if (!existing) {
-      const { error } = await supabase.from("fighter_profiles").insert({
+      const { data: created, error } = await supabase.from("fighter_profiles").insert({
         user_id: user!.id,
         name: user!.user_metadata?.full_name || user!.email || "Fighter",
         weight_class: weightClass as WeightClass,
         style: discipline === "Wrestling" || discipline === "Other"
           ? null
           : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]),
-      });
+      }).select("id").single();
       if (error) console.error("Fighter profile error:", error);
+      fighterId = created?.id;
     }
 
-    // If gym selected, create a pending link
+    // If gym selected, create a pending link and save to profile
     if (hasGym && selectedGymId) {
-      const fighterId = existing?.id;
       if (fighterId) {
         await supabase.from("fighter_gym_links").insert({
           fighter_id: fighterId,
@@ -121,6 +123,8 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
           status: "pending",
         });
       }
+      // Save gym affiliation to profile
+      await supabase.from("profiles").update({ gym_id: selectedGymId } as any).eq("id", user!.id);
     }
 
     await markOnboardingComplete();
@@ -204,6 +208,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
 }
 
 function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [gymName, setGymName] = useState("");
   const [postcode, setPostcode] = useState("");
@@ -221,6 +226,18 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
       return;
     }
     setLoading(true);
+
+    // Create gym row
+    const { error } = await supabase.from("gyms").insert({
+      name: gymName,
+      postcode: postcode || null,
+      claimed: true,
+      listing_tier: "free",
+      coach_id: user!.id,
+      discipline_tags: disciplines.length > 0 ? disciplines.join(", ") : null,
+    });
+    if (error) console.error("Gym creation error:", error);
+
     await markOnboardingComplete();
     setLoading(false);
     onComplete();
@@ -348,6 +365,19 @@ async function markOnboardingComplete() {
 export default function Onboarding() {
   const { user, roles, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [rolesLoaded, setRolesLoaded] = useState(false);
+
+  // Wait for roles to actually load (they arrive async after auth)
+  useEffect(() => {
+    if (!authLoading && user && roles.length > 0) {
+      setRolesLoaded(true);
+    }
+    // Also mark loaded after a timeout to handle users with no roles
+    if (!authLoading && user) {
+      const t = setTimeout(() => setRolesLoaded(true), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [authLoading, user, roles]);
 
   // Determine primary role for which form to show
   const primaryRole: AppRole | null = roles.includes("gym_owner")
@@ -368,7 +398,7 @@ export default function Onboarding() {
     goToDashboard();
   };
 
-  if (authLoading) {
+  if (authLoading || !rolesLoaded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
