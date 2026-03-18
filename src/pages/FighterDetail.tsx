@@ -23,6 +23,7 @@ import { STYLE_LABELS } from "@/lib/format";
 export default function FighterDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { data: fighter, isLoading } = useQuery({
     queryKey: ["fighter", id],
