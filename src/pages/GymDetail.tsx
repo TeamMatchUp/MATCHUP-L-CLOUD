@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { JoinGymButton } from "@/components/gym/JoinGymButton";
+import { GymContactCTA } from "@/components/gym/GymContactCTA";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { useToast } from "@/hooks/use-toast";
 import { EditGymDialog } from "@/components/gym/EditGymDialog";
