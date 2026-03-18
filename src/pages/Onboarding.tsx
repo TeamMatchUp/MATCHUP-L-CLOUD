@@ -218,7 +218,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
       }
     }
 
-    await markOnboardingComplete();
+    await markOnboardingComplete(queryClient);
     setLoading(false);
     navigate("/fighter/dashboard", { replace: true });
   };
