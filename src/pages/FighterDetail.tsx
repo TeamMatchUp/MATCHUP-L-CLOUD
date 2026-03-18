@@ -3,10 +3,12 @@ import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, ShieldCheck } from "lucide-react";
 import { FightHistory } from "@/components/fighter/FightHistory";
+import { ProfileCompletionBar } from "@/components/fighter/ProfileCompletionBar";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -21,6 +23,7 @@ import { STYLE_LABELS } from "@/lib/format";
 export default function FighterDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { data: fighter, isLoading } = useQuery({
     queryKey: ["fighter", id],
@@ -78,8 +81,8 @@ export default function FighterDetail() {
     );
   }
 
-  // Static record kept as fallback, but dynamic record from FightHistory will override visually
   const gyms = fighter.fighter_gym_links ?? [];
+  const isOwnerOrCoach = user && (fighter.user_id === user.id || fighter.created_by_coach_id === user.id);
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,6 +99,10 @@ export default function FighterDetail() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
+              {isOwnerOrCoach && (
+                <ProfileCompletionBar fighterId={fighter.id} fighterProfile={fighter} />
+              )}
+
               <div className="flex items-start gap-6 mb-8">
                 <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center font-heading text-2xl text-muted-foreground shrink-0 overflow-hidden">
                   {fighter._avatar ? (
