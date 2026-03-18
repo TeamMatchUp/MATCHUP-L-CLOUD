@@ -16,7 +16,7 @@ export function MyGymsPanel({ fighterProfileId }: MyGymsPanelProps) {
         .from("fighter_gym_links")
         .select("id, is_primary, status, gyms(id, name, location, country, city)")
         .eq("fighter_id", fighterProfileId)
-        .eq("status", "accepted");
+        .in("status", ["approved", "pending"]);
       return data ?? [];
     },
     enabled: !!fighterProfileId,
