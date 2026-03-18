@@ -82,7 +82,7 @@ export default function FighterDetail() {
     );
   }
 
-  const gyms = fighter.fighter_gym_links ?? [];
+  const gyms = (fighter.fighter_gym_links ?? []).filter((l: any) => l.status === "approved");
   const isOwnerOrCoach = user && (fighter.user_id === user.id || fighter.created_by_coach_id === user.id);
 
   return (
