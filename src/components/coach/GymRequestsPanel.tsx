@@ -20,7 +20,7 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
       if (gymIds.length === 0) return [];
       const { data } = await supabase
         .from("fighter_gym_links")
-        .select("id, fighter_id, gym_id, fighter:fighter_profiles!fighter_gym_links_fighter_id_fkey(id, name, discipline, weight_class, user_id), gym:gyms!fighter_gym_links_gym_id_fkey(name)")
+        .select("id, fighter_id, gym_id, fighter:fighter_profiles!fighter_gym_links_fighter_id_fkey(id, name, discipline, weight_class, stance, user_id), gym:gyms!fighter_gym_links_gym_id_fkey(name)")
         .in("gym_id", gymIds)
         .eq("status", "pending");
       return data ?? [];
@@ -31,7 +31,7 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
   if (pendingLinks.length === 0) return null;
 
   const handleAccept = async (link: any) => {
-    // Update fighter_gym_links status
+    // Step 1: Update fighter_gym_links status to approved
     const { error: linkError } = await supabase
       .from("fighter_gym_links")
       .update({ status: "approved" })
@@ -42,12 +42,13 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
       return;
     }
 
-    // Update profiles.gym_id for the fighter's user
-    if (link.fighter?.user_id) {
+    // Step 2: Look up the fighter's user_id and update profiles.gym_id
+    const fighterUserId = link.fighter?.user_id;
+    if (fighterUserId) {
       const { error: profileError } = await supabase
         .from("profiles")
         .update({ gym_id: link.gym_id })
-        .eq("id", link.fighter.user_id);
+        .eq("id", fighterUserId);
 
       if (profileError) {
         // Rollback the link status
@@ -61,7 +62,7 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
 
       // Both writes succeeded — now send notification
       await supabase.rpc("create_notification", {
-        _user_id: link.fighter.user_id,
+        _user_id: fighterUserId,
         _title: "Gym request approved",
         _message: `Your request to join ${link.gym?.name ?? "the gym"} has been approved.`,
         _type: "gym_request" as const,
@@ -117,7 +118,7 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
             <div>
               <p className="font-medium text-foreground">{link.fighter?.name ?? "Unknown"}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {link.fighter?.discipline ? formatEnum(link.fighter.discipline) : "—"} · {formatEnum(link.fighter?.weight_class)}
+                {link.fighter?.discipline ? formatEnum(link.fighter.discipline) : "—"} · {formatEnum(link.fighter?.weight_class)} · {link.fighter?.stance ?? "—"}
               </p>
               <p className="text-xs text-muted-foreground">
                 Wants to join <span className="text-foreground">{link.gym?.name}</span>

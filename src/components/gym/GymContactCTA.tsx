@@ -65,12 +65,12 @@ export function GymContactCTA({ gymId, gymName, coachId }: GymContactCTAProps) {
         return;
       }
 
-      // Notify coach
+      // Notify coach with fighter profile link
       if (coachId) {
         await supabase.rpc("create_notification", {
           _user_id: coachId,
           _title: "Trial session request",
-          _message: `${fighterProfile.name} has requested a trial session at ${gymName}`,
+          _message: `${fighterProfile.name} has requested a trial session at ${gymName}. View their profile: /fighters/${fighterProfile.id}`,
           _type: "gym_request" as const,
           _reference_id: fighterProfile.id,
         });
