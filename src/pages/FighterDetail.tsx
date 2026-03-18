@@ -81,8 +81,8 @@ export default function FighterDetail() {
     );
   }
 
-  // Static record kept as fallback, but dynamic record from FightHistory will override visually
   const gyms = fighter.fighter_gym_links ?? [];
+  const isOwnerOrCoach = user && (fighter.user_id === user.id || fighter.created_by_coach_id === user.id);
 
   return (
     <div className="min-h-screen bg-background">
