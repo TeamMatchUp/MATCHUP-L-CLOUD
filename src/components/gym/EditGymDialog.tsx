@@ -130,6 +130,11 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
           contact_email: contactEmail || null,
           phone: phone || null,
           website: website || null,
+          discipline_tags: disciplineTags.length > 0 ? disciplineTags.join(", ") : null,
+          training_schedule: trainingSchedule || null,
+          instagram_url: instagramUrl || null,
+          facebook_url: facebookUrl || null,
+          twitter_url: twitterUrl || null,
         } as any)
         .eq("id", gym.id);
       if (error) throw error;
