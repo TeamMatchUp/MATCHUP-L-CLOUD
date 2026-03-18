@@ -91,7 +91,7 @@ export function Header() {
               HOME
             </Link>
           )}
-          {user && activeRole && (
+          {user && (
             <Link
               to={dashboardPath}
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
