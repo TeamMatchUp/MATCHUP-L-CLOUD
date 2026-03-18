@@ -417,6 +417,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
 function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [gymName, setGymName] = useState("");
   const [postcode, setPostcode] = useState("");
   const [disciplines, setDisciplines] = useState<string[]>([]);
