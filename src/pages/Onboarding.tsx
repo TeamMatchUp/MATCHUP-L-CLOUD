@@ -510,7 +510,7 @@ function OrganiserLanding() {
   };
 
   const handleBrowseEvents = async () => {
-    await markOnboardingComplete();
+    await markOnboardingComplete(queryClient);
     navigate("/events", { replace: true });
   };
 
