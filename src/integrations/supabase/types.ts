@@ -412,18 +412,23 @@ export type Database = {
       }
       fighter_profiles: {
         Row: {
+          amateur_draws: number
+          amateur_losses: number
+          amateur_wins: number
           available: boolean
           bio: string | null
           country: Database["public"]["Enums"]["country_code"]
           created_at: string
           created_by_coach_id: string | null
+          date_of_birth: string | null
+          discipline: string | null
           email: string | null
           fighting_substyle: string | null
-          height: string | null
+          height: number | null
           id: string
           name: string
           profile_image: string | null
-          reach: string | null
+          reach: number | null
           record_draws: number
           record_losses: number
           record_wins: number
@@ -433,21 +438,27 @@ export type Database = {
           user_id: string | null
           verified: boolean
           visibility: string
+          walk_around_weight_kg: number | null
           weight_class: Database["public"]["Enums"]["weight_class"]
         }
         Insert: {
+          amateur_draws?: number
+          amateur_losses?: number
+          amateur_wins?: number
           available?: boolean
           bio?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           created_by_coach_id?: string | null
+          date_of_birth?: string | null
+          discipline?: string | null
           email?: string | null
           fighting_substyle?: string | null
-          height?: string | null
+          height?: number | null
           id?: string
           name: string
           profile_image?: string | null
-          reach?: string | null
+          reach?: number | null
           record_draws?: number
           record_losses?: number
           record_wins?: number
@@ -457,21 +468,27 @@ export type Database = {
           user_id?: string | null
           verified?: boolean
           visibility?: string
+          walk_around_weight_kg?: number | null
           weight_class: Database["public"]["Enums"]["weight_class"]
         }
         Update: {
+          amateur_draws?: number
+          amateur_losses?: number
+          amateur_wins?: number
           available?: boolean
           bio?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           created_by_coach_id?: string | null
+          date_of_birth?: string | null
+          discipline?: string | null
           email?: string | null
           fighting_substyle?: string | null
-          height?: string | null
+          height?: number | null
           id?: string
           name?: string
           profile_image?: string | null
-          reach?: string | null
+          reach?: number | null
           record_draws?: number
           record_losses?: number
           record_wins?: number
@@ -481,6 +498,7 @@ export type Database = {
           user_id?: string | null
           verified?: boolean
           visibility?: string
+          walk_around_weight_kg?: number | null
           weight_class?: Database["public"]["Enums"]["weight_class"]
         }
         Relationships: []
