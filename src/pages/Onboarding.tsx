@@ -505,7 +505,7 @@ function OrganiserLanding() {
   const queryClient = useQueryClient();
 
   const handleCreateEvent = async () => {
-    await markOnboardingComplete();
+    await markOnboardingComplete(queryClient);
     navigate("/organiser/create-event", { replace: true });
   };
 
