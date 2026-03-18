@@ -69,7 +69,7 @@ export function Header() {
 
   const handleRoleSwitch = (role: AppRole) => {
     setActiveRole(role);
-    navigate(ROLE_DASHBOARDS[role] || "/");
+    navigate(ROLE_DASHBOARDS[role] || "/dashboard");
   };
 
   const ROLE_PATHS: Partial<Record<AppRole, string>> = {
