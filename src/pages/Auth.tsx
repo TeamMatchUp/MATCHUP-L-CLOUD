@@ -119,7 +119,8 @@ function AuthPage() {
 
       if (data.session) {
         setLoading(false);
-        navigate(getRedirectPath(selectedRoles), { replace: true });
+        // Send new signups to onboarding instead of dashboard
+        navigate("/onboarding", { replace: true });
         return;
       }
     }

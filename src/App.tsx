@@ -28,6 +28,7 @@ import Contact from "./pages/Contact";
 import AdvertiseEnquiry from "./pages/AdvertiseEnquiry";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import Onboarding from "./pages/Onboarding";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -63,6 +64,14 @@ const App = () => (
             <Route path="/advertise" element={<AdvertiseEnquiry />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/admin" element={<Admin />} />
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute>
+                  <Onboarding />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Unified Dashboard */}
             <Route
