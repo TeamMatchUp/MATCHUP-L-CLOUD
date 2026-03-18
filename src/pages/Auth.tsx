@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AuthErrorBoundary } from "@/components/AuthErrorBoundary";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -27,10 +28,18 @@ const ROLE_DASHBOARDS: Record<AppRole, string> = {
   admin: "/admin/dashboard",
 };
 
-export default function Auth() {
+function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
+
+  // Safely parse search params — handle malformed URLs gracefully
+  let searchParams: URLSearchParams;
+  try {
+    searchParams = new URLSearchParams(location.search);
+  } catch {
+    searchParams = new URLSearchParams();
+  }
+
   const [isSignUp, setIsSignUp] = useState(searchParams.get("mode") === "signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -285,5 +294,13 @@ export default function Auth() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function Auth() {
+  return (
+    <AuthErrorBoundary>
+      <AuthPage />
+    </AuthErrorBoundary>
   );
 }
