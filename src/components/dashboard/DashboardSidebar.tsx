@@ -26,6 +26,7 @@ import {
   Settings,
   LogOut,
   Star,
+  User,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
