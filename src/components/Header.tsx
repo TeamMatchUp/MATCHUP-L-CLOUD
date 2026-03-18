@@ -72,7 +72,21 @@ export function Header() {
     navigate(ROLE_DASHBOARDS[role] || "/");
   };
 
-  const dashboardPath = activeRole ? (ROLE_DASHBOARDS[activeRole] || "/") : "/";
+  const ROLE_PATHS: Partial<Record<AppRole, string>> = {
+    organiser: "/organiser/dashboard",
+    fighter: "/fighter/dashboard",
+    gym_owner: "/gym-owner/dashboard",
+    coach: "/coach/dashboard",
+    admin: "/admin",
+  };
+
+  const handleDashboardClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+    const role = data?.[0]?.role as AppRole | undefined;
+    navigate(role ? (ROLE_PATHS[role] ?? "/dashboard") : "/dashboard");
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-nav/90 backdrop-blur-xl border-b border-border/50">
