@@ -131,6 +131,9 @@ export function Header() {
               <DropdownMenuItem asChild>
                 <Link to="/gyms" className="uppercase tracking-wide text-xs">View Gyms</Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/map" className="uppercase tracking-wide text-xs">Map View</Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </nav>
