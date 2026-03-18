@@ -68,6 +68,7 @@ interface GymResult {
   name: string;
   city: string | null;
   coach_id: string | null;
+  claimed: boolean | null;
 }
 
 async function markOnboardingComplete() {
@@ -115,7 +116,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
     const timeout = setTimeout(async () => {
       const { data } = await supabase
         .from("gyms")
-        .select("id, name, city, coach_id")
+        .select("id, name, city, coach_id, claimed")
         .ilike("name", `%${gymSearch}%`)
         .limit(5);
       setGymResults(data ?? []);
@@ -189,8 +190,8 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
         status: "pending",
       }).select("id").single();
 
-      // Notify the gym's coach if the gym has one
-      if (selectedGym.coach_id && linkData) {
+      // Notify the gym's coach if the gym is claimed and has a coach
+      if (selectedGym.claimed && selectedGym.coach_id && linkData) {
         const fighterName = user!.user_metadata?.full_name || user!.email || "A fighter";
         await supabase.rpc("create_notification", {
           _user_id: selectedGym.coach_id,
@@ -368,7 +369,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
                 ))}
               </div>
             )}
-            {selectedGym && !selectedGym.coach_id && (
+            {selectedGym && selectedGym.claimed === false && (
               <div className="rounded-md border border-border bg-muted/50 p-3 space-y-2">
                 <p className="text-sm text-muted-foreground">
                   This gym hasn't been claimed yet — share this link to invite the coach to sign up and claim it.
@@ -543,10 +544,6 @@ export default function Onboarding() {
     if (!authLoading && user && roles.length > 0) {
       setRolesLoaded(true);
     }
-    if (!authLoading && user) {
-      const t = setTimeout(() => setRolesLoaded(true), 1500);
-      return () => clearTimeout(t);
-    }
   }, [authLoading, user, roles]);
 
   const primaryRole: AppRole | null = roles.includes("gym_owner")
@@ -569,17 +566,13 @@ export default function Onboarding() {
     goToDashboard();
   };
 
-  if (authLoading || !rolesLoaded) {
+  // Show loading until auth is resolved AND roles are loaded
+  if (authLoading || !user || !rolesLoaded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
-  }
-
-  if (!user) {
-    navigate("/auth", { replace: true });
-    return null;
   }
 
   return (
@@ -604,12 +597,6 @@ export default function Onboarding() {
           )}
           {primaryRole === "organiser" && (
             <OrganiserLanding />
-          )}
-          {!primaryRole && (
-            <div className="text-center space-y-4">
-              <p className="text-muted-foreground">No role assigned yet.</p>
-              <Button variant="hero" onClick={handleSkip}>Go to Dashboard</Button>
-            </div>
           )}
         </div>
       </motion.div>
