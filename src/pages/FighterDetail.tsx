@@ -139,7 +139,12 @@ export default function FighterDetail() {
                 ))}
               </div>
 
-              {/* Record Breakdown removed - now shown dynamically via FightHistory */}
+              {/* Career Stats & Fight History */}
+              <FighterFightHistory
+                fighterId={fighter.id}
+                fighterUserId={fighter.user_id ?? undefined}
+                isOwner={false}
+              />
 
               {/* Bio */}
               {fighter.bio && (
