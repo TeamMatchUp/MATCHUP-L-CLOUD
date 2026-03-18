@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, ShieldCheck } from "lucide-react";
 import { FightHistory } from "@/components/fighter/FightHistory";
+import { FighterFightHistory } from "@/components/fighter/FighterFightHistory";
 import { ProfileCompletionBar } from "@/components/fighter/ProfileCompletionBar";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
