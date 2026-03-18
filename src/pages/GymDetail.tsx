@@ -37,7 +37,7 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
 import { STYLE_LABELS } from "@/lib/format";
 
 const STATUS_BADGE: Record<string, { label: string; className: string }> = {
-  accepted: { label: "Active", className: "bg-success/20 text-success border-success/30" },
+  approved: { label: "Active", className: "bg-success/20 text-success border-success/30" },
   pending: { label: "Pending", className: "bg-warning/20 text-warning border-warning/30" },
   declined: { label: "Declined", className: "bg-destructive/20 text-destructive border-destructive/30" },
 };
