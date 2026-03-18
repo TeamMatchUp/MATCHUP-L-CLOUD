@@ -555,6 +555,7 @@ function OrganiserLanding() {
 export default function Onboarding() {
   const { user, roles, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [rolesLoaded, setRolesLoaded] = useState(false);
 
   useEffect(() => {
