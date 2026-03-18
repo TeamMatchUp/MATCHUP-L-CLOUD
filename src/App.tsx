@@ -62,6 +62,7 @@ const App = () => (
             <Route path="/record-accuracy" element={<RecordAccuracyPolicy />} />
             <Route path="/advertise" element={<AdvertiseEnquiry />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/admin" element={<Admin />} />
 
             {/* Unified Dashboard */}
             <Route

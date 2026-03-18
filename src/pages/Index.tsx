@@ -19,6 +19,7 @@ const Index = () => {
         <ThreeSidesSection />
         <HowItWorksSection />
         <TwoSidedSection />
+        <PlatformStatsStrip />
       </main>
       <Footer />
     </div>
