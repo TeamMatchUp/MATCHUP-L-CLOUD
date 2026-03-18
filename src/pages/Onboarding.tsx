@@ -369,7 +369,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
                 ))}
               </div>
             )}
-            {selectedGym && !selectedGym.coach_id && (
+            {selectedGym && selectedGym.claimed === false && (
               <div className="rounded-md border border-border bg-muted/50 p-3 space-y-2">
                 <p className="text-sm text-muted-foreground">
                   This gym hasn't been claimed yet — share this link to invite the coach to sign up and claim it.
