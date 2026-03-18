@@ -116,7 +116,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
     const timeout = setTimeout(async () => {
       const { data } = await supabase
         .from("gyms")
-        .select("id, name, city, coach_id")
+        .select("id, name, city, coach_id, claimed")
         .ilike("name", `%${gymSearch}%`)
         .limit(5);
       setGymResults(data ?? []);
