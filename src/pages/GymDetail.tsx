@@ -248,8 +248,47 @@ export default function GymDetail() {
                 </div>
               )}
 
-              {/* Location Map */}
-              {gym.location && (
+              {/* Contact details — blurred for unclaimed gyms when not owner */}
+              {(gym.contact_email || gym.phone || gym.website) && (
+                <div className="relative mb-8 rounded-lg border border-border bg-card p-5">
+                  <h2 className="font-heading text-lg text-foreground mb-3">Contact details</h2>
+                  <div className={`space-y-2 ${!isOwner && !gym.claimed ? "blur-sm select-none pointer-events-none" : ""}`}>
+                    {gym.contact_email && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-primary" /> {gym.contact_email}
+                      </p>
+                    )}
+                    {gym.phone && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-primary" /> {gym.phone}
+                      </p>
+                    )}
+                    {gym.website && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-primary" /> {gym.website}
+                      </p>
+                    )}
+                  </div>
+                  {!isOwner && !gym.claimed && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <Lock className="h-5 w-5 text-muted-foreground mb-2" />
+                      <Button size="sm" onClick={() => setShowClaimDialog(true)}>
+                        Claim this listing
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Claim button for gyms with no contact info */}
+              {!isOwner && !gym.claimed && !gym.contact_email && !gym.phone && !gym.website && (
+                <div className="mb-8">
+                  <Button variant="outline" size="sm" onClick={() => setShowClaimDialog(true)}>
+                    <Lock className="h-3 w-3 mr-1" /> Claim this listing
+                  </Button>
+                </div>
+              )}
+
                 <div className="rounded-lg border border-border overflow-hidden mb-8">
                   <iframe
                     title="Gym Location"
