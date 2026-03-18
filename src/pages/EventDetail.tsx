@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PutForwardFightersDialog } from "@/components/coach/PutForwardFightersDialog";
+import { ClaimEventDialog } from "@/components/organiser/ClaimEventDialog";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
