@@ -191,22 +191,32 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
         status: "pending",
       }).select("id").single();
 
-      // Notify the gym's coach if the gym is claimed and has a coach
-      if (selectedGym.claimed && selectedGym.coach_id && linkData) {
-        const fighterName = user!.user_metadata?.full_name || user!.email || "A fighter";
-        await supabase.rpc("create_notification", {
-          _user_id: selectedGym.coach_id,
-          _title: "New gym join request",
-          _message: `${fighterName} has requested to join ${selectedGym.name}`,
-          _type: "gym_request",
-          _reference_id: linkData.id,
-        });
+      // Fresh lookup of gym to get current coach_id
+      if (linkData) {
+        const { data: freshGym } = await supabase
+          .from("gyms")
+          .select("coach_id, claimed, name")
+          .eq("id", selectedGym.id)
+          .single();
+
+        if (freshGym?.claimed && freshGym.coach_id) {
+          const fighterName = user!.user_metadata?.full_name || user!.email || "A fighter";
+          await supabase.rpc("create_notification", {
+            _user_id: freshGym.coach_id,
+            _title: "New gym join request",
+            _message: `${fighterName} has requested to join ${freshGym.name}`,
+            _type: "gym_request",
+            _reference_id: linkData.id,
+          });
+        } else if (freshGym?.claimed && !freshGym.coach_id) {
+          console.error("Gym is claimed but has no coach_id — skipping notification", selectedGym.id);
+        }
       }
     }
 
     await markOnboardingComplete();
     setLoading(false);
-    onComplete();
+    navigate("/fighter/dashboard", { replace: true });
   };
 
   return (
