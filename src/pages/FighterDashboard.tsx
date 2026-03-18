@@ -145,6 +145,11 @@ export default function FighterDashboard() {
                   ))}
                 </div>
 
+                {/* Gyms Near You */}
+                <div className="mb-10">
+                  <GymsNearYouWidget fighterProfileId={fighterProfile.id} />
+                </div>
+
                 {/* View Selector */}
                 <Tabs defaultValue={searchParams.get("tab") || "profile"} className="space-y-6">
                   <TabsList className="bg-card border border-border">
