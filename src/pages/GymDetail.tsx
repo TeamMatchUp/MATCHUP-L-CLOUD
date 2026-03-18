@@ -425,6 +425,13 @@ export default function GymDetail() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+
+            <ClaimGymDialog
+              open={showClaimDialog}
+              onOpenChange={setShowClaimDialog}
+              gymId={gym.id}
+              gymName={gym.name}
+            />
           </div>
         </section>
       </main>
