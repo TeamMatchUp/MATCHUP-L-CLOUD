@@ -32,6 +32,8 @@ import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 import { EditFighterDialog } from "@/components/coach/EditFighterDialog";
 import { DeleteFighterDialog } from "@/components/coach/DeleteFighterDialog";
 import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
+import { GymRequestsPanel } from "@/components/coach/GymRequestsPanel";
+import { EditableProfilePanel } from "@/components/fighter/EditableProfilePanel";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
