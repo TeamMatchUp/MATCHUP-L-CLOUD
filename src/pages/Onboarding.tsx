@@ -83,6 +83,7 @@ async function markOnboardingComplete(queryClient: ReturnType<typeof useQueryCli
 function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [weightClass, setWeightClass] = useState<WeightClass | "">("");
   const [discipline, setDiscipline] = useState("");
