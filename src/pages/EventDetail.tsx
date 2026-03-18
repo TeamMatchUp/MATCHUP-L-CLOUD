@@ -45,6 +45,7 @@ export default function EventDetail() {
   const isCoach = effectiveRoles.includes("coach");
   const [showConfirm, setShowConfirm] = useState(false);
   const [showPutForward, setShowPutForward] = useState(false);
+  const [showClaimEvent, setShowClaimEvent] = useState(false);
   const [sending, setSending] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
