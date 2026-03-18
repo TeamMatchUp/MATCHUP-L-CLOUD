@@ -580,7 +580,7 @@ export default function Onboarding() {
   };
 
   const handleSkip = async () => {
-    await markOnboardingComplete();
+    await markOnboardingComplete(queryClient);
     goToDashboard();
   };
 
