@@ -81,8 +81,22 @@ function AuthPage() {
       .select("role")
       .eq("user_id", data.user.id);
     
+    // Check if onboarding is completed
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", data.user.id)
+      .maybeSingle();
+    
     setLoading(false);
     const userRoles = (rolesData ?? []).map((r) => r.role);
+    
+    // If onboarding not completed, redirect to onboarding
+    if (!profile?.onboarding_completed) {
+      navigate("/onboarding", { replace: true });
+      return;
+    }
+    
     navigate(getRedirectPath(userRoles), { replace: true });
   };
 

@@ -418,6 +418,7 @@ export type Database = {
           created_at: string
           created_by_coach_id: string | null
           email: string | null
+          fighting_substyle: string | null
           height: string | null
           id: string
           name: string
@@ -426,6 +427,7 @@ export type Database = {
           record_draws: number
           record_losses: number
           record_wins: number
+          stance: string | null
           style: Database["public"]["Enums"]["fighting_style"] | null
           updated_at: string
           user_id: string | null
@@ -440,6 +442,7 @@ export type Database = {
           created_at?: string
           created_by_coach_id?: string | null
           email?: string | null
+          fighting_substyle?: string | null
           height?: string | null
           id?: string
           name: string
@@ -448,6 +451,7 @@ export type Database = {
           record_draws?: number
           record_losses?: number
           record_wins?: number
+          stance?: string | null
           style?: Database["public"]["Enums"]["fighting_style"] | null
           updated_at?: string
           user_id?: string | null
@@ -462,6 +466,7 @@ export type Database = {
           created_at?: string
           created_by_coach_id?: string | null
           email?: string | null
+          fighting_substyle?: string | null
           height?: string | null
           id?: string
           name?: string
@@ -470,6 +475,7 @@ export type Database = {
           record_draws?: number
           record_losses?: number
           record_wins?: number
+          stance?: string | null
           style?: Database["public"]["Enums"]["fighting_style"] | null
           updated_at?: string
           user_id?: string | null

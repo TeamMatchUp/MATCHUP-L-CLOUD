@@ -33,24 +33,17 @@ export default function FighterDashboard() {
     enabled: !!user,
   });
 
-  // Fetch affiliated gym from profiles.gym_id
-  const { data: affiliatedGym } = useQuery({
-    queryKey: ["fighter-affiliated-gym", user?.id],
+  // Fetch affiliated gyms from fighter_gym_links
+  const { data: gymLinks = [] } = useQuery({
+    queryKey: ["fighter-gym-links", fighterProfile?.id],
     queryFn: async () => {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("gym_id")
-        .eq("id", user!.id)
-        .maybeSingle();
-      if (!profile?.gym_id) return null;
-      const { data: gym } = await supabase
-        .from("gyms")
-        .select("id, name")
-        .eq("id", profile.gym_id)
-        .maybeSingle();
-      return gym;
+      const { data } = await supabase
+        .from("fighter_gym_links")
+        .select("id, status, gym:gyms(id, name)")
+        .eq("fighter_id", fighterProfile!.id);
+      return data ?? [];
     },
-    enabled: !!user,
+    enabled: !!fighterProfile,
   });
 
   const { data: proposals = [] } = useQuery({
@@ -123,7 +116,14 @@ export default function FighterDashboard() {
                         {fighterProfile.record_wins}W-{fighterProfile.record_losses}L-{fighterProfile.record_draws}D ·{" "}
                         {formatEnum(fighterProfile.weight_class)} · {fighterProfile.country}
                         {fighterProfile.style && ` · ${formatEnum(fighterProfile.style)}`}
-                        {affiliatedGym && ` · ${affiliatedGym.name}`}
+                        {gymLinks.length > 0 && gymLinks.map((gl: any) => (
+                          <span key={gl.id}>
+                            {` · ${gl.gym?.name ?? "Gym"}`}
+                            {gl.status === "pending" && (
+                              <span className="text-xs text-amber-500 ml-1">(Pending approval)</span>
+                            )}
+                          </span>
+                        ))}
                       </p>
                     </div>
                   </div>
