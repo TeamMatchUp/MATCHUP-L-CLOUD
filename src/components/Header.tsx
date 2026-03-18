@@ -229,13 +229,13 @@ export function Header() {
               </Link>
             )}
             {user && (
-              <Link
-                to={dashboardPath}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide"
-                onClick={() => setMobileOpen(false)}
+              <a
+                href="/dashboard"
+                onClick={(e) => { handleDashboardClick(e); setMobileOpen(false); }}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide cursor-pointer"
               >
                 DASHBOARD
-              </Link>
+              </a>
             )}
             <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Events</Link>
             <Link to="/fighters" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Fighters</Link>
