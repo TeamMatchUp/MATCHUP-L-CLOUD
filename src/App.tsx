@@ -64,6 +64,7 @@ const App = () => (
             <Route path="/record-accuracy" element={<RecordAccuracyPolicy />} />
             <Route path="/advertise" element={<AdvertiseEnquiry />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/map" element={<MapView />} />
             <Route path="/admin" element={<Admin />} />
             <Route
               path="/onboarding"
