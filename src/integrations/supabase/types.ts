@@ -626,6 +626,7 @@ export type Database = {
           id: string
           message: string | null
           status: string
+          user_id: string | null
         }
         Insert: {
           claimant_email: string
@@ -636,6 +637,7 @@ export type Database = {
           id?: string
           message?: string | null
           status?: string
+          user_id?: string | null
         }
         Update: {
           claimant_email?: string
@@ -646,6 +648,7 @@ export type Database = {
           id?: string
           message?: string | null
           status?: string
+          user_id?: string | null
         }
         Relationships: [
           {
