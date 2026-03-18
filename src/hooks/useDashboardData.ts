@@ -11,18 +11,50 @@ export function useDashboardData() {
   const isOrganiser = effectiveRoles.includes("organiser");
   const isFighter = effectiveRoles.includes("fighter");
 
-  // Gyms owned by user
+  // Gyms owned by user OR linked via approved gym_claims
   const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ["dash-gyms", user?.id],
     queryFn: async () => {
-      const { data } = await supabase
+      const gymSelect = "id, name, location, city, address, country, description, contact_email, phone, website, fighter_gym_links(fighter_id)";
+
+      // Fetch gyms where coach_id matches
+      const ownedPromise = supabase
         .from("gyms")
-        .select("id, name, location, city, address, country, description, contact_email, phone, website, fighter_gym_links(fighter_id)")
+        .select(gymSelect)
         .eq("coach_id", user!.id)
         .order("name");
-      return data ?? [];
+
+      // Fetch gym_ids from approved claims
+      const claimedPromise = supabase
+        .from("gym_claims")
+        .select("gym_id")
+        .eq("user_id", user!.id)
+        .eq("status", "approved");
+
+      const [ownedRes, claimedRes] = await Promise.all([ownedPromise, claimedPromise]);
+
+      const ownedGyms = ownedRes.data ?? [];
+      const claimedGymIds = (claimedRes.data ?? []).map((c) => c.gym_id);
+
+      // Fetch claimed gyms not already in owned set
+      const ownedIds = new Set(ownedGyms.map((g) => g.id));
+      const missingIds = claimedGymIds.filter((id) => !ownedIds.has(id));
+
+      let claimedGyms: typeof ownedGyms = [];
+      if (missingIds.length > 0) {
+        const { data } = await supabase
+          .from("gyms")
+          .select(gymSelect)
+          .in("id", missingIds)
+          .order("name");
+        claimedGyms = data ?? [];
+      }
+
+      return [...ownedGyms, ...claimedGyms];
     },
     enabled: !!user && isCoachOrOwner,
+    refetchOnMount: true,
+    staleTime: 0,
   });
 
   const primaryGym = myGyms[0] ?? null;
