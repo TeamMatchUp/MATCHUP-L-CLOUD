@@ -97,6 +97,11 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
     setContactEmail(gym.contact_email || "");
     setPhone(gym.phone || "");
     setWebsite(gym.website || "");
+    setDisciplineTags((gym.discipline_tags || "").split(",").map(s => s.trim()).filter(Boolean));
+    setTrainingSchedule(gym.training_schedule || "");
+    setInstagramUrl(gym.instagram_url || "");
+    setFacebookUrl(gym.facebook_url || "");
+    setTwitterUrl(gym.twitter_url || "");
   }, [gym]);
 
   const updateMutation = useMutation({
