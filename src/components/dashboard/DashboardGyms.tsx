@@ -48,6 +48,7 @@ export function DashboardGyms({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showCreateGym, setShowCreateGym] = useState(false);
+  const [upgradeGym, setUpgradeGym] = useState<any>(null);
   const [newGymName, setNewGymName] = useState("");
   const [newGymLocation, setNewGymLocation] = useState("");
   const [newGymCountry, setNewGymCountry] = useState<CountryCode>("UK");
