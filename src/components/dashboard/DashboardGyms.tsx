@@ -13,12 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, ArrowUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
+import { GymTierBadge } from "@/components/gym/GymTierBadge";
+import { GymAnalyticsStrip } from "@/components/gym/GymAnalyticsStrip";
+import { UpgradeGymDialog } from "@/components/gym/UpgradeGymDialog";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 const COUNTRIES = Constants.public.Enums.country_code;
