@@ -41,6 +41,15 @@ export default function Auth() {
   const { toast } = useToast();
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname;
+  const returnTo = searchParams.get("returnTo");
+
+  const getRedirectPath = (userRoles: AppRole[]) => {
+    // returnTo query param takes priority (e.g. from gym claim flow)
+    if (returnTo) return returnTo;
+    if (from && from !== "/") return from;
+    const primaryRole = userRoles[0];
+    return primaryRole ? ROLE_DASHBOARDS[primaryRole] : "/";
+  };
 
   const toggleRole = (role: AppRole) => {
     setSelectedRoles((prev) =>
@@ -58,7 +67,6 @@ export default function Auth() {
       return;
     }
     
-    // Fetch user roles to determine dashboard
     const { data: rolesData } = await supabase
       .from("user_roles")
       .select("role")
@@ -66,11 +74,7 @@ export default function Auth() {
     
     setLoading(false);
     const userRoles = (rolesData ?? []).map((r) => r.role);
-    const primaryRole = userRoles[0];
-    const dashboardPath = primaryRole ? ROLE_DASHBOARDS[primaryRole] : "/";
-    // Only use 'from' if it's a meaningful path (not home page)
-    const redirectTo = from && from !== "/" ? from : dashboardPath;
-    navigate(redirectTo, { replace: true });
+    navigate(getRedirectPath(userRoles), { replace: true });
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -94,7 +98,6 @@ export default function Auth() {
       return;
     }
 
-    // Insert selected roles
     if (data.user) {
       const roleInserts = selectedRoles.map((role) => ({
         user_id: data.user!.id,
@@ -105,12 +108,9 @@ export default function Auth() {
         console.error("Failed to insert roles:", roleError);
       }
 
-      // If session exists (auto-confirm enabled), redirect to dashboard
       if (data.session) {
-        const primaryRole = selectedRoles[0];
-        const dashboardPath = primaryRole ? ROLE_DASHBOARDS[primaryRole] : "/";
         setLoading(false);
-        navigate(dashboardPath, { replace: true });
+        navigate(getRedirectPath(selectedRoles), { replace: true });
         return;
       }
     }

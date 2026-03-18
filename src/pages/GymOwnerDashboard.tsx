@@ -64,16 +64,40 @@ export default function GymOwnerDashboard() {
   const [eventSearch, setEventSearch] = useState("");
   const [searchParams] = useSearchParams();
 
-  // Get owner's gyms
+  // Get owner's gyms (created by user OR claimed by user via approved gym_claims)
   const { data: myGyms = [], isLoading: gymsLoading } = useQuery({
     queryKey: ["owner-gyms", user?.id],
     queryFn: async () => {
-      const { data } = await supabase
+      // Fetch gyms where coach_id matches
+      const { data: ownedGyms } = await supabase
         .from("gyms")
         .select("id, name, location, city, address, country, description, contact_email, phone, website, fighter_gym_links(fighter_id)")
         .eq("coach_id", user!.id)
         .order("name");
-      return data ?? [];
+
+      // Fetch gyms claimed by user (approved claims that set coach_id)
+      // These are already covered by coach_id check above, but let's also
+      // catch any approved claims where coach_id wasn't set yet
+      const { data: claimedGymIds } = await supabase
+        .from("gym_claims" as any)
+        .select("gym_id")
+        .eq("user_id", user!.id)
+        .eq("status", "approved");
+
+      const claimed = (claimedGymIds ?? []) as any[];
+      const ownedIds = new Set((ownedGyms ?? []).map((g) => g.id));
+      const extraIds = claimed.map((c: any) => c.gym_id).filter((id: string) => !ownedIds.has(id));
+
+      let extraGyms: any[] = [];
+      if (extraIds.length > 0) {
+        const { data } = await supabase
+          .from("gyms")
+          .select("id, name, location, city, address, country, description, contact_email, phone, website, fighter_gym_links(fighter_id)")
+          .in("id", extraIds);
+        extraGyms = data ?? [];
+      }
+
+      return [...(ownedGyms ?? []), ...extraGyms];
     },
     enabled: !!user,
   });
