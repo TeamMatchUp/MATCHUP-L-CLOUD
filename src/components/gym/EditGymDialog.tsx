@@ -51,6 +51,11 @@ interface GymData {
   contact_email: string | null;
   phone: string | null;
   website: string | null;
+  discipline_tags: string | null;
+  training_schedule: string | null;
+  instagram_url: string | null;
+  facebook_url: string | null;
+  twitter_url: string | null;
 }
 
 interface EditGymDialogProps {
