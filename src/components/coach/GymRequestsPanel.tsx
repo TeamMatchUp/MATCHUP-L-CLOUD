@@ -33,7 +33,7 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
   const handleAccept = async (link: any) => {
     const { error } = await supabase
       .from("fighter_gym_links")
-      .update({ status: "accepted" })
+      .update({ status: "approved" })
       .eq("id", link.id);
 
     if (error) {
@@ -47,12 +47,22 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
         .from("profiles")
         .update({ gym_id: link.gym_id })
         .eq("id", link.fighter.user_id);
+
+      // Notify the fighter
+      await supabase.rpc("create_notification", {
+        _user_id: link.fighter.user_id,
+        _title: "Gym request approved",
+        _message: `Your request to join ${link.gym?.name ?? "the gym"} has been approved.`,
+        _type: "gym_request" as const,
+        _reference_id: link.gym_id,
+      });
     }
 
     toast.success(`${link.fighter?.name ?? "Fighter"} accepted to your gym`);
     queryClient.invalidateQueries({ queryKey: ["gym-pending-requests"] });
     queryClient.invalidateQueries({ queryKey: ["coach-fighter-gym-links"] });
     queryClient.invalidateQueries({ queryKey: ["coach-gym-fighters"] });
+    queryClient.invalidateQueries({ queryKey: ["dash-"] });
   };
 
   const handleDecline = async (link: any) => {
@@ -71,14 +81,15 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
       await supabase.rpc("create_notification", {
         _user_id: link.fighter.user_id,
         _title: "Gym request declined",
-        _message: `Your request to join ${link.gym?.name ?? "the gym"} was declined.`,
-        _type: "system" as const,
+        _message: `Your request to join ${link.gym?.name ?? "the gym"} was not approved.`,
+        _type: "gym_request" as const,
         _reference_id: link.gym_id,
       });
     }
 
     toast.success("Request declined");
     queryClient.invalidateQueries({ queryKey: ["gym-pending-requests"] });
+    queryClient.invalidateQueries({ queryKey: ["dash-"] });
   };
 
   return (

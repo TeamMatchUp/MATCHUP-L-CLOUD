@@ -240,6 +240,15 @@ export default function Dashboard() {
       case "notifications":
         return <NotificationHistory />;
 
+      case "my-profile":
+        return fighterProfile ? (
+          <EditableProfilePanel
+            fighterProfile={fighterProfile}
+            userId={user!.id}
+            onRefresh={handleRefresh}
+          />
+        ) : null;
+
       case "create-profile":
         return (
           <div className="space-y-6">
