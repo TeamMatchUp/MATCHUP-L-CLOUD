@@ -28,6 +28,7 @@ import Contact from "./pages/Contact";
 import AdvertiseEnquiry from "./pages/AdvertiseEnquiry";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import Onboarding from "./pages/Onboarding";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
