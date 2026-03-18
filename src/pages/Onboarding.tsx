@@ -365,6 +365,19 @@ async function markOnboardingComplete() {
 export default function Onboarding() {
   const { user, roles, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [rolesLoaded, setRolesLoaded] = useState(false);
+
+  // Wait for roles to actually load (they arrive async after auth)
+  useEffect(() => {
+    if (!authLoading && user && roles.length > 0) {
+      setRolesLoaded(true);
+    }
+    // Also mark loaded after a timeout to handle users with no roles
+    if (!authLoading && user) {
+      const t = setTimeout(() => setRolesLoaded(true), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [authLoading, user, roles]);
 
   // Determine primary role for which form to show
   const primaryRole: AppRole | null = roles.includes("gym_owner")
