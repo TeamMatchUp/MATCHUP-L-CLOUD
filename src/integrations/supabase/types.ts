@@ -690,6 +690,44 @@ export type Database = {
           },
         ]
       }
+      gym_leads: {
+        Row: {
+          created_at: string
+          email: string
+          gym_id: string
+          id: string
+          name: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          gym_id: string
+          id?: string
+          name: string
+          type?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          gym_id?: string
+          id?: string
+          name?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_leads_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gyms: {
         Row: {
           address: string | null
@@ -701,7 +739,9 @@ export type Database = {
           created_at: string
           description: string | null
           discipline_tags: string | null
+          facebook_url: string | null
           id: string
+          instagram_url: string | null
           lat: number | null
           latitude: number | null
           listing_tier: string | null
@@ -712,6 +752,8 @@ export type Database = {
           name: string
           phone: string | null
           postcode: string | null
+          training_schedule: string | null
+          twitter_url: string | null
           updated_at: string
           verified: boolean
           website: string | null
@@ -726,7 +768,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           discipline_tags?: string | null
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
           lat?: number | null
           latitude?: number | null
           listing_tier?: string | null
@@ -737,6 +781,8 @@ export type Database = {
           name: string
           phone?: string | null
           postcode?: string | null
+          training_schedule?: string | null
+          twitter_url?: string | null
           updated_at?: string
           verified?: boolean
           website?: string | null
@@ -751,7 +797,9 @@ export type Database = {
           created_at?: string
           description?: string | null
           discipline_tags?: string | null
+          facebook_url?: string | null
           id?: string
+          instagram_url?: string | null
           lat?: number | null
           latitude?: number | null
           listing_tier?: string | null
@@ -762,6 +810,8 @@ export type Database = {
           name?: string
           phone?: string | null
           postcode?: string | null
+          training_schedule?: string | null
+          twitter_url?: string | null
           updated_at?: string
           verified?: boolean
           website?: string | null
