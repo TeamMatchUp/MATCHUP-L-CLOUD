@@ -178,7 +178,7 @@ function GymClaimsTable() {
 }
 
 export default function Admin() {
-  const { user, effectiveRoles, loading } = useAuth();
+  const { session, loading } = useAuth();
 
   if (loading) {
     return (
@@ -188,8 +188,10 @@ export default function Admin() {
     );
   }
 
-  if (!user || !effectiveRoles.includes("admin")) {
-    return <Navigate to="/" replace />;
+  const isAdmin = session?.user?.app_metadata?.role === "admin";
+
+  if (!session || !isAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (
