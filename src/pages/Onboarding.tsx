@@ -80,6 +80,7 @@ async function markOnboardingComplete() {
 function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [weightClass, setWeightClass] = useState<WeightClass | "">("");
   const [discipline, setDiscipline] = useState("");
   const [stance, setStance] = useState("");
