@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -14,6 +14,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { formatEnum } from "@/lib/format";
 
 type WeightClass = Database["public"]["Enums"]["weight_class"];
 type CountryCode = Database["public"]["Enums"]["country_code"];
@@ -22,8 +23,6 @@ type FightingStyle = Database["public"]["Enums"]["fighting_style"];
 const WEIGHT_CLASSES = Constants.public.Enums.weight_class;
 const COUNTRIES = Constants.public.Enums.country_code;
 const STYLES = Constants.public.Enums.fighting_style;
-
-import { formatEnum } from "@/lib/format";
 
 interface FighterData {
   id: string;
@@ -35,8 +34,8 @@ interface FighterData {
   record_wins: number;
   record_losses: number;
   record_draws: number;
-  height: string | null;
-  reach: string | null;
+  height: number | null;
+  reach: number | null;
   bio: string | null;
   available: boolean;
 }
@@ -57,8 +56,8 @@ export function EditFighterDialog({ open, onOpenChange, fighter, onSuccess }: Ed
   const [wins, setWins] = useState(String(fighter.record_wins));
   const [losses, setLosses] = useState(String(fighter.record_losses));
   const [draws, setDraws] = useState(String(fighter.record_draws));
-  const [height, setHeight] = useState(fighter.height ?? "");
-  const [reach, setReach] = useState(fighter.reach ?? "");
+  const [height, setHeight] = useState(fighter.height != null ? String(fighter.height) : "");
+  const [reach, setReach] = useState(fighter.reach != null ? String(fighter.reach) : "");
   const [bio, setBio] = useState(fighter.bio ?? "");
   const [available, setAvailable] = useState(fighter.available);
   const [loading, setLoading] = useState(false);
@@ -79,8 +78,8 @@ export function EditFighterDialog({ open, onOpenChange, fighter, onSuccess }: Ed
         record_wins: parseInt(wins) || 0,
         record_losses: parseInt(losses) || 0,
         record_draws: parseInt(draws) || 0,
-        height: height || null,
-        reach: reach || null,
+        height: height ? parseInt(height) : null,
+        reach: reach ? parseInt(reach) : null,
         bio: bio || null,
         available,
       })
@@ -170,12 +169,12 @@ export function EditFighterDialog({ open, onOpenChange, fighter, onSuccess }: Ed
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label>Height</Label>
-              <Input value={height} onChange={(e) => setHeight(e.target.value)} placeholder="e.g. 5'10&quot;" />
+              <Label>Height (cm)</Label>
+              <Input type="number" min="0" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="e.g. 178" />
             </div>
             <div className="space-y-1">
-              <Label>Reach</Label>
-              <Input value={reach} onChange={(e) => setReach(e.target.value)} placeholder='e.g. 72"' />
+              <Label>Reach (cm)</Label>
+              <Input type="number" min="0" value={reach} onChange={(e) => setReach(e.target.value)} placeholder="e.g. 183" />
             </div>
           </div>
           <div className="space-y-1">

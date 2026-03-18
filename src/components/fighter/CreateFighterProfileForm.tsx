@@ -6,15 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { STYLE_LABELS } from "@/lib/format";
 
 type WeightClass = Database["public"]["Enums"]["weight_class"];
 type FightingStyle = Database["public"]["Enums"]["fighting_style"];
@@ -31,8 +28,6 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
   super_middleweight: "Super Middleweight", light_heavyweight: "Light Heavyweight",
   cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
 };
-
-import { STYLE_LABELS } from "@/lib/format";
 
 interface Props {
   userId: string;
@@ -59,8 +54,8 @@ export function CreateFighterProfileForm({ userId, userEmail, onSuccess }: Props
         weight_class: weightClass,
         style: style || null,
         country,
-        height: height || null,
-        reach: reach || null,
+        height: height ? parseInt(height) : null,
+        reach: reach ? parseInt(reach) : null,
         bio: bio || null,
       });
       if (error) throw error;
@@ -122,12 +117,12 @@ export function CreateFighterProfileForm({ userId, userEmail, onSuccess }: Props
           </Select>
         </div>
         <div className="space-y-1">
-          <Label>Height</Label>
-          <Input value={height} onChange={(e) => setHeight(e.target.value)} placeholder="e.g. 5'10&quot;" />
+          <Label>Height (cm)</Label>
+          <Input type="number" min="0" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="e.g. 178" />
         </div>
         <div className="space-y-1">
-          <Label>Reach</Label>
-          <Input value={reach} onChange={(e) => setReach(e.target.value)} placeholder='e.g. 72"' />
+          <Label>Reach (cm)</Label>
+          <Input type="number" min="0" value={reach} onChange={(e) => setReach(e.target.value)} placeholder="e.g. 183" />
         </div>
       </div>
       <div className="space-y-1 mb-6">

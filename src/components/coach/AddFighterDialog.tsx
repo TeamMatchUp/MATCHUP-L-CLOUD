@@ -1,26 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { formatEnum } from "@/lib/format";
 
 type WeightClass = Database["public"]["Enums"]["weight_class"];
 type CountryCode = Database["public"]["Enums"]["country_code"];
@@ -30,7 +27,14 @@ const WEIGHT_CLASSES = Constants.public.Enums.weight_class;
 const COUNTRIES = Constants.public.Enums.country_code;
 const STYLES = Constants.public.Enums.fighting_style;
 
-import { formatEnum } from "@/lib/format";
+const DISCIPLINES = ["Boxing", "Muay Thai", "MMA", "BJJ", "Kickboxing", "Wrestling", "Other"];
+const STANCES = ["Orthodox", "Southpaw", "Switch"];
+const FIGHTING_SUBSTYLES: Record<string, string[]> = {
+  Boxing: ["Out-Boxer", "Pressure", "In-Fighter", "Counter-Puncher", "Brawler"],
+  "Muay Thai": ["Teep", "Rhythm", "Aggressive", "Forward", "Clinch-Heavy", "Aggressive Striker", "All-Range"],
+  MMA: ["Striker", "Wrestler", "BJJ-Submission", "Kickboxer-based", "Balanced"],
+  Kickboxing: ["Out-Fighter", "Pressure", "Combo", "Counter", "Switch Kicker"],
+};
 
 interface AddFighterDialogProps {
   open: boolean;
@@ -40,25 +44,30 @@ interface AddFighterDialogProps {
   onSuccess: () => void;
 }
 
-export function AddFighterDialog({
-  open,
-  onOpenChange,
-  coachId,
-  gymId,
-  onSuccess,
-}: AddFighterDialogProps) {
+export function AddFighterDialog({ open, onOpenChange, coachId, gymId, onSuccess }: AddFighterDialogProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [weightClass, setWeightClass] = useState<WeightClass>("lightweight");
   const [country, setCountry] = useState<CountryCode>("UK");
   const [style, setStyle] = useState<FightingStyle | "">("");
+  const [discipline, setDiscipline] = useState("");
+  const [stance, setStance] = useState("");
+  const [fightingSubstyle, setFightingSubstyle] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState<Date>();
+  const [walkAroundWeight, setWalkAroundWeight] = useState("");
+  const [heightCm, setHeightCm] = useState("");
+  const [reachCm, setReachCm] = useState("");
   const [wins, setWins] = useState("0");
   const [losses, setLosses] = useState("0");
   const [draws, setDraws] = useState("0");
-  const [height, setHeight] = useState("");
-  const [reach, setReach] = useState("");
+  const [amateurWins, setAmateurWins] = useState("0");
+  const [amateurLosses, setAmateurLosses] = useState("0");
+  const [amateurDraws, setAmateurDraws] = useState("0");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  const substyleOptions = FIGHTING_SUBSTYLES[discipline] ?? [];
+  useEffect(() => { setFightingSubstyle(""); }, [discipline]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,11 +81,19 @@ export function AddFighterDialog({
         weight_class: weightClass,
         country,
         style: style || null,
+        discipline: discipline || null,
+        stance: stance || null,
+        fighting_substyle: fightingSubstyle || null,
+        date_of_birth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
+        walk_around_weight_kg: walkAroundWeight ? parseFloat(walkAroundWeight) : null,
+        height: heightCm ? parseInt(heightCm) : null,
+        reach: reachCm ? parseInt(reachCm) : null,
         record_wins: parseInt(wins) || 0,
         record_losses: parseInt(losses) || 0,
         record_draws: parseInt(draws) || 0,
-        height: height || null,
-        reach: reach || null,
+        amateur_wins: parseInt(amateurWins) || 0,
+        amateur_losses: parseInt(amateurLosses) || 0,
+        amateur_draws: parseInt(amateurDraws) || 0,
         created_by_coach_id: coachId,
         available: true,
       })
@@ -89,7 +106,6 @@ export function AddFighterDialog({
       return;
     }
 
-    // Link to gym if provided
     if (gymId && fighter) {
       await supabase.from("fighter_gym_links").insert({
         fighter_id: fighter.id,
@@ -100,21 +116,18 @@ export function AddFighterDialog({
 
     setLoading(false);
     toast({ title: "Fighter added", description: `${name} has been added to your roster.` });
-    // Reset form
-    setName("");
-    setEmail("");
-    setWins("0");
-    setLosses("0");
-    setDraws("0");
-    setHeight("");
-    setReach("");
+    setName(""); setEmail(""); setWins("0"); setLosses("0"); setDraws("0");
+    setAmateurWins("0"); setAmateurLosses("0"); setAmateurDraws("0");
+    setHeightCm(""); setReachCm(""); setWalkAroundWeight("");
+    setDiscipline(""); setStance(""); setFightingSubstyle("");
+    setDateOfBirth(undefined);
     onSuccess();
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-heading text-2xl">
             ADD <span className="text-primary">FIGHTER</span>
@@ -134,6 +147,22 @@ export function AddFighterDialog({
               <Label htmlFor="fighter-email">Email <span className="text-xs text-muted-foreground">(for account sync)</span></Label>
               <Input id="fighter-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="fighter@email.com" />
             </div>
+
+            <div className="space-y-1 col-span-2">
+              <Label>Date of Birth</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dateOfBirth && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dateOfBirth ? format(dateOfBirth, "PPP") : "Select date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar mode="single" selected={dateOfBirth} onSelect={setDateOfBirth} disabled={(date) => date > new Date() || date < new Date("1940-01-01")} initialFocus className={cn("p-3 pointer-events-auto")} />
+                </PopoverContent>
+              </Popover>
+            </div>
+
             <div className="space-y-1">
               <Label>Weight Class</Label>
               <Select value={weightClass} onValueChange={(v) => setWeightClass(v as WeightClass)}>
@@ -156,8 +185,33 @@ export function AddFighterDialog({
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-1">
+              <Label>Walk-around Weight (kg)</Label>
+              <Input type="number" min="0" value={walkAroundWeight} onChange={(e) => setWalkAroundWeight(e.target.value)} placeholder="e.g. 75" />
+            </div>
+            <div className="space-y-1">
+              <Label>Height (cm)</Label>
+              <Input type="number" min="0" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} placeholder="e.g. 178" />
+            </div>
             <div className="space-y-1 col-span-2">
-              <Label>Style</Label>
+              <Label>Reach (cm)</Label>
+              <Input type="number" min="0" value={reachCm} onChange={(e) => setReachCm(e.target.value)} placeholder="e.g. 183" />
+            </div>
+
+            <div className="space-y-1 col-span-2">
+              <Label>Discipline</Label>
+              <Select value={discipline} onValueChange={setDiscipline}>
+                <SelectTrigger><SelectValue placeholder="Select discipline" /></SelectTrigger>
+                <SelectContent>
+                  {DISCIPLINES.map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1 col-span-2">
+              <Label>Style (DB enum)</Label>
               <Select value={style} onValueChange={(v) => setStyle(v as FightingStyle)}>
                 <SelectTrigger><SelectValue placeholder="Select style" /></SelectTrigger>
                 <SelectContent>
@@ -167,25 +221,65 @@ export function AddFighterDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label>Wins</Label>
-              <Input type="number" min="0" value={wins} onChange={(e) => setWins(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label>Losses</Label>
-              <Input type="number" min="0" value={losses} onChange={(e) => setLosses(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label>Draws</Label>
-              <Input type="number" min="0" value={draws} onChange={(e) => setDraws(e.target.value)} />
-            </div>
-            <div className="space-y-1">
-              <Label>Height</Label>
-              <Input value={height} onChange={(e) => setHeight(e.target.value)} placeholder="e.g. 5'10&quot;" />
-            </div>
             <div className="space-y-1 col-span-2">
-              <Label>Reach</Label>
-              <Input value={reach} onChange={(e) => setReach(e.target.value)} placeholder='e.g. 72"' />
+              <Label>Stance</Label>
+              <Select value={stance} onValueChange={setStance}>
+                <SelectTrigger><SelectValue placeholder="Select stance" /></SelectTrigger>
+                <SelectContent>
+                  {STANCES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {substyleOptions.length > 0 && (
+              <div className="space-y-1 col-span-2">
+                <Label>Fighting Sub-style</Label>
+                <Select value={fightingSubstyle} onValueChange={setFightingSubstyle}>
+                  <SelectTrigger><SelectValue placeholder="Select sub-style" /></SelectTrigger>
+                  <SelectContent>
+                    {substyleOptions.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Pro Record</Label>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Wins</Label>
+                <Input type="number" min="0" value={wins} onChange={(e) => setWins(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Losses</Label>
+                <Input type="number" min="0" value={losses} onChange={(e) => setLosses(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Draws</Label>
+                <Input type="number" min="0" value={draws} onChange={(e) => setDraws(e.target.value)} />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Amateur Record</Label>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Wins</Label>
+                <Input type="number" min="0" value={amateurWins} onChange={(e) => setAmateurWins(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Losses</Label>
+                <Input type="number" min="0" value={amateurLosses} onChange={(e) => setAmateurLosses(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Draws</Label>
+                <Input type="number" min="0" value={amateurDraws} onChange={(e) => setAmateurDraws(e.target.value)} />
+              </div>
             </div>
           </div>
 
