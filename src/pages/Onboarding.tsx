@@ -145,32 +145,41 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
 
     let fighterId = existing?.id;
 
-    if (!existing) {
-      const styleValue = discipline === "Wrestling" || discipline === "Other" || discipline === "BJJ"
-        ? null
-        : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]);
+    const styleValue = discipline === "Wrestling" || discipline === "Other" || discipline === "BJJ"
+      ? null
+      : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]);
 
+    const profileData = {
+      weight_class: weightClass as WeightClass,
+      style: styleValue,
+      stance: stance || null,
+      fighting_substyle: fightingSubstyle || null,
+      discipline: discipline,
+      date_of_birth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
+      walk_around_weight_kg: walkAroundWeight ? parseFloat(walkAroundWeight) : null,
+      height: heightCm ? parseInt(heightCm) : null,
+      reach: reachCm ? parseInt(reachCm) : null,
+      amateur_wins: parseInt(amateurWins) || 0,
+      amateur_losses: parseInt(amateurLosses) || 0,
+      amateur_draws: parseInt(amateurDraws) || 0,
+      record_wins: parseInt(proWins) || 0,
+      record_losses: parseInt(proLosses) || 0,
+      record_draws: parseInt(proDraws) || 0,
+    };
+
+    if (!existing) {
       const { data: created, error } = await supabase.from("fighter_profiles").insert({
         user_id: user!.id,
         name: user!.user_metadata?.full_name || user!.email || "Fighter",
-        weight_class: weightClass as WeightClass,
-        style: styleValue,
-        stance: stance || null,
-        fighting_substyle: fightingSubstyle || null,
-        discipline: discipline,
-        date_of_birth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
-        walk_around_weight_kg: walkAroundWeight ? parseFloat(walkAroundWeight) : null,
-        height: heightCm ? parseInt(heightCm) : null,
-        reach: reachCm ? parseInt(reachCm) : null,
-        amateur_wins: parseInt(amateurWins) || 0,
-        amateur_losses: parseInt(amateurLosses) || 0,
-        amateur_draws: parseInt(amateurDraws) || 0,
-        record_wins: parseInt(proWins) || 0,
-        record_losses: parseInt(proLosses) || 0,
-        record_draws: parseInt(proDraws) || 0,
+        ...profileData,
       }).select("id").single();
       if (error) console.error("Fighter profile error:", error);
       fighterId = created?.id;
+    } else {
+      const { error } = await supabase.from("fighter_profiles")
+        .update(profileData)
+        .eq("id", existing.id);
+      if (error) console.error("Fighter profile update error:", error);
     }
 
     if (hasGym && selectedGym && fighterId) {
