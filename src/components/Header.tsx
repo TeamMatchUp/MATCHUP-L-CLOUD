@@ -106,12 +106,13 @@ export function Header() {
             </Link>
           )}
           {user && (
-            <Link
-              to={dashboardPath}
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+            <a
+              href="/dashboard"
+              onClick={handleDashboardClick}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
             >
               DASHBOARD
-            </Link>
+            </a>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
