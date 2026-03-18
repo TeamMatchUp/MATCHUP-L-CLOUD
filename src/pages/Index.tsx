@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { ThreeSidesSection } from "@/components/landing/ThreeSidesSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { TwoSidedSection } from "@/components/landing/TwoSidedSection";
+import { PlatformStatsStrip } from "@/components/landing/PlatformStatsStrip";
 
 const Index = () => {
   return (
@@ -18,6 +19,7 @@ const Index = () => {
         <ThreeSidesSection />
         <HowItWorksSection />
         <TwoSidedSection />
+        <PlatformStatsStrip />
       </main>
       <Footer />
     </div>

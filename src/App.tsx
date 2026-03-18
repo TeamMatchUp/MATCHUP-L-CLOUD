@@ -26,6 +26,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RecordAccuracyPolicy from "./pages/RecordAccuracyPolicy";
 import Contact from "./pages/Contact";
 import AdvertiseEnquiry from "./pages/AdvertiseEnquiry";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 function ScrollToTop() {
@@ -61,6 +62,7 @@ const App = () => (
             <Route path="/record-accuracy" element={<RecordAccuracyPolicy />} />
             <Route path="/advertise" element={<AdvertiseEnquiry />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/admin" element={<Admin />} />
 
             {/* Unified Dashboard */}
             <Route
