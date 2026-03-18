@@ -564,11 +564,13 @@ export type Database = {
           fighter_a_id: string
           fighter_b_id: string
           id: string
+          is_amateur: boolean
           method: string | null
           opponent_gym: string | null
           opponent_name: string | null
           result: string
           round: number | null
+          total_rounds: number | null
           updated_at: string
           verification_status: Database["public"]["Enums"]["fight_verification_status"]
           winner_id: string | null
@@ -582,11 +584,13 @@ export type Database = {
           fighter_a_id: string
           fighter_b_id: string
           id?: string
+          is_amateur?: boolean
           method?: string | null
           opponent_gym?: string | null
           opponent_name?: string | null
           result?: string
           round?: number | null
+          total_rounds?: number | null
           updated_at?: string
           verification_status?: Database["public"]["Enums"]["fight_verification_status"]
           winner_id?: string | null
@@ -600,11 +604,13 @@ export type Database = {
           fighter_a_id?: string
           fighter_b_id?: string
           id?: string
+          is_amateur?: boolean
           method?: string | null
           opponent_gym?: string | null
           opponent_name?: string | null
           result?: string
           round?: number | null
+          total_rounds?: number | null
           updated_at?: string
           verification_status?: Database["public"]["Enums"]["fight_verification_status"]
           winner_id?: string | null
@@ -1085,7 +1091,10 @@ export type Database = {
       country_code: "UK" | "USA" | "AUS"
       event_status: "draft" | "published" | "completed" | "cancelled"
       fight_slot_status: "open" | "proposed" | "confirmed" | "cancelled"
-      fight_verification_status: "coach_verified" | "event_verified"
+      fight_verification_status:
+        | "coach_verified"
+        | "event_verified"
+        | "self_reported"
       fighting_style: "boxing" | "muay_thai" | "mma" | "kickboxing" | "bjj"
       match_status:
         | "pending_coach_a"
@@ -1252,7 +1261,11 @@ export const Constants = {
       country_code: ["UK", "USA", "AUS"],
       event_status: ["draft", "published", "completed", "cancelled"],
       fight_slot_status: ["open", "proposed", "confirmed", "cancelled"],
-      fight_verification_status: ["coach_verified", "event_verified"],
+      fight_verification_status: [
+        "coach_verified",
+        "event_verified",
+        "self_reported",
+      ],
       fighting_style: ["boxing", "muay_thai", "mma", "kickboxing", "bjj"],
       match_status: [
         "pending_coach_a",
