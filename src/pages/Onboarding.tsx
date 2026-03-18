@@ -188,6 +188,18 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
         gym_id: selectedGym.id,
         status: "pending",
       });
+
+      // Notify the gym's coach if the gym has one
+      if (selectedGym.coach_id) {
+        const fighterName = profileData.name || "A fighter";
+        await supabase.rpc("create_notification", {
+          _user_id: selectedGym.coach_id,
+          _title: "Gym join request",
+          _message: `A fighter has requested to join your gym — ${fighterName}`,
+          _type: "system",
+          _reference_id: fighterId,
+        });
+      }
     }
 
     await markOnboardingComplete();
