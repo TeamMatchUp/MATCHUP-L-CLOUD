@@ -502,6 +502,7 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
 
 function OrganiserLanding() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const handleCreateEvent = async () => {
     await markOnboardingComplete();
