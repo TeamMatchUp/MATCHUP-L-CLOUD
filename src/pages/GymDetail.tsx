@@ -123,6 +123,15 @@ export default function GymDetail() {
   const isOwner = !!user && !!gym && gym.coach_id === user.id;
   const isMember = !!myGymLink;
 
+  // Track profile view (non-owner)
+  useEffect(() => {
+    if (!gym || isOwner) return;
+    supabase.from("gym_profile_views" as any).insert({
+      gym_id: gym.id,
+      viewer_user_id: user?.id ?? null,
+    } as any).then(() => {});
+  }, [gym?.id, isOwner, user?.id]);
+
   const removeFighterMutation = useMutation({
     mutationFn: async (linkId: string) => {
       const { error } = await supabase.from("fighter_gym_links").delete().eq("id", linkId);
