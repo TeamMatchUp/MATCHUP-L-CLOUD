@@ -29,6 +29,7 @@ import AdvertiseEnquiry from "./pages/AdvertiseEnquiry";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
+import MapView from "./pages/MapView";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
