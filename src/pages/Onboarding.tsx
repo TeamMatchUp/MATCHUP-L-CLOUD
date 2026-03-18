@@ -68,6 +68,7 @@ interface GymResult {
   name: string;
   city: string | null;
   coach_id: string | null;
+  claimed: boolean | null;
 }
 
 async function markOnboardingComplete() {
