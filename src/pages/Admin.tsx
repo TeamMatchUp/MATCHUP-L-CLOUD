@@ -73,22 +73,45 @@ function GymClaimsTable() {
 
   const approve = useMutation({
     mutationFn: async (claim: any) => {
-      // Update claim status
+      const gymName = (claim as any).gyms?.name ?? "your gym";
+
+      // 1. Update claim status
       const { error: claimErr } = await supabase
         .from("gym_claims")
         .update({ status: "approved" })
         .eq("id", claim.id);
       if (claimErr) throw claimErr;
 
-      // Set gym as claimed
+      // 2. Set gym as claimed and assign coach_id if user_id exists
+      const gymUpdate: any = { claimed: true, listing_tier: "free" };
+      if (claim.user_id) {
+        gymUpdate.coach_id = claim.user_id;
+      }
       const { error: gymErr } = await supabase
         .from("gyms")
-        .update({ claimed: true, listing_tier: "free" })
+        .update(gymUpdate)
         .eq("id", claim.gym_id);
       if (gymErr) throw gymErr;
+
+      // 3. Send notification to claiming user
+      if (claim.user_id) {
+        await supabase.rpc("create_notification", {
+          _user_id: claim.user_id,
+          _title: `Your claim for ${gymName} has been approved`,
+          _message: `Your claim for ${gymName} has been approved. The gym is now listed under your account.`,
+          _type: "system",
+          _reference_id: claim.gym_id,
+        });
+
+        // 4. Grant gym_owner role if not already present
+        await supabase.from("user_roles").insert({
+          user_id: claim.user_id,
+          role: "gym_owner" as any,
+        }).select().maybeSingle(); // ignore conflict
+      }
     },
     onSuccess: () => {
-      toast({ title: "Claim approved", description: "Gym has been marked as claimed." });
+      toast({ title: "Claim approved", description: "Gym has been marked as claimed and assigned to the user." });
       queryClient.invalidateQueries({ queryKey: ["admin-gym-claims"] });
       queryClient.invalidateQueries({ queryKey: ["admin-gym-summary"] });
     },
@@ -96,12 +119,25 @@ function GymClaimsTable() {
   });
 
   const reject = useMutation({
-    mutationFn: async (claimId: string) => {
+    mutationFn: async (claim: any) => {
+      const gymName = (claim as any).gyms?.name ?? "the gym";
+
       const { error } = await supabase
         .from("gym_claims")
         .update({ status: "rejected" })
-        .eq("id", claimId);
+        .eq("id", claim.id);
       if (error) throw error;
+
+      // Send rejection notification
+      if (claim.user_id) {
+        await supabase.rpc("create_notification", {
+          _user_id: claim.user_id,
+          _title: `Your claim for ${gymName} was not approved`,
+          _message: `Your claim for ${gymName} was not approved. Please contact us if you believe this is an error.`,
+          _type: "system",
+          _reference_id: claim.gym_id,
+        });
+      }
     },
     onSuccess: () => {
       toast({ title: "Claim rejected" });
@@ -161,7 +197,7 @@ function GymClaimsTable() {
                       size="sm"
                       variant="outline"
                       className="h-7 text-xs border-destructive/40 text-destructive hover:bg-destructive/10"
-                      onClick={() => reject.mutate(c.id)}
+                      onClick={() => reject.mutate(c)}
                       disabled={reject.isPending}
                     >
                       <XCircle className="h-3 w-3 mr-1" /> Reject

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { JoinGymButton } from "@/components/gym/JoinGymButton";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
@@ -52,6 +52,26 @@ export default function GymDetail() {
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showClaimDialog, setShowClaimDialog] = useState(false);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Auto-open claim dialog if returning from auth with action=claim
+  useEffect(() => {
+    if (searchParams.get("action") === "claim" && user) {
+      setShowClaimDialog(true);
+      // Clean up the URL param
+      searchParams.delete("action");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [user, searchParams, setSearchParams]);
+
+  const handleClaimClick = () => {
+    if (!user) {
+      // Redirect to auth with return URL
+      navigate(`/auth?mode=signup&returnTo=${encodeURIComponent(`/gyms/${id}?action=claim`)}`);
+      return;
+    }
+    setShowClaimDialog(true);
+  };
 
   const { data: gym, isLoading } = useQuery({
     queryKey: ["gym", id],
@@ -272,7 +292,7 @@ export default function GymDetail() {
                   {!isOwner && !gym.claimed && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <Lock className="h-5 w-5 text-muted-foreground mb-2" />
-                      <Button size="sm" onClick={() => setShowClaimDialog(true)}>
+                      <Button size="sm" onClick={handleClaimClick}>
                         Claim this listing
                       </Button>
                     </div>
@@ -283,7 +303,7 @@ export default function GymDetail() {
               {/* Claim button for gyms with no contact info */}
               {!isOwner && !gym.claimed && !gym.contact_email && !gym.phone && !gym.website && (
                 <div className="mb-8">
-                  <Button variant="outline" size="sm" onClick={() => setShowClaimDialog(true)}>
+                  <Button variant="outline" size="sm" onClick={handleClaimClick}>
                     <Lock className="h-3 w-3 mr-1" /> Claim this listing
                   </Button>
                 </div>
