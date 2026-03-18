@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN gym_id uuid REFERENCES public.gyms(id) ON DELETE SET NULL;
