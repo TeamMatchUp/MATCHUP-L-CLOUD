@@ -82,7 +82,7 @@ export function MatchProposalCard({
       .from("fighter_gym_links")
       .select("gym_id")
       .in("fighter_id", [proposal.fighter_a_id, proposal.fighter_b_id])
-      .eq("status", "accepted");
+      .eq("status", "approved");
 
     if (gymLinks && gymLinks.length > 0) {
       const { data: gyms } = await supabase

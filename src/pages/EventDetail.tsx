@@ -94,7 +94,7 @@ export default function EventDetail() {
         .from("fighter_gym_links")
         .select("gym_id, gyms(coach_id)")
         .eq("fighter_id", fighterProfile.id)
-        .eq("status", "accepted");
+        .eq("status", "approved");
 
       const coachIds = new Set<string>();
       (gymLinks ?? []).forEach((link: any) => {

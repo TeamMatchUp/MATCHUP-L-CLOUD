@@ -42,16 +42,22 @@ export function MyGymsPanel({ fighterProfileId }: MyGymsPanelProps) {
                 <Building2 className="h-5 w-5 text-muted-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground truncate">{gym?.name ?? "Unknown Gym"}</p>
+                <p className="font-medium text-foreground truncate">
+                  {link.status === "pending" ? `Pending — ${gym?.name ?? "Gym"}` : (gym?.name ?? "Unknown Gym")}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {gym?.city ? `${gym.city}, ` : ""}{gym?.country}
                 </p>
               </div>
-              {link.is_primary && (
+              {link.status === "pending" ? (
+                <Badge variant="outline" className="gap-1 shrink-0 border-amber-500/30 text-amber-500 bg-amber-500/10">
+                  Pending
+                </Badge>
+              ) : link.is_primary ? (
                 <Badge variant="outline" className="gap-1 shrink-0 border-primary/30 text-primary">
                   <Star className="h-3 w-3" /> Primary
                 </Badge>
-              )}
+              ) : null}
             </Link>
           );
         })}

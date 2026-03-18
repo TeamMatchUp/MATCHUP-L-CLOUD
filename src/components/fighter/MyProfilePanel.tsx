@@ -25,7 +25,7 @@ export function MyProfilePanel({ fighterProfile, gymLinks }: MyProfilePanelProps
   const p = fighterProfile;
   const hasIncomplete = MANDATORY_FIELDS.some((f) => !p[f]);
 
-  const approvedGym = gymLinks.find((gl) => gl.status === "accepted" || gl.status === "approved");
+  const approvedGym = gymLinks.find((gl) => gl.status === "approved");
   const pendingGym = gymLinks.find((gl) => gl.status === "pending");
 
   let gymDisplay: string;

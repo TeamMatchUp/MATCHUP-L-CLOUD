@@ -155,7 +155,7 @@ export function AddFighterToGymDialog({
       setInviteLoading(false);
       toast({
         title: "Already linked",
-        description: `${existingFighter.name} is already ${existingLink.status === "accepted" ? "a member of" : "invited to"} this gym.`,
+        description: `${existingFighter.name} is already ${existingLink.status === "approved" ? "a member of" : "invited to"} this gym.`,
       });
       return;
     }

@@ -348,7 +348,7 @@ export default function GymDetail() {
                     const fighter = link.fighter_profiles;
                     if (!fighter) return null;
                     const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
-                    const statusInfo = STATUS_BADGE[link.status] ?? STATUS_BADGE.accepted;
+                    const statusInfo = STATUS_BADGE[link.status] ?? STATUS_BADGE.approved;
                     return (
                       <div
                         key={link.id}

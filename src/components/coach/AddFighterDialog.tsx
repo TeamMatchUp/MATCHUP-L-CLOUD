@@ -111,6 +111,7 @@ export function AddFighterDialog({ open, onOpenChange, coachId, gymId, onSuccess
         fighter_id: fighter.id,
         gym_id: gymId,
         is_primary: true,
+        status: "approved",
       });
     }
 
