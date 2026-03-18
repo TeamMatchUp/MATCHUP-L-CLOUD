@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,15 +72,19 @@ interface GymResult {
   claimed: boolean | null;
 }
 
-async function markOnboardingComplete() {
+async function markOnboardingComplete(queryClient: ReturnType<typeof useQueryClient>) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
   await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", user.id);
+  // Invalidate the ProtectedRoute's onboarding check cache so it doesn't redirect back
+  queryClient.setQueryData(["onboarding-check", user.id], { onboarding_completed: true });
 }
 
 function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [weightClass, setWeightClass] = useState<WeightClass | "">("");
   const [discipline, setDiscipline] = useState("");
   const [stance, setStance] = useState("");
@@ -190,22 +195,32 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
         status: "pending",
       }).select("id").single();
 
-      // Notify the gym's coach if the gym is claimed and has a coach
-      if (selectedGym.claimed && selectedGym.coach_id && linkData) {
-        const fighterName = user!.user_metadata?.full_name || user!.email || "A fighter";
-        await supabase.rpc("create_notification", {
-          _user_id: selectedGym.coach_id,
-          _title: "New gym join request",
-          _message: `${fighterName} has requested to join ${selectedGym.name}`,
-          _type: "gym_request",
-          _reference_id: linkData.id,
-        });
+      // Fresh lookup of gym to get current coach_id
+      if (linkData) {
+        const { data: freshGym } = await supabase
+          .from("gyms")
+          .select("coach_id, claimed, name")
+          .eq("id", selectedGym.id)
+          .single();
+
+        if (freshGym?.claimed && freshGym.coach_id) {
+          const fighterName = user!.user_metadata?.full_name || user!.email || "A fighter";
+          await supabase.rpc("create_notification", {
+            _user_id: freshGym.coach_id,
+            _title: "New gym join request",
+            _message: `${fighterName} has requested to join ${freshGym.name}`,
+            _type: "gym_request",
+            _reference_id: linkData.id,
+          });
+        } else if (freshGym?.claimed && !freshGym.coach_id) {
+          console.error("Gym is claimed but has no coach_id — skipping notification", selectedGym.id);
+        }
       }
     }
 
-    await markOnboardingComplete();
+    await markOnboardingComplete(queryClient);
     setLoading(false);
-    onComplete();
+    navigate("/fighter/dashboard", { replace: true });
   };
 
   return (
@@ -402,6 +417,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
 function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [gymName, setGymName] = useState("");
   const [postcode, setPostcode] = useState("");
   const [disciplines, setDisciplines] = useState<string[]>([]);
@@ -429,7 +445,7 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
     });
     if (error) console.error("Gym creation error:", error);
 
-    await markOnboardingComplete();
+    await markOnboardingComplete(queryClient);
     setLoading(false);
     onComplete();
   };
@@ -486,14 +502,15 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
 
 function OrganiserLanding() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const handleCreateEvent = async () => {
-    await markOnboardingComplete();
+    await markOnboardingComplete(queryClient);
     navigate("/organiser/create-event", { replace: true });
   };
 
   const handleBrowseEvents = async () => {
-    await markOnboardingComplete();
+    await markOnboardingComplete(queryClient);
     navigate("/events", { replace: true });
   };
 
@@ -538,6 +555,7 @@ function OrganiserLanding() {
 export default function Onboarding() {
   const { user, roles, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [rolesLoaded, setRolesLoaded] = useState(false);
 
   useEffect(() => {
@@ -562,7 +580,7 @@ export default function Onboarding() {
   };
 
   const handleSkip = async () => {
-    await markOnboardingComplete();
+    await markOnboardingComplete(queryClient);
     goToDashboard();
   };
 
