@@ -99,21 +99,23 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
       .eq("user_id", user!.id)
       .maybeSingle();
 
+    let fighterId = existing?.id;
+
     if (!existing) {
-      const { error } = await supabase.from("fighter_profiles").insert({
+      const { data: created, error } = await supabase.from("fighter_profiles").insert({
         user_id: user!.id,
         name: user!.user_metadata?.full_name || user!.email || "Fighter",
         weight_class: weightClass as WeightClass,
         style: discipline === "Wrestling" || discipline === "Other"
           ? null
           : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]),
-      });
+      }).select("id").single();
       if (error) console.error("Fighter profile error:", error);
+      fighterId = created?.id;
     }
 
-    // If gym selected, create a pending link
+    // If gym selected, create a pending link and save to profile
     if (hasGym && selectedGymId) {
-      const fighterId = existing?.id;
       if (fighterId) {
         await supabase.from("fighter_gym_links").insert({
           fighter_id: fighterId,
@@ -121,6 +123,8 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
           status: "pending",
         });
       }
+      // Save gym affiliation to profile
+      await supabase.from("profiles").update({ gym_id: selectedGymId } as any).eq("id", user!.id);
     }
 
     await markOnboardingComplete();
