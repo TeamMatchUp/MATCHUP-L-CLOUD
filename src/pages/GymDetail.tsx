@@ -50,6 +50,7 @@ export default function GymDetail() {
   const [showAddFighter, setShowAddFighter] = useState(false);
   const [showEditGym, setShowEditGym] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showClaimDialog, setShowClaimDialog] = useState(false);
   const navigate = useNavigate();
 
   const { data: gym, isLoading } = useQuery({
