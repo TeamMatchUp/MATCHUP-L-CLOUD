@@ -215,14 +215,14 @@ export function DashboardGyms({
             </div>
           ))}
         </div>
-        {upgradeGym && (
-          <UpgradeGymDialog
-            open={!!upgradeGym}
-            onOpenChange={(open) => { if (!open) setUpgradeGym(null); }}
-            gymId={upgradeGym.id}
-            gymName={upgradeGym.name}
-          />
-        )}
+      )}
+      {upgradeGym && (
+        <UpgradeGymDialog
+          open={!!upgradeGym}
+          onOpenChange={(open) => { if (!open) setUpgradeGym(null); }}
+          gymId={upgradeGym.id}
+          gymName={upgradeGym.name}
+        />
       )}
     </div>
   );
