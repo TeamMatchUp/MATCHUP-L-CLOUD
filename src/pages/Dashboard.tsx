@@ -130,6 +130,13 @@ export default function Dashboard() {
       case "overview":
         return (
           <div className="space-y-6">
+            {/* Coach gym join requests */}
+            {isCoachOrOwner && myGyms.length > 0 && (
+              <GymRequestsPanel
+                gymIds={myGyms.map((g: any) => g.id)}
+                coachId={user!.id}
+              />
+            )}
             {/* Fighter profile creation prompt - compact banner */}
             {isFighter && !fighterProfile && (
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex items-center justify-between">
