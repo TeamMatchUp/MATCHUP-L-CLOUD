@@ -64,6 +64,14 @@ const App = () => (
             <Route path="/advertise" element={<AdvertiseEnquiry />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/admin" element={<Admin />} />
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute>
+                  <Onboarding />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Unified Dashboard */}
             <Route
