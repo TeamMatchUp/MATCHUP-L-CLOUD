@@ -51,6 +51,11 @@ interface GymData {
   contact_email: string | null;
   phone: string | null;
   website: string | null;
+  discipline_tags: string | null;
+  training_schedule: string | null;
+  instagram_url: string | null;
+  facebook_url: string | null;
+  twitter_url: string | null;
 }
 
 interface EditGymDialogProps {
@@ -75,6 +80,11 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
   const [contactEmail, setContactEmail] = useState(gym.contact_email || "");
   const [phone, setPhone] = useState(gym.phone || "");
   const [website, setWebsite] = useState(gym.website || "");
+  const [disciplineTags, setDisciplineTags] = useState<string[]>((gym.discipline_tags || "").split(",").map(s => s.trim()).filter(Boolean));
+  const [trainingSchedule, setTrainingSchedule] = useState(gym.training_schedule || "");
+  const [instagramUrl, setInstagramUrl] = useState(gym.instagram_url || "");
+  const [facebookUrl, setFacebookUrl] = useState(gym.facebook_url || "");
+  const [twitterUrl, setTwitterUrl] = useState(gym.twitter_url || "");
 
   useEffect(() => {
     setName(gym.name);
@@ -87,6 +97,11 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
     setContactEmail(gym.contact_email || "");
     setPhone(gym.phone || "");
     setWebsite(gym.website || "");
+    setDisciplineTags((gym.discipline_tags || "").split(",").map(s => s.trim()).filter(Boolean));
+    setTrainingSchedule(gym.training_schedule || "");
+    setInstagramUrl(gym.instagram_url || "");
+    setFacebookUrl(gym.facebook_url || "");
+    setTwitterUrl(gym.twitter_url || "");
   }, [gym]);
 
   const updateMutation = useMutation({
@@ -115,6 +130,11 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
           contact_email: contactEmail || null,
           phone: phone || null,
           website: website || null,
+          discipline_tags: disciplineTags.length > 0 ? disciplineTags.join(", ") : null,
+          training_schedule: trainingSchedule || null,
+          instagram_url: instagramUrl || null,
+          facebook_url: facebookUrl || null,
+          twitter_url: twitterUrl || null,
         } as any)
         .eq("id", gym.id);
       if (error) throw error;
@@ -213,7 +233,43 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
             <Label>Website</Label>
             <Input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://..." />
           </div>
-        </div>
+          </div>
+
+          <div className="space-y-1">
+            <Label>Disciplines</Label>
+            <div className="flex flex-wrap gap-2">
+              {["Boxing", "Muay Thai", "MMA", "BJJ", "Wrestling", "Kickboxing", "Judo", "Sambo", "Other"].map((d) => (
+                <button
+                  key={d}
+                  type="button"
+                  onClick={() => setDisciplineTags(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d])}
+                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${disciplineTags.includes(d) ? "bg-primary/10 text-primary border-primary/30" : "bg-muted text-muted-foreground border-border hover:border-primary/20"}`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <Label>Training Schedule</Label>
+            <Textarea value={trainingSchedule} onChange={(e) => setTrainingSchedule(e.target.value)} rows={3} placeholder="e.g. Mon-Fri: 6am-9pm, Sat: 8am-2pm" />
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <Label>Instagram URL</Label>
+              <Input value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/..." />
+            </div>
+            <div className="space-y-1">
+              <Label>Facebook URL</Label>
+              <Input value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} placeholder="https://facebook.com/..." />
+            </div>
+            <div className="space-y-1">
+              <Label>Twitter/X URL</Label>
+              <Input value={twitterUrl} onChange={(e) => setTwitterUrl(e.target.value)} placeholder="https://x.com/..." />
+            </div>
+          </div>
 
         <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">
           <AlertDialog>

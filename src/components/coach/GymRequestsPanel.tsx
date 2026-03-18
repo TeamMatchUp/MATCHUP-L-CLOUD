@@ -31,24 +31,35 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
   if (pendingLinks.length === 0) return null;
 
   const handleAccept = async (link: any) => {
-    const { error } = await supabase
+    // Update fighter_gym_links status
+    const { error: linkError } = await supabase
       .from("fighter_gym_links")
       .update({ status: "approved" })
       .eq("id", link.id);
 
-    if (error) {
+    if (linkError) {
       toast.error("Failed to accept request");
       return;
     }
 
-    // Set profiles.gym_id for the fighter's user
+    // Update profiles.gym_id for the fighter's user
     if (link.fighter?.user_id) {
-      await supabase
+      const { error: profileError } = await supabase
         .from("profiles")
         .update({ gym_id: link.gym_id })
         .eq("id", link.fighter.user_id);
 
-      // Notify the fighter
+      if (profileError) {
+        // Rollback the link status
+        await supabase
+          .from("fighter_gym_links")
+          .update({ status: "pending" })
+          .eq("id", link.id);
+        toast.error("Failed to update fighter profile — request reverted");
+        return;
+      }
+
+      // Both writes succeeded — now send notification
       await supabase.rpc("create_notification", {
         _user_id: link.fighter.user_id,
         _title: "Gym request approved",

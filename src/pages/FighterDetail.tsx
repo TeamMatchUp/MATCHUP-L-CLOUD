@@ -31,7 +31,7 @@ export default function FighterDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("fighter_profiles")
-        .select("*, fighter_gym_links(gym_id, is_primary, gyms(id, name, location))")
+        .select("*, fighter_gym_links(gym_id, is_primary, status, gyms(id, name, location))")
         .eq("id", id!)
         .single();
       if (error) throw error;
@@ -82,7 +82,7 @@ export default function FighterDetail() {
     );
   }
 
-  const gyms = fighter.fighter_gym_links ?? [];
+  const gyms = (fighter.fighter_gym_links ?? []).filter((l: any) => l.status === "approved");
   const isOwnerOrCoach = user && (fighter.user_id === user.id || fighter.created_by_coach_id === user.id);
 
   return (

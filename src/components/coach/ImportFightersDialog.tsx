@@ -188,7 +188,7 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
           const { error } = await supabase.from("fighter_gym_links").insert({
             fighter_id: pr.existingFighterId,
             gym_id: gymId,
-            status: "accepted",
+            status: "approved",
           });
           if (error) throw error;
           result.linked++;
@@ -213,7 +213,7 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
           const { error: linkErr } = await supabase.from("fighter_gym_links").insert({
             fighter_id: fighter.id,
             gym_id: gymId,
-            status: "accepted",
+            status: "approved",
           });
           if (linkErr) throw linkErr;
           result.created++;
