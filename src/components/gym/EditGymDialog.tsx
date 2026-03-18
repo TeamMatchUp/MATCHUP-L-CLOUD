@@ -80,6 +80,11 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
   const [contactEmail, setContactEmail] = useState(gym.contact_email || "");
   const [phone, setPhone] = useState(gym.phone || "");
   const [website, setWebsite] = useState(gym.website || "");
+  const [disciplineTags, setDisciplineTags] = useState<string[]>((gym.discipline_tags || "").split(",").map(s => s.trim()).filter(Boolean));
+  const [trainingSchedule, setTrainingSchedule] = useState(gym.training_schedule || "");
+  const [instagramUrl, setInstagramUrl] = useState(gym.instagram_url || "");
+  const [facebookUrl, setFacebookUrl] = useState(gym.facebook_url || "");
+  const [twitterUrl, setTwitterUrl] = useState(gym.twitter_url || "");
 
   useEffect(() => {
     setName(gym.name);
