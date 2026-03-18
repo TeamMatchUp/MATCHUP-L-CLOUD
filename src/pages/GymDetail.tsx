@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { ArrowLeft, MapPin, ShieldCheck, Plus, Trash2, Pencil, LogOut } from "lucide-react";
+import { ArrowLeft, MapPin, ShieldCheck, Plus, Trash2, Pencil, LogOut, Lock, Mail, Phone, Globe } from "lucide-react";
+import { ClaimGymDialog } from "@/components/gym/ClaimGymDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -49,6 +50,7 @@ export default function GymDetail() {
   const [showAddFighter, setShowAddFighter] = useState(false);
   const [showEditGym, setShowEditGym] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  const [showClaimDialog, setShowClaimDialog] = useState(false);
   const navigate = useNavigate();
 
   const { data: gym, isLoading } = useQuery({
@@ -205,6 +207,15 @@ export default function GymDetail() {
                     <div className="flex items-center gap-2">
                       <h1 className="font-heading text-3xl md:text-4xl text-foreground">{gym.name}</h1>
                       {gym.verified && <ShieldCheck className="h-5 w-5 text-primary" />}
+                      {gym.claimed ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-xs font-semibold">
+                          <ShieldCheck className="h-3 w-3" /> Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-muted text-muted-foreground border border-border px-2 py-0.5 text-xs font-semibold">
+                          Unclaimed
+                        </span>
+                      )}
                     </div>
                     {gym.location && (
                       <p className="text-muted-foreground flex items-center gap-2 mt-2">
@@ -237,6 +248,46 @@ export default function GymDetail() {
                 </div>
               )}
 
+              {/* Contact details — blurred for unclaimed gyms when not owner */}
+              {(gym.contact_email || gym.phone || gym.website) && (
+                <div className="relative mb-8 rounded-lg border border-border bg-card p-5">
+                  <h2 className="font-heading text-lg text-foreground mb-3">Contact details</h2>
+                  <div className={`space-y-2 ${!isOwner && !gym.claimed ? "blur-sm select-none pointer-events-none" : ""}`}>
+                    {gym.contact_email && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-primary" /> {gym.contact_email}
+                      </p>
+                    )}
+                    {gym.phone && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-primary" /> {gym.phone}
+                      </p>
+                    )}
+                    {gym.website && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-primary" /> {gym.website}
+                      </p>
+                    )}
+                  </div>
+                  {!isOwner && !gym.claimed && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <Lock className="h-5 w-5 text-muted-foreground mb-2" />
+                      <Button size="sm" onClick={() => setShowClaimDialog(true)}>
+                        Claim this listing
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Claim button for gyms with no contact info */}
+              {!isOwner && !gym.claimed && !gym.contact_email && !gym.phone && !gym.website && (
+                <div className="mb-8">
+                  <Button variant="outline" size="sm" onClick={() => setShowClaimDialog(true)}>
+                    <Lock className="h-3 w-3 mr-1" /> Claim this listing
+                  </Button>
+                </div>
+              )}
               {/* Location Map */}
               {gym.location && (
                 <div className="rounded-lg border border-border overflow-hidden mb-8">
@@ -374,6 +425,13 @@ export default function GymDetail() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
+
+            <ClaimGymDialog
+              open={showClaimDialog}
+              onOpenChange={setShowClaimDialog}
+              gymId={gym.id}
+              gymName={gym.name}
+            />
           </div>
         </section>
       </main>
