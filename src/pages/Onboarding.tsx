@@ -208,6 +208,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
 }
 
 function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [gymName, setGymName] = useState("");
   const [postcode, setPostcode] = useState("");
@@ -225,6 +226,18 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
       return;
     }
     setLoading(true);
+
+    // Create gym row
+    const { error } = await supabase.from("gyms").insert({
+      name: gymName,
+      postcode: postcode || null,
+      claimed: true,
+      listing_tier: "free",
+      coach_id: user!.id,
+      discipline_tags: disciplines.length > 0 ? disciplines.join(", ") : null,
+    });
+    if (error) console.error("Gym creation error:", error);
+
     await markOnboardingComplete();
     setLoading(false);
     onComplete();
