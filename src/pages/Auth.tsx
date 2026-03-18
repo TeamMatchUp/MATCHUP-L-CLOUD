@@ -296,3 +296,11 @@ function AuthPage() {
     </div>
   );
 }
+
+export default function Auth() {
+  return (
+    <AuthErrorBoundary>
+      <AuthPage />
+    </AuthErrorBoundary>
+  );
+}
