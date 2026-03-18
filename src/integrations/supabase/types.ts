@@ -1056,6 +1056,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_gym_claim: { Args: { _claim_id: string }; Returns: undefined }
       create_notification: {
         Args: {
           _message?: string

@@ -73,42 +73,10 @@ function GymClaimsTable() {
 
   const approve = useMutation({
     mutationFn: async (claim: any) => {
-      const gymName = (claim as any).gyms?.name ?? "your gym";
-
-      // 1. Update claim status
-      const { error: claimErr } = await supabase
-        .from("gym_claims")
-        .update({ status: "approved" })
-        .eq("id", claim.id);
-      if (claimErr) throw claimErr;
-
-      // 2. Set gym as claimed and assign coach_id if user_id exists
-      const gymUpdate: any = { claimed: true, listing_tier: "free" };
-      if (claim.user_id) {
-        gymUpdate.coach_id = claim.user_id;
-      }
-      const { error: gymErr } = await supabase
-        .from("gyms")
-        .update(gymUpdate)
-        .eq("id", claim.gym_id);
-      if (gymErr) throw gymErr;
-
-      // 3. Send notification to claiming user
-      if (claim.user_id) {
-        await supabase.rpc("create_notification", {
-          _user_id: claim.user_id,
-          _title: `Your claim for ${gymName} has been approved`,
-          _message: `Your claim for ${gymName} has been approved. The gym is now listed under your account.`,
-          _type: "system",
-          _reference_id: claim.gym_id,
-        });
-
-        // 4. Grant gym_owner role if not already present
-        await supabase.from("user_roles").insert({
-          user_id: claim.user_id,
-          role: "gym_owner" as any,
-        }).select().maybeSingle(); // ignore conflict
-      }
+      const { error } = await supabase.rpc("approve_gym_claim" as any, {
+        _claim_id: claim.id,
+      });
+      if (error) throw error;
     },
     onSuccess: () => {
       toast({ title: "Claim approved", description: "Gym has been marked as claimed and assigned to the user." });
