@@ -107,7 +107,7 @@ export function AddFighterToGymDialog({
       fighter_id: fighter.id,
       gym_id: gymId,
       is_primary: true,
-      status: "accepted",
+      status: "approved",
     });
 
     if (linkError) {
