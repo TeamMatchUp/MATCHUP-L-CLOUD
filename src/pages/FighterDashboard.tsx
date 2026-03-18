@@ -145,8 +145,16 @@ export default function FighterDashboard() {
                 </div>
 
                 {/* View Selector */}
-                <Tabs defaultValue={searchParams.get("tab") || "gyms"} className="space-y-6">
+                <Tabs defaultValue={searchParams.get("tab") || "profile"} className="space-y-6">
                   <TabsList className="bg-card border border-border">
+                    <TabsTrigger value="profile">
+                      <User className="h-4 w-4 mr-1" /> My Profile
+                      {(() => {
+                        const mandatoryFields = ["date_of_birth", "walk_around_weight_kg", "height", "reach", "stance", "discipline", "weight_class"] as const;
+                        const hasIncomplete = mandatoryFields.some((f) => !(fighterProfile as any)[f]);
+                        return hasIncomplete ? <span className="h-2 w-2 rounded-full bg-primary ml-1.5 animate-pulse" /> : null;
+                      })()}
+                    </TabsTrigger>
                     <TabsTrigger value="gyms">
                       <Building2 className="h-4 w-4 mr-1" /> Gyms
                     </TabsTrigger>
@@ -160,6 +168,10 @@ export default function FighterDashboard() {
                       <Bell className="h-4 w-4 mr-1" /> Notifications
                     </TabsTrigger>
                   </TabsList>
+
+                  <TabsContent value="profile">
+                    <MyProfilePanel fighterProfile={fighterProfile} gymLinks={gymLinks} />
+                  </TabsContent>
 
                   <TabsContent value="gyms">
                     <MyGymsPanel fighterProfileId={fighterProfile.id} />

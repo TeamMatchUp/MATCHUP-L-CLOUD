@@ -213,6 +213,9 @@ export default function CoachDashboard() {
               ))}
             </div>
 
+            {/* Gym Join Requests */}
+            <GymRequestsPanel gymIds={myGyms.map((g) => g.id)} coachId={user!.id} />
+
             {/* Fighter Roster with search & gym filter */}
             <FighterRosterPanel
               fighters={allFighters}

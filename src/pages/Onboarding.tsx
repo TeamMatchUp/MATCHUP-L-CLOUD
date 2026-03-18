@@ -191,7 +191,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
 
       // Notify the gym's coach if the gym has one
       if (selectedGym.coach_id) {
-        const fighterName = profileData.name || "A fighter";
+        const fighterName = user!.user_metadata?.full_name || user!.email || "A fighter";
         await supabase.rpc("create_notification", {
           _user_id: selectedGym.coach_id,
           _title: "Gym join request",
