@@ -616,6 +616,47 @@ export type Database = {
           },
         ]
       }
+      gym_claims: {
+        Row: {
+          claimant_email: string
+          claimant_name: string
+          claimant_role: string
+          created_at: string
+          gym_id: string
+          id: string
+          message: string | null
+          status: string
+        }
+        Insert: {
+          claimant_email: string
+          claimant_name: string
+          claimant_role: string
+          created_at?: string
+          gym_id: string
+          id?: string
+          message?: string | null
+          status?: string
+        }
+        Update: {
+          claimant_email?: string
+          claimant_name?: string
+          claimant_role?: string
+          created_at?: string
+          gym_id?: string
+          id?: string
+          message?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_claims_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gyms: {
         Row: {
           address: string | null
