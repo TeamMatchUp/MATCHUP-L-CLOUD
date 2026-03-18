@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AppLogo } from "@/components/AppLogo";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { Copy, Check } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -39,9 +40,16 @@ const WEIGHT_CLASSES: { value: WeightClass; label: string }[] = [
 ];
 
 const DISCIPLINES = ["Boxing", "Muay Thai", "MMA", "BJJ", "Kickboxing", "Wrestling", "Other"];
+const STANCES = ["Orthodox", "Southpaw", "Switch"];
+
+const FIGHTING_SUBSTYLES: Record<string, string[]> = {
+  Boxing: ["Out-Boxer", "Pressure", "Swarmer", "Counter Puncher", "Brawler"],
+  "Muay Thai": ["Teep", "Rhythm", "Aggressive", "Forward", "Clinch", "Knee", "Counter", "Timing"],
+  MMA: ["Pure Striker", "Wrestler", "Takedown", "BJJ", "Sub Grappler", "Dirty Boxer"],
+  Kickboxing: ["Out-Fighter", "Pressure", "Combo", "Power", "Counter"],
+};
+
 const ROSTER_SIZES = ["1–5", "6–15", "16–30", "30+"];
-const SHOW_SIZES = ["Amateur <50", "Regional 50–200", "Major 200+"];
-const FREQUENCIES = ["Monthly", "Quarterly", "Annually", "One-off"];
 
 const ROLE_PATHS: Record<string, string> = {
   organiser: "/organiser/dashboard",
@@ -55,6 +63,13 @@ interface GymResult {
   id: string;
   name: string;
   city: string | null;
+  coach_id: string | null;
+}
+
+async function markOnboardingComplete() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", user.id);
 }
 
 function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
@@ -62,12 +77,21 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
   const { toast } = useToast();
   const [weightClass, setWeightClass] = useState<WeightClass | "">("");
   const [discipline, setDiscipline] = useState("");
+  const [stance, setStance] = useState("");
+  const [fightingSubstyle, setFightingSubstyle] = useState("");
   const [postcode, setPostcode] = useState("");
   const [hasGym, setHasGym] = useState(false);
   const [gymSearch, setGymSearch] = useState("");
   const [gymResults, setGymResults] = useState<GymResult[]>([]);
-  const [selectedGymId, setSelectedGymId] = useState<string | null>(null);
+  const [selectedGym, setSelectedGym] = useState<GymResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const substyleOptions = FIGHTING_SUBSTYLES[discipline] ?? [];
+
+  useEffect(() => {
+    setFightingSubstyle("");
+  }, [discipline]);
 
   useEffect(() => {
     if (!gymSearch || gymSearch.length < 2) {
@@ -77,13 +101,20 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
     const timeout = setTimeout(async () => {
       const { data } = await supabase
         .from("gyms")
-        .select("id, name, city")
+        .select("id, name, city, coach_id")
         .ilike("name", `%${gymSearch}%`)
         .limit(5);
       setGymResults(data ?? []);
     }, 300);
     return () => clearTimeout(timeout);
   }, [gymSearch]);
+
+  const handleCopySignupUrl = () => {
+    const url = `${window.location.origin}/auth?mode=signup`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSubmit = async () => {
     if (!weightClass || !discipline) {
@@ -92,7 +123,6 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
     }
     setLoading(true);
 
-    // Check if fighter profile already exists for this user
     const { data: existing } = await supabase
       .from("fighter_profiles")
       .select("id")
@@ -102,29 +132,29 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
     let fighterId = existing?.id;
 
     if (!existing) {
+      const styleValue = discipline === "Wrestling" || discipline === "Other" || discipline === "BJJ"
+        ? null
+        : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]);
+
       const { data: created, error } = await supabase.from("fighter_profiles").insert({
         user_id: user!.id,
         name: user!.user_metadata?.full_name || user!.email || "Fighter",
         weight_class: weightClass as WeightClass,
-        style: discipline === "Wrestling" || discipline === "Other"
-          ? null
-          : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]),
-      }).select("id").single();
+        style: styleValue,
+        stance: stance || null,
+        fighting_substyle: fightingSubstyle || null,
+      } as any).select("id").single();
       if (error) console.error("Fighter profile error:", error);
       fighterId = created?.id;
     }
 
-    // If gym selected, create a pending link and save to profile
-    if (hasGym && selectedGymId) {
-      if (fighterId) {
-        await supabase.from("fighter_gym_links").insert({
-          fighter_id: fighterId,
-          gym_id: selectedGymId,
-          status: "pending",
-        });
-      }
-      // Save gym affiliation to profile
-      await supabase.from("profiles").update({ gym_id: selectedGymId } as any).eq("id", user!.id);
+    // If gym selected, create a pending fighter_gym_link
+    if (hasGym && selectedGym && fighterId) {
+      await supabase.from("fighter_gym_links").insert({
+        fighter_id: fighterId,
+        gym_id: selectedGym.id,
+        status: "pending",
+      });
     }
 
     await markOnboardingComplete();
@@ -161,13 +191,39 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
       </div>
 
       <div className="space-y-2">
+        <Label>Stance</Label>
+        <Select value={stance} onValueChange={setStance}>
+          <SelectTrigger><SelectValue placeholder="Select stance" /></SelectTrigger>
+          <SelectContent>
+            {STANCES.map((s) => (
+              <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {substyleOptions.length > 0 && (
+        <div className="space-y-2">
+          <Label>Fighting Style</Label>
+          <Select value={fightingSubstyle} onValueChange={setFightingSubstyle}>
+            <SelectTrigger><SelectValue placeholder="Select fighting style" /></SelectTrigger>
+            <SelectContent>
+              {substyleOptions.map((s) => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      <div className="space-y-2">
         <Label>Postcode</Label>
         <Input value={postcode} onChange={(e) => setPostcode(e.target.value)} placeholder="e.g. SW1A 1AA" />
       </div>
 
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <Checkbox checked={hasGym} onCheckedChange={(v) => { setHasGym(!!v); if (!v) { setSelectedGymId(null); setGymSearch(""); } }} />
+          <Checkbox checked={hasGym} onCheckedChange={(v) => { setHasGym(!!v); if (!v) { setSelectedGym(null); setGymSearch(""); } }} />
           <Label className="cursor-pointer">I train at a gym</Label>
         </div>
 
@@ -175,20 +231,34 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
           <div className="space-y-2 pl-6">
             <Input
               value={gymSearch}
-              onChange={(e) => { setGymSearch(e.target.value); setSelectedGymId(null); }}
+              onChange={(e) => { setGymSearch(e.target.value); setSelectedGym(null); }}
               placeholder="Search gyms..."
             />
-            {gymResults.length > 0 && (
+            {gymResults.length > 0 && !selectedGym && (
               <div className="border border-border rounded-md overflow-hidden">
                 {gymResults.map((gym) => (
                   <button
                     key={gym.id}
-                    onClick={() => { setSelectedGymId(gym.id); setGymSearch(gym.name); setGymResults([]); }}
-                    className={`w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors ${selectedGymId === gym.id ? "bg-primary/10 text-primary" : "text-foreground"}`}
+                    onClick={() => { setSelectedGym(gym); setGymSearch(gym.name); setGymResults([]); }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors text-foreground"
                   >
                     {gym.name}{gym.city ? ` — ${gym.city}` : ""}
                   </button>
                 ))}
+              </div>
+            )}
+            {selectedGym && !selectedGym.coach_id && (
+              <div className="rounded-md border border-border bg-muted/50 p-3 space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  This gym hasn't been claimed yet — share this link to invite the coach to sign up and claim it.
+                </p>
+                <button
+                  onClick={handleCopySignupUrl}
+                  className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied ? "Copied!" : "Copy signup URL"}
+                </button>
               </div>
             )}
           </div>
@@ -227,7 +297,6 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
     }
     setLoading(true);
 
-    // Create gym row
     const { error } = await supabase.from("gyms").insert({
       name: gymName,
       postcode: postcode || null,
@@ -293,93 +362,22 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
   );
 }
 
-function OrganiserForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
-  const { toast } = useToast();
-  const [promotionName, setPromotionName] = useState("");
-  const [showSize, setShowSize] = useState("");
-  const [frequency, setFrequency] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async () => {
-    if (!promotionName) {
-      toast({ title: "Please enter your promotion name", variant: "destructive" });
-      return;
-    }
-    setLoading(true);
-    await markOnboardingComplete();
-    setLoading(false);
-    onComplete();
-  };
-
-  return (
-    <div className="space-y-5">
-      <h3 className="font-heading text-xl text-foreground">Organiser Setup</h3>
-
-      <div className="space-y-2">
-        <Label>Promotion Name *</Label>
-        <Input value={promotionName} onChange={(e) => setPromotionName(e.target.value)} placeholder="Your promotion name" />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Show Size</Label>
-        <Select value={showSize} onValueChange={setShowSize}>
-          <SelectTrigger><SelectValue placeholder="Select show size" /></SelectTrigger>
-          <SelectContent>
-            {SHOW_SIZES.map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Frequency</Label>
-        <Select value={frequency} onValueChange={setFrequency}>
-          <SelectTrigger><SelectValue placeholder="How often?" /></SelectTrigger>
-          <SelectContent>
-            {FREQUENCIES.map((f) => (
-              <SelectItem key={f} value={f}>{f}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-col gap-3 pt-2">
-        <Button variant="hero" onClick={handleSubmit} disabled={loading}>
-          {loading ? "Saving..." : "Continue"}
-        </Button>
-        <button onClick={onSkip} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Skip for now
-        </button>
-      </div>
-    </div>
-  );
-}
-
-async function markOnboardingComplete() {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
-  await supabase.from("profiles").update({ onboarding_completed: true } as any).eq("id", user.id);
-}
-
 export default function Onboarding() {
   const { user, roles, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [rolesLoaded, setRolesLoaded] = useState(false);
 
-  // Wait for roles to actually load (they arrive async after auth)
   useEffect(() => {
     if (!authLoading && user && roles.length > 0) {
       setRolesLoaded(true);
     }
-    // Also mark loaded after a timeout to handle users with no roles
     if (!authLoading && user) {
       const t = setTimeout(() => setRolesLoaded(true), 1500);
       return () => clearTimeout(t);
     }
   }, [authLoading, user, roles]);
 
-  // Determine primary role for which form to show
+  // Determine primary role
   const primaryRole: AppRole | null = roles.includes("gym_owner")
     ? "gym_owner"
     : roles.includes("fighter")
@@ -398,6 +396,15 @@ export default function Onboarding() {
     goToDashboard();
   };
 
+  // Organisers skip onboarding entirely — redirect to events page
+  useEffect(() => {
+    if (rolesLoaded && primaryRole === "organiser") {
+      markOnboardingComplete().then(() => {
+        navigate("/events", { replace: true });
+      });
+    }
+  }, [rolesLoaded, primaryRole, navigate]);
+
   if (authLoading || !rolesLoaded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -409,6 +416,15 @@ export default function Onboarding() {
   if (!user) {
     navigate("/auth", { replace: true });
     return null;
+  }
+
+  // If organiser, show loading while we redirect
+  if (primaryRole === "organiser") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Redirecting...</div>
+      </div>
+    );
   }
 
   return (
@@ -430,9 +446,6 @@ export default function Onboarding() {
           )}
           {primaryRole === "gym_owner" && (
             <CoachForm onComplete={goToDashboard} onSkip={handleSkip} />
-          )}
-          {primaryRole === "organiser" && (
-            <OrganiserForm onComplete={goToDashboard} onSkip={handleSkip} />
           )}
           {!primaryRole && (
             <div className="text-center space-y-4">

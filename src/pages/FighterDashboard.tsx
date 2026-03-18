@@ -33,24 +33,17 @@ export default function FighterDashboard() {
     enabled: !!user,
   });
 
-  // Fetch affiliated gym from profiles.gym_id
-  const { data: affiliatedGym } = useQuery({
-    queryKey: ["fighter-affiliated-gym", user?.id],
+  // Fetch affiliated gyms from fighter_gym_links
+  const { data: gymLinks = [] } = useQuery({
+    queryKey: ["fighter-gym-links", fighterProfile?.id],
     queryFn: async () => {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("gym_id")
-        .eq("id", user!.id)
-        .maybeSingle();
-      if (!profile?.gym_id) return null;
-      const { data: gym } = await supabase
-        .from("gyms")
-        .select("id, name")
-        .eq("id", profile.gym_id)
-        .maybeSingle();
-      return gym;
+      const { data } = await supabase
+        .from("fighter_gym_links")
+        .select("id, status, gym:gyms(id, name)")
+        .eq("fighter_id", fighterProfile!.id);
+      return data ?? [];
     },
-    enabled: !!user,
+    enabled: !!fighterProfile,
   });
 
   const { data: proposals = [] } = useQuery({
