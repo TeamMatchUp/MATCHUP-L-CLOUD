@@ -72,10 +72,12 @@ interface GymResult {
   claimed: boolean | null;
 }
 
-async function markOnboardingComplete() {
+async function markOnboardingComplete(queryClient: ReturnType<typeof useQueryClient>) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
   await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", user.id);
+  // Invalidate the ProtectedRoute's onboarding check cache so it doesn't redirect back
+  queryClient.setQueryData(["onboarding-check", user.id], { onboarding_completed: true });
 }
 
 function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
