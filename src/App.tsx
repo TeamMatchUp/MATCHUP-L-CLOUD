@@ -29,6 +29,7 @@ import AdvertiseEnquiry from "./pages/AdvertiseEnquiry";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
+import MapView from "./pages/MapView";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -63,6 +64,7 @@ const App = () => (
             <Route path="/record-accuracy" element={<RecordAccuracyPolicy />} />
             <Route path="/advertise" element={<AdvertiseEnquiry />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/map" element={<MapView />} />
             <Route path="/admin" element={<Admin />} />
             <Route
               path="/onboarding"

@@ -26,6 +26,7 @@ import {
   Settings,
   LogOut,
   Star,
+  User,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -72,6 +73,7 @@ export function DashboardSidebar({ pendingCount, unreadCount }: DashboardSidebar
 
   const navItems: NavItem[] = [
     { key: "overview", label: "Dashboard", icon: LayoutDashboard },
+    { key: "my-profile", label: "My Profile", icon: User, roles: ["fighter"] },
     { key: "gyms", label: "My Gyms", icon: Building2, roles: ["gym_owner", "coach", "fighter"] },
     { key: "roster", label: "Roster", icon: Users, roles: ["gym_owner", "coach"] },
     { key: "proposals", label: "Proposals", icon: Inbox, badgeCount: pendingCount },

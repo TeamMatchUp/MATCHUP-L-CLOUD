@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, ShieldCheck } from "lucide-react";
 import { FightHistory } from "@/components/fighter/FightHistory";
+import { FighterFightHistory } from "@/components/fighter/FighterFightHistory";
 import { ProfileCompletionBar } from "@/components/fighter/ProfileCompletionBar";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -138,7 +139,12 @@ export default function FighterDetail() {
                 ))}
               </div>
 
-              {/* Record Breakdown removed - now shown dynamically via FightHistory */}
+              {/* Career Stats & Fight History */}
+              <FighterFightHistory
+                fighterId={fighter.id}
+                fighterUserId={fighter.user_id ?? undefined}
+                isOwner={false}
+              />
 
               {/* Bio */}
               {fighter.bio && (

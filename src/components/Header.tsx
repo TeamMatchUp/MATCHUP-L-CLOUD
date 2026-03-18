@@ -131,6 +131,9 @@ export function Header() {
               <DropdownMenuItem asChild>
                 <Link to="/gyms" className="uppercase tracking-wide text-xs">View Gyms</Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/map" className="uppercase tracking-wide text-xs">Map View</Link>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </nav>
@@ -240,6 +243,7 @@ export function Header() {
             <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Events</Link>
             <Link to="/fighters" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Fighters</Link>
             <Link to="/gyms" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Gyms</Link>
+            <Link to="/map" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>Map View</Link>
             {user && (
               <>
                 <div className="border-t border-border/50 my-1" />

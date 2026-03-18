@@ -32,6 +32,8 @@ import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 import { EditFighterDialog } from "@/components/coach/EditFighterDialog";
 import { DeleteFighterDialog } from "@/components/coach/DeleteFighterDialog";
 import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
+import { GymRequestsPanel } from "@/components/coach/GymRequestsPanel";
+import { EditableProfilePanel } from "@/components/fighter/EditableProfilePanel";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -128,6 +130,13 @@ export default function Dashboard() {
       case "overview":
         return (
           <div className="space-y-6">
+            {/* Coach gym join requests */}
+            {isCoachOrOwner && myGyms.length > 0 && (
+              <GymRequestsPanel
+                gymIds={myGyms.map((g: any) => g.id)}
+                coachId={user!.id}
+              />
+            )}
             {/* Fighter profile creation prompt - compact banner */}
             {isFighter && !fighterProfile && (
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex items-center justify-between">
@@ -231,6 +240,15 @@ export default function Dashboard() {
       case "notifications":
         return <NotificationHistory />;
 
+      case "my-profile":
+        return fighterProfile ? (
+          <EditableProfilePanel
+            fighterProfile={fighterProfile}
+            userId={user!.id}
+            onRefresh={handleRefresh}
+          />
+        ) : null;
+
       case "create-profile":
         return (
           <div className="space-y-6">
@@ -292,6 +310,9 @@ export default function Dashboard() {
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/gyms" className="text-xs uppercase tracking-wide">Gyms</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/map" className="text-xs uppercase tracking-wide">Map View</Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
