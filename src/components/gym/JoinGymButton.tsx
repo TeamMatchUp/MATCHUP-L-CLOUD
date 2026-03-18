@@ -66,6 +66,7 @@ export function JoinGymButton({ gymId }: Props) {
     },
   });
 
+  if (!user || !isFighter) return null;
   if (!fighterProfile) return null;
 
   if (existingLink) {
