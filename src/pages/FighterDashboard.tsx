@@ -106,6 +106,8 @@ export default function FighterDashboard() {
               />
             ) : (
               <>
+                {/* Profile Completion */}
+                <ProfileCompletionBar fighterId={fighterProfile.id} fighterProfile={fighterProfile} />
                 {/* Gym Invites */}
                 <GymInvitesPanel fighterProfileId={fighterProfile.id} />
                 {/* Profile Summary */}

@@ -99,6 +99,10 @@ export default function FighterDetail() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
+              {isOwnerOrCoach && (
+                <ProfileCompletionBar fighterId={fighter.id} fighterProfile={fighter} />
+              )}
+
               <div className="flex items-start gap-6 mb-8">
                 <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center font-heading text-2xl text-muted-foreground shrink-0 overflow-hidden">
                   {fighter._avatar ? (
