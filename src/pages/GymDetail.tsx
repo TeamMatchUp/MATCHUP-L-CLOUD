@@ -112,7 +112,7 @@ export default function GymDetail() {
         .select("id, status")
         .eq("fighter_id", myFighterProfile.id)
         .eq("gym_id", id)
-        .eq("status", "accepted")
+        .in("status", ["approved", "accepted"])
         .maybeSingle();
       return data;
     },
