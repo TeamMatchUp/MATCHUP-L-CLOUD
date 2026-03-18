@@ -841,6 +841,7 @@ export type Database = {
           notification_match_proposals: boolean
           notification_match_updates: boolean
           notification_system: boolean
+          onboarding_completed: boolean
           updated_at: string
         }
         Insert: {
@@ -854,6 +855,7 @@ export type Database = {
           notification_match_proposals?: boolean
           notification_match_updates?: boolean
           notification_system?: boolean
+          onboarding_completed?: boolean
           updated_at?: string
         }
         Update: {
@@ -867,6 +869,7 @@ export type Database = {
           notification_match_proposals?: boolean
           notification_match_updates?: boolean
           notification_system?: boolean
+          onboarding_completed?: boolean
           updated_at?: string
         }
         Relationships: []
