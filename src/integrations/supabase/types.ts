@@ -130,6 +130,53 @@ export type Database = {
           },
         ]
       }
+      event_claims: {
+        Row: {
+          claimant_email: string
+          claimant_name: string
+          claimant_role: string
+          created_at: string
+          event_id: string
+          id: string
+          promotion_name: string | null
+          status: string
+          user_id: string | null
+          verification_doc_url: string | null
+        }
+        Insert: {
+          claimant_email: string
+          claimant_name: string
+          claimant_role: string
+          created_at?: string
+          event_id: string
+          id?: string
+          promotion_name?: string | null
+          status?: string
+          user_id?: string | null
+          verification_doc_url?: string | null
+        }
+        Update: {
+          claimant_email?: string
+          claimant_name?: string
+          claimant_role?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          promotion_name?: string | null
+          status?: string
+          user_id?: string | null
+          verification_doc_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_claims_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           city: string | null
@@ -432,14 +479,17 @@ export type Database = {
           record_draws: number
           record_losses: number
           record_wins: number
+          region: string | null
           stance: string | null
           style: Database["public"]["Enums"]["fighting_style"] | null
+          training_background: string | null
           updated_at: string
           user_id: string | null
           verified: boolean
           visibility: string
           walk_around_weight_kg: number | null
           weight_class: Database["public"]["Enums"]["weight_class"]
+          years_training: number | null
         }
         Insert: {
           amateur_draws?: number
@@ -462,14 +512,17 @@ export type Database = {
           record_draws?: number
           record_losses?: number
           record_wins?: number
+          region?: string | null
           stance?: string | null
           style?: Database["public"]["Enums"]["fighting_style"] | null
+          training_background?: string | null
           updated_at?: string
           user_id?: string | null
           verified?: boolean
           visibility?: string
           walk_around_weight_kg?: number | null
           weight_class: Database["public"]["Enums"]["weight_class"]
+          years_training?: number | null
         }
         Update: {
           amateur_draws?: number
@@ -492,14 +545,17 @@ export type Database = {
           record_draws?: number
           record_losses?: number
           record_wins?: number
+          region?: string | null
           stance?: string | null
           style?: Database["public"]["Enums"]["fighting_style"] | null
+          training_background?: string | null
           updated_at?: string
           user_id?: string | null
           verified?: boolean
           visibility?: string
           walk_around_weight_kg?: number | null
           weight_class?: Database["public"]["Enums"]["weight_class"]
+          years_training?: number | null
         }
         Relationships: []
       }
@@ -721,6 +777,35 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "gym_leads_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gym_profile_views: {
+        Row: {
+          gym_id: string
+          id: string
+          viewed_at: string
+          viewer_user_id: string | null
+        }
+        Insert: {
+          gym_id: string
+          id?: string
+          viewed_at?: string
+          viewer_user_id?: string | null
+        }
+        Update: {
+          gym_id?: string
+          id?: string
+          viewed_at?: string
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_profile_views_gym_id_fkey"
             columns: ["gym_id"]
             isOneToOne: false
             referencedRelation: "gyms"
@@ -1082,6 +1167,51 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      upgrade_waitlist: {
+        Row: {
+          created_at: string
+          desired_tier: string
+          email: string
+          event_id: string | null
+          gym_id: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          desired_tier: string
+          email: string
+          event_id?: string | null
+          gym_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          desired_tier?: string
+          email?: string
+          event_id?: string | null
+          gym_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upgrade_waitlist_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "upgrade_waitlist_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
             referencedColumns: ["id"]
           },
         ]

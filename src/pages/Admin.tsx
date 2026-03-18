@@ -9,27 +9,30 @@ import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { ShieldCheck, Building2, Clock, CheckCircle, XCircle } from "lucide-react";
+import { ShieldCheck, Building2, Clock, CheckCircle, XCircle, Calendar } from "lucide-react";
 import { format } from "date-fns";
 
 function AdminSummary() {
   const { data } = useQuery({
     queryKey: ["admin-gym-summary"],
     queryFn: async () => {
-      const [total, unclaimed, claimed, pending] = await Promise.all([
+      const [total, unclaimed, claimed, pending, eventClaims] = await Promise.all([
         supabase.from("gyms").select("id", { count: "exact", head: true }),
         supabase.from("gyms").select("id", { count: "exact", head: true }).eq("claimed", false),
         supabase.from("gyms").select("id", { count: "exact", head: true }).eq("claimed", true),
         supabase.from("gym_claims").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("event_claims" as any).select("id", { count: "exact", head: true }).eq("status", "pending"),
       ]);
       return {
         total: total.count ?? 0,
         unclaimed: unclaimed.count ?? 0,
         claimed: claimed.count ?? 0,
         pending: pending.count ?? 0,
+        eventClaims: (eventClaims as any).count ?? 0,
       };
     },
   });
@@ -38,11 +41,12 @@ function AdminSummary() {
     { label: "Total Gyms", value: data?.total ?? 0, icon: Building2 },
     { label: "Unclaimed", value: data?.unclaimed ?? 0, icon: Clock },
     { label: "Claimed", value: data?.claimed ?? 0, icon: ShieldCheck },
-    { label: "Pending Claims", value: data?.pending ?? 0, icon: Clock },
+    { label: "Pending Gym Claims", value: data?.pending ?? 0, icon: Clock },
+    { label: "Pending Event Claims", value: data?.eventClaims ?? 0, icon: Calendar },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
       {stats.map((s) => (
         <Card key={s.label} className="bg-card border-border/40 p-4 flex items-center gap-3">
           <s.icon className="h-5 w-5 text-primary shrink-0" />
@@ -73,13 +77,11 @@ function GymClaimsTable() {
 
   const approve = useMutation({
     mutationFn: async (claim: any) => {
-      const { error } = await supabase.rpc("approve_gym_claim" as any, {
-        _claim_id: claim.id,
-      });
+      const { error } = await supabase.rpc("approve_gym_claim" as any, { _claim_id: claim.id });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Claim approved", description: "Gym has been marked as claimed and assigned to the user." });
+      toast({ title: "Claim approved" });
       queryClient.invalidateQueries({ queryKey: ["admin-gym-claims"] });
       queryClient.invalidateQueries({ queryKey: ["admin-gym-summary"] });
     },
@@ -89,14 +91,8 @@ function GymClaimsTable() {
   const reject = useMutation({
     mutationFn: async (claim: any) => {
       const gymName = (claim as any).gyms?.name ?? "the gym";
-
-      const { error } = await supabase
-        .from("gym_claims")
-        .update({ status: "rejected" })
-        .eq("id", claim.id);
+      const { error } = await supabase.from("gym_claims").update({ status: "rejected" }).eq("id", claim.id);
       if (error) throw error;
-
-      // Send rejection notification
       if (claim.user_id) {
         await supabase.rpc("create_notification", {
           _user_id: claim.user_id,
@@ -116,7 +112,6 @@ function GymClaimsTable() {
   });
 
   if (isLoading) return <p className="text-muted-foreground text-sm">Loading claims…</p>;
-
   if (!claims?.length) return <p className="text-muted-foreground text-sm">No gym claims yet.</p>;
 
   return (
@@ -142,32 +137,135 @@ function GymClaimsTable() {
               <TableCell className="hidden md:table-cell capitalize">{c.claimant_role}</TableCell>
               <TableCell className="hidden md:table-cell">{format(new Date(c.created_at), "dd MMM yyyy")}</TableCell>
               <TableCell>
-                <Badge
-                  variant={c.status === "approved" ? "default" : c.status === "rejected" ? "destructive" : "secondary"}
-                  className="text-[10px]"
-                >
+                <Badge variant={c.status === "approved" ? "default" : c.status === "rejected" ? "destructive" : "secondary"} className="text-[10px]">
                   {c.status}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
                 {c.status === "pending" && (
                   <div className="flex gap-1 justify-end">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs border-green-600/40 text-green-500 hover:bg-green-600/10"
-                      onClick={() => approve.mutate(c)}
-                      disabled={approve.isPending}
-                    >
+                    <Button size="sm" variant="outline" className="h-7 text-xs border-green-600/40 text-green-500 hover:bg-green-600/10" onClick={() => approve.mutate(c)} disabled={approve.isPending}>
                       <CheckCircle className="h-3 w-3 mr-1" /> Approve
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs border-destructive/40 text-destructive hover:bg-destructive/10"
-                      onClick={() => reject.mutate(c)}
-                      disabled={reject.isPending}
-                    >
+                    <Button size="sm" variant="outline" className="h-7 text-xs border-destructive/40 text-destructive hover:bg-destructive/10" onClick={() => reject.mutate(c)} disabled={reject.isPending}>
+                      <XCircle className="h-3 w-3 mr-1" /> Reject
+                    </Button>
+                  </div>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function EventClaimsTable() {
+  const queryClient = useQueryClient();
+
+  const { data: claims, isLoading } = useQuery({
+    queryKey: ["admin-event-claims"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("event_claims" as any)
+        .select("*, events(title)")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as any[];
+    },
+  });
+
+  const approve = useMutation({
+    mutationFn: async (claim: any) => {
+      // Set event organiser_id
+      const { error: evError } = await supabase
+        .from("events")
+        .update({ organiser_id: claim.user_id })
+        .eq("id", claim.event_id);
+      if (evError) throw evError;
+
+      // Update claim status
+      await supabase.from("event_claims" as any).update({ status: "approved" } as any).eq("id", claim.id);
+
+      // Grant organiser role
+      if (claim.user_id) {
+        await supabase.from("user_roles").insert({ user_id: claim.user_id, role: "organiser" } as any);
+        await supabase.rpc("create_notification", {
+          _user_id: claim.user_id,
+          _title: `Your claim for ${claim.events?.title ?? "the event"} has been approved`,
+          _message: `You now have organiser access to manage this event.`,
+          _type: "system",
+          _reference_id: claim.event_id,
+        });
+      }
+    },
+    onSuccess: () => {
+      toast({ title: "Event claim approved" });
+      queryClient.invalidateQueries({ queryKey: ["admin-event-claims"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-gym-summary"] });
+    },
+    onError: () => toast({ title: "Error", variant: "destructive" }),
+  });
+
+  const reject = useMutation({
+    mutationFn: async (claim: any) => {
+      await supabase.from("event_claims" as any).update({ status: "rejected" } as any).eq("id", claim.id);
+      if (claim.user_id) {
+        await supabase.rpc("create_notification", {
+          _user_id: claim.user_id,
+          _title: `Your claim for ${claim.events?.title ?? "the event"} was not approved`,
+          _message: `Please contact us if you believe this is an error.`,
+          _type: "system",
+          _reference_id: claim.event_id,
+        });
+      }
+    },
+    onSuccess: () => {
+      toast({ title: "Event claim rejected" });
+      queryClient.invalidateQueries({ queryKey: ["admin-event-claims"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-gym-summary"] });
+    },
+    onError: () => toast({ title: "Error", variant: "destructive" }),
+  });
+
+  if (isLoading) return <p className="text-muted-foreground text-sm">Loading…</p>;
+  if (!claims?.length) return <p className="text-muted-foreground text-sm">No event claims yet.</p>;
+
+  return (
+    <div className="rounded-lg border border-border/40 overflow-auto">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Event</TableHead>
+            <TableHead>Claimant</TableHead>
+            <TableHead className="hidden sm:table-cell">Email</TableHead>
+            <TableHead className="hidden md:table-cell">Role</TableHead>
+            <TableHead className="hidden md:table-cell">Promotion</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {claims.map((c: any) => (
+            <TableRow key={c.id}>
+              <TableCell className="font-medium">{c.events?.title ?? "Unknown"}</TableCell>
+              <TableCell>{c.claimant_name}</TableCell>
+              <TableCell className="hidden sm:table-cell">{c.claimant_email}</TableCell>
+              <TableCell className="hidden md:table-cell capitalize">{c.claimant_role}</TableCell>
+              <TableCell className="hidden md:table-cell">{c.promotion_name || "—"}</TableCell>
+              <TableCell>
+                <Badge variant={c.status === "approved" ? "default" : c.status === "rejected" ? "destructive" : "secondary"} className="text-[10px]">
+                  {c.status}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                {c.status === "pending" && (
+                  <div className="flex gap-1 justify-end">
+                    <Button size="sm" variant="outline" className="h-7 text-xs border-green-600/40 text-green-500 hover:bg-green-600/10" onClick={() => approve.mutate(c)} disabled={approve.isPending}>
+                      <CheckCircle className="h-3 w-3 mr-1" /> Approve
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7 text-xs border-destructive/40 text-destructive hover:bg-destructive/10" onClick={() => reject.mutate(c)} disabled={reject.isPending}>
                       <XCircle className="h-3 w-3 mr-1" /> Reject
                     </Button>
                   </div>
@@ -209,10 +307,18 @@ export default function Admin() {
 
         <AdminSummary />
 
-        <div>
-          <h2 className="font-heading text-lg text-foreground mb-3">Gym Claims</h2>
-          <GymClaimsTable />
-        </div>
+        <Tabs defaultValue="gym-claims">
+          <TabsList>
+            <TabsTrigger value="gym-claims"><Building2 className="h-4 w-4 mr-1" /> Gym Claims</TabsTrigger>
+            <TabsTrigger value="event-claims"><Calendar className="h-4 w-4 mr-1" /> Event Claims</TabsTrigger>
+          </TabsList>
+          <TabsContent value="gym-claims">
+            <GymClaimsTable />
+          </TabsContent>
+          <TabsContent value="event-claims">
+            <EventClaimsTable />
+          </TabsContent>
+        </Tabs>
       </main>
       <Footer />
     </div>

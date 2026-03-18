@@ -13,12 +13,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, ArrowUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
+import { GymTierBadge } from "@/components/gym/GymTierBadge";
+import { GymAnalyticsStrip } from "@/components/gym/GymAnalyticsStrip";
+import { UpgradeGymDialog } from "@/components/gym/UpgradeGymDialog";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 const COUNTRIES = Constants.public.Enums.country_code;
@@ -45,6 +48,7 @@ export function DashboardGyms({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showCreateGym, setShowCreateGym] = useState(false);
+  const [upgradeGym, setUpgradeGym] = useState<any>(null);
   const [newGymName, setNewGymName] = useState("");
   const [newGymLocation, setNewGymLocation] = useState("");
   const [newGymCountry, setNewGymCountry] = useState<CountryCode>("UK");
@@ -175,7 +179,10 @@ export function DashboardGyms({
               className="rounded-lg border border-border bg-card p-5 hover:border-primary/30 transition-colors"
             >
               <Link to={`/gyms/${gym.id}`}>
-                <h3 className="font-heading text-lg text-foreground">{gym.name}</h3>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-heading text-lg text-foreground">{gym.name}</h3>
+                  <GymTierBadge tier={gym.listing_tier} />
+                </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {gym.location} · {gym.country}
                 </p>
@@ -183,6 +190,8 @@ export function DashboardGyms({
                   {gym.fighter_gym_links?.length ?? 0} fighters
                 </p>
               </Link>
+              {/* Analytics Strip */}
+              <GymAnalyticsStrip gymId={gym.id} listingTier={gym.listing_tier} />
               <div className="flex gap-2 mt-3">
                 <Button
                   size="sm"
@@ -192,6 +201,11 @@ export function DashboardGyms({
                 >
                   <Plus className="h-3 w-3" /> Add Fighter
                 </Button>
+                {(gym.listing_tier === "free" || gym.listing_tier === "unclaimed") && (
+                  <Button size="sm" variant="outline" className="gap-1" onClick={() => setUpgradeGym(gym)}>
+                    <ArrowUp className="h-3 w-3" /> Upgrade
+                  </Button>
+                )}
                 <Button size="sm" variant="ghost" className="gap-1" asChild>
                   <Link to={`/gyms/${gym.id}`}>
                     <Pencil className="h-3 w-3" /> Edit
@@ -201,6 +215,14 @@ export function DashboardGyms({
             </div>
           ))}
         </div>
+        {upgradeGym && (
+          <UpgradeGymDialog
+            open={!!upgradeGym}
+            onOpenChange={(open) => { if (!open) setUpgradeGym(null); }}
+            gymId={upgradeGym.id}
+            gymName={upgradeGym.name}
+          />
+        )}
       )}
     </div>
   );

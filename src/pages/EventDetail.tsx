@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PutForwardFightersDialog } from "@/components/coach/PutForwardFightersDialog";
+import { ClaimEventDialog } from "@/components/organiser/ClaimEventDialog";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -44,6 +45,7 @@ export default function EventDetail() {
   const isCoach = effectiveRoles.includes("coach");
   const [showConfirm, setShowConfirm] = useState(false);
   const [showPutForward, setShowPutForward] = useState(false);
+  const [showClaimEvent, setShowClaimEvent] = useState(false);
   const [sending, setSending] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -384,6 +386,27 @@ export default function EventDetail() {
           open={showPutForward}
           onOpenChange={setShowPutForward}
           coachId={user.id}
+          eventId={id!}
+          eventTitle={event.title}
+        />
+      )}
+
+      {/* Event Claim Banner */}
+      {user && (isCoach || effectiveRoles.includes("organiser")) && event && !event.organiser_id && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-sm px-4 py-3">
+          <div className="container flex items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground">
+              Are you the promoter of this event? <span className="text-foreground font-medium">Claim this listing</span> to manage it, add fight slots, and receive proposals.
+            </p>
+            <Button size="sm" onClick={() => setShowClaimEvent(true)}>Claim Event</Button>
+          </div>
+        </div>
+      )}
+
+      {showClaimEvent && event && (
+        <ClaimEventDialog
+          open={showClaimEvent}
+          onOpenChange={setShowClaimEvent}
           eventId={id!}
           eventTitle={event.title}
         />

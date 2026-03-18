@@ -20,7 +20,7 @@ export function ProfileCompletionBar({ fighterId, fighterProfile }: ProfileCompl
     queryFn: async () => {
       const { data } = await supabase
         .from("fighter_profiles")
-        .select("date_of_birth, walk_around_weight_kg, height, reach, stance, discipline, weight_class, fighting_substyle")
+        .select("date_of_birth, walk_around_weight_kg, height, reach, stance, discipline, weight_class, fighting_substyle, training_background")
         .eq("id", fighterId)
         .single();
       return data;
@@ -40,13 +40,14 @@ export function ProfileCompletionBar({ fighterId, fighterProfile }: ProfileCompl
     enabled: !!fighterId,
   });
 
-  const { data: hasGymLink } = useQuery({
-    queryKey: ["fighter-has-gym", fighterId],
+  const { data: hasApprovedGym } = useQuery({
+    queryKey: ["fighter-has-approved-gym", fighterId],
     queryFn: async () => {
       const { count } = await supabase
         .from("fighter_gym_links")
         .select("id", { count: "exact", head: true })
-        .eq("fighter_id", fighterId);
+        .eq("fighter_id", fighterId)
+        .eq("status", "approved");
       return (count ?? 0) > 0;
     },
     enabled: !!fighterId,
@@ -67,7 +68,7 @@ export function ProfileCompletionBar({ fighterId, fighterProfile }: ProfileCompl
 
   const fightRecordComplete = !!hasFightRecord;
 
-  const fullProfileComplete = !!(hasGymLink && p.fighting_substyle);
+  const fullProfileComplete = !!(hasApprovedGym && p.training_background && p.fighting_substyle);
 
   const segments: Segment[] = [
     {

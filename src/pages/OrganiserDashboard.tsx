@@ -7,8 +7,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Calendar, ArrowRight, Bell } from "lucide-react";
+import { Plus, Calendar, ArrowRight, Bell, Megaphone } from "lucide-react";
 import { NotificationHistory } from "@/components/NotificationHistory";
+import { PromoteEventDialog } from "@/components/organiser/PromoteEventDialog";
+import { useState } from "react";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -20,13 +22,14 @@ const STATUS_COLORS: Record<string, string> = {
 export default function OrganiserDashboard() {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
+  const [promoteEvent, setPromoteEvent] = useState<any>(null);
 
   const { data: events = [] } = useQuery({
     queryKey: ["organiser-events", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("events")
-        .select("*")
+        .select("*, fight_slots(*)")
         .eq("organiser_id", user!.id)
         .order("date", { ascending: false });
       if (error) throw error;
@@ -35,26 +38,10 @@ export default function OrganiserDashboard() {
     enabled: !!user,
   });
 
-  const eventIds = events.map((e) => e.id);
-
-  const { data: slots = [] } = useQuery({
-    queryKey: ["organiser-slots", eventIds],
-    queryFn: async () => {
-      if (eventIds.length === 0) return [];
-      const { data, error } = await supabase
-        .from("fight_slots")
-        .select("*")
-        .in("event_id", eventIds);
-      if (error) throw error;
-      return data;
-    },
-    enabled: eventIds.length > 0,
-  });
-
   const { data: proposals = [] } = useQuery({
-    queryKey: ["organiser-proposals", eventIds],
+    queryKey: ["organiser-proposals", events.map((e) => e.id)],
     queryFn: async () => {
-      const slotIds = slots.map((s) => s.id);
+      const slotIds = events.flatMap((e) => (e.fight_slots || []).map((s: any) => s.id));
       if (slotIds.length === 0) return [];
       const { data, error } = await supabase
         .from("match_proposals")
@@ -63,18 +50,19 @@ export default function OrganiserDashboard() {
       if (error) throw error;
       return data;
     },
-    enabled: slots.length > 0,
+    enabled: events.length > 0,
   });
 
-  const openSlots = slots.filter((s) => s.status === "open").length;
+  const totalSlots = events.flatMap((e) => e.fight_slots || []).length;
+  const filledSlots = events.flatMap((e) => e.fight_slots || []).filter((s: any) => s.status === "confirmed").length;
+  const filledPct = totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0;
   const pendingProposals = proposals.filter((p) => p.status === "pending").length;
-  const confirmedMatches = proposals.filter((p) => p.status === "confirmed").length;
 
   const stats = [
-    { label: "My Events", value: String(events.length), sub: "Total events created" },
-    { label: "Open Slots", value: String(openSlots), sub: "Unfilled fight slots" },
-    { label: "Pending", value: String(pendingProposals), sub: "Awaiting confirmation" },
-    { label: "Confirmed", value: String(confirmedMatches), sub: "Locked in" },
+    { label: "Events Created", value: String(events.length), sub: "Total events" },
+    { label: "Total Fight Slots", value: String(totalSlots), sub: "Across all events" },
+    { label: "Slots Filled %", value: `${filledPct}%`, sub: `${filledSlots}/${totalSlots} confirmed` },
+    { label: "Pending Proposals", value: String(pendingProposals), sub: "Awaiting confirmation" },
   ];
 
   return (
@@ -89,7 +77,7 @@ export default function OrganiserDashboard() {
                   ORGANISER <span className="text-primary">DASHBOARD</span>
                 </h1>
                 <p className="text-muted-foreground">
-                  Manage your events, slots, and match proposals.
+                  Manage your events, fight cards, and match proposals.
                 </p>
               </div>
               <Button asChild className="gap-2">
@@ -126,42 +114,64 @@ export default function OrganiserDashboard() {
                   MY <span className="text-primary">EVENTS</span>
                 </h2>
 
-            {events.length === 0 ? (
-              <div className="rounded-lg border border-border bg-card p-8 text-center">
-                <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground mb-4">You haven't created any events yet.</p>
-                <Button asChild>
-                  <Link to="/organiser/create-event">Create Your First Event</Link>
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {events.map((event) => {
-                  const eventSlots = slots.filter((s) => s.event_id === event.id);
-                  const eventOpen = eventSlots.filter((s) => s.status === "open").length;
-                  return (
-                    <Link
-                      key={event.id}
-                      to={`/organiser/events/${event.id}`}
-                      className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-foreground">{event.title}</p>
-                          <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>
-                            {event.status}
-                          </Badge>
+                {events.length === 0 ? (
+                  <div className="rounded-lg border border-border bg-card p-8 text-center">
+                    <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground mb-4">You haven't created any events yet.</p>
+                    <Button asChild size="lg">
+                      <Link to="/organiser/create-event">Create Your First Event</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {events.map((event) => {
+                      const eventSlots = event.fight_slots || [];
+                      const eventConfirmed = eventSlots.filter((s: any) => s.status === "confirmed").length;
+                      const eventTotal = eventSlots.length;
+                      const pct = eventTotal > 0 ? Math.round((eventConfirmed / eventTotal) * 100) : 0;
+                      const barColor = pct < 50 ? "bg-destructive" : pct < 80 ? "bg-amber-500" : "bg-success";
+                      return (
+                        <div
+                          key={event.id}
+                          className="rounded-lg border border-border bg-card p-4"
+                        >
+                          <div className="flex items-center justify-between gap-4 mb-2">
+                            <Link to={`/organiser/events/${event.id}`} className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <p className="font-medium text-foreground truncate">{event.title}</p>
+                                <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>
+                                  {event.status}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {event.date} · {event.location} · {eventTotal} slots
+                              </p>
+                            </Link>
+                            <div className="flex gap-2 shrink-0">
+                              <Button size="sm" variant="outline" onClick={() => setPromoteEvent(event)}>
+                                <Megaphone className="h-3.5 w-3.5 mr-1" /> Promote
+                              </Button>
+                              <Button size="sm" variant="ghost" asChild>
+                                <Link to={`/organiser/events/${event.id}`}>
+                                  <ArrowRight className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                            </div>
+                          </div>
+                          {/* Fight card progress bar */}
+                          {eventTotal > 0 && (
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                                <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+                              </div>
+                              <span className="text-xs text-muted-foreground tabular-nums">{pct}%</span>
+                            </div>
+                          )}
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {event.date} · {event.location} · {eventSlots.length} slots ({eventOpen} open)
-                        </p>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                    </Link>
-                  );
-                 })}
-              </div>
-            )}
+                      );
+                    })}
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="notifications">
@@ -171,6 +181,17 @@ export default function OrganiserDashboard() {
           </div>
         </section>
       </main>
+
+      {/* Promote Event Dialog */}
+      {promoteEvent && (
+        <PromoteEventDialog
+          open={!!promoteEvent}
+          onOpenChange={(open) => { if (!open) setPromoteEvent(null); }}
+          eventId={promoteEvent.id}
+          eventTitle={promoteEvent.title}
+        />
+      )}
+
       <Footer />
     </div>
   );
