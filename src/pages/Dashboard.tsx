@@ -311,6 +311,9 @@ export default function Dashboard() {
                     <DropdownMenuItem asChild>
                       <Link to="/gyms" className="text-xs uppercase tracking-wide">Gyms</Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/map" className="text-xs uppercase tracking-wide">Map View</Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </nav>
