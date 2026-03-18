@@ -11,8 +11,9 @@ import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
 import { NotificationHistory } from "@/components/NotificationHistory";
 import { InterestedEventsPanel } from "@/components/fighter/InterestedEventsPanel";
 import { ProfileCompletionBar } from "@/components/fighter/ProfileCompletionBar";
+import { MyProfilePanel } from "@/components/fighter/MyProfilePanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Inbox, Bell, Star } from "lucide-react";
+import { Building2, Inbox, Bell, Star, User } from "lucide-react";
 import { formatEnum } from "@/lib/format";
 
 export default function FighterDashboard() {
