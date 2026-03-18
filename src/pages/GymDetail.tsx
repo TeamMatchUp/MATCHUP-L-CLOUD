@@ -288,7 +288,8 @@ export default function GymDetail() {
                   </Button>
                 </div>
               )}
-
+              {/* Location Map */}
+              {gym.location && (
                 <div className="rounded-lg border border-border overflow-hidden mb-8">
                   <iframe
                     title="Gym Location"
