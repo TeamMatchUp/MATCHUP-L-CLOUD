@@ -137,6 +137,8 @@ export type Database = {
           created_at: string
           date: string
           description: string | null
+          discipline: string | null
+          event_type: string | null
           id: string
           latitude: number | null
           location: string
@@ -147,6 +149,7 @@ export type Database = {
           promotion_status: string | null
           status: Database["public"]["Enums"]["event_status"]
           ticket_enabled: boolean
+          ticket_url: string | null
           title: string
           updated_at: string
           venue_name: string | null
@@ -157,6 +160,8 @@ export type Database = {
           created_at?: string
           date: string
           description?: string | null
+          discipline?: string | null
+          event_type?: string | null
           id?: string
           latitude?: number | null
           location: string
@@ -167,6 +172,7 @@ export type Database = {
           promotion_status?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           ticket_enabled?: boolean
+          ticket_url?: string | null
           title: string
           updated_at?: string
           venue_name?: string | null
@@ -177,6 +183,8 @@ export type Database = {
           created_at?: string
           date?: string
           description?: string | null
+          discipline?: string | null
+          event_type?: string | null
           id?: string
           latitude?: number | null
           location?: string
@@ -187,6 +195,7 @@ export type Database = {
           promotion_status?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           ticket_enabled?: boolean
+          ticket_url?: string | null
           title?: string
           updated_at?: string
           venue_name?: string | null
@@ -611,13 +620,18 @@ export type Database = {
         Row: {
           address: string | null
           city: string | null
+          claimed: boolean | null
           coach_id: string | null
           contact_email: string | null
           country: Database["public"]["Enums"]["country_code"]
           created_at: string
           description: string | null
+          discipline_tags: string | null
           id: string
+          lat: number | null
           latitude: number | null
+          listing_tier: string | null
+          lng: number | null
           location: string | null
           logo_url: string | null
           longitude: number | null
@@ -631,13 +645,18 @@ export type Database = {
         Insert: {
           address?: string | null
           city?: string | null
+          claimed?: boolean | null
           coach_id?: string | null
           contact_email?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           description?: string | null
+          discipline_tags?: string | null
           id?: string
+          lat?: number | null
           latitude?: number | null
+          listing_tier?: string | null
+          lng?: number | null
           location?: string | null
           logo_url?: string | null
           longitude?: number | null
@@ -651,13 +670,18 @@ export type Database = {
         Update: {
           address?: string | null
           city?: string | null
+          claimed?: boolean | null
           coach_id?: string | null
           contact_email?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           description?: string | null
+          discipline_tags?: string | null
           id?: string
+          lat?: number | null
           latitude?: number | null
+          listing_tier?: string | null
+          lng?: number | null
           location?: string | null
           logo_url?: string | null
           longitude?: number | null
