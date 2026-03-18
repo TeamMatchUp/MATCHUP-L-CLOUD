@@ -544,10 +544,6 @@ export default function Onboarding() {
     if (!authLoading && user && roles.length > 0) {
       setRolesLoaded(true);
     }
-    if (!authLoading && user) {
-      const t = setTimeout(() => setRolesLoaded(true), 1500);
-      return () => clearTimeout(t);
-    }
   }, [authLoading, user, roles]);
 
   const primaryRole: AppRole | null = roles.includes("gym_owner")
@@ -570,17 +566,13 @@ export default function Onboarding() {
     goToDashboard();
   };
 
-  if (authLoading || !rolesLoaded) {
+  // Show loading until auth is resolved AND roles are loaded
+  if (authLoading || !user || !rolesLoaded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
-  }
-
-  if (!user) {
-    navigate("/auth", { replace: true });
-    return null;
   }
 
   return (
@@ -605,12 +597,6 @@ export default function Onboarding() {
           )}
           {primaryRole === "organiser" && (
             <OrganiserLanding />
-          )}
-          {!primaryRole && (
-            <div className="text-center space-y-4">
-              <p className="text-muted-foreground">No role assigned yet.</p>
-              <Button variant="hero" onClick={handleSkip}>Go to Dashboard</Button>
-            </div>
           )}
         </div>
       </motion.div>
