@@ -207,6 +207,15 @@ export default function GymDetail() {
                     <div className="flex items-center gap-2">
                       <h1 className="font-heading text-3xl md:text-4xl text-foreground">{gym.name}</h1>
                       {gym.verified && <ShieldCheck className="h-5 w-5 text-primary" />}
+                      {gym.claimed ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-xs font-semibold">
+                          <ShieldCheck className="h-3 w-3" /> Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-muted text-muted-foreground border border-border px-2 py-0.5 text-xs font-semibold">
+                          Unclaimed
+                        </span>
+                      )}
                     </div>
                     {gym.location && (
                       <p className="text-muted-foreground flex items-center gap-2 mt-2">
