@@ -49,13 +49,36 @@ export function JoinGymButton({ gymId }: Props) {
   const requestJoin = useMutation({
     mutationFn: async () => {
       if (!fighterProfile) throw new Error("Create a fighter profile first");
-      const { error } = await supabase.from("fighter_gym_links").insert({
+      const { data: linkData, error } = await supabase.from("fighter_gym_links").insert({
         gym_id: gymId,
         fighter_id: fighterProfile.id,
         status: "pending",
         is_primary: false,
-      });
+      }).select("id").single();
       if (error) throw error;
+
+      // Notify the gym's coach if the gym has one
+      const { data: gym } = await supabase
+        .from("gyms")
+        .select("coach_id, name")
+        .eq("id", gymId)
+        .single();
+
+      if (gym?.coach_id && linkData) {
+        const { data: fp } = await supabase
+          .from("fighter_profiles")
+          .select("name")
+          .eq("id", fighterProfile.id)
+          .single();
+
+        await supabase.rpc("create_notification", {
+          _user_id: gym.coach_id,
+          _title: "New gym join request",
+          _message: `${fp?.name ?? "A fighter"} has requested to join ${gym.name}`,
+          _type: "gym_request",
+          _reference_id: linkData.id,
+        });
+      }
     },
     onSuccess: () => {
       toast({ title: "Request sent", description: "Waiting for coach approval." });

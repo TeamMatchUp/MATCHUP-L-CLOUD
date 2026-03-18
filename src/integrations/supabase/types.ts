@@ -1103,6 +1103,7 @@ export type Database = {
         | "match_withdrawn"
         | "event_update"
         | "system"
+        | "gym_request"
       weight_class:
         | "strawweight"
         | "flyweight"
@@ -1270,6 +1271,7 @@ export const Constants = {
         "match_withdrawn",
         "event_update",
         "system",
+        "gym_request",
       ],
       weight_class: [
         "strawweight",

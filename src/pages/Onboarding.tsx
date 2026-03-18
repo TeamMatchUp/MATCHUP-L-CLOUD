@@ -183,21 +183,21 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
     }
 
     if (hasGym && selectedGym && fighterId) {
-      await supabase.from("fighter_gym_links").insert({
+      const { data: linkData } = await supabase.from("fighter_gym_links").insert({
         fighter_id: fighterId,
         gym_id: selectedGym.id,
         status: "pending",
-      });
+      }).select("id").single();
 
       // Notify the gym's coach if the gym has one
-      if (selectedGym.coach_id) {
+      if (selectedGym.coach_id && linkData) {
         const fighterName = user!.user_metadata?.full_name || user!.email || "A fighter";
         await supabase.rpc("create_notification", {
           _user_id: selectedGym.coach_id,
-          _title: "Gym join request",
-          _message: `A fighter has requested to join your gym — ${fighterName}`,
-          _type: "system",
-          _reference_id: fighterId,
+          _title: "New gym join request",
+          _message: `${fighterName} has requested to join ${selectedGym.name}`,
+          _type: "gym_request",
+          _reference_id: linkData.id,
         });
       }
     }
