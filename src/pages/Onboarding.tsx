@@ -445,7 +445,7 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
     });
     if (error) console.error("Gym creation error:", error);
 
-    await markOnboardingComplete();
+    await markOnboardingComplete(queryClient);
     setLoading(false);
     onComplete();
   };
