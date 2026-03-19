@@ -6,6 +6,11 @@ import { formatEnum } from "@/lib/format";
 import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 
+function unwrap<T>(val: T | T[] | null | undefined): T | null {
+  if (Array.isArray(val)) return val[0] ?? null;
+  return val ?? null;
+}
+
 interface GymRequestsPanelProps {
   gymIds: string[];
   coachId: string;
