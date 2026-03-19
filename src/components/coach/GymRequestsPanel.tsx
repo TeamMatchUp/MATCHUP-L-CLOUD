@@ -36,7 +36,9 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
   if (pendingLinks.length === 0) return null;
 
   const handleAccept = async (link: any) => {
-    // Step 1: Update fighter_gym_links status to approved
+    const fighter = unwrap(link.fighter);
+    const gym = unwrap(link.gym);
+
     const { error: linkError } = await supabase
       .from("fighter_gym_links")
       .update({ status: "approved" })
@@ -47,8 +49,7 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
       return;
     }
 
-    // Step 2: Look up the fighter's user_id and update profiles.gym_id
-    const fighterUserId = link.fighter?.user_id;
+    const fighterUserId = fighter?.user_id;
     if (fighterUserId) {
       const { error: profileError } = await supabase
         .from("profiles")
@@ -56,7 +57,6 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
         .eq("id", fighterUserId);
 
       if (profileError) {
-        // Rollback the link status
         await supabase
           .from("fighter_gym_links")
           .update({ status: "pending" })
@@ -65,17 +65,16 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
         return;
       }
 
-      // Both writes succeeded — now send notification
       await supabase.rpc("create_notification", {
         _user_id: fighterUserId,
         _title: "Gym request approved",
-        _message: `Your request to join ${link.gym?.name ?? "the gym"} has been approved.`,
+        _message: `Your request to join ${gym?.name ?? "the gym"} has been approved.`,
         _type: "gym_request" as const,
         _reference_id: link.gym_id,
       });
     }
 
-    toast.success(`${link.fighter?.name ?? "Fighter"} accepted to your gym`);
+    toast.success(`${fighter?.name ?? "Fighter"} accepted to your gym`);
     queryClient.invalidateQueries({ queryKey: ["gym-pending-requests"] });
     queryClient.invalidateQueries({ queryKey: ["coach-fighter-gym-links"] });
     queryClient.invalidateQueries({ queryKey: ["coach-gym-fighters"] });
