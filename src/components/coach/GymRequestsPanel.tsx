@@ -6,6 +6,11 @@ import { formatEnum } from "@/lib/format";
 import { Check, X } from "lucide-react";
 import { toast } from "sonner";
 
+function unwrap<T>(val: T | T[] | null | undefined): T | null {
+  if (Array.isArray(val)) return val[0] ?? null;
+  return val ?? null;
+}
+
 interface GymRequestsPanelProps {
   gymIds: string[];
   coachId: string;
@@ -31,7 +36,9 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
   if (pendingLinks.length === 0) return null;
 
   const handleAccept = async (link: any) => {
-    // Step 1: Update fighter_gym_links status to approved
+    const fighter = unwrap(link.fighter);
+    const gym = unwrap(link.gym);
+
     const { error: linkError } = await supabase
       .from("fighter_gym_links")
       .update({ status: "approved" })
@@ -42,8 +49,7 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
       return;
     }
 
-    // Step 2: Look up the fighter's user_id and update profiles.gym_id
-    const fighterUserId = link.fighter?.user_id;
+    const fighterUserId = fighter?.user_id;
     if (fighterUserId) {
       const { error: profileError } = await supabase
         .from("profiles")
@@ -51,7 +57,6 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
         .eq("id", fighterUserId);
 
       if (profileError) {
-        // Rollback the link status
         await supabase
           .from("fighter_gym_links")
           .update({ status: "pending" })
@@ -60,17 +65,16 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
         return;
       }
 
-      // Both writes succeeded — now send notification
       await supabase.rpc("create_notification", {
         _user_id: fighterUserId,
         _title: "Gym request approved",
-        _message: `Your request to join ${link.gym?.name ?? "the gym"} has been approved.`,
+        _message: `Your request to join ${gym?.name ?? "the gym"} has been approved.`,
         _type: "gym_request" as const,
         _reference_id: link.gym_id,
       });
     }
 
-    toast.success(`${link.fighter?.name ?? "Fighter"} accepted to your gym`);
+    toast.success(`${fighter?.name ?? "Fighter"} accepted to your gym`);
     queryClient.invalidateQueries({ queryKey: ["gym-pending-requests"] });
     queryClient.invalidateQueries({ queryKey: ["coach-fighter-gym-links"] });
     queryClient.invalidateQueries({ queryKey: ["coach-gym-fighters"] });
@@ -78,6 +82,9 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
   };
 
   const handleDecline = async (link: any) => {
+    const fighter = unwrap(link.fighter);
+    const gym = unwrap(link.gym);
+
     const { error } = await supabase
       .from("fighter_gym_links")
       .update({ status: "declined" })
@@ -88,12 +95,11 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
       return;
     }
 
-    // Notify the fighter
-    if (link.fighter?.user_id) {
+    if (fighter?.user_id) {
       await supabase.rpc("create_notification", {
-        _user_id: link.fighter.user_id,
+        _user_id: fighter.user_id,
         _title: "Gym request declined",
-        _message: `Your request to join ${link.gym?.name ?? "the gym"} was not approved.`,
+        _message: `Your request to join ${gym?.name ?? "the gym"} was not approved.`,
         _type: "gym_request" as const,
         _reference_id: link.gym_id,
       });
@@ -110,30 +116,34 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
         GYM <span className="text-primary">REQUESTS</span>
       </h2>
       <div className="space-y-3">
-        {pendingLinks.map((link: any) => (
-          <div
-            key={link.id}
-            className="rounded-lg border border-border bg-card p-4 flex items-center justify-between gap-4"
-          >
-            <div>
-              <p className="font-medium text-foreground">{link.fighter?.name ?? "Unknown"}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {link.fighter?.discipline ? formatEnum(link.fighter.discipline) : "—"} · {formatEnum(link.fighter?.weight_class)} · {link.fighter?.stance ?? "—"}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Wants to join <span className="text-foreground">{link.gym?.name}</span>
-              </p>
+        {pendingLinks.map((link: any) => {
+          const fighter = unwrap(link.fighter);
+          const gym = unwrap(link.gym);
+          return (
+            <div
+              key={link.id}
+              className="rounded-lg border border-border bg-card p-4 flex items-center justify-between gap-4"
+            >
+              <div>
+                <p className="font-medium text-foreground">{fighter?.name ?? "Unknown"}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {fighter?.discipline ? formatEnum(fighter.discipline) : "—"} · {formatEnum(fighter?.weight_class)} · {fighter?.stance ?? "—"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Wants to join <span className="text-foreground">{gym?.name}</span>
+                </p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <Button size="sm" variant="outline" onClick={() => handleDecline(link)}>
+                  <X className="h-3.5 w-3.5 mr-1" /> Decline
+                </Button>
+                <Button size="sm" onClick={() => handleAccept(link)}>
+                  <Check className="h-3.5 w-3.5 mr-1" /> Accept
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2 shrink-0">
-              <Button size="sm" variant="outline" onClick={() => handleDecline(link)}>
-                <X className="h-3.5 w-3.5 mr-1" /> Decline
-              </Button>
-              <Button size="sm" onClick={() => handleAccept(link)}>
-                <Check className="h-3.5 w-3.5 mr-1" /> Accept
-              </Button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
