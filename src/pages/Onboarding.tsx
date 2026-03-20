@@ -10,8 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AppLogo } from "@/components/AppLogo";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Copy, Check, CalendarIcon, Plus, Search } from "lucide-react";
-import { format } from "date-fns";
+import { Copy, Check, CalendarIcon, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { format, setMonth, setYear, getYear, getMonth } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Database } from "@/integrations/supabase/types";
+import { Loader2 } from "lucide-react";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
@@ -76,8 +77,61 @@ async function markOnboardingComplete(queryClient: ReturnType<typeof useQueryCli
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
   await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", user.id);
-  // Invalidate the ProtectedRoute's onboarding check cache so it doesn't redirect back
   queryClient.setQueryData(["onboarding-check", user.id], { onboarding_completed: true });
+}
+
+/** DOB picker with year/month selectors for fast decade jumping */
+function DOBPicker({ value, onChange }: { value?: Date; onChange: (d: Date | undefined) => void }) {
+  const currentDate = value || new Date();
+  const [viewDate, setViewDate] = useState(value || new Date(2000, 0, 1));
+
+  const years = Array.from({ length: 60 }, (_, i) => getYear(new Date()) - i);
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 px-1">
+        <Select
+          value={String(getMonth(viewDate))}
+          onValueChange={(v) => setViewDate(setMonth(viewDate, parseInt(v)))}
+        >
+          <SelectTrigger className="h-8 text-xs flex-1">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper" side="bottom">
+            {months.map((m, i) => (
+              <SelectItem key={m} value={String(i)}>{m}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={String(getYear(viewDate))}
+          onValueChange={(v) => setViewDate(setYear(viewDate, parseInt(v)))}
+        >
+          <SelectTrigger className="h-8 text-xs w-24">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent position="popper" side="bottom">
+            {years.map((y) => (
+              <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <Calendar
+        mode="single"
+        selected={value}
+        onSelect={onChange}
+        month={viewDate}
+        onMonthChange={setViewDate}
+        disabled={(date) => date > new Date() || date < new Date("1940-01-01")}
+        className={cn("p-3 pointer-events-auto")}
+      />
+    </div>
+  );
 }
 
 function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
@@ -195,7 +249,6 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
         status: "pending",
       }).select("id").single();
 
-      // Fresh lookup of gym to get current coach_id
       if (linkData) {
         const { data: freshGym } = await supabase
           .from("gyms")
@@ -240,15 +293,8 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
                 {dateOfBirth ? format(dateOfBirth, "PPP") : "Select date"}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={dateOfBirth}
-                onSelect={setDateOfBirth}
-                disabled={(date) => date > new Date() || date < new Date("1940-01-01")}
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
-              />
+            <PopoverContent className="w-auto p-0" align="start" side="bottom">
+              <DOBPicker value={dateOfBirth} onChange={setDateOfBirth} />
             </PopoverContent>
           </Popover>
         </div>
@@ -257,7 +303,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
           <Label>Weight Class *</Label>
           <Select value={weightClass} onValueChange={(v) => setWeightClass(v as WeightClass)}>
             <SelectTrigger><SelectValue placeholder="Select weight class" /></SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" side="bottom">
               {WEIGHT_CLASSES.map((wc) => (
                 <SelectItem key={wc.value} value={wc.value}>{wc.label}</SelectItem>
               ))}
@@ -282,7 +328,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
           <Label>Discipline *</Label>
           <Select value={discipline} onValueChange={setDiscipline}>
             <SelectTrigger><SelectValue placeholder="Select discipline" /></SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" side="bottom">
               {DISCIPLINES.map((d) => (
                 <SelectItem key={d} value={d}>{d}</SelectItem>
               ))}
@@ -294,7 +340,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
           <Label>Stance</Label>
           <Select value={stance} onValueChange={setStance}>
             <SelectTrigger><SelectValue placeholder="Select stance" /></SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" side="bottom">
               {STANCES.map((s) => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
@@ -307,7 +353,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
             <Label>Fighting Style</Label>
             <Select value={fightingSubstyle} onValueChange={setFightingSubstyle}>
               <SelectTrigger><SelectValue placeholder="Select fighting style" /></SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" side="bottom">
                 {substyleOptions.map((s) => (
                   <SelectItem key={s} value={s}>{s}</SelectItem>
                 ))}
@@ -480,7 +526,7 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
         <Label>Roster Size</Label>
         <Select value={rosterSize} onValueChange={setRosterSize}>
           <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
-          <SelectContent>
+          <SelectContent position="popper" side="bottom">
             {ROSTER_SIZES.map((s) => (
               <SelectItem key={s} value={s}>{s}</SelectItem>
             ))}
@@ -584,11 +630,12 @@ export default function Onboarding() {
     goToDashboard();
   };
 
-  // Show loading until auth is resolved AND roles are loaded
+  // (1) Show loading spinner until auth is resolved AND roles are loaded — no bypass buttons
   if (authLoading || !user || !rolesLoaded) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Setting up your account...</p>
       </div>
     );
   }

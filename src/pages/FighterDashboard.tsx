@@ -13,8 +13,10 @@ import { InterestedEventsPanel } from "@/components/fighter/InterestedEventsPane
 import { ProfileCompletionBar } from "@/components/fighter/ProfileCompletionBar";
 import { MyProfilePanel } from "@/components/fighter/MyProfilePanel";
 import { GymsNearYouWidget } from "@/components/fighter/GymsNearYouWidget";
+import { MyRequestsPanel } from "@/components/fighter/MyRequestsPanel";
+import { EditableProfilePanel } from "@/components/fighter/EditableProfilePanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Inbox, Bell, Star, User } from "lucide-react";
+import { Building2, Inbox, Bell, Star, User, Send } from "lucide-react";
 import { formatEnum } from "@/lib/format";
 
 export default function FighterDashboard() {
@@ -36,7 +38,6 @@ export default function FighterDashboard() {
     enabled: !!user,
   });
 
-  // Fetch affiliated gyms from fighter_gym_links
   const { data: gymLinks = [] } = useQuery({
     queryKey: ["fighter-gym-links", fighterProfile?.id],
     queryFn: async () => {
@@ -74,7 +75,7 @@ export default function FighterDashboard() {
 
   const pendingProposals = proposals.filter((p) => p.status === "pending");
   const confirmedFights = proposals.filter((p) => p.status === "confirmed");
-  const awaitingOthers = proposals.filter(() => false); // all handled via confirmations table now
+  const awaitingOthers = proposals.filter(() => false);
 
   const stats = [
     { label: "Pending Your Decision", value: String(pendingProposals.length), sub: "Match proposals for you" },
@@ -121,12 +122,12 @@ export default function FighterDashboard() {
                         {fighterProfile.record_wins}W-{fighterProfile.record_losses}L-{fighterProfile.record_draws}D ·{" "}
                         {formatEnum(fighterProfile.weight_class)} · {fighterProfile.country}
                         {fighterProfile.style && ` · ${formatEnum(fighterProfile.style)}`}
-                        {gymLinks.length > 0 && gymLinks.map((gl: any) => (
+                        {gymLinks.filter((gl: any) => gl.status === "approved").map((gl: any) => (
+                          <span key={gl.id}>{` · ${gl.gym?.name ?? "Gym"}`}</span>
+                        ))}
+                        {gymLinks.filter((gl: any) => gl.status === "pending").map((gl: any) => (
                           <span key={gl.id}>
-                            {` · ${gl.gym?.name ?? "Gym"}`}
-                            {gl.status === "pending" && (
-                              <span className="text-xs text-amber-500 ml-1">(Pending approval)</span>
-                            )}
+                            {` · `}<span className="text-xs text-amber-500">Pending — {gl.gym?.name ?? "Gym"}</span>
                           </span>
                         ))}
                       </p>
@@ -145,7 +146,7 @@ export default function FighterDashboard() {
                   ))}
                 </div>
 
-                {/* Gyms Near You */}
+                {/* (13) Gyms Near You */}
                 <div className="mb-10">
                   <GymsNearYouWidget fighterProfileId={fighterProfile.id} />
                 </div>
@@ -167,6 +168,9 @@ export default function FighterDashboard() {
                     <TabsTrigger value="proposals">
                       <Inbox className="h-4 w-4 mr-1" /> Proposals
                     </TabsTrigger>
+                    <TabsTrigger value="requests">
+                      <Send className="h-4 w-4 mr-1" /> My Requests
+                    </TabsTrigger>
                     <TabsTrigger value="interests">
                       <Star className="h-4 w-4 mr-1" /> Interested Events
                     </TabsTrigger>
@@ -176,7 +180,11 @@ export default function FighterDashboard() {
                   </TabsList>
 
                   <TabsContent value="profile">
-                    <MyProfilePanel fighterProfile={fighterProfile} gymLinks={gymLinks} />
+                    <EditableProfilePanel
+                      fighterProfile={fighterProfile}
+                      userId={user!.id}
+                      onRefresh={handleRefresh}
+                    />
                   </TabsContent>
 
                   <TabsContent value="gyms">
@@ -221,6 +229,13 @@ export default function FighterDashboard() {
                         </div>
                       </>
                     )}
+                  </TabsContent>
+
+                  <TabsContent value="requests">
+                    <h2 className="font-heading text-2xl text-foreground mb-4">
+                      MY <span className="text-primary">REQUESTS</span>
+                    </h2>
+                    <MyRequestsPanel />
                   </TabsContent>
 
                   <TabsContent value="interests">

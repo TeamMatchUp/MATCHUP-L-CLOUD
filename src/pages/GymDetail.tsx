@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { ArrowLeft, MapPin, ShieldCheck, Plus, Trash2, Pencil, LogOut, Lock, Mail, Phone, Globe } from "lucide-react";
+import { ArrowLeft, MapPin, ShieldCheck, Plus, Trash2, Pencil, LogOut, Lock, Mail, Phone, Globe, Copy, Check as CheckIcon } from "lucide-react";
 import { ClaimGymDialog } from "@/components/gym/ClaimGymDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,21 +45,23 @@ const STATUS_BADGE: Record<string, { label: string; className: string }> = {
 
 export default function GymDetail() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, effectiveRoles } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showAddFighter, setShowAddFighter] = useState(false);
   const [showEditGym, setShowEditGym] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showClaimDialog, setShowClaimDialog] = useState(false);
+  const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Auto-open claim dialog if returning from auth with action=claim
+  const isFighter = effectiveRoles.includes("fighter");
+  const isCoachOrOrganiser = effectiveRoles.includes("coach") || effectiveRoles.includes("organiser");
+
   useEffect(() => {
     if (searchParams.get("action") === "claim" && user) {
       setShowClaimDialog(true);
-      // Clean up the URL param
       searchParams.delete("action");
       setSearchParams(searchParams, { replace: true });
     }
@@ -67,11 +69,17 @@ export default function GymDetail() {
 
   const handleClaimClick = () => {
     if (!user) {
-      // Redirect to auth with return URL
       navigate(`/auth?mode=signup&returnTo=${encodeURIComponent(`/gyms/${id}?action=claim`)}`);
       return;
     }
     setShowClaimDialog(true);
+  };
+
+  const handleCopyCoachUrl = () => {
+    const url = `${window.location.origin}/auth?mode=signup`;
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const { data: gym, isLoading } = useQuery({
@@ -88,7 +96,6 @@ export default function GymDetail() {
     enabled: !!id,
   });
 
-  // Get current user's fighter profile
   const { data: myFighterProfile } = useQuery({
     queryKey: ["my-fighter-profile", user?.id],
     queryFn: async () => {
@@ -103,7 +110,7 @@ export default function GymDetail() {
     enabled: !!user,
   });
 
-  // Check if current user is affiliated with this gym
+  // Check if current user has ANY link (approved or pending)
   const { data: myGymLink } = useQuery({
     queryKey: ["my-gym-link", myFighterProfile?.id, id],
     queryFn: async () => {
@@ -113,7 +120,7 @@ export default function GymDetail() {
         .select("id, status")
         .eq("fighter_id", myFighterProfile.id)
         .eq("gym_id", id)
-        .in("status", ["approved", "accepted"])
+        .in("status", ["approved", "pending"])
         .maybeSingle();
       return data;
     },
@@ -121,7 +128,7 @@ export default function GymDetail() {
   });
 
   const isOwner = !!user && !!gym && gym.coach_id === user.id;
-  const isMember = !!myGymLink;
+  const isMember = !!myGymLink && myGymLink.status === "approved";
 
   // Track profile view (non-owner)
   useEffect(() => {
@@ -149,16 +156,12 @@ export default function GymDetail() {
   const leaveGymMutation = useMutation({
     mutationFn: async () => {
       if (!myGymLink?.id || !gym?.coach_id || !myFighterProfile) return;
-      
-      // Delete the gym link
       const { error: deleteError } = await supabase
         .from("fighter_gym_links")
         .delete()
         .eq("id", myGymLink.id);
-      
       if (deleteError) throw deleteError;
 
-      // Send notification to gym owner
       const { error: notifError } = await supabase.rpc("create_notification", {
         _user_id: gym.coach_id,
         _title: `${myFighterProfile.name} left ${gym.name}`,
@@ -166,7 +169,6 @@ export default function GymDetail() {
         _type: "system",
         _reference_id: gym.id,
       });
-
       if (notifError) console.error("Failed to send notification:", notifError);
     },
     onSuccess: () => {
@@ -213,6 +215,32 @@ export default function GymDetail() {
 
   const links = gym.fighter_gym_links ?? [];
 
+  // Determine what action button to show
+  const renderActionButton = () => {
+    if (isOwner) {
+      return (
+        <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowEditGym(true)}>
+          <Pencil className="h-3 w-3" /> Edit Gym
+        </Button>
+      );
+    }
+    if (isMember) {
+      return (
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1 text-destructive hover:text-destructive"
+          onClick={() => setShowLeaveConfirm(true)}
+        >
+          <LogOut className="h-3 w-3" /> Leave Gym
+        </Button>
+      );
+    }
+    // Don't show Join button for unclaimed gyms
+    if (!gym.claimed) return null;
+    return <JoinGymButton gymId={gym.id} />;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -254,22 +282,7 @@ export default function GymDetail() {
                     )}
                   </div>
                 </div>
-                {isOwner ? (
-                  <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowEditGym(true)}>
-                    <Pencil className="h-3 w-3" /> Edit Gym
-                  </Button>
-                ) : isMember ? (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="gap-1 text-destructive hover:text-destructive"
-                    onClick={() => setShowLeaveConfirm(true)}
-                  >
-                    <LogOut className="h-3 w-3" /> Leave Gym
-                  </Button>
-                ) : (
-                  <JoinGymButton gymId={gym.id} />
-                )}
+                {renderActionButton()}
               </div>
 
               {gym.description && (
@@ -292,10 +305,55 @@ export default function GymDetail() {
                 </div>
               )}
 
-              {/* Contact CTA */}
+              {/* Contact CTA — role/status aware */}
               {!isOwner && (
                 <div className="mb-8">
-                  <GymContactCTA gymId={gym.id} gymName={gym.name} coachId={gym.coach_id} />
+                  {isMember ? (
+                    <div className="rounded-lg border border-success/30 bg-success/5 p-4 flex items-center gap-3">
+                      <CheckIcon className="h-5 w-5 text-success shrink-0" />
+                      <p className="text-sm text-foreground font-medium">You are a member of this gym</p>
+                    </div>
+                  ) : (
+                    <GymContactCTA gymId={gym.id} gymName={gym.name} coachId={gym.coach_id} />
+                  )}
+                </div>
+              )}
+
+              {/* (6) Unclaimed gym: invite coach message instead of claim button */}
+              {!isOwner && !gym.claimed && (
+                <div className="mb-8 rounded-lg border border-border bg-muted/50 p-5 space-y-3">
+                  {isFighter ? (
+                    /* (7) Fighters must never see Claim Gym CTA */
+                    <p className="text-sm text-muted-foreground">
+                      Only coaches can claim a gym listing. Ask your coach to sign up and claim this gym.
+                    </p>
+                  ) : isCoachOrOrganiser ? (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        This gym does not have an active owner account yet. Know the coach? Share this link to invite them to claim their listing.
+                      </p>
+                      <button
+                        onClick={handleCopyCoachUrl}
+                        className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
+                      >
+                        {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {copied ? "Copied!" : "Copy coach signup URL"}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        This gym does not have an active owner account yet. Know the coach? Share this link to invite them to claim their listing.
+                      </p>
+                      <button
+                        onClick={handleCopyCoachUrl}
+                        className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
+                      >
+                        {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                        {copied ? "Copied!" : "Copy coach signup URL"}
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -355,14 +413,6 @@ export default function GymDetail() {
                 </div>
               )}
 
-              {/* Claim button for unclaimed gyms */}
-              {!isOwner && !gym.claimed && (
-                <div className="mb-8">
-                  <Button variant="outline" size="sm" onClick={handleClaimClick}>
-                    <Lock className="h-3 w-3 mr-1" /> Claim this listing
-                  </Button>
-                </div>
-              )}
               {/* Location Map */}
               {gym.location && (
                 <div className="rounded-lg border border-border overflow-hidden mb-8">
@@ -480,7 +530,6 @@ export default function GymDetail() {
               />
             )}
 
-            {/* Leave Gym Confirmation Dialog */}
             <AlertDialog open={showLeaveConfirm} onOpenChange={setShowLeaveConfirm}>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -501,12 +550,15 @@ export default function GymDetail() {
               </AlertDialogContent>
             </AlertDialog>
 
-            <ClaimGymDialog
-              open={showClaimDialog}
-              onOpenChange={setShowClaimDialog}
-              gymId={gym.id}
-              gymName={gym.name}
-            />
+            {/* Only show claim dialog for coaches/organisers — never for fighters */}
+            {isCoachOrOrganiser && (
+              <ClaimGymDialog
+                open={showClaimDialog}
+                onOpenChange={setShowClaimDialog}
+                gymId={gym.id}
+                gymName={gym.name}
+              />
+            )}
           </div>
         </section>
       </main>

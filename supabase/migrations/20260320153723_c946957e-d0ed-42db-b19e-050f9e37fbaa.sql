@@ -1,0 +1,1 @@
+ALTER TABLE public.gym_leads ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'pending';
