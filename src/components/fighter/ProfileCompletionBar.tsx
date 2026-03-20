@@ -1,20 +1,25 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 interface ProfileCompletionBarProps {
   fighterId: string;
-  /** Pass fighter_profiles row to avoid duplicate fetches when parent already has it */
   fighterProfile?: any;
+  /** When true, show action buttons to open the Add Result modal */
+  onOpenAddResult?: () => void;
 }
 
 interface Segment {
   label: string;
   complete: boolean;
   prompt: string;
+  actions?: { label: string; href?: string; onClick?: () => void }[];
 }
 
-export function ProfileCompletionBar({ fighterId, fighterProfile }: ProfileCompletionBarProps) {
+export function ProfileCompletionBar({ fighterId, fighterProfile, onOpenAddResult }: ProfileCompletionBarProps) {
   const { data: profile } = useQuery({
     queryKey: ["fighter-profile-completion", fighterId],
     queryFn: async () => {
@@ -67,7 +72,6 @@ export function ProfileCompletionBar({ fighterId, fighterProfile }: ProfileCompl
   );
 
   const fightRecordComplete = !!hasFightRecord;
-
   const fullProfileComplete = !!(hasApprovedGym && p.training_background && p.fighting_substyle);
 
   const segments: Segment[] = [
@@ -75,16 +79,26 @@ export function ProfileCompletionBar({ fighterId, fighterProfile }: ProfileCompl
       label: "Core Profile",
       complete: coreComplete,
       prompt: "Unlocks appearing in matchmaking pools",
+      actions: !coreComplete ? [
+        { label: "Complete your profile", href: "/fighter/dashboard?tab=profile" },
+      ] : undefined,
     },
     {
       label: "Fight Record",
       complete: fightRecordComplete,
       prompt: "Unlocks Elo rating and full algorithm scoring",
+      actions: !fightRecordComplete ? [
+        ...(onOpenAddResult ? [{ label: "Add your first fight result", onClick: onOpenAddResult }] : []),
+      ] : undefined,
     },
     {
       label: "Full Profile",
       complete: fullProfileComplete,
       prompt: "Unlocks style contrast matching and same-gym exclusion",
+      actions: !fullProfileComplete ? [
+        ...(!hasApprovedGym ? [{ label: "Find a gym", href: "/gyms" }] : []),
+        ...(!p.fighting_substyle ? [{ label: "Declare your style", href: "/fighter/dashboard?tab=profile" }] : []),
+      ] : undefined,
     },
   ];
 
@@ -121,15 +135,40 @@ export function ProfileCompletionBar({ fighterId, fighterProfile }: ProfileCompl
             ) : (
               <Circle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
             )}
-            <div>
+            <div className="flex-1">
               <p className={`text-sm font-medium ${seg.complete ? "text-foreground" : "text-muted-foreground"}`}>
                 {seg.label}
               </p>
               {!seg.complete && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                  <AlertCircle className="h-3 w-3 text-primary" />
-                  {seg.prompt}
-                </p>
+                <>
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <AlertCircle className="h-3 w-3 text-primary" />
+                    {seg.prompt}
+                  </p>
+                  {seg.actions && seg.actions.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-1.5">
+                      {seg.actions.map((action) =>
+                        action.href ? (
+                          <Link key={action.label} to={action.href}>
+                            <Button variant="outline" size="sm" className="h-7 text-xs">
+                              {action.label}
+                            </Button>
+                          </Link>
+                        ) : (
+                          <Button
+                            key={action.label}
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={action.onClick}
+                          >
+                            {action.label}
+                          </Button>
+                        )
+                      )}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
