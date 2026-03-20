@@ -753,6 +753,7 @@ export type Database = {
           gym_id: string
           id: string
           name: string
+          status: string
           type: string
           user_id: string | null
         }
@@ -762,6 +763,7 @@ export type Database = {
           gym_id: string
           id?: string
           name: string
+          status?: string
           type?: string
           user_id?: string | null
         }
@@ -771,6 +773,7 @@ export type Database = {
           gym_id?: string
           id?: string
           name?: string
+          status?: string
           type?: string
           user_id?: string | null
         }
