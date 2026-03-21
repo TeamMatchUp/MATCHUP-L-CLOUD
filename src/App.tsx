@@ -57,6 +57,7 @@ const App = () => (
             <Route path="/fighters" element={<Explore />} />
             <Route path="/gyms" element={<Explore />} />
             <Route path="/events/:id" element={<EventDetail />} />
+            <Route path="/events/:eventId/matchmaking" element={<ProtectedRoute requiredRole="organiser"><Matchmaking /></ProtectedRoute>} />
             <Route path="/fighters/:id" element={<FighterDetail />} />
             <Route path="/gyms/:id" element={<GymDetail />} />
             <Route path="/auth" element={<Auth />} />
