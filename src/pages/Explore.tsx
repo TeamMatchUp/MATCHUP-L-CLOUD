@@ -43,8 +43,17 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
 export default function Explore() {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialTab = (searchParams.get("tab") as TabType) || "events";
-  const [tab, setTab] = useState<TabType>(initialTab);
+  const location = useLocation();
+
+  // Detect tab from path or search params
+  const getInitialTab = (): TabType => {
+    if (location.pathname === "/events") return "events";
+    if (location.pathname === "/fighters") return "fighters";
+    if (location.pathname === "/gyms") return "gyms";
+    return (searchParams.get("tab") as TabType) || "events";
+  };
+
+  const [tab, setTab] = useState<TabType>(getInitialTab);
   const [mapOpen, setMapOpen] = useState(false);
 
   // Shared filter state
