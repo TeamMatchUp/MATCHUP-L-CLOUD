@@ -350,7 +350,7 @@ export default function Explore() {
                   <Button variant="outline" size="sm" className="absolute top-3 left-3 z-10" onClick={() => { setMapOpen(false); setPopupItem(null); }}>
                     <X className="h-4 w-4 mr-1" /> Close Map
                   </Button>
-                  <Map defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={undefined} style={{ width: "100%", height: "100%" }}>
+                  <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={500}>
                     {mapMarkers.map((m) => (
                       <Marker
                         key={`${m.type}-${m.id}`}
@@ -380,7 +380,7 @@ export default function Explore() {
                         </div>
                       </Overlay>
                     )}
-                  </Map>
+                  </PigeonMap>
                 </div>
               )}
             </div>
