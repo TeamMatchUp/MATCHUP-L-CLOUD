@@ -68,7 +68,7 @@ export function InterestedEventsPanel({ fighterProfileId }: Props) {
       <div className="rounded-lg border border-border bg-card p-8 text-center">
         <p className="text-muted-foreground mb-2">You haven't expressed interest in any events yet.</p>
         <Button variant="ghost" asChild>
-          <Link to="/events">Browse Events</Link>
+          <Link to="/explore?tab=events">Browse Events</Link>
         </Button>
       </div>
     );

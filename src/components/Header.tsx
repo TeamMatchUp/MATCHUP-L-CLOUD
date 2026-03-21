@@ -123,16 +123,13 @@ export function Header() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-44">
               <DropdownMenuItem asChild>
-                <Link to="/events" className="uppercase tracking-wide text-xs">View Events</Link>
+                <Link to="/explore?tab=events" className="uppercase tracking-wide text-xs">View Events</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/fighters" className="uppercase tracking-wide text-xs">View Fighters</Link>
+                <Link to="/explore?tab=fighters" className="uppercase tracking-wide text-xs">View Fighters</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/gyms" className="uppercase tracking-wide text-xs">View Gyms</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/map" className="uppercase tracking-wide text-xs">Map View</Link>
+                <Link to="/explore?tab=gyms" className="uppercase tracking-wide text-xs">View Gyms</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -240,10 +237,9 @@ export function Header() {
                 DASHBOARD
               </a>
             )}
-            <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Events</Link>
-            <Link to="/fighters" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Fighters</Link>
-            <Link to="/gyms" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Gyms</Link>
-            <Link to="/map" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>Map View</Link>
+            <Link to="/explore?tab=events" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Events</Link>
+            <Link to="/explore?tab=fighters" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Fighters</Link>
+            <Link to="/explore?tab=gyms" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Gyms</Link>
             {user && (
               <>
                 <div className="border-t border-border/50 my-1" />
