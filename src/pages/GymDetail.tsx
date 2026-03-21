@@ -131,6 +131,14 @@ export default function GymDetail() {
   const isOwner = !!user && !!gym && gym.coach_id === user.id;
   const isMember = !!myGymLink && myGymLink.status === "approved";
 
+  // (4) Increment unclaimed_interactions for non-owner users on unclaimed gyms
+  useEffect(() => {
+    if (!gym || isOwner || gym.claimed) return;
+    supabase.rpc('has_role' as any, { _user_id: 'placeholder', _role: 'admin' }).then(() => {});
+    // Increment via direct update
+    supabase.from("gyms").update({ unclaimed_interactions: (gym.unclaimed_interactions ?? 0) + 1 } as any).eq("id", gym.id).then(() => {});
+  }, [gym?.id, isOwner, gym?.claimed]);
+
   // Track profile view (non-owner)
   useEffect(() => {
     if (!gym || isOwner) return;
