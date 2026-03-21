@@ -1,0 +1,1 @@
+ALTER TABLE public.gyms ADD COLUMN IF NOT EXISTS unclaimed_interactions integer NOT NULL DEFAULT 0;

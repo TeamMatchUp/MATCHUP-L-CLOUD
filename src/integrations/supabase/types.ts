@@ -842,6 +842,7 @@ export type Database = {
           postcode: string | null
           training_schedule: string | null
           twitter_url: string | null
+          unclaimed_interactions: number
           updated_at: string
           verified: boolean
           website: string | null
@@ -871,6 +872,7 @@ export type Database = {
           postcode?: string | null
           training_schedule?: string | null
           twitter_url?: string | null
+          unclaimed_interactions?: number
           updated_at?: string
           verified?: boolean
           website?: string | null
@@ -900,6 +902,7 @@ export type Database = {
           postcode?: string | null
           training_schedule?: string | null
           twitter_url?: string | null
+          unclaimed_interactions?: number
           updated_at?: string
           verified?: boolean
           website?: string | null
