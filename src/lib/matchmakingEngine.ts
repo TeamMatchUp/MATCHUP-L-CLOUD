@@ -20,7 +20,7 @@ export const PRESETS: Record<string, Preset> = {
 };
 
 // ── Style contrast lookup ────────────────────────────────────────────────
-const STYLE_CONTRAST: Record<string, Record<string, number>> = {
+const STYLE_CONTRAST: Record<string, number> = {
   // MMA
   "Striker|Wrestler": 0.95,
   "Striker|BJJ-Submission": 0.88,
