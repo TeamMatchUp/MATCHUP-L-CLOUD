@@ -262,7 +262,19 @@ export default function Dashboard() {
             userId={user!.id}
             onRefresh={handleRefresh}
           />
-        ) : null;
+        ) : (
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-6 text-center space-y-3">
+            <p className="font-heading text-lg text-foreground">
+              Complete your profile to appear in matchmaking
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Set up your fighter profile with weight class, discipline, and stats.
+            </p>
+            <Button onClick={() => navigateToSection("create-profile")}>
+              Create Fighter Profile
+            </Button>
+          </div>
+        );
 
       case "create-profile":
         return (
