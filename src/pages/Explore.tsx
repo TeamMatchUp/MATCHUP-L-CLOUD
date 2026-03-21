@@ -395,11 +395,11 @@ export default function Explore() {
                   >
                     {/* Static mini map preview */}
                     <div className="absolute inset-0 opacity-30">
-                      <Map defaultCenter={[54.5, -2]} defaultZoom={5} height={400} attribution={false}>
+                      <PigeonMap defaultCenter={[54.5, -2]} defaultZoom={5} height={400} attribution={false}>
                         {mapMarkers.slice(0, 10).map((m) => (
                           <Marker key={`preview-${m.id}`} anchor={[m.lat, m.lng]} color={m.type === "event" ? "hsl(46, 93%, 61%)" : "#ffffff"} width={20} />
                         ))}
-                      </Map>
+                      </PigeonMap>
                     </div>
                     <div className="relative z-10 flex flex-col items-center gap-3">
                       <MapIcon className="h-12 w-12 text-foreground group-hover:text-primary transition-colors" />
