@@ -36,7 +36,7 @@ export function FeaturedEventsSection() {
             UPCOMING <span className="text-primary">EVENTS</span>
           </motion.h2>
           <Button variant="ghost" asChild className="hidden md:inline-flex">
-            <Link to="/events">View All</Link>
+            <Link to="/explore?tab=events">View All</Link>
           </Button>
         </div>
 
