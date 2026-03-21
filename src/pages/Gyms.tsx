@@ -52,8 +52,8 @@ export default function Gyms() {
           gym.description?.toLowerCase().includes(q);
         if (!match) return false;
       }
-      if (pc.coords && (gym as any).latitude != null && (gym as any).longitude != null) {
-        const dist = haversineDistance(pc.coords.latitude, pc.coords.longitude, (gym as any).latitude, (gym as any).longitude);
+      if (pc.coords && gym.lat != null && gym.lng != null) {
+        const dist = haversineDistance(pc.coords.latitude, pc.coords.longitude, gym.lat, gym.lng);
         if (dist > pc.radius) return false;
       }
       // Items without coords are kept so results still show
