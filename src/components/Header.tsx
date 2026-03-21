@@ -123,16 +123,13 @@ export function Header() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-44">
               <DropdownMenuItem asChild>
-                <Link to="/events" className="uppercase tracking-wide text-xs">View Events</Link>
+                <Link to="/explore?tab=events" className="uppercase tracking-wide text-xs">View Events</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/fighters" className="uppercase tracking-wide text-xs">View Fighters</Link>
+                <Link to="/explore?tab=fighters" className="uppercase tracking-wide text-xs">View Fighters</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link to="/gyms" className="uppercase tracking-wide text-xs">View Gyms</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/map" className="uppercase tracking-wide text-xs">Map View</Link>
+                <Link to="/explore?tab=gyms" className="uppercase tracking-wide text-xs">View Gyms</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
