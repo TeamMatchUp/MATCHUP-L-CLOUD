@@ -241,6 +241,20 @@ export default function Dashboard() {
       case "notifications":
         return <NotificationHistory />;
 
+      case "analytics":
+        return (
+          <DashboardAnalytics
+            isCoachOrOwner={isCoachOrOwner}
+            isOrganiser={isOrganiser}
+            isFighter={isFighter}
+            myGyms={myGyms}
+            allFighters={allFighters}
+            events={events}
+            fighterProfile={fighterProfile}
+            userId={user!.id}
+          />
+        );
+
       case "my-profile":
         return fighterProfile ? (
           <EditableProfilePanel
