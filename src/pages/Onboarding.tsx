@@ -452,9 +452,6 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
         <Button variant="hero" onClick={handleSubmit} disabled={loading}>
           {loading ? "Saving..." : "Continue"}
         </Button>
-        <button onClick={onSkip} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Skip for now
-        </button>
       </div>
     </div>
   );
