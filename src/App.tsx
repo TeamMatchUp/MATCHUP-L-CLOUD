@@ -30,6 +30,7 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import Explore from "./pages/Explore";
+import Matchmaking from "./pages/Matchmaking";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
