@@ -56,8 +56,9 @@ export default function GymDetail() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const isFighter = effectiveRoles.includes("fighter");
-  const isCoachOrOrganiser = effectiveRoles.includes("coach") || effectiveRoles.includes("organiser");
+  const isFighter = effectiveRoles.includes("fighter") && !effectiveRoles.includes("coach");
+  const isCoach = effectiveRoles.includes("coach") || effectiveRoles.includes("gym_owner");
+  const isOrganiserOnly = effectiveRoles.includes("organiser") && !isCoach && !isFighter;
 
   useEffect(() => {
     if (searchParams.get("action") === "claim" && user) {
