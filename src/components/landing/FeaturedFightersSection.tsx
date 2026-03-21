@@ -90,7 +90,7 @@ export function FeaturedFightersSection() {
 
         <div className="mt-8 text-center md:hidden">
           <Button variant="ghost" asChild>
-            <Link to="/fighters">View All Fighters</Link>
+            <Link to="/explore?tab=fighters">View All Fighters</Link>
           </Button>
         </div>
       </div>

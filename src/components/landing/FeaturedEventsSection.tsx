@@ -78,7 +78,7 @@ export function FeaturedEventsSection() {
 
         <div className="mt-8 text-center md:hidden">
           <Button variant="ghost" asChild>
-            <Link to="/events">View All Events</Link>
+            <Link to="/explore?tab=events">View All Events</Link>
           </Button>
         </div>
       </div>

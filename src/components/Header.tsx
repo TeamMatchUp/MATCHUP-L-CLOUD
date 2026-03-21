@@ -237,10 +237,9 @@ export function Header() {
                 DASHBOARD
               </a>
             )}
-            <Link to="/events" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Events</Link>
-            <Link to="/fighters" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Fighters</Link>
-            <Link to="/gyms" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Gyms</Link>
-            <Link to="/map" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>Map View</Link>
+            <Link to="/explore?tab=events" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Events</Link>
+            <Link to="/explore?tab=fighters" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Fighters</Link>
+            <Link to="/explore?tab=gyms" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Gyms</Link>
             {user && (
               <>
                 <div className="border-t border-border/50 my-1" />

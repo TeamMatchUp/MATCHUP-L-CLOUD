@@ -96,7 +96,7 @@ export function ProfileCompletionBar({ fighterId, fighterProfile, onOpenAddResul
       complete: fullProfileComplete,
       prompt: "Unlocks style contrast matching and same-gym exclusion",
       actions: !fullProfileComplete ? [
-        ...(!hasApprovedGym ? [{ label: "Find a gym", href: "/gyms" }] : []),
+        ...(!hasApprovedGym ? [{ label: "Find a gym", href: "/explore?tab=gyms" }] : []),
         ...(!p.fighting_substyle ? [{ label: "Declare your style", href: "/fighter/dashboard?tab=profile" }] : []),
       ] : undefined,
     },

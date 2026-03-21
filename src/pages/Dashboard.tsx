@@ -330,16 +330,13 @@ export default function Dashboard() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-40">
                     <DropdownMenuItem asChild>
-                      <Link to="/events" className="text-xs uppercase tracking-wide">Events</Link>
+                      <Link to="/explore?tab=events" className="text-xs uppercase tracking-wide">Events</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/fighters" className="text-xs uppercase tracking-wide">Fighters</Link>
+                      <Link to="/explore?tab=fighters" className="text-xs uppercase tracking-wide">Fighters</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/gyms" className="text-xs uppercase tracking-wide">Gyms</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/map" className="text-xs uppercase tracking-wide">Map View</Link>
+                      <Link to="/explore?tab=gyms" className="text-xs uppercase tracking-wide">Gyms</Link>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

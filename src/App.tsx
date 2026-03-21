@@ -51,11 +51,12 @@ const App = () => (
           <Routes>
             {/* Public */}
             <Route path="/" element={<Index />} />
-            <Route path="/events" element={<Events />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/events" element={<Explore />} />
+            <Route path="/fighters" element={<Explore />} />
+            <Route path="/gyms" element={<Explore />} />
             <Route path="/events/:id" element={<EventDetail />} />
-            <Route path="/fighters" element={<Fighters />} />
             <Route path="/fighters/:id" element={<FighterDetail />} />
-            <Route path="/gyms" element={<Gyms />} />
             <Route path="/gyms/:id" element={<GymDetail />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -64,7 +65,6 @@ const App = () => (
             <Route path="/record-accuracy" element={<RecordAccuracyPolicy />} />
             <Route path="/advertise" element={<AdvertiseEnquiry />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/map" element={<MapView />} />
             <Route path="/admin" element={<Admin />} />
             <Route
               path="/onboarding"

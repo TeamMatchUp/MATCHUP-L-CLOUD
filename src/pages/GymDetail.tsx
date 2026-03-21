@@ -213,7 +213,7 @@ export default function GymDetail() {
           <div className="container py-16 text-center">
             <h1 className="font-heading text-3xl text-foreground mb-4">Gym Not Found</h1>
             <Button variant="ghost" asChild>
-              <Link to="/gyms"><ArrowLeft className="h-4 w-4 mr-2" />Back to Gyms</Link>
+              <Link to="/explore?tab=gyms"><ArrowLeft className="h-4 w-4 mr-2" />Back to Gyms</Link>
             </Button>
           </div>
         </main>
