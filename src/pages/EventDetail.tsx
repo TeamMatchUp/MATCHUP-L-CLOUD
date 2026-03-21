@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users } from "lucide-react";
+import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,6 +43,7 @@ export default function EventDetail() {
   const { user, effectiveRoles } = useAuth();
   const isFighter = effectiveRoles.includes("fighter");
   const isCoach = effectiveRoles.includes("coach");
+  const isOrganiser = effectiveRoles.includes("organiser");
   const [showConfirm, setShowConfirm] = useState(false);
   const [showPutForward, setShowPutForward] = useState(false);
   const [showClaimEvent, setShowClaimEvent] = useState(false);
@@ -256,7 +257,20 @@ export default function EventDetail() {
                 </Button>
               )}
 
-              {/* Location Map */}
+              {/* Organiser Find Matches Button */}
+              {isOrganiser && user && (
+                <Button
+                  asChild
+                  className="mb-8 gap-2"
+                >
+                  <Link to={`/events/${id}/matchmaking`}>
+                    <Sparkles className="h-4 w-4" />
+                    Find Matches
+                  </Link>
+                </Button>
+              )}
+
+
               <div className="rounded-lg border border-border overflow-hidden mb-12">
                 <iframe
                   title="Event Location"
