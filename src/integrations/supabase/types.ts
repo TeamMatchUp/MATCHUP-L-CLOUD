@@ -177,6 +177,67 @@ export type Database = {
           },
         ]
       }
+      event_fight_slots: {
+        Row: {
+          bout_type: string | null
+          created_at: string
+          discipline: string | null
+          event_id: string
+          fighter_a_id: string | null
+          fighter_b_id: string | null
+          id: string
+          slot_number: number | null
+          status: string
+          weight_class: string | null
+        }
+        Insert: {
+          bout_type?: string | null
+          created_at?: string
+          discipline?: string | null
+          event_id: string
+          fighter_a_id?: string | null
+          fighter_b_id?: string | null
+          id?: string
+          slot_number?: number | null
+          status?: string
+          weight_class?: string | null
+        }
+        Update: {
+          bout_type?: string | null
+          created_at?: string
+          discipline?: string | null
+          event_id?: string
+          fighter_a_id?: string | null
+          fighter_b_id?: string | null
+          id?: string
+          slot_number?: number | null
+          status?: string
+          weight_class?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_fight_slots_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_fight_slots_fighter_a_id_fkey"
+            columns: ["fighter_a_id"]
+            isOneToOne: false
+            referencedRelation: "fighter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_fight_slots_fighter_b_id_fkey"
+            columns: ["fighter_b_id"]
+            isOneToOne: false
+            referencedRelation: "fighter_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           city: string | null
@@ -967,6 +1028,82 @@ export type Database = {
           },
         ]
       }
+      match_suggestions: {
+        Row: {
+          competitiveness: number | null
+          composite_score: number | null
+          confidence_a: number | null
+          confidence_b: number | null
+          created_at: string
+          entertainment: number | null
+          event_id: string
+          fighter_a_id: string
+          fighter_b_id: string
+          flags: string[] | null
+          id: string
+          narrative: number | null
+          preset_used: string | null
+          status: string
+          style_contrast: number | null
+        }
+        Insert: {
+          competitiveness?: number | null
+          composite_score?: number | null
+          confidence_a?: number | null
+          confidence_b?: number | null
+          created_at?: string
+          entertainment?: number | null
+          event_id: string
+          fighter_a_id: string
+          fighter_b_id: string
+          flags?: string[] | null
+          id?: string
+          narrative?: number | null
+          preset_used?: string | null
+          status?: string
+          style_contrast?: number | null
+        }
+        Update: {
+          competitiveness?: number | null
+          composite_score?: number | null
+          confidence_a?: number | null
+          confidence_b?: number | null
+          created_at?: string
+          entertainment?: number | null
+          event_id?: string
+          fighter_a_id?: string
+          fighter_b_id?: string
+          flags?: string[] | null
+          id?: string
+          narrative?: number | null
+          preset_used?: string | null
+          status?: string
+          style_contrast?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_suggestions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_suggestions_fighter_a_id_fkey"
+            columns: ["fighter_a_id"]
+            isOneToOne: false
+            referencedRelation: "fighter_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_suggestions_fighter_b_id_fkey"
+            columns: ["fighter_b_id"]
+            isOneToOne: false
+            referencedRelation: "fighter_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -999,6 +1136,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      organiser_preferences: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          id: string
+          organiser_id: string
+          preset: string | null
+          w_comp: number | null
+          w_ent: number | null
+          w_narr: number | null
+          w_style: number | null
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          organiser_id: string
+          preset?: string | null
+          w_comp?: number | null
+          w_ent?: number | null
+          w_narr?: number | null
+          w_style?: number | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          organiser_id?: string
+          preset?: string | null
+          w_comp?: number | null
+          w_ent?: number | null
+          w_narr?: number | null
+          w_style?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organiser_preferences_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
