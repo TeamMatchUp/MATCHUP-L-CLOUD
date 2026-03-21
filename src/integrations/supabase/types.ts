@@ -618,7 +618,7 @@ export type Database = {
           event_id: string | null
           event_name: string | null
           fighter_a_id: string
-          fighter_b_id: string
+          fighter_b_id: string | null
           id: string
           is_amateur: boolean
           method: string | null
@@ -638,7 +638,7 @@ export type Database = {
           event_id?: string | null
           event_name?: string | null
           fighter_a_id: string
-          fighter_b_id: string
+          fighter_b_id?: string | null
           id?: string
           is_amateur?: boolean
           method?: string | null
@@ -658,7 +658,7 @@ export type Database = {
           event_id?: string | null
           event_name?: string | null
           fighter_a_id?: string
-          fighter_b_id?: string
+          fighter_b_id?: string | null
           id?: string
           is_amateur?: boolean
           method?: string | null
