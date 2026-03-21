@@ -314,9 +314,9 @@ export default function GymDetail() {
                       <CheckIcon className="h-5 w-5 text-success shrink-0" />
                       <p className="text-sm text-foreground font-medium">You are a member of this gym</p>
                     </div>
-                  ) : (
+                  ) : gym.claimed ? (
                     <GymContactCTA gymId={gym.id} gymName={gym.name} coachId={gym.coach_id} />
-                  )}
+                  ) : null}
                 </div>
               )}
 
