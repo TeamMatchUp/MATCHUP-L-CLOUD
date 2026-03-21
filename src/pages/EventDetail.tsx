@@ -257,7 +257,20 @@ export default function EventDetail() {
                 </Button>
               )}
 
-              {/* Location Map */}
+              {/* Organiser Find Matches Button */}
+              {isOrganiser && user && (
+                <Button
+                  asChild
+                  className="mb-8 gap-2"
+                >
+                  <Link to={`/events/${id}/matchmaking`}>
+                    <Sparkles className="h-4 w-4" />
+                    Find Matches
+                  </Link>
+                </Button>
+              )}
+
+
               <div className="rounded-lg border border-border overflow-hidden mb-12">
                 <iframe
                   title="Event Location"
