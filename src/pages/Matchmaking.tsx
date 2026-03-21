@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ArrowLeft, Sparkles, Check, X, Search, AlertTriangle, Swords } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -33,12 +35,68 @@ export default function Matchmaking() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const [presetKey, setPresetKey] = useState("action_night");
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [confirmedFighterIds, setConfirmedFighterIds] = useState<Set<string>>(new Set());
   const [filterText, setFilterText] = useState("");
 
-  const preset = PRESETS[presetKey];
+  // Custom slider weights (0–100, must sum to 100)
+  const [wComp, setWComp] = useState(30);
+  const [wEnt, setWEnt] = useState(40);
+  const [wStyle, setWStyle] = useState(20);
+  const [wNarr, setWNarr] = useState(10);
+
+  // Bout type modal
+  const [boutTypeMatch, setBoutTypeMatch] = useState<ScoredMatch | null>(null);
+
+  // When preset changes, set sliders
+  const handlePresetChange = useCallback((key: string) => {
+    setPresetKey(key);
+    const p = PRESETS[key];
+    setWComp(Math.round(p.w_comp * 100));
+    setWEnt(Math.round(p.w_ent * 100));
+    setWStyle(Math.round(p.w_style * 100));
+    setWNarr(Math.round(p.w_narr * 100));
+  }, []);
+
+  // Constrained slider handler — adjusts others proportionally to keep sum at 100
+  const handleSlider = useCallback((which: "comp" | "ent" | "style" | "narr", newVal: number) => {
+    const current = { comp: wComp, ent: wEnt, style: wStyle, narr: wNarr };
+    const others = (["comp", "ent", "style", "narr"] as const).filter(k => k !== which);
+    const oldOtherSum = others.reduce((s, k) => s + current[k], 0);
+    const newOtherSum = 100 - newVal;
+
+    if (oldOtherSum === 0) {
+      const each = Math.floor(newOtherSum / 3);
+      const remainder = newOtherSum - each * 3;
+      const vals = { comp: wComp, ent: wEnt, style: wStyle, narr: wNarr };
+      others.forEach((k, i) => { vals[k] = each + (i < remainder ? 1 : 0); });
+      vals[which] = newVal;
+      setWComp(vals.comp); setWEnt(vals.ent); setWStyle(vals.style); setWNarr(vals.narr);
+    } else {
+      const ratio = newOtherSum / oldOtherSum;
+      const vals = { comp: wComp, ent: wEnt, style: wStyle, narr: wNarr };
+      vals[which] = newVal;
+      let assigned = newVal;
+      others.forEach((k, i) => {
+        if (i === others.length - 1) {
+          vals[k] = 100 - assigned;
+        } else {
+          vals[k] = Math.max(0, Math.round(current[k] * ratio));
+          assigned += vals[k];
+        }
+      });
+      setWComp(vals.comp); setWEnt(vals.ent); setWStyle(vals.style); setWNarr(vals.narr);
+    }
+  }, [wComp, wEnt, wStyle, wNarr]);
+
+  const activePreset: Preset = useMemo(() => ({
+    label: "Custom",
+    w_comp: wComp / 100,
+    w_ent: wEnt / 100,
+    w_style: wStyle / 100,
+    w_narr: wNarr / 100,
+  }), [wComp, wEnt, wStyle, wNarr]);
 
   // Fetch event
   const { data: event } = useQuery({
@@ -72,14 +130,12 @@ export default function Matchmaking() {
       if (error) throw error;
       if (!rawFighters) return [];
 
-      // Fetch fights for finish rate
       const fighterIds = rawFighters.map((f) => f.id);
       const { data: fights = [] } = await supabase
         .from("fights")
         .select("fighter_a_id, result, method")
         .in("fighter_a_id", fighterIds);
 
-      // Fetch gym links
       const { data: gymLinks = [] } = await supabase
         .from("fighter_gym_links")
         .select("fighter_id, gym_id")
@@ -103,57 +159,52 @@ export default function Matchmaking() {
   // Run engine
   const suggestions = useMemo(() => {
     if (fighters.length < 2) return [];
-    return runMatchmakingEngine(fighters, preset);
-  }, [fighters, preset]);
+    return runMatchmakingEngine(fighters, activePreset);
+  }, [fighters, activePreset]);
 
-  // Apply text filter + dismissed
+  // Apply text filter + dismissed + confirmed fighter exclusion
   const filtered = useMemo(() => {
     let list = suggestions.filter(
-      (s) => !dismissed.has(`${s.fighterA.id}-${s.fighterB.id}`)
+      (s) => !dismissed.has(`${s.fighterA.id}-${s.fighterB.id}`) &&
+             !confirmedFighterIds.has(s.fighterA.id) &&
+             !confirmedFighterIds.has(s.fighterB.id)
     );
 
     if (filterText.trim()) {
       const lower = filterText.toLowerCase();
-      // Simple keyword filters
       if (lower.includes("finisher")) {
         list = list.filter((s) => s.entertainment > 0.5);
       } else if (lower.includes("local")) {
-        list = list.filter(
-          (s) => s.fighterA.region && s.fighterB.region && s.fighterA.region === s.fighterB.region
-        );
+        list = list.filter((s) => s.fighterA.region && s.fighterB.region && s.fighterA.region === s.fighterB.region);
       } else if (lower.includes("undefeated")) {
-        list = list.filter(
-          (s) => s.fighterA.record_losses === 0 && s.fighterB.record_losses === 0
-        );
+        list = list.filter((s) => s.fighterA.record_losses === 0 && s.fighterB.record_losses === 0);
       } else if (lower.includes("debut")) {
         list = list.filter((s) => s.flags.includes("Debut"));
       } else {
-        // General name search
-        list = list.filter(
-          (s) =>
-            s.fighterA.name.toLowerCase().includes(lower) ||
-            s.fighterB.name.toLowerCase().includes(lower)
+        list = list.filter((s) =>
+          s.fighterA.name.toLowerCase().includes(lower) ||
+          s.fighterB.name.toLowerCase().includes(lower)
         );
       }
     }
 
     return list;
-  }, [suggestions, dismissed, filterText]);
+  }, [suggestions, dismissed, filterText, confirmedFighterIds]);
 
-  const handleConfirm = async (match: ScoredMatch) => {
-    if (!eventId || !user) return;
+  const handleConfirmWithBoutType = async (boutType: string) => {
+    const match = boutTypeMatch;
+    if (!match || !eventId || !user) return;
     try {
-      // Save to event_fight_slots
       await supabase.from("event_fight_slots").insert({
         event_id: eventId,
         weight_class: match.fighterA.weight_class,
         discipline: match.fighterA.discipline,
         fighter_a_id: match.fighterA.id,
         fighter_b_id: match.fighterB.id,
+        bout_type: boutType,
         status: "confirmed",
       });
 
-      // Save to match_suggestions
       await supabase.from("match_suggestions").insert({
         event_id: eventId,
         fighter_a_id: match.fighterA.id,
@@ -168,8 +219,14 @@ export default function Matchmaking() {
         status: "confirmed",
       });
 
-      setDismissed((prev) => new Set(prev).add(`${match.fighterA.id}-${match.fighterB.id}`));
-      toast.success(`${match.fighterA.name} vs ${match.fighterB.name} confirmed!`);
+      setConfirmedFighterIds((prev) => {
+        const next = new Set(prev);
+        next.add(match.fighterA.id);
+        next.add(match.fighterB.id);
+        return next;
+      });
+      setBoutTypeMatch(null);
+      toast.success(`${match.fighterA.name} vs ${match.fighterB.name} confirmed as ${boutType}!`);
     } catch {
       toast.error("Failed to confirm match");
     }
@@ -191,9 +248,7 @@ export default function Matchmaking() {
         preset_used: presetKey,
         status: "dismissed",
       });
-    } catch {
-      // silent
-    }
+    } catch { /* silent */ }
     setDismissed((prev) => new Set(prev).add(`${match.fighterA.id}-${match.fighterB.id}`));
   };
 
@@ -207,7 +262,7 @@ export default function Matchmaking() {
           </Button>
 
           <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
-            {/* Left Panel — Event info + preset */}
+            {/* Left Panel */}
             <div className="space-y-6">
               <div className="rounded-lg border border-primary/30 bg-card p-6">
                 <div className="flex items-center gap-2 mb-4">
@@ -219,21 +274,15 @@ export default function Matchmaking() {
                   <div className="space-y-2 mb-6">
                     <h3 className="font-heading text-lg text-foreground">{event.title}</h3>
                     <p className="text-sm text-muted-foreground">{event.city || event.location}</p>
-                    {event.discipline && (
-                      <Badge variant="outline" className="capitalize">{event.discipline}</Badge>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {fighters.length} fighters in pool
-                    </p>
+                    {event.discipline && <Badge variant="outline" className="capitalize">{event.discipline}</Badge>}
+                    <p className="text-xs text-muted-foreground mt-1">{fighters.length} fighters in pool</p>
                   </div>
                 )}
 
                 <div className="space-y-3">
                   <label className="text-sm font-medium text-foreground">Preset</label>
-                  <Select value={presetKey} onValueChange={setPresetKey}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                  <Select value={presetKey} onValueChange={handlePresetChange}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent position="popper" side="bottom">
                       {Object.entries(PRESETS).map(([key, p]) => (
                         <SelectItem key={key} value={key}>{p.label}</SelectItem>
@@ -241,12 +290,13 @@ export default function Matchmaking() {
                     </SelectContent>
                   </Select>
 
-                  {/* Weight breakdown */}
-                  <div className="space-y-2 pt-2">
-                    <WeightRow label="Competitiveness" value={preset.w_comp} />
-                    <WeightRow label="Entertainment" value={preset.w_ent} />
-                    <WeightRow label="Style Contrast" value={preset.w_style} />
-                    <WeightRow label="Narrative" value={preset.w_narr} />
+                  {/* Sliders */}
+                  <div className="space-y-4 pt-3">
+                    <SliderRow label="Competitiveness" value={wComp} onChange={(v) => handleSlider("comp", v)} />
+                    <SliderRow label="Entertainment" value={wEnt} onChange={(v) => handleSlider("ent", v)} />
+                    <SliderRow label="Style Contrast" value={wStyle} onChange={(v) => handleSlider("style", v)} />
+                    <SliderRow label="Narrative" value={wNarr} onChange={(v) => handleSlider("narr", v)} />
+                    <p className="text-[10px] text-muted-foreground text-right">Total: {wComp + wEnt + wStyle + wNarr}%</p>
                   </div>
                 </div>
               </div>
@@ -270,7 +320,7 @@ export default function Matchmaking() {
 
               <div className="rounded-lg border border-border bg-card p-4">
                 <p className="text-xs text-muted-foreground">
-                  <strong>{filtered.length}</strong> suggestions · <strong>{dismissed.size}</strong> reviewed
+                  <strong>{filtered.length}</strong> suggestions · <strong>{dismissed.size}</strong> reviewed · <strong>{confirmedFighterIds.size / 2}</strong> confirmed
                 </p>
               </div>
             </div>
@@ -282,16 +332,12 @@ export default function Matchmaking() {
               </h2>
 
               {loadingFighters ? (
-                <div className="text-muted-foreground animate-pulse py-12 text-center">
-                  Analysing fighter pool...
-                </div>
+                <div className="text-muted-foreground animate-pulse py-12 text-center">Analysing fighter pool...</div>
               ) : filtered.length === 0 ? (
                 <div className="rounded-lg border border-border bg-card p-12 text-center">
                   <Swords className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    {suggestions.length === 0
-                      ? "Not enough eligible fighters to generate suggestions."
-                      : "No matches left — adjust your filter or preset."}
+                    {suggestions.length === 0 ? "Not enough eligible fighters to generate suggestions." : "No matches left — adjust your filter or preset."}
                   </p>
                 </div>
               ) : (
@@ -300,7 +346,7 @@ export default function Matchmaking() {
                     key={`${match.fighterA.id}-${match.fighterB.id}`}
                     match={match}
                     rank={idx + 1}
-                    onConfirm={() => handleConfirm(match)}
+                    onConfirm={() => setBoutTypeMatch(match)}
                     onDismiss={() => handleDismiss(match)}
                   />
                 ))
@@ -309,6 +355,27 @@ export default function Matchmaking() {
           </div>
         </div>
       </main>
+
+      {/* Bout Type Modal */}
+      <Dialog open={!!boutTypeMatch} onOpenChange={(open) => { if (!open) setBoutTypeMatch(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-heading">Card Position</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-4">
+            Where should {boutTypeMatch?.fighterA.name} vs {boutTypeMatch?.fighterB.name} sit on the card?
+          </p>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => handleConfirmWithBoutType("Main Event")}>
+              Main Event
+            </Button>
+            <Button className="flex-1" onClick={() => handleConfirmWithBoutType("Undercard")}>
+              Undercard
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
@@ -316,14 +383,21 @@ export default function Matchmaking() {
 
 // ── Sub-components ───────────────────────────────────────────────────────
 
-function WeightRow({ label, value }: { label: string; value: number }) {
+function SliderRow({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs text-muted-foreground w-28 shrink-0">{label}</span>
-      <Progress value={value * 100} className="h-2 flex-1" />
-      <span className="text-xs font-medium text-foreground w-10 text-right">
-        {Math.round(value * 100)}%
-      </span>
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-muted-foreground">{label}</span>
+        <span className="text-xs font-medium text-foreground tabular-nums">{value}%</span>
+      </div>
+      <Slider
+        value={[value]}
+        onValueChange={([v]) => onChange(v)}
+        min={0}
+        max={100}
+        step={1}
+        className="w-full"
+      />
     </div>
   );
 }
@@ -334,10 +408,7 @@ function DimensionBar({ label, value }: { label: string; value: number }) {
     <div className="flex items-center gap-2">
       <span className="text-[10px] text-muted-foreground w-20 shrink-0">{label}</span>
       <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-        <div
-          className="h-full rounded-full bg-primary transition-all"
-          style={{ width: `${pct}%` }}
-        />
+        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
       </div>
       <span className="text-[10px] font-medium text-foreground w-8 text-right">{pct}%</span>
     </div>
@@ -362,32 +433,16 @@ function MatchCard({ match, rank, onConfirm, onDismiss }: MatchCardProps) {
           <span className="font-heading text-lg text-muted-foreground">#{rank}</span>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <Link to={`/fighters/${a.id}`} className="font-medium text-foreground hover:text-primary">
-                {a.name}
-              </Link>
-              <span className="text-xs text-muted-foreground">
-                ({a.record_wins}W-{a.record_losses}L-{a.record_draws}D)
-              </span>
+              <Link to={`/fighters/${a.id}`} className="font-medium text-foreground hover:text-primary">{a.name}</Link>
+              <span className="text-xs text-muted-foreground">({a.record_wins}W-{a.record_losses}L-{a.record_draws}D)</span>
               <span className="text-primary font-heading text-sm">VS</span>
-              <Link to={`/fighters/${b.id}`} className="font-medium text-foreground hover:text-primary">
-                {b.name}
-              </Link>
-              <span className="text-xs text-muted-foreground">
-                ({b.record_wins}W-{b.record_losses}L-{b.record_draws}D)
-              </span>
+              <Link to={`/fighters/${b.id}`} className="font-medium text-foreground hover:text-primary">{b.name}</Link>
+              <span className="text-xs text-muted-foreground">({b.record_wins}W-{b.record_losses}L-{b.record_draws}D)</span>
             </div>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
-              {a.weight_class && (
-                <Badge variant="outline" className="text-[10px]">
-                  {WEIGHT_CLASS_LABELS[a.weight_class] || a.weight_class}
-                </Badge>
-              )}
-              {a.fighting_substyle && (
-                <Badge variant="secondary" className="text-[10px]">{a.fighting_substyle}</Badge>
-              )}
-              {b.fighting_substyle && (
-                <Badge variant="secondary" className="text-[10px]">{b.fighting_substyle}</Badge>
-              )}
+              {a.weight_class && <Badge variant="outline" className="text-[10px]">{WEIGHT_CLASS_LABELS[a.weight_class] || a.weight_class}</Badge>}
+              {a.fighting_substyle && <Badge variant="secondary" className="text-[10px]">{a.fighting_substyle}</Badge>}
+              {b.fighting_substyle && <Badge variant="secondary" className="text-[10px]">{b.fighting_substyle}</Badge>}
             </div>
           </div>
         </div>
@@ -397,7 +452,6 @@ function MatchCard({ match, rank, onConfirm, onDismiss }: MatchCardProps) {
         </div>
       </div>
 
-      {/* Dimension bars */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-3">
         <DimensionBar label="Competitive" value={match.competitiveness} />
         <DimensionBar label="Entertainment" value={match.entertainment} />
@@ -405,30 +459,18 @@ function MatchCard({ match, rank, onConfirm, onDismiss }: MatchCardProps) {
         <DimensionBar label="Narrative" value={match.narrative} />
       </div>
 
-      {/* Flags */}
       {match.flags.length > 0 && (
         <div className="flex items-center gap-2 mb-3">
           {match.flags.map((flag) => (
-            <Badge
-              key={flag}
-              variant="outline"
-              className={
-                flag === "Welfare"
-                  ? "text-destructive border-destructive/40 text-[10px]"
-                  : "text-amber-500 border-amber-500/40 text-[10px]"
-              }
-            >
-              <AlertTriangle className="h-3 w-3 mr-1" />
-              {flag}
+            <Badge key={flag} variant="outline" className={flag === "Welfare" ? "text-destructive border-destructive/40 text-[10px]" : "text-amber-500 border-amber-500/40 text-[10px]"}>
+              <AlertTriangle className="h-3 w-3 mr-1" />{flag}
             </Badge>
           ))}
         </div>
       )}
 
-      {/* Explanation */}
       <p className="text-xs text-muted-foreground mb-4 italic">{match.explanation}</p>
 
-      {/* Actions */}
       <div className="flex items-center gap-2 justify-end">
         <Button variant="ghost" size="sm" onClick={onDismiss} className="gap-1 text-muted-foreground">
           <X className="h-3 w-3" /> Dismiss

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useSearchParams, Link, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -23,8 +23,7 @@ import { usePostcodeSearch, haversineDistance } from "@/hooks/use-postcode-searc
 import { STYLE_LABELS } from "@/lib/format";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Database } from "@/integrations/supabase/types";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import { Map, Marker, Overlay } from "pigeon-maps";
 import React from "react";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
@@ -45,7 +44,6 @@ export default function Explore() {
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
 
-  // Detect tab from path or search params
   const getInitialTab = (): TabType => {
     if (location.pathname === "/events") return "events";
     if (location.pathname === "/fighters") return "fighters";
@@ -55,6 +53,7 @@ export default function Explore() {
 
   const [tab, setTab] = useState<TabType>(getInitialTab);
   const [mapOpen, setMapOpen] = useState(false);
+  const [popupItem, setPopupItem] = useState<any>(null);
 
   // Shared filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,16 +69,12 @@ export default function Explore() {
   const [weightFilter, setWeightFilter] = useState("all");
   const [styleFilter, setStyleFilter] = useState("all");
 
-  // Map refs
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
-
   const handleTabChange = (t: string) => {
     setTab(t as TabType);
     setSearchParams({ tab: t });
     setSearchQuery("");
     setFiltersOpen(false);
+    setPopupItem(null);
     if (t === "fighters") setMapOpen(false);
   };
 
@@ -205,110 +200,27 @@ export default function Explore() {
     });
   }, [fighters, searchQuery]);
 
-  // ── Map logic ──
-  useEffect(() => {
-    if (!mapOpen || !mapContainer.current || mapRef.current) return;
-    const map = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: {
-        version: 8,
-        sources: {
-          "osm-tiles": {
-            type: "raster",
-            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-            tileSize: 256,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          },
-        },
-        layers: [{ id: "osm-layer", type: "raster", source: "osm-tiles", minzoom: 0, maxzoom: 19 }],
-        glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
-      },
-      center: [-2.5, 53.5],
-      zoom: 5.5,
-    });
-    map.addControl(new mapboxgl.NavigationControl(), "top-right");
-    mapRef.current = map;
-    return () => { map.remove(); mapRef.current = null; };
-  }, [mapOpen]);
-
-  const updateMarkers = useCallback(() => {
-    markersRef.current.forEach((m) => m.remove());
-    markersRef.current = [];
-    const map = mapRef.current;
-    if (!map) return;
-    const bounds = new mapboxgl.LngLatBounds();
-    let has = false;
-
-    // Events - gold pins
+  // Map markers data
+  const mapMarkers = useMemo(() => {
+    const markers: { lat: number; lng: number; type: "event" | "gym"; name: string; city: string; id: string }[] = [];
     if (tab === "events" || tab === "gyms") {
-      const evts = tab === "events" ? filteredEvents : (events ?? []).filter(e => e.latitude != null && e.longitude != null);
       if (tab === "events") {
-        evts.forEach((event: any) => {
-          if (event.latitude == null || event.longitude == null) return;
-          const el = document.createElement("div");
-          el.style.cssText = "width:28px;height:28px;border-radius:50%;background:hsl(46,93%,61%);border:3px solid hsl(46,93%,48%);box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;position:relative;";
-          el.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="hsl(213,33%,6%)" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
-          const popup = new mapboxgl.Popup({ offset: 20, closeButton: false }).setHTML(`
-            <div style="font-family:inherit;min-width:160px;">
-              <p style="font-weight:700;margin:0 0 4px;">${event.title}</p>
-              <p style="font-size:12px;color:#666;margin:0 0 6px;">${event.city || event.location || ''}</p>
-              <span style="display:inline-block;font-size:10px;background:rgba(234,179,8,0.15);color:rgb(180,130,0);border:1px solid rgba(234,179,8,0.3);padding:1px 6px;border-radius:9999px;">Event</span>
-              <div style="margin-top:8px;"><a href="/events/${event.id}" style="font-size:12px;color:hsl(46,93%,41%);text-decoration:none;">View Profile →</a></div>
-            </div>
-          `);
-          const marker = new mapboxgl.Marker({ element: el }).setLngLat([event.longitude, event.latitude]).setPopup(popup).addTo(map);
-          markersRef.current.push(marker);
-          bounds.extend([event.longitude, event.latitude]);
-          has = true;
+        filteredEvents.forEach((e: any) => {
+          if (e.latitude != null && e.longitude != null) markers.push({ lat: e.latitude, lng: e.longitude, type: "event", name: e.title, city: e.city || e.location || "", id: e.id });
+        });
+      }
+      if (tab === "gyms") {
+        filteredGyms.forEach((g: any) => {
+          if (g.lat != null && g.lng != null) markers.push({ lat: g.lat, lng: g.lng, type: "gym", name: g.name, city: g.city || g.location || "", id: g.id });
         });
       }
     }
-
-    // Gyms - white pins
-    if (tab === "gyms") {
-      filteredGyms.forEach((gym: any) => {
-        if (gym.lat == null || gym.lng == null) return;
-        const el = document.createElement("div");
-        el.style.cssText = "width:28px;height:28px;border-radius:50%;background:#fff;border:3px solid #888;box-shadow:0 2px 8px rgba(0,0,0,0.3);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;position:relative;";
-        el.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
-        const popup = new mapboxgl.Popup({ offset: 20, closeButton: false }).setHTML(`
-          <div style="font-family:inherit;min-width:160px;">
-            <p style="font-weight:700;margin:0 0 4px;">${gym.name}</p>
-            <p style="font-size:12px;color:#666;margin:0 0 6px;">${gym.city || gym.location || ''}</p>
-            <span style="display:inline-block;font-size:10px;border:1px solid #888;padding:1px 6px;border-radius:9999px;">Gym</span>
-            <div style="margin-top:8px;"><a href="/gyms/${gym.id}" style="font-size:12px;color:hsl(46,93%,41%);text-decoration:none;">View Profile →</a></div>
-          </div>
-        `);
-        const marker = new mapboxgl.Marker({ element: el }).setLngLat([gym.lng, gym.lat]).setPopup(popup).addTo(map);
-        markersRef.current.push(marker);
-        bounds.extend([gym.lng, gym.lat]);
-        has = true;
-      });
-    }
-
-    if (has) map.fitBounds(bounds, { padding: 60, maxZoom: 12 });
-  }, [tab, filteredEvents, filteredGyms, events]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !mapOpen) return;
-    if (map.loaded()) updateMarkers();
-    else { map.on("load", updateMarkers); return () => { map.off("load", updateMarkers); }; }
-  }, [updateMarkers, mapOpen]);
-
-  // Destroy map on close
-  useEffect(() => {
-    if (!mapOpen && mapRef.current) {
-      mapRef.current.remove();
-      mapRef.current = null;
-    }
-  }, [mapOpen]);
+    return markers;
+  }, [tab, filteredEvents, filteredGyms]);
 
   const isLoading = tab === "events" ? eventsLoading : tab === "gyms" ? gymsLoading : fightersLoading;
-
   const searchPlaceholder = tab === "events" ? "Search events, promotions, venues..." : tab === "gyms" ? "Search gyms by name, location..." : "Search fighters...";
 
-  // ── Render ──
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
@@ -317,12 +229,7 @@ export default function Explore() {
           <div className={`${mapOpen ? "px-0" : "container"} flex-1 flex flex-col`}>
             {/* Title + Tabs */}
             <div className={mapOpen ? "container" : ""}>
-              <motion.h1
-                className="font-heading text-4xl md:text-5xl text-foreground mb-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
+              <motion.h1 className="font-heading text-4xl md:text-5xl text-foreground mb-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 EXPLORE
               </motion.h1>
 
@@ -400,7 +307,6 @@ export default function Explore() {
                           )}
                         </div>
 
-                        {/* Location search - events and gyms only */}
                         {tab !== "fighters" && (
                           <div className="space-y-3">
                             <div className="flex items-center gap-2">
@@ -438,38 +344,70 @@ export default function Explore() {
                 {tab === "fighters" && <FightersDirectory fighters={filteredFighters ?? []} isLoading={fightersLoading} />}
               </div>
 
-              {/* Map panel */}
+              {/* Map panel - pigeon-maps */}
               {mapOpen && tab !== "fighters" && (
                 <div className="flex-1 min-h-[500px] relative">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="absolute top-3 left-3 z-10"
-                    onClick={() => setMapOpen(false)}
-                  >
+                  <Button variant="outline" size="sm" className="absolute top-3 left-3 z-10" onClick={() => { setMapOpen(false); setPopupItem(null); }}>
                     <X className="h-4 w-4 mr-1" /> Close Map
                   </Button>
-                  <div ref={mapContainer} style={{ height: "100%", width: "100%", background: "#e8e0d8" }} />
+                  <Map defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={undefined} style={{ width: "100%", height: "100%" }}>
+                    {mapMarkers.map((m) => (
+                      <Marker
+                        key={`${m.type}-${m.id}`}
+                        anchor={[m.lat, m.lng]}
+                        color={m.type === "event" ? "hsl(46, 93%, 61%)" : "#ffffff"}
+                        width={32}
+                        onClick={() => setPopupItem(m)}
+                      />
+                    ))}
+                    {popupItem && (
+                      <Overlay anchor={[popupItem.lat, popupItem.lng]} offset={[0, -20]}>
+                        <div className="bg-card border border-border rounded-lg shadow-lg p-3 min-w-[180px]" onClick={(e) => e.stopPropagation()}>
+                          <p className="font-heading text-sm text-foreground mb-1">{popupItem.name}</p>
+                          <p className="text-xs text-muted-foreground mb-2">{popupItem.city}</p>
+                          <Badge variant="outline" className="text-[10px] mb-2">{popupItem.type === "event" ? "Event" : "Gym"}</Badge>
+                          <div>
+                            <Link
+                              to={popupItem.type === "event" ? `/events/${popupItem.id}` : `/gyms/${popupItem.id}`}
+                              className="text-xs text-primary hover:underline"
+                            >
+                              View Profile →
+                            </Link>
+                          </div>
+                          <button onClick={() => setPopupItem(null)} className="absolute top-1 right-1 text-muted-foreground hover:text-foreground">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </Overlay>
+                    )}
+                  </Map>
                 </div>
               )}
             </div>
 
-            {/* Map preview card — shown when map is NOT open, and not on fighters tab */}
+            {/* Map preview tile — fixed position style, shown when map is NOT open and not fighters */}
             {!mapOpen && tab !== "fighters" && (
               <div className="container mt-6">
-                <button
-                  onClick={() => setMapOpen(true)}
-                  className="w-full rounded-lg border border-border bg-card p-4 flex items-center gap-4 hover:border-primary/30 transition-colors group"
-                >
-                  <div className="h-16 w-24 rounded-md bg-muted flex items-center justify-center shrink-0">
-                    <MapIcon className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                  <div className="text-left flex-1">
-                    <p className="font-heading text-lg text-foreground">See Map</p>
-                    <p className="text-xs text-muted-foreground">View {tab} on an interactive map</p>
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                </button>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setMapOpen(true)}
+                    className="w-[300px] h-[400px] rounded-lg border border-border bg-muted/50 flex flex-col items-center justify-center hover:border-primary/30 transition-all group relative overflow-hidden"
+                  >
+                    {/* Static mini map preview */}
+                    <div className="absolute inset-0 opacity-30">
+                      <Map defaultCenter={[54.5, -2]} defaultZoom={5} height={400} attribution={false}>
+                        {mapMarkers.slice(0, 10).map((m) => (
+                          <Marker key={`preview-${m.id}`} anchor={[m.lat, m.lng]} color={m.type === "event" ? "hsl(46, 93%, 61%)" : "#ffffff"} width={20} />
+                        ))}
+                      </Map>
+                    </div>
+                    <div className="relative z-10 flex flex-col items-center gap-3">
+                      <MapIcon className="h-12 w-12 text-foreground group-hover:text-primary transition-colors" />
+                      <span className="font-heading text-2xl text-foreground group-hover:text-primary transition-colors">SEE MAP</span>
+                      <span className="text-xs text-muted-foreground">View {tab} on an interactive map</span>
+                    </div>
+                  </button>
+                </div>
               </div>
             )}
           </div>
