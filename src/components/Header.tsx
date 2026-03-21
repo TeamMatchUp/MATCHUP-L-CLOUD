@@ -114,25 +114,12 @@ export function Header() {
               DASHBOARD
             </a>
           )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 uppercase tracking-wide">
-                Explore
-                <ChevronDown className="h-3 w-3" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="center" className="w-44">
-              <DropdownMenuItem asChild>
-                <Link to="/explore?tab=events" className="uppercase tracking-wide text-xs">View Events</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/explore?tab=fighters" className="uppercase tracking-wide text-xs">View Fighters</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/explore?tab=gyms" className="uppercase tracking-wide text-xs">View Gyms</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Link
+            to="/explore"
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200 uppercase tracking-wide"
+          >
+            Explore
+          </Link>
         </nav>
 
         <div className="hidden md:flex items-center gap-2">
