@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users } from "lucide-react";
+import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
