@@ -637,10 +637,10 @@ export default function Onboarding() {
 
         <div className="rounded-lg border border-border bg-card p-5 sm:p-8">
           {primaryRole === "fighter" && (
-            <FighterForm onComplete={goToDashboard} onSkip={handleSkip} />
+            <FighterForm onComplete={goToDashboard} onSkip={goToDashboard} />
           )}
           {(primaryRole === "coach" || primaryRole === "gym_owner") && (
-            <CoachForm onComplete={goToDashboard} onSkip={handleSkip} />
+            <CoachForm onComplete={goToDashboard} onSkip={goToDashboard} />
           )}
           {primaryRole === "organiser" && (
             <OrganiserLanding />
