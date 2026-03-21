@@ -23,7 +23,7 @@ import { usePostcodeSearch, haversineDistance } from "@/hooks/use-postcode-searc
 import { STYLE_LABELS } from "@/lib/format";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { Database } from "@/integrations/supabase/types";
-import { Map, Marker, Overlay } from "pigeon-maps";
+import { Map as PigeonMap, Marker, Overlay } from "pigeon-maps";
 import React from "react";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
