@@ -596,13 +596,6 @@ export default function Onboarding() {
   const { user, roles, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [rolesLoaded, setRolesLoaded] = useState(false);
-
-  useEffect(() => {
-    if (!authLoading && user && roles.length > 0) {
-      setRolesLoaded(true);
-    }
-  }, [authLoading, user, roles]);
 
   const primaryRole: AppRole | null = roles.includes("gym_owner")
     ? "gym_owner"
@@ -619,19 +612,14 @@ export default function Onboarding() {
     navigate(path, { replace: true });
   };
 
-  const handleSkip = async () => {
-    await markOnboardingComplete(queryClient);
-    goToDashboard();
-  };
+  // Redirect if no user/auth not ready — no spinner screen
+  if (authLoading || !user) {
+    return null;
+  }
 
-  // (1) Show loading spinner until auth is resolved AND roles are loaded — no bypass buttons
-  if (authLoading || !user || !rolesLoaded) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Setting up your account...</p>
-      </div>
-    );
+  // If roles haven't loaded yet, show minimal skeleton — no bypass
+  if (roles.length === 0) {
+    return null;
   }
 
   return (
