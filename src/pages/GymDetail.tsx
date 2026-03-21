@@ -556,8 +556,8 @@ export default function GymDetail() {
               </AlertDialogContent>
             </AlertDialog>
 
-            {/* Only show claim dialog for coaches/organisers — never for fighters */}
-            {isCoachOrOrganiser && (
+            {/* Only show claim dialog for coaches — never for fighters or organisers */}
+            {isCoach && (
               <ClaimGymDialog
                 open={showClaimDialog}
                 onOpenChange={setShowClaimDialog}
