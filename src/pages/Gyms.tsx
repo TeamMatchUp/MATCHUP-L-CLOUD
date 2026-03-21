@@ -52,8 +52,8 @@ export default function Gyms() {
           gym.description?.toLowerCase().includes(q);
         if (!match) return false;
       }
-      if (pc.coords && (gym as any).latitude != null && (gym as any).longitude != null) {
-        const dist = haversineDistance(pc.coords.latitude, pc.coords.longitude, (gym as any).latitude, (gym as any).longitude);
+      if (pc.coords && gym.lat != null && gym.lng != null) {
+        const dist = haversineDistance(pc.coords.latitude, pc.coords.longitude, gym.lat, gym.lng);
         if (dist > pc.radius) return false;
       }
       // Items without coords are kept so results still show
@@ -200,14 +200,10 @@ export default function Gyms() {
                       to={`/gyms/${gym.id}`}
                       className="rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block h-full relative"
                     >
-                      {/* Claimed / Unclaimed badge */}
-                      {gym.claimed ? (
+                      {/* Verified badge for claimed gyms only */}
+                      {gym.claimed && (
                         <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-semibold">
                           <ShieldCheck className="h-3 w-3" /> Verified
-                        </span>
-                      ) : (
-                        <span className="absolute top-3 right-3 inline-flex items-center rounded-full bg-muted text-muted-foreground border border-border px-2 py-0.5 text-[10px] font-semibold">
-                          Unclaimed
                         </span>
                       )}
                       <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground mb-4">

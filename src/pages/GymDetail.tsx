@@ -56,8 +56,9 @@ export default function GymDetail() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const isFighter = effectiveRoles.includes("fighter");
-  const isCoachOrOrganiser = effectiveRoles.includes("coach") || effectiveRoles.includes("organiser");
+  const isFighter = effectiveRoles.includes("fighter") && !effectiveRoles.includes("coach");
+  const isCoach = effectiveRoles.includes("coach") || effectiveRoles.includes("gym_owner");
+  const isOrganiserOnly = effectiveRoles.includes("organiser") && !isCoach && !isFighter;
 
   useEffect(() => {
     if (searchParams.get("action") === "claim" && user) {
@@ -129,6 +130,14 @@ export default function GymDetail() {
 
   const isOwner = !!user && !!gym && gym.coach_id === user.id;
   const isMember = !!myGymLink && myGymLink.status === "approved";
+
+  // (4) Increment unclaimed_interactions for non-owner users on unclaimed gyms
+  useEffect(() => {
+    if (!gym || isOwner || gym.claimed) return;
+    supabase.rpc('has_role' as any, { _user_id: 'placeholder', _role: 'admin' }).then(() => {});
+    // Increment via direct update
+    supabase.from("gyms").update({ unclaimed_interactions: (gym.unclaimed_interactions ?? 0) + 1 } as any).eq("id", gym.id).then(() => {});
+  }, [gym?.id, isOwner, gym?.claimed]);
 
   // Track profile view (non-owner)
   useEffect(() => {
@@ -313,33 +322,30 @@ export default function GymDetail() {
                       <CheckIcon className="h-5 w-5 text-success shrink-0" />
                       <p className="text-sm text-foreground font-medium">You are a member of this gym</p>
                     </div>
-                  ) : (
+                  ) : gym.claimed ? (
                     <GymContactCTA gymId={gym.id} gymName={gym.name} coachId={gym.coach_id} />
-                  )}
+                  ) : null}
                 </div>
               )}
 
-              {/* (6) Unclaimed gym: invite coach message instead of claim button */}
+              {/* Unclaimed gym: invite coach message for all non-coach users */}
               {!isOwner && !gym.claimed && (
                 <div className="mb-8 rounded-lg border border-border bg-muted/50 p-5 space-y-3">
-                  {isFighter ? (
-                    /* (7) Fighters must never see Claim Gym CTA */
+                  {isCoach ? (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        This gym does not have an active owner account yet.
+                      </p>
+                      <Button variant="hero" size="sm" onClick={handleClaimClick}>
+                        Claim This Gym
+                      </Button>
+                    </>
+                  ) : isFighter ? (
                     <p className="text-sm text-muted-foreground">
                       Only coaches can claim a gym listing. Ask your coach to sign up and claim this gym.
                     </p>
-                  ) : isCoachOrOrganiser ? (
-                    <>
-                      <p className="text-sm text-muted-foreground">
-                        This gym does not have an active owner account yet. Know the coach? Share this link to invite them to claim their listing.
-                      </p>
-                      <button
-                        onClick={handleCopyCoachUrl}
-                        className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
-                      >
-                        {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                        {copied ? "Copied!" : "Copy coach signup URL"}
-                      </button>
-                    </>
+                  ) : isOrganiserOnly ? (
+                    null
                   ) : (
                     <>
                       <p className="text-sm text-muted-foreground">
@@ -550,8 +556,8 @@ export default function GymDetail() {
               </AlertDialogContent>
             </AlertDialog>
 
-            {/* Only show claim dialog for coaches/organisers — never for fighters */}
-            {isCoachOrOrganiser && (
+            {/* Only show claim dialog for coaches — never for fighters or organisers */}
+            {isCoach && (
               <ClaimGymDialog
                 open={showClaimDialog}
                 onOpenChange={setShowClaimDialog}

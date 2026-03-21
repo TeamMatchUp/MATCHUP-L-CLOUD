@@ -27,6 +27,7 @@ import {
   LogOut,
   Star,
   User,
+  BarChart3,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -79,6 +80,7 @@ export function DashboardSidebar({ pendingCount, unreadCount }: DashboardSidebar
     { key: "proposals", label: "Proposals", icon: Inbox, badgeCount: pendingCount },
     { key: "events", label: "Events", icon: Calendar, roles: ["gym_owner", "coach", "organiser"] },
     { key: "interests", label: "Interested Events", icon: Star, roles: ["fighter"] },
+    { key: "analytics", label: "Analytics", icon: BarChart3 },
     { key: "notifications", label: "Notifications", icon: Bell, badgeCount: unreadCount },
   ];
 

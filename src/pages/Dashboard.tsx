@@ -34,6 +34,7 @@ import { DeleteFighterDialog } from "@/components/coach/DeleteFighterDialog";
 import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
 import { GymRequestsPanel } from "@/components/coach/GymRequestsPanel";
 import { EditableProfilePanel } from "@/components/fighter/EditableProfilePanel";
+import { DashboardAnalytics } from "@/components/dashboard/DashboardAnalytics";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -240,6 +241,20 @@ export default function Dashboard() {
       case "notifications":
         return <NotificationHistory />;
 
+      case "analytics":
+        return (
+          <DashboardAnalytics
+            isCoachOrOwner={isCoachOrOwner}
+            isOrganiser={isOrganiser}
+            isFighter={isFighter}
+            myGyms={myGyms}
+            allFighters={allFighters}
+            events={events}
+            fighterProfile={fighterProfile}
+            userId={user!.id}
+          />
+        );
+
       case "my-profile":
         return fighterProfile ? (
           <EditableProfilePanel
@@ -247,7 +262,19 @@ export default function Dashboard() {
             userId={user!.id}
             onRefresh={handleRefresh}
           />
-        ) : null;
+        ) : (
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-6 text-center space-y-3">
+            <p className="font-heading text-lg text-foreground">
+              Complete your profile to appear in matchmaking
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Set up your fighter profile with weight class, discipline, and stats.
+            </p>
+            <Button onClick={() => navigateToSection("create-profile")}>
+              Create Fighter Profile
+            </Button>
+          </div>
+        );
 
       case "create-profile":
         return (

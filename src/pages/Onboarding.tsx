@@ -452,9 +452,6 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
         <Button variant="hero" onClick={handleSubmit} disabled={loading}>
           {loading ? "Saving..." : "Continue"}
         </Button>
-        <button onClick={onSkip} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Skip for now
-        </button>
       </div>
     </div>
   );
@@ -538,9 +535,6 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
         <Button variant="hero" onClick={handleSubmit} disabled={loading}>
           {loading ? "Saving..." : "Continue"}
         </Button>
-        <button onClick={onSkip} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-          Skip for now
-        </button>
       </div>
     </div>
   );
@@ -602,13 +596,6 @@ export default function Onboarding() {
   const { user, roles, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [rolesLoaded, setRolesLoaded] = useState(false);
-
-  useEffect(() => {
-    if (!authLoading && user && roles.length > 0) {
-      setRolesLoaded(true);
-    }
-  }, [authLoading, user, roles]);
 
   const primaryRole: AppRole | null = roles.includes("gym_owner")
     ? "gym_owner"
@@ -625,19 +612,14 @@ export default function Onboarding() {
     navigate(path, { replace: true });
   };
 
-  const handleSkip = async () => {
-    await markOnboardingComplete(queryClient);
-    goToDashboard();
-  };
+  // Redirect if no user/auth not ready — no spinner screen
+  if (authLoading || !user) {
+    return null;
+  }
 
-  // (1) Show loading spinner until auth is resolved AND roles are loaded — no bypass buttons
-  if (authLoading || !user || !rolesLoaded) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Setting up your account...</p>
-      </div>
-    );
+  // If roles haven't loaded yet, show minimal skeleton — no bypass
+  if (roles.length === 0) {
+    return null;
   }
 
   return (
@@ -655,10 +637,10 @@ export default function Onboarding() {
 
         <div className="rounded-lg border border-border bg-card p-5 sm:p-8">
           {primaryRole === "fighter" && (
-            <FighterForm onComplete={goToDashboard} onSkip={handleSkip} />
+            <FighterForm onComplete={goToDashboard} onSkip={goToDashboard} />
           )}
           {(primaryRole === "coach" || primaryRole === "gym_owner") && (
-            <CoachForm onComplete={goToDashboard} onSkip={handleSkip} />
+            <CoachForm onComplete={goToDashboard} onSkip={goToDashboard} />
           )}
           {primaryRole === "organiser" && (
             <OrganiserLanding />
