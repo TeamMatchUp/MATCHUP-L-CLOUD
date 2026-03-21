@@ -320,27 +320,24 @@ export default function GymDetail() {
                 </div>
               )}
 
-              {/* (6) Unclaimed gym: invite coach message instead of claim button */}
+              {/* Unclaimed gym: invite coach message for all non-coach users */}
               {!isOwner && !gym.claimed && (
                 <div className="mb-8 rounded-lg border border-border bg-muted/50 p-5 space-y-3">
-                  {isFighter ? (
-                    /* (7) Fighters must never see Claim Gym CTA */
+                  {isCoach ? (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        This gym does not have an active owner account yet.
+                      </p>
+                      <Button variant="hero" size="sm" onClick={handleClaimClick}>
+                        Claim This Gym
+                      </Button>
+                    </>
+                  ) : isFighter ? (
                     <p className="text-sm text-muted-foreground">
                       Only coaches can claim a gym listing. Ask your coach to sign up and claim this gym.
                     </p>
-                  ) : isCoachOrOrganiser ? (
-                    <>
-                      <p className="text-sm text-muted-foreground">
-                        This gym does not have an active owner account yet. Know the coach? Share this link to invite them to claim their listing.
-                      </p>
-                      <button
-                        onClick={handleCopyCoachUrl}
-                        className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
-                      >
-                        {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                        {copied ? "Copied!" : "Copy coach signup URL"}
-                      </button>
-                    </>
+                  ) : isOrganiserOnly ? (
+                    null
                   ) : (
                     <>
                       <p className="text-sm text-muted-foreground">
