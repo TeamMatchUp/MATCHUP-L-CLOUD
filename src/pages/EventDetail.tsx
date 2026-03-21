@@ -43,6 +43,7 @@ export default function EventDetail() {
   const { user, effectiveRoles } = useAuth();
   const isFighter = effectiveRoles.includes("fighter");
   const isCoach = effectiveRoles.includes("coach");
+  const isOrganiser = effectiveRoles.includes("organiser");
   const [showConfirm, setShowConfirm] = useState(false);
   const [showPutForward, setShowPutForward] = useState(false);
   const [showClaimEvent, setShowClaimEvent] = useState(false);
