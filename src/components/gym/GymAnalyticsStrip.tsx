@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Eye, Users, UserPlus, MapPin, Lock } from "lucide-react";
+import { Eye, Users, UserPlus, MapPin } from "lucide-react";
 
 interface GymAnalyticsStripProps {
   gymId: string;
@@ -8,8 +8,6 @@ interface GymAnalyticsStripProps {
 }
 
 export function GymAnalyticsStrip({ gymId, listingTier }: GymAnalyticsStripProps) {
-  const isPaidTier = listingTier === "pro" || listingTier === "featured";
-
   const { data: analytics } = useQuery({
     queryKey: ["gym-analytics", gymId],
     queryFn: async () => {
@@ -52,8 +50,8 @@ export function GymAnalyticsStrip({ gymId, listingTier }: GymAnalyticsStripProps
   ];
 
   return (
-    <div className="relative mt-3">
-      <div className={`grid grid-cols-4 gap-2 ${!isPaidTier ? "blur-sm select-none" : ""}`}>
+    <div className="mt-3">
+      <div className="grid grid-cols-4 gap-2">
         {stats.map((s) => (
           <div key={s.label} className="text-center p-2">
             <s.icon className="h-3.5 w-3.5 text-muted-foreground mx-auto mb-1" />
@@ -62,14 +60,6 @@ export function GymAnalyticsStrip({ gymId, listingTier }: GymAnalyticsStripProps
           </div>
         ))}
       </div>
-      {!isPaidTier && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-card/80 backdrop-blur-sm border border-border rounded-full px-3 py-1.5">
-            <Lock className="h-3 w-3" />
-            Upgrade to Pro to unlock analytics
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -224,9 +224,7 @@ export function Header() {
                 DASHBOARD
               </a>
             )}
-            <Link to="/explore?tab=events" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Events</Link>
-            <Link to="/explore?tab=fighters" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Fighters</Link>
-            <Link to="/explore?tab=gyms" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>View Gyms</Link>
+            <Link to="/explore" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>Explore</Link>
             {user && (
               <>
                 <div className="border-t border-border/50 my-1" />
