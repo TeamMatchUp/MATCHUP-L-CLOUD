@@ -24,6 +24,7 @@ const TYPE_LABELS: Record<string, string> = {
   event_update: "Event Update",
   system: "System",
   gym_invite: "Gym Invite",
+  gym_request: "Gym Request",
 };
 
 export function NotificationBell() {
@@ -59,21 +60,6 @@ export function NotificationBell() {
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
   };
 
-  const resolveEventFromProposal = async (proposalId: string): Promise<string | null> => {
-    const { data } = await supabase
-      .from("match_proposals")
-      .select("fight_slot_id")
-      .eq("id", proposalId)
-      .single();
-    if (!data) return null;
-    const { data: slot } = await supabase
-      .from("fight_slots")
-      .select("event_id")
-      .eq("id", data.fight_slot_id)
-      .single();
-    return slot?.event_id ?? null;
-  };
-
   const handleNotificationClick = async (notification: any) => {
     // Mark as read
     await supabase
@@ -82,53 +68,9 @@ export function NotificationBell() {
       .eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
 
-    const type = notification.type;
-    const refId = notification.reference_id;
-
-    // Match-related notifications
-    if (["match_proposed", "match_accepted", "match_declined", "match_confirmed", "match_withdrawn"].includes(type)) {
-      if (refId && effectiveRoles.includes("organiser")) {
-        // Organiser → resolve event and go to event manager
-        const eventId = await resolveEventFromProposal(refId);
-        if (eventId) {
-          setOpen(false);
-          navigate(`/organiser/events/${eventId}`);
-          return;
-        }
-      }
-      // Fallback for coaches/fighters
-      setOpen(false);
-      navigate(effectiveRoles.includes("fighter") ? "/fighter/dashboard" : "/gym-owner/dashboard");
-      return;
-    }
-
-    if (type === "event_update") {
-      setOpen(false);
-      navigate(refId ? `/events/${refId}` : "/events");
-      return;
-    }
-
-    if (type === "gym_invite") {
-      setOpen(false);
-      navigate("/fighter/dashboard");
-      return;
-    }
-
-    // System / unknown – just mark read, no navigation
-    toast.info("Notification marked as read");
-  };
-
-  const getDashboardNotificationsPath = () => {
-    if (effectiveRoles.includes("gym_owner")) {
-      return "/gym-owner/dashboard?tab=notifications";
-    }
-    if (effectiveRoles.includes("organiser")) {
-      return "/organiser/dashboard?tab=notifications";
-    }
-    if (effectiveRoles.includes("fighter")) {
-      return "/fighter/dashboard?tab=notifications";
-    }
-    return "/gym-owner/dashboard?tab=notifications";
+    // (11) All notifications route to the Actions tab
+    setOpen(false);
+    navigate("/dashboard?section=actions");
   };
 
   if (!user) return null;
@@ -198,7 +140,7 @@ export function NotificationBell() {
             className="w-full text-xs text-primary"
             onClick={() => {
               setOpen(false);
-              navigate(getDashboardNotificationsPath());
+              navigate("/dashboard?section=notifications");
             }}
           >
             See all notifications

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Calendar, ArrowRight, Search } from "lucide-react";
+import { Plus, Calendar, ArrowRight, ArrowLeft, Search } from "lucide-react";
 import { InterestedEventsPanel } from "@/components/fighter/InterestedEventsPanel";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -59,11 +59,18 @@ export function DashboardEvents({
         <h2 className="font-heading text-2xl text-foreground">
           MY <span className="text-primary">EVENTS</span>
         </h2>
-        <Button size="sm" className="gap-1" asChild>
-          <Link to="/organiser/create-event">
-            <Plus className="h-3 w-3" /> Create Event
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/explore?tab=events">
+              <Search className="h-3 w-3 mr-1" /> Browse
+            </Link>
+          </Button>
+          <Button size="sm" className="gap-1" asChild>
+            <Link to="/organiser/create-event">
+              <Plus className="h-3 w-3" /> Create Event
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="relative mb-4">
@@ -96,7 +103,7 @@ export function DashboardEvents({
             return (
               <Link
                 key={event.id}
-                to={`/organiser/events/${event.id}`}
+                to={`/events/${event.id}`}
                 className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors"
               >
                 <div>
