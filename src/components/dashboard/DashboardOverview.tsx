@@ -48,7 +48,7 @@ export function DashboardOverview({
           { label: "Add Fighter", icon: Plus, section: "roster" },
         ]
       : []),
-    { label: "View Proposals", icon: Inbox, section: "proposals" },
+    { label: "View Actions", icon: Inbox, section: "actions" },
     ...(isOrganiser || isCoachOrOwner
       ? [{ label: "Create Event", icon: Calendar, to: "/organiser/create-event" }]
       : []),
