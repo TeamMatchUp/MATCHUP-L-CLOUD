@@ -1,9 +1,8 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams, Link, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BannerAd } from "@/components/BannerAd";
-import iconImg from "@/assets/icon-gold.webp";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
-  MapPin, Calendar, ArrowRight, Filter, Search, Ticket, Swords, X,
+  MapPin, Calendar, ArrowRight, ArrowLeft, Filter, Search, Ticket, Swords, X,
   SlidersHorizontal, Users, ShieldCheck, Map as MapIcon, Building2,
 } from "lucide-react";
 import { usePostcodeSearch, haversineDistance } from "@/hooks/use-postcode-search";
@@ -39,6 +38,8 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
   cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
 };
 
+const ITEMS_PER_PAGE = 8;
+
 export default function Explore() {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -54,6 +55,7 @@ export default function Explore() {
   const [tab, setTab] = useState<TabType>(getInitialTab);
   const [mapOpen, setMapOpen] = useState(false);
   const [popupItem, setPopupItem] = useState<any>(null);
+  const [page, setPage] = useState(0);
 
   // Shared filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -75,6 +77,7 @@ export default function Explore() {
     setSearchQuery("");
     setFiltersOpen(false);
     setPopupItem(null);
+    setPage(0);
     if (t === "fighters") setMapOpen(false);
   };
 
@@ -200,26 +203,44 @@ export default function Explore() {
     });
   }, [fighters, searchQuery]);
 
+  // Pagination
+  const currentItems = tab === "events" ? filteredEvents : tab === "gyms" ? filteredGyms : filteredFighters;
+  const totalPages = Math.ceil(currentItems.length / ITEMS_PER_PAGE);
+  const paginatedItems = currentItems.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
+
   // Map markers data
   const mapMarkers = useMemo(() => {
     const markers: { lat: number; lng: number; type: "event" | "gym"; name: string; city: string; id: string }[] = [];
-    if (tab === "events" || tab === "gyms") {
-      if (tab === "events") {
-        filteredEvents.forEach((e: any) => {
-          if (e.latitude != null && e.longitude != null) markers.push({ lat: e.latitude, lng: e.longitude, type: "event", name: e.title, city: e.city || e.location || "", id: e.id });
-        });
-      }
-      if (tab === "gyms") {
-        filteredGyms.forEach((g: any) => {
-          if (g.lat != null && g.lng != null) markers.push({ lat: g.lat, lng: g.lng, type: "gym", name: g.name, city: g.city || g.location || "", id: g.id });
-        });
-      }
+    if (tab === "events") {
+      filteredEvents.forEach((e: any) => {
+        if (e.latitude != null && e.longitude != null) markers.push({ lat: e.latitude, lng: e.longitude, type: "event", name: e.title, city: e.city || e.location || "", id: e.id });
+      });
+    }
+    if (tab === "gyms") {
+      filteredGyms.forEach((g: any) => {
+        if (g.lat != null && g.lng != null) markers.push({ lat: g.lat, lng: g.lng, type: "gym", name: g.name, city: g.city || g.location || "", id: g.id });
+      });
     }
     return markers;
   }, [tab, filteredEvents, filteredGyms]);
 
   const isLoading = tab === "events" ? eventsLoading : tab === "gyms" ? gymsLoading : fightersLoading;
   const searchPlaceholder = tab === "events" ? "Search events, promotions, venues..." : tab === "gyms" ? "Search gyms by name, location..." : "Search fighters...";
+
+  const PaginationControls = () => {
+    if (totalPages <= 1) return null;
+    return (
+      <div className="flex items-center justify-center gap-3 py-4">
+        <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+          <ArrowLeft className="h-4 w-4 mr-1" /> Previous
+        </Button>
+        <span className="text-xs text-muted-foreground">Page {page + 1} of {totalPages}</span>
+        <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+          Next <ArrowRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -252,7 +273,7 @@ export default function Explore() {
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder={searchPlaceholder} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
+                    <Input placeholder={searchPlaceholder} value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setPage(0); }} className="pl-9" />
                   </div>
                   <Button variant={filtersOpen ? "default" : "outline"} size="icon" onClick={() => setFiltersOpen(!filtersOpen)} className="shrink-0 h-10 w-10">
                     <SlidersHorizontal className="h-4 w-4" />
@@ -335,13 +356,52 @@ export default function Explore() {
               </div>
             </div>
 
-            {/* Content area: directory + optional map */}
+            {/* Content area: directory + map tile / split-screen */}
             <div className={`flex-1 flex ${mapOpen ? "overflow-hidden" : ""}`}>
               {/* Directory cards */}
-              <div className={`${mapOpen ? "w-[420px] overflow-y-auto border-r border-border shrink-0 px-4 pb-4" : "container flex-1"}`}>
-                {tab === "events" && <EventsDirectory events={filteredEvents} isLoading={eventsLoading} />}
-                {tab === "gyms" && <GymsDirectory gyms={filteredGyms} isLoading={gymsLoading} />}
-                {tab === "fighters" && <FightersDirectory fighters={filteredFighters ?? []} isLoading={fightersLoading} />}
+              <div className={`${mapOpen ? "w-[420px] overflow-y-auto border-r border-border shrink-0 px-4 pb-4" : "flex-1"}`}>
+                <div className={mapOpen ? "" : "container"}>
+                  <div className={`${mapOpen ? "" : "flex gap-6"}`}>
+                    <div className={`${mapOpen ? "w-full" : tab !== "fighters" ? "flex-1" : "w-full"}`}>
+                      {tab === "events" && <EventsDirectory events={paginatedItems} isLoading={eventsLoading} />}
+                      {tab === "gyms" && <GymsDirectory gyms={paginatedItems} isLoading={gymsLoading} />}
+                      {tab === "fighters" && <FightersDirectory fighters={paginatedItems as any} isLoading={fightersLoading} />}
+                      <PaginationControls />
+                    </div>
+
+                    {/* Map preview tile — top-right alongside directory */}
+                    {!mapOpen && tab !== "fighters" && !isMobile && (
+                      <div className="shrink-0">
+                        <button
+                          onClick={() => setMapOpen(true)}
+                          className="w-[280px] h-[360px] rounded-lg border border-border bg-muted/50 flex flex-col items-center justify-center hover:border-primary/30 transition-all group relative overflow-hidden sticky top-4"
+                        >
+                          <div className="absolute inset-0 opacity-30 pointer-events-none">
+                            <PigeonMap defaultCenter={[54.5, -2]} defaultZoom={5} height={360} attribution={false}>
+                              {mapMarkers.slice(0, 10).map((m) => (
+                                <Marker key={`preview-${m.id}`} anchor={[m.lat, m.lng]} color={m.type === "event" ? "hsl(46, 93%, 61%)" : "#ffffff"} width={20} />
+                              ))}
+                            </PigeonMap>
+                          </div>
+                          <div className="relative z-10 flex flex-col items-center gap-3">
+                            <MapIcon className="h-12 w-12 text-foreground group-hover:text-primary transition-colors" />
+                            <span className="font-heading text-2xl text-foreground group-hover:text-primary transition-colors">SEE MAP</span>
+                            <span className="text-xs text-muted-foreground">View {tab} on an interactive map</span>
+                          </div>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mobile map button */}
+                  {!mapOpen && tab !== "fighters" && isMobile && (
+                    <div className="flex justify-center py-4">
+                      <Button variant="outline" onClick={() => setMapOpen(true)} className="gap-2">
+                        <MapIcon className="h-4 w-4" /> See Map
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Map panel - pigeon-maps */}
@@ -384,32 +444,6 @@ export default function Explore() {
                 </div>
               )}
             </div>
-
-            {/* Map preview tile — fixed position style, shown when map is NOT open and not fighters */}
-            {!mapOpen && tab !== "fighters" && (
-              <div className="container mt-6">
-                <div className="flex justify-end">
-                  <button
-                    onClick={() => setMapOpen(true)}
-                    className="w-[300px] h-[400px] rounded-lg border border-border bg-muted/50 flex flex-col items-center justify-center hover:border-primary/30 transition-all group relative overflow-hidden"
-                  >
-                    {/* Static mini map preview */}
-                    <div className="absolute inset-0 opacity-30">
-                      <PigeonMap defaultCenter={[54.5, -2]} defaultZoom={5} height={400} attribution={false}>
-                        {mapMarkers.slice(0, 10).map((m) => (
-                          <Marker key={`preview-${m.id}`} anchor={[m.lat, m.lng]} color={m.type === "event" ? "hsl(46, 93%, 61%)" : "#ffffff"} width={20} />
-                        ))}
-                      </PigeonMap>
-                    </div>
-                    <div className="relative z-10 flex flex-col items-center gap-3">
-                      <MapIcon className="h-12 w-12 text-foreground group-hover:text-primary transition-colors" />
-                      <span className="font-heading text-2xl text-foreground group-hover:text-primary transition-colors">SEE MAP</span>
-                      <span className="text-xs text-muted-foreground">View {tab} on an interactive map</span>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </section>
       </main>
@@ -451,16 +485,9 @@ function EventsDirectory({ events, isLoading }: { events: any[]; isLoading: bool
                 </div>
               </Link>
             </motion.div>
-            {(i + 1) % 5 === 0 && <BannerAd />}
           </React.Fragment>
         );
       })}
-      {events.length < 5 && <BannerAd />}
-      <motion.div className="flex justify-center py-8" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-        <Link to="/auth" className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors">
-          <img src={iconImg} alt="" className="h-5 w-5" />register your event
-        </Link>
-      </motion.div>
     </div>
   );
 }
@@ -504,27 +531,23 @@ function FightersDirectory({ fighters, isLoading }: { fighters: any[]; isLoading
         const gymName = primaryGym?.gyms?.name ?? "Independent";
         const record = `${fighter._record.wins}-${fighter._record.losses}-${fighter._record.draws}`;
         return (
-          <React.Fragment key={fighter.id}>
-            {i > 0 && i % 5 === 0 && <BannerAd variant="grid-break" />}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.04 }}>
-              <Link to={`/fighters/${fighter.id}`} className="rounded-lg border border-border bg-card p-6 hover:border-primary/30 transition-all block">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground overflow-hidden shrink-0">
-                    {fighter._avatar ? <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" /> : fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)}
-                  </div>
-                  <h3 className="font-heading text-lg text-foreground">{fighter.name}</h3>
+          <motion.div key={fighter.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.04 }}>
+            <Link to={`/fighters/${fighter.id}`} className="rounded-lg border border-border bg-card p-6 hover:border-primary/30 transition-all block">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground overflow-hidden shrink-0">
+                  {fighter._avatar ? <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" /> : fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)}
                 </div>
-                <p className="text-primary font-bold text-lg">{record}</p>
-                <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                  <p>{WEIGHT_CLASS_LABELS[fighter.weight_class]} · {fighter.style ? STYLE_LABELS[fighter.style] : "—"}</p>
-                  <p>{gymName}</p>
-                </div>
-              </Link>
-            </motion.div>
-          </React.Fragment>
+                <h3 className="font-heading text-lg text-foreground">{fighter.name}</h3>
+              </div>
+              <p className="text-primary font-bold text-lg">{record}</p>
+              <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                <p>{WEIGHT_CLASS_LABELS[fighter.weight_class]} · {fighter.style ? STYLE_LABELS[fighter.style] : "—"}</p>
+                <p>{gymName}</p>
+              </div>
+            </Link>
+          </motion.div>
         );
       })}
-      {fighters.length < 5 && <BannerAd variant="grid-break" />}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Sparkles } from "lucide-react";
+import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Sparkles, Plus, Swords } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,12 +31,10 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
   cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
 };
 
-const SLOT_STATUS_STYLES: Record<string, string> = {
-  open: "bg-primary/10 text-primary",
-  proposed: "bg-secondary/10 text-secondary",
-  confirmed: "bg-success/10 text-success",
-  cancelled: "bg-destructive/10 text-destructive",
-};
+function unwrap<T>(val: T | T[] | null | undefined): T | null {
+  if (Array.isArray(val)) return val[0] ?? null;
+  return val ?? null;
+}
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
@@ -86,13 +84,11 @@ export default function EventDetail() {
     if (!fighterProfile || !event) return;
     setSending(true);
     try {
-      // Persist interest
       const { error: insertError } = await supabase
         .from("fighter_event_interests")
         .insert({ fighter_id: fighterProfile.id, event_id: id! });
       if (insertError) throw insertError;
 
-      // Find all coaches linked to this fighter via gyms
       const { data: gymLinks } = await supabase
         .from("fighter_gym_links")
         .select("gym_id, gyms(coach_id)")
@@ -104,7 +100,6 @@ export default function EventDetail() {
         if (link.gyms?.coach_id) coachIds.add(link.gyms.coach_id);
       });
 
-      // Send notification to each coach
       for (const coachId of coachIds) {
         await supabase.rpc("create_notification", {
           _user_id: coachId,
@@ -155,6 +150,22 @@ export default function EventDetail() {
     enabled: !!id && !!event?.ticket_enabled,
   });
 
+  // Confirmed fight slots with fighter names
+  const { data: confirmedBouts = [] } = useQuery({
+    queryKey: ["event-confirmed-bouts", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("event_fight_slots")
+        .select("*, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(id, name, record_wins, record_losses, record_draws, weight_class), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(id, name, record_wins, record_losses, record_draws, weight_class)")
+        .eq("event_id", id!)
+        .eq("status", "confirmed")
+        .order("slot_number", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!id,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -186,8 +197,8 @@ export default function EventDetail() {
     );
   }
 
-  const openSlots = event.fight_slots?.filter((s: any) => s.status === "open") ?? [];
-  const confirmedSlots = event.fight_slots?.filter((s: any) => s.status === "confirmed") ?? [];
+  const mainEvents = confirmedBouts.filter((b: any) => b.bout_type === "Main Event");
+  const undercards = confirmedBouts.filter((b: any) => b.bout_type !== "Main Event");
 
   return (
     <div className="min-h-screen bg-background">
@@ -222,55 +233,34 @@ export default function EventDetail() {
                 <p className="text-muted-foreground max-w-2xl mb-8">{event.description}</p>
               )}
 
-              {/* Fighter Interest Button */}
-              {isFighter && fighterProfile && (
-                existingInterest ? (
-                  <Button
-                    variant="outline"
-                    className="mb-8 gap-2 border-primary/50 text-primary cursor-default"
-                    disabled
-                  >
-                    <Star className="h-4 w-4 fill-primary" />
-                    Interested
+              {/* Role action buttons */}
+              <div className="flex flex-wrap gap-3 mb-8">
+                {isFighter && fighterProfile && (
+                  existingInterest ? (
+                    <Button variant="outline" className="gap-2 border-primary/50 text-primary cursor-default" disabled>
+                      <Star className="h-4 w-4 fill-primary" /> Interested
+                    </Button>
+                  ) : (
+                    <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowConfirm(true)}>
+                      <Star className="h-4 w-4" /> I'm Interested
+                    </Button>
+                  )
+                )}
+                {isCoach && user && (
+                  <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowPutForward(true)}>
+                    <Users className="h-4 w-4" /> Put Forward Fighters
                   </Button>
-                ) : (
-                  <Button
-                    variant="outline"
-                    className="mb-8 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                    onClick={() => setShowConfirm(true)}
-                  >
-                    <Star className="h-4 w-4" />
-                    I'm Interested
+                )}
+                {isOrganiser && user && event.organiser_id === user.id && (
+                  <Button className="gap-2" asChild>
+                    <Link to={`/events/${id}/matchmaking`}>
+                      <Sparkles className="h-4 w-4" /> Get Match Suggestions
+                    </Link>
                   </Button>
-                )
-              )}
+                )}
+              </div>
 
-              {/* Coach Put Forward Button */}
-              {isCoach && user && (
-                <Button
-                  variant="outline"
-                  className="mb-8 gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                  onClick={() => setShowPutForward(true)}
-                >
-                  <Users className="h-4 w-4" />
-                  Put Forward Fighters
-                </Button>
-              )}
-
-              {/* Organiser Find Matches Button */}
-              {isOrganiser && user && (
-                <Button
-                  asChild
-                  className="mb-8 gap-2"
-                >
-                  <Link to={`/events/${id}/matchmaking`}>
-                    <Sparkles className="h-4 w-4" />
-                    Find Matches
-                  </Link>
-                </Button>
-              )}
-
-
+              {/* Map */}
               <div className="rounded-lg border border-border overflow-hidden mb-12">
                 <iframe
                   title="Event Location"
@@ -290,21 +280,6 @@ export default function EventDetail() {
                 </div>
               </div>
             </motion.div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-              {[
-                { label: "Total Slots", value: event.fight_slots?.length ?? 0 },
-                { label: "Open", value: openSlots.length },
-                { label: "Confirmed", value: confirmedSlots.length },
-                { label: "Country", value: event.country },
-              ].map((stat) => (
-                <div key={stat.label} className="rounded-lg border border-border bg-card p-4 text-center">
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  <p className="font-heading text-2xl text-foreground mt-1">{stat.value}</p>
-                </div>
-              ))}
-            </div>
 
             {/* Tickets */}
             {event.ticket_enabled && tickets.length > 0 && (
@@ -344,33 +319,124 @@ export default function EventDetail() {
               </>
             )}
 
-            {/* Fight Slots */}
+            {/* Fight Card — Head-to-head display */}
             <h2 className="font-heading text-2xl text-foreground mb-6">
               FIGHT <span className="text-primary">CARD</span>
             </h2>
-            {event.fight_slots && event.fight_slots.length > 0 ? (
-              <div className="space-y-3">
-                {event.fight_slots
-                  .sort((a: any, b: any) => a.slot_number - b.slot_number)
-                  .map((slot: any) => (
-                    <div
-                      key={slot.id}
-                      className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
-                    >
-                      <div className="flex items-center gap-4">
-                        <span className="font-heading text-lg text-muted-foreground w-8">#{slot.slot_number}</span>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{WEIGHT_CLASS_LABELS[slot.weight_class]}</p>
-                        </div>
-                      </div>
-                      <Badge className={SLOT_STATUS_STYLES[slot.status] ?? ""} variant="outline">
-                        {slot.status.charAt(0).toUpperCase() + slot.status.slice(1)}
-                      </Badge>
+
+            {confirmedBouts.length > 0 ? (
+              <div className="space-y-8 mb-12">
+                {/* Main Events */}
+                {mainEvents.length > 0 && (
+                  <div>
+                    <Badge className="bg-primary/15 text-primary border-primary/30 mb-4">MAIN EVENT</Badge>
+                    <div className="space-y-4">
+                      {mainEvents.map((bout: any) => {
+                        const fA = unwrap(bout.fighter_a);
+                        const fB = unwrap(bout.fighter_b);
+                        return (
+                          <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6">
+                            <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
+                              {/* Fighter A */}
+                              <div className="text-center">
+                                <Link to={fA ? `/fighters/${fA.id}` : "#"} className="hover:text-primary transition-colors">
+                                  <p className="font-heading text-xl text-foreground">{fA?.name ?? "TBA"}</p>
+                                </Link>
+                                {fA && (
+                                  <p className="text-primary font-bold text-lg mt-1">
+                                    {fA.record_wins}-{fA.record_losses}-{fA.record_draws}
+                                  </p>
+                                )}
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {bout.weight_class ? WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class : ""}
+                                </p>
+                              </div>
+
+                              <div className="flex flex-col items-center">
+                                <Swords className="h-6 w-6 text-primary mb-1" />
+                                <span className="font-heading text-primary text-lg">VS</span>
+                              </div>
+
+                              {/* Fighter B */}
+                              <div className="text-center">
+                                <Link to={fB ? `/fighters/${fB.id}` : "#"} className="hover:text-primary transition-colors">
+                                  <p className="font-heading text-xl text-foreground">{fB?.name ?? "TBA"}</p>
+                                </Link>
+                                {fB && (
+                                  <p className="text-primary font-bold text-lg mt-1">
+                                    {fB.record_wins}-{fB.record_losses}-{fB.record_draws}
+                                  </p>
+                                )}
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {bout.weight_class ? WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class : ""}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                {/* Undercard */}
+                {undercards.length > 0 && (
+                  <div>
+                    <Badge variant="outline" className="mb-4">UNDERCARD</Badge>
+                    <div className="space-y-2">
+                      {undercards.map((bout: any) => {
+                        const fA = unwrap(bout.fighter_a);
+                        const fB = unwrap(bout.fighter_b);
+                        return (
+                          <div key={bout.id} className="rounded-lg border border-border bg-card p-4">
+                            <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
+                              <div className="text-right">
+                                <Link to={fA ? `/fighters/${fA.id}` : "#"} className="hover:text-primary transition-colors">
+                                  <p className="font-medium text-foreground text-sm">{fA?.name ?? "TBA"}</p>
+                                </Link>
+                                {fA && <p className="text-xs text-primary font-medium">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
+                              </div>
+                              <span className="font-heading text-primary text-xs">VS</span>
+                              <div className="text-left">
+                                <Link to={fB ? `/fighters/${fB.id}` : "#"} className="hover:text-primary transition-colors">
+                                  <p className="font-medium text-foreground text-sm">{fB?.name ?? "TBA"}</p>
+                                </Link>
+                                {fB && <p className="text-xs text-primary font-medium">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
+                              </div>
+                            </div>
+                            {bout.weight_class && (
+                              <p className="text-center text-[10px] text-muted-foreground mt-1">
+                                {WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
-              <p className="text-muted-foreground">No fight slots defined yet.</p>
+              /* Fall back to fight_slots display if no confirmed bouts */
+              event.fight_slots && event.fight_slots.length > 0 ? (
+                <div className="space-y-3 mb-12">
+                  {event.fight_slots
+                    .sort((a: any, b: any) => a.slot_number - b.slot_number)
+                    .map((slot: any) => (
+                      <div key={slot.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
+                        <div className="flex items-center gap-4">
+                          <span className="font-heading text-lg text-muted-foreground w-8">#{slot.slot_number}</span>
+                          <p className="text-sm font-medium text-foreground">{WEIGHT_CLASS_LABELS[slot.weight_class]}</p>
+                        </div>
+                        <Badge className={slot.status === "open" ? "bg-primary/10 text-primary" : slot.status === "confirmed" ? "bg-success/10 text-success" : ""} variant="outline">
+                          {slot.status.charAt(0).toUpperCase() + slot.status.slice(1)}
+                        </Badge>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground mb-12">No fight slots defined yet.</p>
+              )
             )}
           </div>
         </section>

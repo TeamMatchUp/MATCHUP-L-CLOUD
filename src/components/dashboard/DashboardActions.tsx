@@ -5,6 +5,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -17,7 +25,7 @@ function unwrap<T>(val: T | T[] | null | undefined): T | null {
 
 interface ActionItem {
   id: string;
-  type: "gym_request" | "trial_lead" | "match_suggestion" | "event_interest" | "match_proposal" | "event_claim";
+  type: "gym_request" | "trial_lead" | "match_suggestion" | "event_interest" | "match_proposal" | "event_claim" | "fight_proposal";
   title: string;
   subtitle: string;
   timestamp: string;
@@ -54,6 +62,9 @@ export function DashboardActions({
 }: DashboardActionsProps) {
   const queryClient = useQueryClient();
   const [recentActions, setRecentActions] = useState<RecentAction[]>([]);
+  const [trialModal, setTrialModal] = useState<ActionItem | null>(null);
+  const [trialMessage, setTrialMessage] = useState("");
+  const [trialSending, setTrialSending] = useState(false);
 
   const gymIds = myGyms.map((g) => g.id);
 
@@ -125,18 +136,18 @@ export function DashboardActions({
     enabled: isFighter && !!fighterProfile,
   });
 
-  // Fighter: match suggestions
+  // Fighter: match suggestions (suggested status)
   const { data: matchSuggestions = [] } = useQuery({
     queryKey: ["actions-match-suggestions", fighterProfile?.id],
     queryFn: async () => {
       const { data: asA } = await supabase
         .from("match_suggestions")
-        .select("id, composite_score, status, created_at, event:events(title), fighter_a:fighter_profiles!match_suggestions_fighter_a_id_fkey(name), fighter_b:fighter_profiles!match_suggestions_fighter_b_id_fkey(name)")
+        .select("id, composite_score, status, created_at, event_id, event:events(title), fighter_a:fighter_profiles!match_suggestions_fighter_a_id_fkey(name), fighter_b:fighter_profiles!match_suggestions_fighter_b_id_fkey(name)")
         .eq("fighter_a_id", fighterProfile!.id)
         .eq("status", "suggested");
       const { data: asB } = await supabase
         .from("match_suggestions")
-        .select("id, composite_score, status, created_at, event:events(title), fighter_a:fighter_profiles!match_suggestions_fighter_a_id_fkey(name), fighter_b:fighter_profiles!match_suggestions_fighter_b_id_fkey(name)")
+        .select("id, composite_score, status, created_at, event_id, event:events(title), fighter_a:fighter_profiles!match_suggestions_fighter_a_id_fkey(name), fighter_b:fighter_profiles!match_suggestions_fighter_b_id_fkey(name)")
         .eq("fighter_b_id", fighterProfile!.id)
         .eq("status", "suggested");
       const map = new Map<string, any>();
@@ -149,6 +160,35 @@ export function DashboardActions({
         timestamp: s.created_at,
         status: "suggested",
         meta: s,
+      }));
+    },
+    enabled: isFighter && !!fighterProfile,
+  });
+
+  // Fighter: confirmed fight proposals (from match_suggestions status=confirmed)
+  const { data: fightProposals = [] } = useQuery({
+    queryKey: ["actions-fight-proposals", fighterProfile?.id],
+    queryFn: async () => {
+      const { data: asA } = await supabase
+        .from("match_suggestions")
+        .select("id, composite_score, status, created_at, event_id, event:events(title), fighter_a:fighter_profiles!match_suggestions_fighter_a_id_fkey(name), fighter_b:fighter_profiles!match_suggestions_fighter_b_id_fkey(name)")
+        .eq("fighter_a_id", fighterProfile!.id)
+        .eq("status", "confirmed");
+      const { data: asB } = await supabase
+        .from("match_suggestions")
+        .select("id, composite_score, status, created_at, event_id, event:events(title), fighter_a:fighter_profiles!match_suggestions_fighter_a_id_fkey(name), fighter_b:fighter_profiles!match_suggestions_fighter_b_id_fkey(name)")
+        .eq("fighter_b_id", fighterProfile!.id)
+        .eq("status", "confirmed");
+      const map = new Map<string, any>();
+      [...(asA ?? []), ...(asB ?? [])].forEach((s) => map.set(s.id, s));
+      return Array.from(map.values()).map((s: any) => ({
+        id: s.id,
+        type: "fight_proposal" as const,
+        title: `Proposed fight: ${unwrap(s.fighter_a)?.name} vs ${unwrap(s.fighter_b)?.name}`,
+        subtitle: unwrap(s.event)?.title ?? "Event",
+        timestamp: s.created_at,
+        status: "confirmed",
+        meta: { ...s, eventId: s.event_id },
       }));
     },
     enabled: isFighter && !!fighterProfile,
@@ -179,7 +219,6 @@ export function DashboardActions({
   const { data: eventClaims = [] } = useQuery({
     queryKey: ["actions-event-claims", userId],
     queryFn: async () => {
-      // Get event IDs this organiser owns
       const { data: myEvents } = await supabase
         .from("events")
         .select("id")
@@ -216,7 +255,7 @@ export function DashboardActions({
       const eventIds = myEvents.map((e) => e.id);
       const { data } = await supabase
         .from("match_suggestions")
-        .select("id, composite_score, status, created_at, event:events(title), fighter_a:fighter_profiles!match_suggestions_fighter_a_id_fkey(name), fighter_b:fighter_profiles!match_suggestions_fighter_b_id_fkey(name)")
+        .select("id, composite_score, status, created_at, event_id, event:events(title), fighter_a:fighter_profiles!match_suggestions_fighter_a_id_fkey(name), fighter_b:fighter_profiles!match_suggestions_fighter_b_id_fkey(name)")
         .in("event_id", eventIds)
         .in("status", ["suggested", "confirmed"]);
       return (data ?? []).map((s: any) => ({
@@ -226,7 +265,7 @@ export function DashboardActions({
         subtitle: `${unwrap(s.event)?.title ?? "Event"} · ${s.status === "confirmed" ? "Confirmed" : `Score: ${Math.round((s.composite_score ?? 0) * 100)}%`}`,
         timestamp: s.created_at,
         status: s.status,
-        meta: s,
+        meta: { ...s, eventId: s.event_id },
       }));
     },
     enabled: isOrganiser,
@@ -238,6 +277,7 @@ export function DashboardActions({
     ...trialLeads,
     ...fighterGymRequests,
     ...matchSuggestions,
+    ...fightProposals,
     ...eventInterests,
     ...eventClaims,
     ...organiserSuggestions,
@@ -254,7 +294,6 @@ export function DashboardActions({
         .update({ status: "approved" })
         .eq("id", item.id);
 
-      // Update profiles.gym_id
       if (item.meta?.fighter?.id) {
         const { data: fp } = await supabase
           .from("fighter_profiles")
@@ -285,6 +324,57 @@ export function DashboardActions({
     }
   };
 
+  const handleTrialAccept = async () => {
+    if (!trialModal) return;
+    setTrialSending(true);
+    try {
+      // We can't update gym_leads directly (no UPDATE RLS), so we notify the fighter
+      if (trialModal.meta?.user_id) {
+        await supabase.rpc("create_notification", {
+          _user_id: trialModal.meta.user_id,
+          _title: "Trial session accepted!",
+          _message: trialMessage || `Your trial session request at ${trialModal.subtitle} has been accepted.`,
+          _type: "system",
+          _reference_id: trialModal.meta.gym_id,
+        });
+      }
+      setRecentActions((prev) => [...prev, { itemId: trialModal.id, action: "accepted", at: Date.now() }]);
+      toast.success("Trial session accepted, fighter notified");
+      setTrialModal(null);
+      setTrialMessage("");
+      invalidate();
+    } catch {
+      toast.error("Failed to accept");
+    } finally {
+      setTrialSending(false);
+    }
+  };
+
+  const handleTrialDecline = async () => {
+    if (!trialModal) return;
+    setTrialSending(true);
+    try {
+      if (trialModal.meta?.user_id) {
+        await supabase.rpc("create_notification", {
+          _user_id: trialModal.meta.user_id,
+          _title: "Trial session declined",
+          _message: trialMessage || `Your trial session request at ${trialModal.subtitle} was not accepted at this time.`,
+          _type: "system",
+          _reference_id: trialModal.meta.gym_id,
+        });
+      }
+      setRecentActions((prev) => [...prev, { itemId: trialModal.id, action: "declined", at: Date.now() }]);
+      toast.success("Trial session declined, fighter notified");
+      setTrialModal(null);
+      setTrialMessage("");
+      invalidate();
+    } catch {
+      toast.error("Failed to decline");
+    } finally {
+      setTrialSending(false);
+    }
+  };
+
   const handleUndo = async (ra: RecentAction) => {
     const item = allItems.find((i) => i.id === ra.itemId);
     if (!item) return;
@@ -306,6 +396,7 @@ export function DashboardActions({
       case "gym_request": return Building2;
       case "trial_lead": return Send;
       case "match_suggestion": return Swords;
+      case "fight_proposal": return Swords;
       case "event_interest": return Calendar;
       case "match_proposal": return Swords;
       case "event_claim": return Users;
@@ -318,6 +409,7 @@ export function DashboardActions({
       case "gym_request": return { label: "Gym request", className: "bg-blue-500/15 text-blue-400 border-blue-500/30" };
       case "trial_lead": return { label: "Trial request", className: "bg-green-500/15 text-green-400 border-green-500/30" };
       case "match_suggestion": return { label: "Match", className: "bg-primary/15 text-primary border-primary/30" };
+      case "fight_proposal": return { label: "Fight proposal", className: "bg-amber-500/15 text-amber-400 border-amber-500/30" };
       case "event_interest": return { label: "Event interest", className: "bg-purple-500/15 text-purple-400 border-purple-500/30" };
       case "event_claim": return { label: "Event claim", className: "bg-amber-500/15 text-amber-400 border-amber-500/30" };
       default: return { label: type, className: "" };
@@ -369,6 +461,7 @@ export function DashboardActions({
             const Icon = getIcon(item.type);
             const badge = getTypeBadge(item.type);
             const isCoachGymRequest = item.type === "gym_request" && isCoachOrOwner && item.status === "pending";
+            const isTrialLead = item.type === "trial_lead" && isCoachOrOwner;
 
             return (
               <div
@@ -411,6 +504,26 @@ export function DashboardActions({
                       </Button>
                     </>
                   )}
+                  {isTrialLead && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 px-3 text-xs border-green-500/30 text-green-400 hover:bg-green-500/10"
+                        onClick={() => { setTrialModal(item); setTrialMessage(""); }}
+                      >
+                        <Check className="h-3 w-3 mr-1" /> Accept
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 px-3 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
+                        onClick={() => { setTrialModal(item); setTrialMessage(""); }}
+                      >
+                        <X className="h-3 w-3 mr-1" /> Decline
+                      </Button>
+                    </>
+                  )}
                   {item.type === "event_interest" && item.meta?.eventId && (
                     <Button size="sm" variant="outline" className="h-8 px-3 text-xs" asChild>
                       <Link to={`/events/${item.meta.eventId}`}>
@@ -418,17 +531,26 @@ export function DashboardActions({
                       </Link>
                     </Button>
                   )}
-                  {item.type === "match_suggestion" && (
+                  {item.type === "fight_proposal" && item.meta?.eventId && (
                     <Button size="sm" variant="outline" className="h-8 px-3 text-xs" asChild>
-                      <Link to={`/matchmaking?event=${item.meta?.event_id ?? ""}`}>
+                      <Link to={`/events/${item.meta.eventId}`}>
                         <Eye className="h-3 w-3 mr-1" /> View
                       </Link>
                     </Button>
                   )}
-                  {item.type === "trial_lead" && (
-                    <Badge variant="outline" className="text-[10px] border-muted-foreground/30 text-muted-foreground">
-                      Pending
-                    </Badge>
+                  {item.type === "match_suggestion" && !isFighter && item.meta?.eventId && (
+                    <Button size="sm" variant="outline" className="h-8 px-3 text-xs" asChild>
+                      <Link to={`/events/${item.meta.eventId}/matchmaking`}>
+                        <Eye className="h-3 w-3 mr-1" /> View
+                      </Link>
+                    </Button>
+                  )}
+                  {item.type === "match_suggestion" && isFighter && item.meta?.eventId && (
+                    <Button size="sm" variant="outline" className="h-8 px-3 text-xs" asChild>
+                      <Link to={`/events/${item.meta.eventId}`}>
+                        <Eye className="h-3 w-3 mr-1" /> View
+                      </Link>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -436,6 +558,50 @@ export function DashboardActions({
           })}
         </div>
       )}
+
+      {/* Trial Session Accept/Decline Modal */}
+      <Dialog open={!!trialModal} onOpenChange={(open) => { if (!open) setTrialModal(null); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading">Respond to Trial Session</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-foreground font-medium">{trialModal?.title}</p>
+              <p className="text-xs text-muted-foreground">{trialModal?.subtitle}</p>
+              {trialModal?.meta?.email && (
+                <p className="text-xs text-muted-foreground mt-1">Contact: {trialModal.meta.email}</p>
+              )}
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1 block">Message to fighter (optional)</label>
+              <Textarea
+                placeholder="e.g. Come to the gym on Saturday at 10am for a trial..."
+                value={trialMessage}
+                onChange={(e) => setTrialMessage(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10"
+              onClick={handleTrialDecline}
+              disabled={trialSending}
+            >
+              <X className="h-4 w-4 mr-1" /> Decline
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={handleTrialAccept}
+              disabled={trialSending}
+            >
+              <Check className="h-4 w-4 mr-1" /> {trialSending ? "Sending..." : "Accept"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -452,7 +618,6 @@ export function useActionsCount(
     queryKey: ["actions-count", userId, gymIds, fighterProfile?.id],
     queryFn: async () => {
       let total = 0;
-      // Coach gym requests
       if (isCoachOrOwner && gymIds.length > 0) {
         const { count: c } = await supabase
           .from("fighter_gym_links")
@@ -461,7 +626,6 @@ export function useActionsCount(
           .eq("status", "pending");
         total += c ?? 0;
       }
-      // Coach trial leads
       if (isCoachOrOwner && gymIds.length > 0) {
         const { count: c } = await supabase
           .from("gym_leads")
@@ -470,7 +634,6 @@ export function useActionsCount(
           .eq("status", "pending");
         total += c ?? 0;
       }
-      // Fighter gym requests
       if (isFighter && fighterProfile) {
         const { count: c } = await supabase
           .from("fighter_gym_links")
@@ -478,6 +641,12 @@ export function useActionsCount(
           .eq("fighter_id", fighterProfile.id)
           .eq("status", "pending");
         total += c ?? 0;
+        // Count event interests
+        const { count: ei } = await supabase
+          .from("fighter_event_interests")
+          .select("id", { count: "exact", head: true })
+          .eq("fighter_id", fighterProfile.id);
+        total += ei ?? 0;
       }
       return total;
     },
