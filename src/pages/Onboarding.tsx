@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,7 +82,6 @@ async function markOnboardingComplete(queryClient: ReturnType<typeof useQueryCli
 
 /** DOB picker with year/month selectors for fast decade jumping */
 function DOBPicker({ value, onChange }: { value?: Date; onChange: (d: Date | undefined) => void }) {
-  const currentDate = value || new Date();
   const [viewDate, setViewDate] = useState(value || new Date(2000, 0, 1));
 
   const years = Array.from({ length: 60 }, (_, i) => getYear(new Date()) - i);
@@ -134,7 +133,7 @@ function DOBPicker({ value, onChange }: { value?: Date; onChange: (d: Date | und
   );
 }
 
-function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
+function FighterForm({ onComplete }: { onComplete: () => void }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -163,29 +162,19 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
 
   const substyleOptions = FIGHTING_SUBSTYLES[discipline] ?? [];
 
-  useEffect(() => {
-    setFightingSubstyle("");
-  }, [discipline]);
+  useEffect(() => { setFightingSubstyle(""); }, [discipline]);
 
   useEffect(() => {
-    if (!gymSearch || gymSearch.length < 2) {
-      setGymResults([]);
-      return;
-    }
+    if (!gymSearch || gymSearch.length < 2) { setGymResults([]); return; }
     const timeout = setTimeout(async () => {
-      const { data } = await supabase
-        .from("gyms")
-        .select("id, name, city, coach_id, claimed")
-        .ilike("name", `%${gymSearch}%`)
-        .limit(5);
+      const { data } = await supabase.from("gyms").select("id, name, city, coach_id, claimed").ilike("name", `%${gymSearch}%`).limit(5);
       setGymResults(data ?? []);
     }, 300);
     return () => clearTimeout(timeout);
   }, [gymSearch]);
 
   const handleCopySignupUrl = () => {
-    const url = `${window.location.origin}/auth?mode=signup`;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(`${window.location.origin}/auth?mode=signup`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -197,12 +186,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
     }
     setLoading(true);
 
-    const { data: existing } = await supabase
-      .from("fighter_profiles")
-      .select("id")
-      .eq("user_id", user!.id)
-      .maybeSingle();
-
+    const { data: existing } = await supabase.from("fighter_profiles").select("id").eq("user_id", user!.id).maybeSingle();
     let fighterId = existing?.id;
 
     const styleValue = discipline === "Wrestling" || discipline === "Other" || discipline === "BJJ"
@@ -214,7 +198,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
       style: styleValue,
       stance: stance || null,
       fighting_substyle: fightingSubstyle || null,
-      discipline: discipline,
+      discipline,
       date_of_birth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
       walk_around_weight_kg: walkAroundWeight ? parseFloat(walkAroundWeight) : null,
       height: heightCm ? parseInt(heightCm) : null,
@@ -236,37 +220,24 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
       if (error) console.error("Fighter profile error:", error);
       fighterId = created?.id;
     } else {
-      const { error } = await supabase.from("fighter_profiles")
-        .update(profileData)
-        .eq("id", existing.id);
-      if (error) console.error("Fighter profile update error:", error);
+      await supabase.from("fighter_profiles").update(profileData).eq("id", existing.id);
     }
 
     if (hasGym && selectedGym && fighterId) {
       const { data: linkData } = await supabase.from("fighter_gym_links").insert({
-        fighter_id: fighterId,
-        gym_id: selectedGym.id,
-        status: "pending",
+        fighter_id: fighterId, gym_id: selectedGym.id, status: "pending",
       }).select("id").single();
 
       if (linkData) {
-        const { data: freshGym } = await supabase
-          .from("gyms")
-          .select("coach_id, claimed, name")
-          .eq("id", selectedGym.id)
-          .single();
-
+        const { data: freshGym } = await supabase.from("gyms").select("coach_id, claimed, name").eq("id", selectedGym.id).single();
         if (freshGym?.claimed && freshGym.coach_id) {
-          const fighterName = user!.user_metadata?.full_name || user!.email || "A fighter";
           await supabase.rpc("create_notification", {
             _user_id: freshGym.coach_id,
             _title: "New gym join request",
-            _message: `${fighterName} has requested to join ${freshGym.name}`,
+            _message: `${user!.user_metadata?.full_name || user!.email || "A fighter"} has requested to join ${freshGym.name}`,
             _type: "gym_request",
             _reference_id: linkData.id,
           });
-        } else if (freshGym?.claimed && !freshGym.coach_id) {
-          console.error("Gym is claimed but has no coach_id — skipping notification", selectedGym.id);
         }
       }
     }
@@ -285,10 +256,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
           <Label>Date of Birth</Label>
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn("w-full justify-start text-left font-normal", !dateOfBirth && "text-muted-foreground")}
-              >
+              <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dateOfBirth && "text-muted-foreground")}>
                 <CalendarIcon className="mr-2 h-4 w-4" />
                 {dateOfBirth ? format(dateOfBirth, "PPP") : "Select date"}
               </Button>
@@ -304,9 +272,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
           <Select value={weightClass} onValueChange={(v) => setWeightClass(v as WeightClass)}>
             <SelectTrigger><SelectValue placeholder="Select weight class" /></SelectTrigger>
             <SelectContent position="popper" side="bottom">
-              {WEIGHT_CLASSES.map((wc) => (
-                <SelectItem key={wc.value} value={wc.value}>{wc.label}</SelectItem>
-              ))}
+              {WEIGHT_CLASSES.map((wc) => (<SelectItem key={wc.value} value={wc.value}>{wc.label}</SelectItem>))}
             </SelectContent>
           </Select>
         </div>
@@ -329,9 +295,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
           <Select value={discipline} onValueChange={setDiscipline}>
             <SelectTrigger><SelectValue placeholder="Select discipline" /></SelectTrigger>
             <SelectContent position="popper" side="bottom">
-              {DISCIPLINES.map((d) => (
-                <SelectItem key={d} value={d}>{d}</SelectItem>
-              ))}
+              {DISCIPLINES.map((d) => (<SelectItem key={d} value={d}>{d}</SelectItem>))}
             </SelectContent>
           </Select>
         </div>
@@ -341,9 +305,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
           <Select value={stance} onValueChange={setStance}>
             <SelectTrigger><SelectValue placeholder="Select stance" /></SelectTrigger>
             <SelectContent position="popper" side="bottom">
-              {STANCES.map((s) => (
-                <SelectItem key={s} value={s}>{s}</SelectItem>
-              ))}
+              {STANCES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
             </SelectContent>
           </Select>
         </div>
@@ -354,9 +316,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
             <Select value={fightingSubstyle} onValueChange={setFightingSubstyle}>
               <SelectTrigger><SelectValue placeholder="Select fighting style" /></SelectTrigger>
               <SelectContent position="popper" side="bottom">
-                {substyleOptions.map((s) => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
+                {substyleOptions.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
               </SelectContent>
             </Select>
           </div>
@@ -366,36 +326,18 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
       <div className="space-y-3">
         <Label className="text-sm font-medium">Amateur Record</Label>
         <div className="grid grid-cols-3 gap-3">
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Wins</Label>
-            <Input type="number" min="0" value={amateurWins} onChange={(e) => setAmateurWins(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Losses</Label>
-            <Input type="number" min="0" value={amateurLosses} onChange={(e) => setAmateurLosses(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Draws</Label>
-            <Input type="number" min="0" value={amateurDraws} onChange={(e) => setAmateurDraws(e.target.value)} />
-          </div>
+          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Wins</Label><Input type="number" min="0" value={amateurWins} onChange={(e) => setAmateurWins(e.target.value)} /></div>
+          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Losses</Label><Input type="number" min="0" value={amateurLosses} onChange={(e) => setAmateurLosses(e.target.value)} /></div>
+          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Draws</Label><Input type="number" min="0" value={amateurDraws} onChange={(e) => setAmateurDraws(e.target.value)} /></div>
         </div>
       </div>
 
       <div className="space-y-3">
         <Label className="text-sm font-medium">Pro Record</Label>
         <div className="grid grid-cols-3 gap-3">
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Wins</Label>
-            <Input type="number" min="0" value={proWins} onChange={(e) => setProWins(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Losses</Label>
-            <Input type="number" min="0" value={proLosses} onChange={(e) => setProLosses(e.target.value)} />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs text-muted-foreground">Draws</Label>
-            <Input type="number" min="0" value={proDraws} onChange={(e) => setProDraws(e.target.value)} />
-          </div>
+          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Wins</Label><Input type="number" min="0" value={proWins} onChange={(e) => setProWins(e.target.value)} /></div>
+          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Losses</Label><Input type="number" min="0" value={proLosses} onChange={(e) => setProLosses(e.target.value)} /></div>
+          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Draws</Label><Input type="number" min="0" value={proDraws} onChange={(e) => setProDraws(e.target.value)} /></div>
         </div>
       </div>
 
@@ -412,19 +354,11 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
 
         {hasGym && (
           <div className="space-y-2 pl-6">
-            <Input
-              value={gymSearch}
-              onChange={(e) => { setGymSearch(e.target.value); setSelectedGym(null); }}
-              placeholder="Search gyms..."
-            />
+            <Input value={gymSearch} onChange={(e) => { setGymSearch(e.target.value); setSelectedGym(null); }} placeholder="Search gyms..." />
             {gymResults.length > 0 && !selectedGym && (
               <div className="border border-border rounded-md overflow-hidden">
                 {gymResults.map((gym) => (
-                  <button
-                    key={gym.id}
-                    onClick={() => { setSelectedGym(gym); setGymSearch(gym.name); setGymResults([]); }}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors text-foreground"
-                  >
+                  <button key={gym.id} onClick={() => { setSelectedGym(gym); setGymSearch(gym.name); setGymResults([]); }} className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors text-foreground">
                     {gym.name}{gym.city ? ` — ${gym.city}` : ""}
                   </button>
                 ))}
@@ -432,13 +366,8 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
             )}
             {selectedGym && selectedGym.claimed === false && (
               <div className="rounded-md border border-border bg-muted/50 p-3 space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  This gym hasn't been claimed yet — share this link to invite the coach to sign up and claim it.
-                </p>
-                <button
-                  onClick={handleCopySignupUrl}
-                  className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
-                >
+                <p className="text-sm text-muted-foreground">This gym hasn't been claimed yet — share this link to invite the coach to sign up and claim it.</p>
+                <button onClick={handleCopySignupUrl} className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors">
                   {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                   {copied ? "Copied!" : "Copy signup URL"}
                 </button>
@@ -457,7 +386,7 @@ function FighterForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: (
   );
 }
 
-function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () => void }) {
+function CoachForm({ onComplete }: { onComplete: () => void }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -477,17 +406,10 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
       return;
     }
     setLoading(true);
-
-    const { error } = await supabase.from("gyms").insert({
-      name: gymName,
-      postcode: postcode || null,
-      claimed: true,
-      listing_tier: "free",
-      coach_id: user!.id,
-      discipline_tags: disciplines.length > 0 ? disciplines.join(", ") : null,
+    await supabase.from("gyms").insert({
+      name: gymName, postcode: postcode || null, claimed: true, listing_tier: "free",
+      coach_id: user!.id, discipline_tags: disciplines.length > 0 ? disciplines.join(", ") : null,
     });
-    if (error) console.error("Gym creation error:", error);
-
     await markOnboardingComplete(queryClient);
     setLoading(false);
     onComplete();
@@ -496,17 +418,14 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
   return (
     <div className="space-y-5">
       <h3 className="font-heading text-xl text-foreground">Coach Setup</h3>
-
       <div className="space-y-2">
         <Label>Gym Name *</Label>
         <Input value={gymName} onChange={(e) => setGymName(e.target.value)} placeholder="Your gym name" />
       </div>
-
       <div className="space-y-2">
         <Label>Postcode</Label>
         <Input value={postcode} onChange={(e) => setPostcode(e.target.value)} placeholder="e.g. SW1A 1AA" />
       </div>
-
       <div className="space-y-2">
         <Label>Disciplines</Label>
         <div className="grid grid-cols-2 gap-2">
@@ -518,19 +437,15 @@ function CoachForm({ onComplete, onSkip }: { onComplete: () => void; onSkip: () 
           ))}
         </div>
       </div>
-
       <div className="space-y-2">
         <Label>Roster Size</Label>
         <Select value={rosterSize} onValueChange={setRosterSize}>
           <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
           <SelectContent position="popper" side="bottom">
-            {ROSTER_SIZES.map((s) => (
-              <SelectItem key={s} value={s}>{s}</SelectItem>
-            ))}
+            {ROSTER_SIZES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
           </SelectContent>
         </Select>
       </div>
-
       <div className="flex flex-col gap-3 pt-2">
         <Button variant="hero" onClick={handleSubmit} disabled={loading}>
           {loading ? "Saving..." : "Continue"}
@@ -551,7 +466,7 @@ function OrganiserLanding() {
 
   const handleBrowseEvents = async () => {
     await markOnboardingComplete(queryClient);
-    navigate("/events", { replace: true });
+    navigate("/explore?tab=events", { replace: true });
   };
 
   return (
@@ -560,12 +475,8 @@ function OrganiserLanding() {
         WELCOME, <span className="text-primary">ORGANISER</span>
       </h3>
       <p className="text-sm text-muted-foreground text-center">What would you like to do first?</p>
-
       <div className="grid grid-cols-1 gap-4">
-        <button
-          onClick={handleCreateEvent}
-          className="group rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-6 text-left space-y-3"
-        >
+        <button onClick={handleCreateEvent} className="group rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-6 text-left space-y-3">
           <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
             <Plus className="h-5 w-5 text-primary" />
           </div>
@@ -574,11 +485,7 @@ function OrganiserLanding() {
             <p className="text-sm text-muted-foreground">Set up a fight night, build a card, and start matchmaking.</p>
           </div>
         </button>
-
-        <button
-          onClick={handleBrowseEvents}
-          className="group rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-6 text-left space-y-3"
-        >
+        <button onClick={handleBrowseEvents} className="group rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-6 text-left space-y-3">
           <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
             <Search className="h-5 w-5 text-primary" />
           </div>
@@ -593,33 +500,57 @@ function OrganiserLanding() {
 }
 
 export default function Onboarding() {
-  const { user, roles, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const primaryRole: AppRole | null = roles.includes("gym_owner")
-    ? "gym_owner"
-    : roles.includes("fighter")
-      ? "fighter"
-      : roles.includes("organiser")
-        ? "organiser"
-        : roles.includes("coach")
-          ? "coach"
-          : roles[0] ?? null;
+  // (9) Read role directly from user_roles table, not cached session
+  const { data: freshRoles, isLoading: rolesLoading } = useQuery({
+    queryKey: ["onboarding-fresh-roles", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user!.id);
+      return (data ?? []).map((r) => r.role) as AppRole[];
+    },
+    enabled: !!user,
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
+
+  const primaryRole: AppRole | null = freshRoles
+    ? freshRoles.includes("gym_owner")
+      ? "gym_owner"
+      : freshRoles.includes("fighter")
+        ? "fighter"
+        : freshRoles.includes("organiser")
+          ? "organiser"
+          : freshRoles.includes("coach")
+            ? "coach"
+            : freshRoles[0] ?? null
+    : null;
 
   const goToDashboard = () => {
-    const path = primaryRole ? (ROLE_PATHS[primaryRole] ?? "/coach/dashboard") : "/dashboard";
+    const path = primaryRole ? (ROLE_PATHS[primaryRole] ?? "/dashboard") : "/dashboard";
     navigate(path, { replace: true });
   };
 
-  // Redirect if no user/auth not ready — no spinner screen
-  if (authLoading || !user) {
-    return null;
+  // Show nothing until auth + roles are resolved
+  if (authLoading || !user || rolesLoading || !freshRoles) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
-  // If roles haven't loaded yet, show minimal skeleton — no bypass
-  if (roles.length === 0) {
-    return null;
+  if (freshRoles.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
@@ -637,10 +568,10 @@ export default function Onboarding() {
 
         <div className="rounded-lg border border-border bg-card p-5 sm:p-8">
           {primaryRole === "fighter" && (
-            <FighterForm onComplete={goToDashboard} onSkip={goToDashboard} />
+            <FighterForm onComplete={goToDashboard} />
           )}
           {(primaryRole === "coach" || primaryRole === "gym_owner") && (
-            <CoachForm onComplete={goToDashboard} onSkip={goToDashboard} />
+            <CoachForm onComplete={goToDashboard} />
           )}
           {primaryRole === "organiser" && (
             <OrganiserLanding />
