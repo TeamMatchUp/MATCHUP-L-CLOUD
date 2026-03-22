@@ -19,6 +19,7 @@ interface DashboardAnalyticsProps {
   events: any[];
   fighterProfile: any | null;
   userId: string;
+  embedded?: boolean;
 }
 
 const GOLD = "hsl(44 87% 58%)";
