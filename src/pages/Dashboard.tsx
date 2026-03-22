@@ -22,11 +22,12 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { DashboardGyms } from "@/components/dashboard/DashboardGyms";
 import { DashboardRoster } from "@/components/dashboard/DashboardRoster";
-import { DashboardProposals } from "@/components/dashboard/DashboardProposals";
+import { DashboardActions, useActionsCount } from "@/components/dashboard/DashboardActions";
 import { DashboardEvents } from "@/components/dashboard/DashboardEvents";
 import { NotificationHistory } from "@/components/NotificationHistory";
 import { CreateFighterProfileForm } from "@/components/fighter/CreateFighterProfileForm";
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
+import { GymsNearYouWidget } from "@/components/fighter/GymsNearYouWidget";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 import { EditFighterDialog } from "@/components/coach/EditFighterDialog";
@@ -74,6 +75,16 @@ export default function Dashboard() {
     handleRefresh,
   } = data;
 
+  const gymIds = myGyms.map((g: any) => g.id);
+  const actionsCount = useActionsCount(
+    user?.id ?? "",
+    isCoachOrOwner,
+    isFighter,
+    isOrganiser,
+    fighterProfile,
+    gymIds,
+  );
+
   // Dialog states
   const [showAddFighter, setShowAddFighter] = useState(false);
   const [addFighterGymId, setAddFighterGymId] = useState<string | undefined>();
@@ -113,15 +124,11 @@ export default function Dashboard() {
   };
 
   // Compute metrics
-  const openSlots = events
-    .flatMap((e: any) => e.fight_slots || [])
-    .filter((s: any) => s.status === "open").length;
-
   const metrics = [
     { label: "Gyms", value: myGyms.length, sub: "Under your management", icon: Building2, section: "gyms" },
     { label: "Fighters", value: allFighters.length, sub: "In your roster", icon: Users, section: "roster" },
-    { label: "Pending", value: pendingProposals.length, sub: "Awaiting review", icon: Inbox, section: "proposals" },
-    { label: "Confirmed", value: confirmedProposals.length, sub: "Locked in", icon: Check, section: "proposals" },
+    { label: "Actions", value: actionsCount, sub: "Requiring attention", icon: Inbox, section: "actions" },
+    { label: "Confirmed", value: confirmedProposals.length, sub: "Locked in", icon: Check, section: "actions" },
     { label: "Events", value: events.length, sub: "Created by you", icon: Calendar, section: "events" },
     { label: "Unread", value: unreadNotifications.length, sub: "Notifications", icon: Bell, section: "notifications" },
   ];
@@ -131,19 +138,17 @@ export default function Dashboard() {
       case "overview":
         return (
           <div className="space-y-6">
-            {/* Coach gym join requests */}
             {isCoachOrOwner && myGyms.length > 0 && (
               <GymRequestsPanel
                 gymIds={myGyms.map((g: any) => g.id)}
                 coachId={user!.id}
               />
             )}
-            {/* Fighter profile creation prompt - compact banner */}
             {isFighter && !fighterProfile && (
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex items-center justify-between">
                 <div>
                   <p className="font-heading text-sm text-foreground">
-                    CREATE YOUR <span className="text-primary">FIGHTER PROFILE</span>
+                    Create your <span className="text-primary">fighter profile</span>
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Set up your profile to start receiving match proposals.
@@ -154,7 +159,6 @@ export default function Dashboard() {
                 </Button>
               </div>
             )}
-            {/* Fighter gym invites banner */}
             {isFighter && fighterProfile && (
               <GymInvitesPanel fighterProfileId={fighterProfile.id} />
             )}
@@ -165,6 +169,10 @@ export default function Dashboard() {
               effectiveRoles={effectiveRoles as string[]}
               onNavigateSection={navigateToSection}
             />
+            {/* Gyms Near You for fighters */}
+            {isFighter && fighterProfile && (
+              <GymsNearYouWidget fighterProfileId={fighterProfile.id} />
+            )}
           </div>
         );
 
@@ -202,16 +210,16 @@ export default function Dashboard() {
           />
         );
 
-      case "proposals":
+      case "actions":
         return (
-          <DashboardProposals
+          <DashboardActions
+            userId={user!.id}
             isCoachOrOwner={isCoachOrOwner}
             isFighter={isFighter}
-            pendingProposals={pendingProposals}
-            confirmedProposals={confirmedProposals}
-            userId={user!.id}
-            fighterIds={allFighterIds}
-            fighterProfileId={fighterProfile?.id}
+            isOrganiser={isOrganiser}
+            fighterProfile={fighterProfile}
+            myGyms={myGyms}
+            allFighterIds={allFighterIds}
             onRefresh={handleRefresh}
           />
         );
@@ -280,7 +288,7 @@ export default function Dashboard() {
         return (
           <div className="space-y-6">
             <h2 className="font-heading text-2xl text-foreground">
-              CREATE YOUR <span className="text-primary">FIGHTER PROFILE</span>
+              Create your <span className="text-primary">fighter profile</span>
             </h2>
             <CreateFighterProfileForm
               userId={user!.id}
@@ -304,6 +312,7 @@ export default function Dashboard() {
         <DashboardSidebar
           pendingCount={pendingProposals.length}
           unreadCount={unreadNotifications.length}
+          actionsCount={actionsCount}
         />
 
         <div className="flex-1 flex flex-col min-w-0">
@@ -315,31 +324,12 @@ export default function Dashboard() {
                 <AppLogo className="h-7" />
               </Link>
               <nav className="hidden md:flex items-center gap-6 ml-4">
-                <Link
-                  to="/"
-                  className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide"
-                >
+                <Link to="/" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide">
                   Home
                 </Link>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide">
-                      Explore
-                      <ChevronDown className="h-3 w-3" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-40">
-                    <DropdownMenuItem asChild>
-                      <Link to="/explore?tab=events" className="text-xs uppercase tracking-wide">Events</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/explore?tab=fighters" className="text-xs uppercase tracking-wide">Fighters</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/explore?tab=gyms" className="text-xs uppercase tracking-wide">Gyms</Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <Link to="/explore" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide">
+                  Explore
+                </Link>
               </nav>
             </div>
 
@@ -402,10 +392,10 @@ export default function Dashboard() {
               <h1 className="font-heading text-3xl md:text-4xl text-foreground">
                 {activeSection === "overview" ? (
                   <>
-                    <span className="text-primary">MATCHUP</span> DASHBOARD
+                    <span className="text-primary">Matchup</span> dashboard
                   </>
                 ) : (
-                  activeSection.replace("_", " ").toUpperCase()
+                  activeSection.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
                 )}
               </h1>
               {activeSection === "overview" && (
