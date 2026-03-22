@@ -20,7 +20,7 @@ import {
   LayoutDashboard,
   Building2,
   Users,
-  Inbox,
+  Zap,
   Calendar,
   Bell,
   Settings,
@@ -44,9 +44,10 @@ interface NavItem {
 interface DashboardSidebarProps {
   pendingCount: number;
   unreadCount: number;
+  actionsCount?: number;
 }
 
-export function DashboardSidebar({ pendingCount, unreadCount }: DashboardSidebarProps) {
+export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }: DashboardSidebarProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeSection = searchParams.get("section") || "overview";
   const { user, effectiveRoles, signOut } = useAuth();
@@ -77,7 +78,7 @@ export function DashboardSidebar({ pendingCount, unreadCount }: DashboardSidebar
     { key: "my-profile", label: "My Profile", icon: User, roles: ["fighter"] },
     { key: "gyms", label: "My Gyms", icon: Building2, roles: ["gym_owner", "coach", "fighter"] },
     { key: "roster", label: "Roster", icon: Users, roles: ["gym_owner", "coach"] },
-    { key: "proposals", label: "Proposals", icon: Inbox, badgeCount: pendingCount },
+    { key: "actions", label: "Actions", icon: Zap, badgeCount: actionsCount },
     { key: "events", label: "Events", icon: Calendar, roles: ["gym_owner", "coach", "organiser"] },
     { key: "interests", label: "Interested Events", icon: Star, roles: ["fighter"] },
     { key: "analytics", label: "Analytics", icon: BarChart3 },
