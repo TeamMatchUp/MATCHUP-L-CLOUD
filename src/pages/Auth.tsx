@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AuthErrorBoundary } from "@/components/AuthErrorBoundary";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
 import { AppLogo } from "@/components/AppLogo";
+import { ArrowLeft } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -32,7 +32,6 @@ function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Safely parse search params — handle malformed URLs gracefully
   let searchParams: URLSearchParams;
   try {
     searchParams = new URLSearchParams(location.search);
@@ -53,7 +52,6 @@ function AuthPage() {
   const returnTo = searchParams.get("returnTo");
 
   const getRedirectPath = (userRoles: AppRole[]) => {
-    // returnTo query param takes priority (e.g. from gym claim flow)
     if (returnTo) return returnTo;
     if (from && from !== "/") return from;
     const primaryRole = userRoles[0];
@@ -81,7 +79,6 @@ function AuthPage() {
       .select("role")
       .eq("user_id", data.user.id);
     
-    // Check if onboarding is completed
     const { data: profile } = await supabase
       .from("profiles")
       .select("onboarding_completed")
@@ -91,7 +88,6 @@ function AuthPage() {
     setLoading(false);
     const userRoles = (rolesData ?? []).map((r) => r.role);
     
-    // If onboarding not completed, redirect to onboarding
     if (!profile?.onboarding_completed) {
       navigate("/onboarding", { replace: true });
       return;
@@ -133,8 +129,8 @@ function AuthPage() {
 
       if (data.session) {
         setLoading(false);
-        // Send new signups to onboarding instead of dashboard
-        navigate("/onboarding", { replace: true });
+        // (9) Force full page reload to ensure fresh session on onboarding
+        window.location.href = "/onboarding";
         return;
       }
     }
@@ -206,6 +202,13 @@ function AuthPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
+        {/* Back button */}
+        <div className="mb-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1 text-muted-foreground">
+            <ArrowLeft className="h-4 w-4" /> Back
+          </Button>
+        </div>
+
         <Link to="/" className="block text-center mb-6 sm:mb-8">
           <AppLogo className="h-8 sm:h-10 mx-auto" />
         </Link>

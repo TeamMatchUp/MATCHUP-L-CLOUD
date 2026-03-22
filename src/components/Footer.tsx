@@ -19,33 +19,18 @@ export function Footer() {
   const [roleDialogAction, setRoleDialogAction] = useState("");
 
   const handleCreateEvent = () => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    if (effectiveRoles.includes("gym_owner")) {
+    if (!user) { navigate("/auth"); return; }
+    if (effectiveRoles.includes("gym_owner") || effectiveRoles.includes("organiser")) {
       navigate("/organiser/create-event");
       return;
     }
-    if (effectiveRoles.includes("organiser")) {
-      navigate("/organiser/create-event");
-      return;
-    }
-    // Fighter or no matching role
     setRoleDialogAction("create events");
     setShowRoleDialog(true);
   };
 
   const handleRegisterGym = () => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    if (effectiveRoles.includes("gym_owner")) {
-      navigate("/register-gym");
-      return;
-    }
-    // Organiser, fighter, or no matching role
+    if (!user) { navigate("/auth"); return; }
+    if (effectiveRoles.includes("gym_owner")) { navigate("/register-gym"); return; }
     setRoleDialogAction("register a gym");
     setShowRoleDialog(true);
   };
@@ -78,18 +63,8 @@ export function Footer() {
             <div>
               <h4 className="font-body text-sm font-semibold text-foreground mb-3">For Teams</h4>
               <div className="flex flex-col gap-2">
-                <button
-                  onClick={handleRegisterGym}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
-                >
-                  Register Gym
-                </button>
-                <button
-                  onClick={handleCreateEvent}
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left"
-                >
-                  Create Event
-                </button>
+                <button onClick={handleRegisterGym} className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left">Register Gym</button>
+                <button onClick={handleCreateEvent} className="text-sm text-muted-foreground hover:text-foreground transition-colors text-left">Create Event</button>
               </div>
             </div>
             <div>
@@ -99,6 +74,7 @@ export function Footer() {
                 <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
                 <Link to="/record-accuracy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Record Accuracy Policy</Link>
                 <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
+                <Link to="/contact" className="text-sm text-primary hover:text-primary/80 transition-colors">Feedback</Link>
               </div>
             </div>
           </div>
@@ -117,12 +93,8 @@ export function Footer() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowRoleDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleLogoutAndRegister}>
-              Create New Account
-            </Button>
+            <Button variant="outline" onClick={() => setShowRoleDialog(false)}>Cancel</Button>
+            <Button onClick={handleLogoutAndRegister}>Create New Account</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

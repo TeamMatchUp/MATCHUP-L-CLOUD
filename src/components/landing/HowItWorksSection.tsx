@@ -1,78 +1,78 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Send, CheckCircle, Megaphone, Star, ChevronDown, Shield, Users, Globe } from "lucide-react";
+import { Search, Send, CheckCircle, Megaphone, Shield, ChevronDown, Users, Globe, Calendar, Swords, Building2 } from "lucide-react";
 
 const sections = [
   {
     title: "FIGHT MATCHMAKING",
     steps: [
       {
-        icon: Search,
+        icon: Users,
         step: "01",
-        title: "DISCOVER",
-        description: "Browse events, explore fighters, and find the right matchups across weight classes and styles.",
+        title: "CREATE PROFILES",
+        description: "Fighters and coaches create verified profiles with weight class, discipline, record, and fighting style.",
       },
       {
-        icon: Send,
+        icon: Swords,
         step: "02",
-        title: "PROPOSE",
-        description: "Organisers create structured match proposals. AI assists with optimal pairing recommendations.",
+        title: "RUN MATCHMAKING",
+        description: "The matchmaking engine scores all eligible pairs on competitiveness, entertainment, style contrast, and narrative.",
       },
       {
         icon: CheckCircle,
         step: "03",
-        title: "CONFIRM",
-        description: "Coach approves, fighter confirms. Only when all parties agree does a match become official.",
+        title: "CONFIRM BOUTS",
+        description: "Organiser reviews ranked suggestions. Coach approves, fighter confirms. Only when all parties agree does a match become official.",
       },
     ],
-    subtitle: "SIMPLIFY MATCHMAKING HEADACHES",
+    subtitle: "SIMPLIFY MATCHMAKING",
     tagline: "Three steps to a confirmed fight. No shortcuts.",
   },
   {
     title: "EVENT PROMOTION",
     steps: [
       {
-        icon: Megaphone,
+        icon: Calendar,
         step: "01",
-        title: "CREATE",
-        description: "Set up your event with venue details, fight card structure, and ticket information in minutes.",
+        title: "CREATE EVENT",
+        description: "Set up your event with venue details, discipline, date, and ticket information in minutes.",
       },
       {
-        icon: Globe,
+        icon: Swords,
         step: "02",
-        title: "PROMOTE",
-        description: "Your event is listed on the marketplace, visible to coaches and fighters actively seeking bouts.",
+        title: "BUILD FIGHT CARD",
+        description: "Define fight slots, use AI suggestions or manual search to fill your main event and undercard.",
       },
       {
-        icon: Users,
+        icon: Megaphone,
         step: "03",
-        title: "FILL YOUR CARD",
-        description: "Receive applications, use AI suggestions, and confirm matchups to build a complete fight card.",
+        title: "PUBLISH & PROMOTE",
+        description: "Your event goes live on the marketplace, visible to coaches and fighters actively seeking bouts.",
       },
     ],
     subtitle: "GROW YOUR EVENTS",
     tagline: "From empty card to sold-out show.",
   },
   {
-    title: "VERIFIED DIRECTORY",
+    title: "TRUSTED DIRECTORY",
     steps: [
       {
-        icon: Shield,
-        step: "01",
-        title: "REGISTER",
-        description: "Fighters and gyms create verified profiles with records, credentials, and fighting history.",
-      },
-      {
-        icon: Star,
-        step: "02",
-        title: "BUILD REPUTATION",
-        description: "Fight results are logged and verified by both corners, creating a trusted public record.",
-      },
-      {
         icon: Search,
+        step: "01",
+        title: "SEARCH & DISCOVER",
+        description: "Search verified gyms, upcoming events, and fighter profiles with distance, discipline, and weight class filters.",
+      },
+      {
+        icon: Shield,
+        step: "02",
+        title: "CLAIM YOUR LISTING",
+        description: "Coaches claim their gym listing to unlock management features. Organisers claim events to manage fight cards.",
+      },
+      {
+        icon: Globe,
         step: "03",
-        title: "GET DISCOVERED",
-        description: "Organisers search the directory by weight class, record, and availability to find the right fighters.",
+        title: "CONNECT",
+        description: "Fighters request gym trials, coaches put forward fighters for events, and organisers receive proposals.",
       },
     ],
     subtitle: "TRUST THE RECORD",

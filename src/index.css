@@ -146,6 +146,25 @@
     box-shadow: 0 0 24px hsl(46 93% 61% / 0.25), 0 0 48px hsl(46 93% 61% / 0.08);
   }
 
+  /* (5) Glass pill sidebar nav items */
+  .sidebar-pill {
+    @apply rounded-full px-3 py-1.5 backdrop-blur-sm transition-all duration-200;
+    background: hsl(var(--sidebar-accent) / 0.4);
+    box-shadow: 0 1px 4px hsl(0 0% 0% / 0.08);
+  }
+
+  .sidebar-pill:hover {
+    background: hsl(var(--sidebar-accent) / 0.6);
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.12);
+  }
+
+  .sidebar-pill-active {
+    @apply rounded-full px-3 py-1.5 backdrop-blur-sm;
+    background: hsl(var(--primary) / 0.15);
+    color: hsl(var(--primary));
+    box-shadow: 0 2px 8px hsl(var(--primary) / 0.15), 0 0 0 1px hsl(var(--primary) / 0.2);
+  }
+
   @media (max-width: 639px) {
     div:has(> .notification-dropdown) {
       position: fixed !important;

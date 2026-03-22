@@ -142,7 +142,11 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
                       onClick={() => handleNav(item.key)}
                       isActive={isActive}
                       tooltip={item.label}
-                      className={isActive ? "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary" : ""}
+                      className={
+                        isActive
+                          ? "sidebar-pill-active"
+                          : "sidebar-pill"
+                      }
                     >
                       <item.icon className="h-4 w-4" />
                       {!collapsed && (
@@ -169,7 +173,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Settings">
+                <SidebarMenuButton asChild tooltip="Settings" className="sidebar-pill">
                   <Link to="/account/settings">
                     <Settings className="h-4 w-4" />
                     {!collapsed && <span>Settings</span>}
@@ -180,7 +184,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
                 <SidebarMenuButton
                   onClick={handleSignOut}
                   tooltip="Logout"
-                  className="text-destructive hover:text-destructive"
+                  className="sidebar-pill text-destructive hover:text-destructive"
                 >
                   <LogOut className="h-4 w-4" />
                   {!collapsed && <span>Logout</span>}
