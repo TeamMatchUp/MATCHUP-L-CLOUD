@@ -387,28 +387,30 @@ export default function EventDetail() {
                       {undercards.map((bout: any) => {
                         const fA = unwrap(bout.fighter_a);
                         const fB = unwrap(bout.fighter_b);
-                        return (
+                         return (
                           <div key={bout.id} className="rounded-lg border border-border bg-card p-4">
                             <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
-                              <div className="text-right">
-                                <Link to={fA ? `/fighters/${fA.id}` : "#"} className="hover:text-primary transition-colors">
-                                  <p className="font-medium text-foreground text-sm">{fA?.name ?? "TBA"}</p>
-                                </Link>
-                                {fA && <p className="text-xs text-primary font-medium">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
-                              </div>
-                              <span className="font-heading text-primary text-xs">VS</span>
                               <div className="text-left">
-                                <Link to={fB ? `/fighters/${fB.id}` : "#"} className="hover:text-primary transition-colors">
-                                  <p className="font-medium text-foreground text-sm">{fB?.name ?? "TBA"}</p>
+                                <Link to={fA ? `/fighters/${fA.id}` : "#"} className="hover:text-primary transition-colors">
+                                  <p className="font-heading text-sm text-foreground uppercase">{fA?.name ?? "TBA"}</p>
                                 </Link>
-                                {fB && <p className="text-xs text-primary font-medium">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
+                                {fA && <p className="text-xs text-muted-foreground">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
+                              </div>
+                              <div className="flex flex-col items-center">
+                                <span className="font-heading text-primary text-xs">VS</span>
+                                {bout.weight_class && (
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                                    {WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <Link to={fB ? `/fighters/${fB.id}` : "#"} className="hover:text-primary transition-colors">
+                                  <p className="font-heading text-sm text-foreground uppercase">{fB?.name ?? "TBA"}</p>
+                                </Link>
+                                {fB && <p className="text-xs text-muted-foreground">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
                               </div>
                             </div>
-                            {bout.weight_class && (
-                              <p className="text-center text-[10px] text-muted-foreground mt-1">
-                                {WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}
-                              </p>
-                            )}
                           </div>
                         );
                       })}
