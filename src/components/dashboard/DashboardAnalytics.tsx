@@ -9,6 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
   LineChart, Line, CartesianGrid, Legend,
 } from "recharts";
+import { FighterAnalyticsV2 } from "./FighterAnalytics";
 
 interface DashboardAnalyticsProps {
   isCoachOrOwner: boolean;
