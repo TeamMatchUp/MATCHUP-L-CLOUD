@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Trophy, Target, Award, Flame, Shield, Star } from "lucide-react";
+import { Plus, Trophy, Target, Award, Flame, Shield, Star, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
