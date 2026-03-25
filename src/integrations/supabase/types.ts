@@ -186,6 +186,7 @@ export type Database = {
           fighter_a_id: string | null
           fighter_b_id: string | null
           id: string
+          is_public: boolean | null
           slot_number: number | null
           status: string
           weight_class: string | null
@@ -198,6 +199,7 @@ export type Database = {
           fighter_a_id?: string | null
           fighter_b_id?: string | null
           id?: string
+          is_public?: boolean | null
           slot_number?: number | null
           status?: string
           weight_class?: string | null
@@ -210,6 +212,7 @@ export type Database = {
           fighter_a_id?: string | null
           fighter_b_id?: string | null
           id?: string
+          is_public?: boolean | null
           slot_number?: number | null
           status?: string
           weight_class?: string | null
@@ -241,6 +244,9 @@ export type Database = {
       events: {
         Row: {
           city: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          contact_website: string | null
           country: Database["public"]["Enums"]["country_code"]
           created_at: string
           date: string
@@ -255,15 +261,21 @@ export type Database = {
           postcode: string | null
           promotion_name: string | null
           promotion_status: string | null
+          sold_out: boolean | null
           status: Database["public"]["Enums"]["event_status"]
+          ticket_count: number | null
           ticket_enabled: boolean
           ticket_url: string | null
+          tickets_url: string | null
           title: string
           updated_at: string
           venue_name: string | null
         }
         Insert: {
           city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_website?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           date: string
@@ -278,15 +290,21 @@ export type Database = {
           postcode?: string | null
           promotion_name?: string | null
           promotion_status?: string | null
+          sold_out?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
+          ticket_count?: number | null
           ticket_enabled?: boolean
           ticket_url?: string | null
+          tickets_url?: string | null
           title: string
           updated_at?: string
           venue_name?: string | null
         }
         Update: {
           city?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          contact_website?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
           date?: string
@@ -301,9 +319,12 @@ export type Database = {
           postcode?: string | null
           promotion_name?: string | null
           promotion_status?: string | null
+          sold_out?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
+          ticket_count?: number | null
           ticket_enabled?: boolean
           ticket_url?: string | null
+          tickets_url?: string | null
           title?: string
           updated_at?: string
           venue_name?: string | null
@@ -535,6 +556,7 @@ export type Database = {
           height: number | null
           id: string
           name: string
+          postcode: string | null
           profile_image: string | null
           reach: number | null
           record_draws: number
@@ -568,6 +590,7 @@ export type Database = {
           height?: number | null
           id?: string
           name: string
+          postcode?: string | null
           profile_image?: string | null
           reach?: number | null
           record_draws?: number
@@ -601,6 +624,7 @@ export type Database = {
           height?: number | null
           id?: string
           name?: string
+          postcode?: string | null
           profile_image?: string | null
           reach?: number | null
           record_draws?: number
