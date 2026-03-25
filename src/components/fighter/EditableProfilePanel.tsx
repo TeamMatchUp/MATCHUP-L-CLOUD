@@ -323,33 +323,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             )}
           </div>
 
-          {/* Section 2: Career Stats */}
-          <div>
-            <h3 className="font-heading text-lg text-foreground mb-4">
-              CAREER <span className="text-primary">STATS</span>
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <Trophy className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="font-heading text-2xl text-primary">{p.record_wins}W-{p.record_losses}L-{p.record_draws}D</p>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Pro Record</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <Target className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="font-heading text-2xl text-primary">{winPct}%</p>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Win Rate</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <Swords className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="font-heading text-2xl text-primary">{totalFights}</p>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Total Fights</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <Trophy className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
-                <p className="font-heading text-2xl text-foreground">{p.amateur_wins ?? 0}W-{p.amateur_losses ?? 0}L-{p.amateur_draws ?? 0}D</p>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Amateur Record</p>
-              </div>
-            </div>
 
             {/* Physical Stats 2x2 Grid */}
             <div className="grid grid-cols-2 gap-3 mt-4">
@@ -370,22 +343,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
                 <p className="font-heading text-xl text-foreground">{[p.country, p.region].filter(Boolean).join(", ") || "—"}</p>
               </div>
             </div>
-
-            {/* Inline analytics — ranking table */}
-            <div className="mt-6">
-              <DashboardAnalytics
-                isCoachOrOwner={false}
-                isOrganiser={false}
-                isFighter={true}
-                myGyms={[]}
-                allFighters={[]}
-                events={[]}
-                fighterProfile={fighterProfile}
-                userId={userId}
-                embedded={true}
-              />
-            </div>
-          </div>
 
           {/* Bio */}
           {p.bio && (
