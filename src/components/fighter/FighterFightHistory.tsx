@@ -306,7 +306,7 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
                   <Label className="text-sm">{isAmateur ? "Amateur" : "Professional"}</Label>
                 </div>
                 <Button onClick={handleAddResult} disabled={saving} className="w-full">
-                  {saving ? "Saving..." : "Add Result"}
+                  {saving ? "Saving..." : editingFight ? "Update Result" : "Add Result"}
                 </Button>
               </div>
             </DialogContent>
