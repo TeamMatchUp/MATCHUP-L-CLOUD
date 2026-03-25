@@ -240,15 +240,15 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
           FIGHT <span className="text-primary">HISTORY</span>
         </h3>
         {isOwner && (
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setEditingFight(null); resetForm(); } }}>
             <DialogTrigger asChild>
-              <Button size="sm">
+              <Button size="sm" onClick={() => { setEditingFight(null); resetForm(); }}>
                 <Plus className="h-3.5 w-3.5 mr-1" /> Add Result
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle className="font-heading">ADD FIGHT RESULT</DialogTitle>
+                <DialogTitle className="font-heading">{editingFight ? "EDIT FIGHT RESULT" : "ADD FIGHT RESULT"}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
