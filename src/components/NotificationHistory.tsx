@@ -73,33 +73,8 @@ export function NotificationHistory() {
     queryClient.invalidateQueries({ queryKey: ["notification-history"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
 
-    const type = notification.type;
-    const refId = notification.reference_id;
-
-    // Match-related notifications
-    if (["match_proposed", "match_accepted", "match_declined", "match_confirmed", "match_withdrawn"].includes(type)) {
-      if (refId && effectiveRoles.includes("organiser")) {
-        const eventId = await resolveEventFromProposal(refId);
-        if (eventId) {
-          navigate(`/organiser/events/${eventId}`);
-          return;
-        }
-      }
-      navigate(effectiveRoles.includes("fighter") ? "/fighter/dashboard" : "/gym-owner/dashboard");
-      return;
-    }
-
-    if (type === "event_update") {
-      navigate(refId ? `/events/${refId}` : "/events");
-      return;
-    }
-
-    if (type === "gym_invite") {
-      navigate("/fighter/dashboard");
-      return;
-    }
-
-    toast.info("Notification marked as read");
+    // All notifications route to the Actions tab
+    navigate("/dashboard?section=actions");
   };
 
   const toggleRead = async (notification: any) => {

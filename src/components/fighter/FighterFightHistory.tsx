@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Trophy, Target, Award, Flame, Shield, Star } from "lucide-react";
+import { Plus, Trophy, Target, Award, Flame, Shield, Star, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -39,6 +39,7 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingFight, setEditingFight] = useState<any>(null);
 
   // Form state
   const [opponentName, setOpponentName] = useState("");
@@ -57,11 +58,13 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
       const { data: asA } = await supabase
         .from("fights")
         .select("*")
-        .eq("fighter_a_id", fighterId);
+        .eq("fighter_a_id", fighterId)
+        .order("event_date", { ascending: false });
       const { data: asB } = await supabase
         .from("fights")
         .select("*")
-        .eq("fighter_b_id", fighterId);
+        .eq("fighter_b_id", fighterId)
+        .order("event_date", { ascending: false });
       const map = new Map<string, any>();
       [...(asA || []), ...(asB || [])].forEach((f) => map.set(f.id, f));
       return Array.from(map.values()).sort(
@@ -114,29 +117,49 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
     }
     setSaving(true);
 
-    const { error } = await supabase.from("fights").insert({
-      fighter_a_id: fighterId,
-      fighter_b_id: fighterId, // self-reported: both point to self
-      opponent_name: opponentName,
-      opponent_gym: opponentGym || null,
-      result,
-      method,
-      round: round ? parseInt(round) : null,
-      total_rounds: totalRounds ? parseInt(totalRounds) : null,
-      event_date: eventDate || null,
-      event_name: eventName || null,
-      is_amateur: isAmateur,
-      verification_status: "self_reported" as any,
-      winner_id: result === "win" ? fighterId : null,
-    });
+    if (editingFight) {
+      // UPDATE existing fight
+      const { error } = await supabase.from("fights").update({
+        opponent_name: opponentName,
+        opponent_gym: opponentGym || null,
+        result,
+        method,
+        round: round ? parseInt(round) : null,
+        total_rounds: totalRounds ? parseInt(totalRounds) : null,
+        event_date: eventDate || null,
+        event_name: eventName || null,
+        is_amateur: isAmateur,
+        winner_id: result === "win" ? fighterId : null,
+      }).eq("id", editingFight.id);
 
-    setSaving(false);
-    if (error) {
-      toast.error("Failed to add result");
-      return;
+      setSaving(false);
+      if (error) { toast.error("Failed to update result"); return; }
+      toast.success("Fight result updated");
+    } else {
+      // INSERT new fight
+      const { error } = await supabase.from("fights").insert({
+        fighter_a_id: fighterId,
+        fighter_b_id: fighterId,
+        opponent_name: opponentName,
+        opponent_gym: opponentGym || null,
+        result,
+        method,
+        round: round ? parseInt(round) : null,
+        total_rounds: totalRounds ? parseInt(totalRounds) : null,
+        event_date: eventDate || null,
+        event_name: eventName || null,
+        is_amateur: isAmateur,
+        verification_status: "self_reported" as any,
+        winner_id: result === "win" ? fighterId : null,
+      });
+
+      setSaving(false);
+      if (error) { toast.error("Failed to add result"); return; }
+      toast.success("Fight result added");
     }
-    toast.success("Fight result added");
+
     setOpen(false);
+    setEditingFight(null);
     resetForm();
     queryClient.invalidateQueries({ queryKey: ["fighter-fights", fighterId] });
   };
@@ -151,6 +174,20 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
     setEventDate("");
     setEventName("");
     setIsAmateur(false);
+  };
+
+  const openEditDialog = (fight: any) => {
+    setEditingFight(fight);
+    setOpponentName(fight.opponent_name || "");
+    setOpponentGym(fight.opponent_gym || "");
+    setResult(fight.result || "win");
+    setMethod(fight.method || "Decision");
+    setRound(fight.round?.toString() || "");
+    setTotalRounds(fight.total_rounds?.toString() || "");
+    setEventDate(fight.event_date || "");
+    setEventName(fight.event_name || "");
+    setIsAmateur(fight.is_amateur || false);
+    setOpen(true);
   };
 
   const getResultForFighter = (fight: any) => {
@@ -203,15 +240,15 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
           FIGHT <span className="text-primary">HISTORY</span>
         </h3>
         {isOwner && (
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setEditingFight(null); resetForm(); } }}>
             <DialogTrigger asChild>
-              <Button size="sm">
+              <Button size="sm" onClick={() => { setEditingFight(null); resetForm(); }}>
                 <Plus className="h-3.5 w-3.5 mr-1" /> Add Result
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle className="font-heading">ADD FIGHT RESULT</DialogTitle>
+                <DialogTitle className="font-heading">{editingFight ? "EDIT FIGHT RESULT" : "ADD FIGHT RESULT"}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
@@ -269,7 +306,7 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
                   <Label className="text-sm">{isAmateur ? "Amateur" : "Professional"}</Label>
                 </div>
                 <Button onClick={handleAddResult} disabled={saving} className="w-full">
-                  {saving ? "Saving..." : "Add Result"}
+                  {saving ? "Saving..." : editingFight ? "Update Result" : "Add Result"}
                 </Button>
               </div>
             </DialogContent>
@@ -291,7 +328,8 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
                 <TableHead className="hidden md:table-cell">Rd</TableHead>
                 <TableHead className="hidden md:table-cell">Date</TableHead>
                 <TableHead className="hidden lg:table-cell">Event</TableHead>
-                <TableHead>Source</TableHead>
+                 <TableHead>Source</TableHead>
+                 {isOwner && <TableHead className="w-10"></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -345,6 +383,13 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
                         {verLabel}
                       </Badge>
                     </TableCell>
+                    {isOwner && (
+                      <TableCell>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(fight)}>
+                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 );
               })}

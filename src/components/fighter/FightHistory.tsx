@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { FightRecordBadge } from "./FightRecordBadge";
-import { ShieldCheck, UserCheck } from "lucide-react";
+import { ShieldCheck, UserCheck, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface FightHistoryProps {
   fighterId: string;
@@ -15,13 +16,13 @@ export function FightHistory({ fighterId }: FightHistoryProps) {
         .from("fights")
         .select("*")
         .eq("fighter_a_id", fighterId)
-        .order("created_at", { ascending: false });
+        .order("event_date", { ascending: false });
 
       const { data: fightsB } = await supabase
         .from("fights")
         .select("*")
         .eq("fighter_b_id", fighterId)
-        .order("created_at", { ascending: false });
+        .order("event_date", { ascending: false });
 
       const map = new Map<string, any>();
       [...(fightsA || []), ...(fightsB || [])].forEach((f) => map.set(f.id, f));

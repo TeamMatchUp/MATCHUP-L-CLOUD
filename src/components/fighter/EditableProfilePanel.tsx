@@ -351,6 +351,26 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
               </div>
             </div>
 
+            {/* Physical Stats 2x2 Grid */}
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Height</p>
+                <p className="font-heading text-xl text-foreground">{p.height ? `${p.height} cm` : "—"}</p>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Walk-Around Weight</p>
+                <p className="font-heading text-xl text-foreground">{p.walk_around_weight_kg ? `${p.walk_around_weight_kg} kg` : "—"}</p>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Age</p>
+                <p className="font-heading text-xl text-foreground">{p.date_of_birth ? `${Math.floor((Date.now() - new Date(p.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))}` : "—"}</p>
+              </div>
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Country / Region</p>
+                <p className="font-heading text-xl text-foreground">{[p.country, p.region].filter(Boolean).join(", ") || "—"}</p>
+              </div>
+            </div>
+
             {/* Inline analytics — ranking table */}
             <div className="mt-6">
               <DashboardAnalytics
