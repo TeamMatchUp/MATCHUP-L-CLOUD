@@ -117,29 +117,49 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
     }
     setSaving(true);
 
-    const { error } = await supabase.from("fights").insert({
-      fighter_a_id: fighterId,
-      fighter_b_id: fighterId, // self-reported: both point to self
-      opponent_name: opponentName,
-      opponent_gym: opponentGym || null,
-      result,
-      method,
-      round: round ? parseInt(round) : null,
-      total_rounds: totalRounds ? parseInt(totalRounds) : null,
-      event_date: eventDate || null,
-      event_name: eventName || null,
-      is_amateur: isAmateur,
-      verification_status: "self_reported" as any,
-      winner_id: result === "win" ? fighterId : null,
-    });
+    if (editingFight) {
+      // UPDATE existing fight
+      const { error } = await supabase.from("fights").update({
+        opponent_name: opponentName,
+        opponent_gym: opponentGym || null,
+        result,
+        method,
+        round: round ? parseInt(round) : null,
+        total_rounds: totalRounds ? parseInt(totalRounds) : null,
+        event_date: eventDate || null,
+        event_name: eventName || null,
+        is_amateur: isAmateur,
+        winner_id: result === "win" ? fighterId : null,
+      }).eq("id", editingFight.id);
 
-    setSaving(false);
-    if (error) {
-      toast.error("Failed to add result");
-      return;
+      setSaving(false);
+      if (error) { toast.error("Failed to update result"); return; }
+      toast.success("Fight result updated");
+    } else {
+      // INSERT new fight
+      const { error } = await supabase.from("fights").insert({
+        fighter_a_id: fighterId,
+        fighter_b_id: fighterId,
+        opponent_name: opponentName,
+        opponent_gym: opponentGym || null,
+        result,
+        method,
+        round: round ? parseInt(round) : null,
+        total_rounds: totalRounds ? parseInt(totalRounds) : null,
+        event_date: eventDate || null,
+        event_name: eventName || null,
+        is_amateur: isAmateur,
+        verification_status: "self_reported" as any,
+        winner_id: result === "win" ? fighterId : null,
+      });
+
+      setSaving(false);
+      if (error) { toast.error("Failed to add result"); return; }
+      toast.success("Fight result added");
     }
-    toast.success("Fight result added");
+
     setOpen(false);
+    setEditingFight(null);
     resetForm();
     queryClient.invalidateQueries({ queryKey: ["fighter-fights", fighterId] });
   };
@@ -154,6 +174,20 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
     setEventDate("");
     setEventName("");
     setIsAmateur(false);
+  };
+
+  const openEditDialog = (fight: any) => {
+    setEditingFight(fight);
+    setOpponentName(fight.opponent_name || "");
+    setOpponentGym(fight.opponent_gym || "");
+    setResult(fight.result || "win");
+    setMethod(fight.method || "Decision");
+    setRound(fight.round?.toString() || "");
+    setTotalRounds(fight.total_rounds?.toString() || "");
+    setEventDate(fight.event_date || "");
+    setEventName(fight.event_name || "");
+    setIsAmateur(fight.is_amateur || false);
+    setOpen(true);
   };
 
   const getResultForFighter = (fight: any) => {
