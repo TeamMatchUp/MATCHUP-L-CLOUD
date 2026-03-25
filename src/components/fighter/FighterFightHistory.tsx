@@ -39,6 +39,7 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingFight, setEditingFight] = useState<any>(null);
 
   // Form state
   const [opponentName, setOpponentName] = useState("");
