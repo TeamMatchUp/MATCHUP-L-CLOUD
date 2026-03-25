@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Users, Calendar, TrendingUp, Target, Award, Swords, Percent, Building2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Users, Calendar, TrendingUp, Target, Swords, Building2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { formatEnum } from "@/lib/format";
 import {
