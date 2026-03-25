@@ -328,8 +328,8 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
                 <TableHead className="hidden md:table-cell">Rd</TableHead>
                 <TableHead className="hidden md:table-cell">Date</TableHead>
                 <TableHead className="hidden lg:table-cell">Event</TableHead>
-                <TableHead>Source</TableHead>
-              </TableRow>
+                 <TableHead>Source</TableHead>
+                 {isOwner && <TableHead className="w-10"></TableHead>}
             </TableHeader>
             <TableBody>
               {fights.map((fight: any) => {
