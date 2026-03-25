@@ -330,6 +330,7 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
                 <TableHead className="hidden lg:table-cell">Event</TableHead>
                  <TableHead>Source</TableHead>
                  {isOwner && <TableHead className="w-10"></TableHead>}
+              </TableRow>
             </TableHeader>
             <TableBody>
               {fights.map((fight: any) => {
