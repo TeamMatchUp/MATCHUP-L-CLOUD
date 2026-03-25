@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Share2, Save, Pencil, ShieldCheck, Info, Search, Trophy, Target, Swords } from "lucide-react";
+import { Share2, Save, Pencil, ShieldCheck, Info, Search } from "lucide-react";
 import { formatEnum } from "@/lib/format";
 import { FighterFightHistory } from "./FighterFightHistory";
 import { ProfileCompletionBar } from "./ProfileCompletionBar";
