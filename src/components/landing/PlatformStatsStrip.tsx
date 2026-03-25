@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
-import { Building2, Calendar, Users, Trophy, Clock, LucideIcon } from "lucide-react";
+import { Building2, Calendar, Users, Clock, LucideIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function useCountUp(target: number, shouldStart: boolean, duration = 1400) {
   const [count, setCount] = useState(0);
@@ -21,11 +22,11 @@ function useCountUp(target: number, shouldStart: boolean, duration = 1400) {
   return count;
 }
 
-function StatCard({ value, label, icon: Icon, inView, delay, suffix }: { value: number; label: string; icon: LucideIcon; inView: boolean; delay: number; suffix?: string }) {
+function StatCard({ value, label, icon: Icon, inView, delay, suffix, href }: { value: number; label: string; icon: LucideIcon; inView: boolean; delay: number; suffix?: string; href?: string }) {
   const count = useCountUp(value, inView);
-  return (
+  const content = (
     <motion.div
-      className="rounded-lg border border-border/30 bg-card p-4 text-center"
+      className={`rounded-lg border border-border/30 bg-card p-4 text-center transition-all ${href ? "cursor-pointer hover:border-primary/60 hover:shadow-[0_0_12px_-4px_hsl(var(--primary)/0.3)]" : ""}`}
       initial={{ opacity: 0, y: 14 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -38,6 +39,11 @@ function StatCard({ value, label, icon: Icon, inView, delay, suffix }: { value: 
       <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">{label}</p>
     </motion.div>
   );
+
+  if (href) {
+    return <Link to={href}>{content}</Link>;
+  }
+  return content;
 }
 
 export function PlatformStatsStrip() {
@@ -48,37 +54,34 @@ export function PlatformStatsStrip() {
     queryKey: ["platform-stats-strip"],
     queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
-      const [gyms, events, fighters, bouts, publishedEvents] = await Promise.all([
+      const [gyms, events, fighters, publishedEvents] = await Promise.all([
         supabase.from("gyms").select("id", { count: "exact", head: true }),
         supabase.from("events").select("id", { count: "exact", head: true }).gte("date", today).eq("status", "published"),
         supabase.from("fighter_profiles").select("id", { count: "exact", head: true }),
-        supabase.from("match_proposals").select("id", { count: "exact", head: true }).eq("status", "confirmed"),
         supabase.from("events").select("id", { count: "exact", head: true }).eq("status", "published"),
       ]);
       return {
         gyms: gyms.count ?? 0,
         events: events.count ?? 0,
         fighters: fighters.count ?? 0,
-        bouts: bouts.count ?? 0,
         hoursSaved: (publishedEvents.count ?? 0) * 15,
       };
     },
   });
 
   const cards = [
-    { label: "Gyms Listed", key: "gyms" as const, icon: Building2 },
-    { label: "Upcoming Events", key: "events" as const, icon: Calendar },
-    { label: "Fighters Registered", key: "fighters" as const, icon: Users },
-    { label: "Confirmed Bouts", key: "bouts" as const, icon: Trophy },
+    { label: "Gyms Listed", key: "gyms" as const, icon: Building2, href: "/explore?tab=gyms" },
+    { label: "Upcoming Events", key: "events" as const, icon: Calendar, href: "/explore?tab=events" },
+    { label: "Fighters Registered", key: "fighters" as const, icon: Users, href: "/explore?tab=fighters" },
     { label: "Hours Saved", key: "hoursSaved" as const, icon: Clock, suffix: "+" },
   ];
 
   return (
     <section className="py-12 bg-background border-t border-border/20" ref={ref}>
       <div className="container max-w-5xl">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {cards.map((c, i) => (
-            <StatCard key={c.key} value={data?.[c.key] ?? 0} label={c.label} icon={c.icon} inView={inView} delay={i * 0.06} suffix={c.suffix} />
+            <StatCard key={c.key} value={data?.[c.key] ?? 0} label={c.label} icon={c.icon} inView={inView} delay={i * 0.06} suffix={c.suffix} href={c.href} />
           ))}
         </div>
       </div>

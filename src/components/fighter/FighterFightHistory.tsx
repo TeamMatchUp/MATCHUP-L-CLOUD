@@ -57,11 +57,13 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
       const { data: asA } = await supabase
         .from("fights")
         .select("*")
-        .eq("fighter_a_id", fighterId);
+        .eq("fighter_a_id", fighterId)
+        .order("event_date", { ascending: false });
       const { data: asB } = await supabase
         .from("fights")
         .select("*")
-        .eq("fighter_b_id", fighterId);
+        .eq("fighter_b_id", fighterId)
+        .order("event_date", { ascending: false });
       const map = new Map<string, any>();
       [...(asA || []), ...(asB || [])].forEach((f) => map.set(f.id, f));
       return Array.from(map.values()).sort(

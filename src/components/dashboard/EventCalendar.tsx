@@ -42,50 +42,55 @@ export function EventCalendar({ events }: EventCalendarProps) {
         }}
       />
 
-      {eventsOnDate.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-border space-y-2">
-          <p className="text-xs text-muted-foreground font-medium uppercase">
-            Events on {format(date!, "MMM d, yyyy")}
-          </p>
-          {eventsOnDate.map((e) => (
-            <Link
-              key={e.id}
-              to={`/events/${e.id}`}
-              className="block p-2 rounded-md hover:bg-muted/50 transition-colors"
-            >
-              <p className="text-sm font-medium text-foreground">{e.title}</p>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <MapPin className="h-3 w-3" /> {e.location}
-              </p>
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {eventsOnDate.length === 0 && upcomingEvents.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-border space-y-2">
-          <p className="text-xs text-muted-foreground font-medium uppercase">
-            Upcoming Events
-          </p>
-          {upcomingEvents.map((e) => (
-            <Link
-              key={e.id}
-              to={`/events/${e.id}`}
-              className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors"
-            >
-              <div>
+      <div className="mt-3 pt-3 border-t border-border space-y-2">
+        {eventsOnDate.length > 0 ? (
+          <>
+            <p className="text-xs text-muted-foreground font-medium uppercase">
+              Events on {format(date!, "MMM d, yyyy")}
+            </p>
+            {eventsOnDate.map((e) => (
+              <Link
+                key={e.id}
+                to={`/events/${e.id}`}
+                className="block p-2 rounded-md hover:bg-muted/50 transition-colors"
+              >
                 <p className="text-sm font-medium text-foreground">{e.title}</p>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <MapPin className="h-3 w-3" /> {e.location}
                 </p>
-              </div>
-              <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                {format(new Date(e.date + "T00:00:00"), "MMM d")}
-              </span>
-            </Link>
-          ))}
-        </div>
-      )}
+              </Link>
+            ))}
+          </>
+        ) : (
+          <>
+            <p className="text-xs text-muted-foreground font-medium uppercase">
+              No events on {date ? format(date, "MMM d, yyyy") : "—"}
+            </p>
+            {upcomingEvents.length > 0 && (
+              <>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wide mt-2">Next upcoming</p>
+                {upcomingEvents.map((e) => (
+                  <Link
+                    key={e.id}
+                    to={`/events/${e.id}`}
+                    className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50 transition-colors"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{e.title}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> {e.location}
+                      </p>
+                    </div>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
+                      {format(new Date(e.date + "T00:00:00"), "MMM d")}
+                    </span>
+                  </Link>
+                ))}
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

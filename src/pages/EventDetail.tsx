@@ -338,38 +338,37 @@ export default function EventDetail() {
                           <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6">
                             <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
                               {/* Fighter A */}
-                              <div className="text-center">
+                              <div className="text-left">
                                 <Link to={fA ? `/fighters/${fA.id}` : "#"} className="hover:text-primary transition-colors">
-                                  <p className="font-heading text-xl text-foreground">{fA?.name ?? "TBA"}</p>
+                                  <p className="font-heading text-xl text-foreground uppercase">{fA?.name ?? "TBA"}</p>
                                 </Link>
                                 {fA && (
                                   <p className="text-primary font-bold text-lg mt-1">
                                     {fA.record_wins}-{fA.record_losses}-{fA.record_draws}
                                   </p>
                                 )}
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {bout.weight_class ? WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class : ""}
-                                </p>
                               </div>
 
                               <div className="flex flex-col items-center">
                                 <Swords className="h-6 w-6 text-primary mb-1" />
                                 <span className="font-heading text-primary text-lg">VS</span>
+                                {bout.weight_class && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}
+                                  </p>
+                                )}
                               </div>
 
                               {/* Fighter B */}
-                              <div className="text-center">
+                              <div className="text-right">
                                 <Link to={fB ? `/fighters/${fB.id}` : "#"} className="hover:text-primary transition-colors">
-                                  <p className="font-heading text-xl text-foreground">{fB?.name ?? "TBA"}</p>
+                                  <p className="font-heading text-xl text-foreground uppercase">{fB?.name ?? "TBA"}</p>
                                 </Link>
                                 {fB && (
                                   <p className="text-primary font-bold text-lg mt-1">
                                     {fB.record_wins}-{fB.record_losses}-{fB.record_draws}
                                   </p>
                                 )}
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {bout.weight_class ? WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class : ""}
-                                </p>
                               </div>
                             </div>
                           </div>

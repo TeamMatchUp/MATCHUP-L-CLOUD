@@ -352,34 +352,53 @@ function FighterAnalytics({ fighterProfile }: { fighterProfile: any }) {
             </Select>
           </div>
         </div>
-        {rankedFighters.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-2 px-3 text-xs text-muted-foreground font-medium">#</th>
-                  <th className="text-left py-2 px-3 text-xs text-muted-foreground font-medium">Fighter</th>
-                  <th className="text-left py-2 px-3 text-xs text-muted-foreground font-medium">Weight</th>
-                  <th className="text-left py-2 px-3 text-xs text-muted-foreground font-medium">Record</th>
-                  <th className="text-right py-2 px-3 text-xs text-muted-foreground font-medium">Win%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rankedFighters.slice(0, 20).map((f, i) => (
-                  <tr key={f.id} className={`border-b border-border/50 ${f.id === fighterProfile.id ? "bg-primary/5 border-l-2 border-l-primary" : "hover:bg-muted/30"}`}>
-                    <td className={`py-2 px-3 ${f.id === fighterProfile.id ? "text-primary font-bold" : "text-muted-foreground"}`}>{i + 1}</td>
-                    <td className={`py-2 px-3 font-medium ${f.id === fighterProfile.id ? "text-primary" : "text-foreground"}`}>{f.name}</td>
-                    <td className="py-2 px-3 text-xs text-muted-foreground">{formatEnum(f.weight_class)}</td>
-                    <td className="py-2 px-3 text-muted-foreground">{f.record_wins}W-{f.record_losses}L</td>
-                    <td className={`py-2 px-3 text-right font-medium ${f.id === fighterProfile.id ? "text-primary" : "text-foreground"}`}>{f.winPct.toFixed(0)}%</td>
+      {(() => {
+          const top10 = rankedFighters.slice(0, 10);
+          const myIdx = rankedFighters.findIndex((f) => f.id === fighterProfile.id);
+          const isOutsideTop10 = myIdx >= 10;
+          const myRow = isOutsideTop10 ? rankedFighters[myIdx] : null;
+
+          if (top10.length === 0) return <p className="text-sm text-muted-foreground text-center py-4">No fighters found matching filters.</p>;
+
+          return (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 px-3 text-xs text-muted-foreground font-medium">#</th>
+                    <th className="text-left py-2 px-3 text-xs text-muted-foreground font-medium">Fighter</th>
+                    <th className="text-left py-2 px-3 text-xs text-muted-foreground font-medium">Weight</th>
+                    <th className="text-left py-2 px-3 text-xs text-muted-foreground font-medium">Record</th>
+                    <th className="text-right py-2 px-3 text-xs text-muted-foreground font-medium">Win%</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">No fighters found matching filters.</p>
-        )}
+                </thead>
+                <tbody>
+                  {top10.map((f, i) => (
+                    <tr key={f.id} className={`border-b border-border/50 ${f.id === fighterProfile.id ? "bg-primary/10 border-l-2 border-l-primary" : "hover:bg-muted/30"}`}>
+                      <td className={`py-2 px-3 ${f.id === fighterProfile.id ? "text-primary font-bold" : "text-muted-foreground"}`}>#{i + 1}</td>
+                      <td className={`py-2 px-3 font-medium ${f.id === fighterProfile.id ? "text-primary" : "text-foreground"}`}>{f.name}</td>
+                      <td className="py-2 px-3 text-xs text-muted-foreground">{formatEnum(f.weight_class)}</td>
+                      <td className="py-2 px-3 text-muted-foreground">{f.record_wins}W-{f.record_losses}L</td>
+                      <td className={`py-2 px-3 text-right font-medium ${f.id === fighterProfile.id ? "text-primary" : "text-foreground"}`}>{f.winPct.toFixed(0)}%</td>
+                    </tr>
+                  ))}
+                  {isOutsideTop10 && myRow && (
+                    <>
+                      <tr><td colSpan={5} className="py-1"><div className="border-t-2 border-dashed border-primary/30" /></td></tr>
+                      <tr className="bg-primary/10 border-l-2 border-l-primary">
+                        <td className="py-2 px-3 text-primary font-bold">#{myIdx + 1}</td>
+                        <td className="py-2 px-3 font-medium text-primary">{myRow.name}</td>
+                        <td className="py-2 px-3 text-xs text-muted-foreground">{formatEnum(myRow.weight_class)}</td>
+                        <td className="py-2 px-3 text-muted-foreground">{myRow.record_wins}W-{myRow.record_losses}L</td>
+                        <td className="py-2 px-3 text-right font-medium text-primary">{myRow.winPct.toFixed(0)}%</td>
+                      </tr>
+                    </>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

@@ -300,19 +300,7 @@ export default function GymDetail() {
                 </div>
               )}
 
-              {/* Discipline tags */}
-              {gym.discipline_tags && (
-                <div className="flex flex-wrap gap-2 mb-8">
-                  {gym.discipline_tags.split(",").map((tag: string) => (
-                    <span
-                      key={tag.trim()}
-                      className="px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20"
-                    >
-                      {tag.trim()}
-                    </span>
-                  ))}
-                </div>
-              )}
+              {/* Discipline tags removed from header — shown in description card below */}
 
               {/* Contact CTA — role/status aware */}
               {!isOwner && (

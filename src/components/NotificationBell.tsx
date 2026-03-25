@@ -68,7 +68,6 @@ export function NotificationBell() {
       .eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
 
-    // (11) All notifications route to the Actions tab
     setOpen(false);
     navigate("/dashboard?section=actions");
   };
