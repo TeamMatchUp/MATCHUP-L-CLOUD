@@ -8,13 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Share2, Save, Pencil, ShieldCheck, Info, Search, Trophy, Target, Swords } from "lucide-react";
+import { Share2, Save, Pencil, ShieldCheck, Info, Search } from "lucide-react";
 import { formatEnum } from "@/lib/format";
 import { FighterFightHistory } from "./FighterFightHistory";
 import { ProfileCompletionBar } from "./ProfileCompletionBar";
 import { Constants } from "@/integrations/supabase/types";
 import { useQuery } from "@tanstack/react-query";
-import { DashboardAnalytics } from "@/components/dashboard/DashboardAnalytics";
+
 
 interface EditableProfilePanelProps {
   fighterProfile: any;
@@ -139,9 +139,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
     ? gymAffiliation.status === "approved" ? gymAffiliation.name : `Pending — ${gymAffiliation.name}`
     : "None";
 
-  // Career stats
-  const totalFights = p.record_wins + p.record_losses + p.record_draws;
-  const winPct = totalFights > 0 ? Math.round((p.record_wins / totalFights) * 100) : 0;
 
   return (
     <div className="space-y-8">
@@ -323,33 +320,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             )}
           </div>
 
-          {/* Section 2: Career Stats */}
-          <div>
-            <h3 className="font-heading text-lg text-foreground mb-4">
-              CAREER <span className="text-primary">STATS</span>
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <Trophy className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="font-heading text-2xl text-primary">{p.record_wins}W-{p.record_losses}L-{p.record_draws}D</p>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Pro Record</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <Target className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="font-heading text-2xl text-primary">{winPct}%</p>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Win Rate</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <Swords className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="font-heading text-2xl text-primary">{totalFights}</p>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Total Fights</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4 text-center">
-                <Trophy className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
-                <p className="font-heading text-2xl text-foreground">{p.amateur_wins ?? 0}W-{p.amateur_losses ?? 0}L-{p.amateur_draws ?? 0}D</p>
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-1">Amateur Record</p>
-              </div>
-            </div>
 
             {/* Physical Stats 2x2 Grid */}
             <div className="grid grid-cols-2 gap-3 mt-4">
@@ -370,22 +340,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
                 <p className="font-heading text-xl text-foreground">{[p.country, p.region].filter(Boolean).join(", ") || "—"}</p>
               </div>
             </div>
-
-            {/* Inline analytics — ranking table */}
-            <div className="mt-6">
-              <DashboardAnalytics
-                isCoachOrOwner={false}
-                isOrganiser={false}
-                isFighter={true}
-                myGyms={[]}
-                allFighters={[]}
-                events={[]}
-                fighterProfile={fighterProfile}
-                userId={userId}
-                embedded={true}
-              />
-            </div>
-          </div>
 
           {/* Bio */}
           {p.bio && (
