@@ -284,7 +284,7 @@ export function DashboardAnalytics(props: DashboardAnalyticsProps) {
   return (
     <div className="space-y-8">
       {isCoachOrOwner && <CoachAnalytics myGyms={myGyms} allFighters={allFighters} events={events} userId={userId} />}
-      {isFighter && fighterProfile && <FighterAnalytics fighterProfile={fighterProfile} />}
+      {isFighter && fighterProfile && <FighterAnalyticsV2 fighterProfile={fighterProfile} />}
       {isOrganiser && <OrganiserAnalytics events={events} userId={userId} />}
       {!isCoachOrOwner && !isFighter && !isOrganiser && (
         <p className="text-muted-foreground text-center py-12">No analytics available for your role yet.</p>
