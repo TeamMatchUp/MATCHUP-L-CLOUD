@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { FightRecordBadge } from "./FightRecordBadge";
-import { ShieldCheck, UserCheck } from "lucide-react";
+import { ShieldCheck, UserCheck, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface FightHistoryProps {
   fighterId: string;
