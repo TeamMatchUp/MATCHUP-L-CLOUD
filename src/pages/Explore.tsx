@@ -527,8 +527,6 @@ function FightersDirectory({ fighters, isLoading }: { fighters: any[]; isLoading
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {fighters.map((fighter, i) => {
-        const primaryGym = fighter.fighter_gym_links?.find((l: any) => l.is_primary && l.status === "approved");
-        const gymName = primaryGym?.gyms?.name ?? "Independent";
         const record = `${fighter._record.wins}-${fighter._record.losses}-${fighter._record.draws}`;
         return (
           <motion.div key={fighter.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.04 }}>
@@ -539,11 +537,9 @@ function FightersDirectory({ fighters, isLoading }: { fighters: any[]; isLoading
                 </div>
                 <h3 className="font-heading text-lg text-foreground">{fighter.name}</h3>
               </div>
-              <p className="text-primary font-bold text-lg">{record}</p>
-              <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                <p>{WEIGHT_CLASS_LABELS[fighter.weight_class]} · {fighter.style ? STYLE_LABELS[fighter.style] : "—"}</p>
-                <p>{gymName}</p>
-              </div>
+              <p className="text-primary font-bold text-lg mb-2">{record}</p>
+              <p className="text-xs text-muted-foreground">{WEIGHT_CLASS_LABELS[fighter.weight_class] || fighter.weight_class}</p>
+              <p className="text-xs text-muted-foreground">{fighter.style ? STYLE_LABELS[fighter.style] : "—"}</p>
             </Link>
           </motion.div>
         );
