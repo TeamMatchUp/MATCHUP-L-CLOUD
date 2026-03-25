@@ -139,9 +139,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
     ? gymAffiliation.status === "approved" ? gymAffiliation.name : `Pending — ${gymAffiliation.name}`
     : "None";
 
-  // Career stats
-  const totalFights = p.record_wins + p.record_losses + p.record_draws;
-  const winPct = totalFights > 0 ? Math.round((p.record_wins / totalFights) * 100) : 0;
 
   return (
     <div className="space-y-8">
