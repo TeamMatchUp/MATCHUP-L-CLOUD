@@ -189,7 +189,6 @@ function CoachAnalytics({ myGyms, allFighters, events, userId }: { myGyms: any[]
 }
 
 // FighterAnalytics is now in FighterAnalytics.tsx
-import { FighterAnalyticsV2 } from "./FighterAnalytics";
 
 function OrganiserAnalytics({ events, userId }: { events: any[]; userId: string }) {
   const now = new Date();
