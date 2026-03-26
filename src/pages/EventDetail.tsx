@@ -220,7 +220,8 @@ export default function EventDetail() {
             </div>
           </div>
           {/* Centre — VS + weight class */}
-          <div className="flex flex-col items-center px-4">
+            <div className="flex flex-col items-center px-4">
+            {isOpen(bout) && <span className="text-primary text-xs font-semibold uppercase tracking-wide">Open</span>}
             <span className="font-heading text-primary text-2xl">VS</span>
             {bout.weight_class && <p className="text-xs text-muted-foreground mt-1">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
