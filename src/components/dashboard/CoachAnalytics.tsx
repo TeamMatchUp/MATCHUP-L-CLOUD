@@ -923,7 +923,11 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
       {/* ── SECTION 7: Organiser Analytics ── */}
       {showOrganiserSection && (
         <>
-          <SectionHeader title="Organiser Analytics" large />
+          <div className="flex items-end justify-between mb-2 mt-8">
+            <h2 className="font-heading text-2xl text-foreground">
+              Organiser <span className="text-primary">Analytics</span>
+            </h2>
+          </div>
           <OrganiserAnalyticsShared userId={userId} embedded />
         </>
       )}
