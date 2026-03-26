@@ -462,6 +462,18 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
     return cols;
   }, [gymLeads]);
 
+  const STATUS_ORDER = ["pending", "contacted", "trial_attended", "converted"];
+  const handleLeadMove = async (leadId: string, currentStatus: string, direction: "forward" | "back") => {
+    const idx = STATUS_ORDER.indexOf(currentStatus);
+    const newIdx = direction === "forward" ? idx + 1 : idx - 1;
+    if (newIdx < 0 || newIdx >= STATUS_ORDER.length) return;
+    const newStatus = STATUS_ORDER[newIdx];
+    const { error } = await supabase.from("gym_leads").update({ status: newStatus }).eq("id", leadId);
+    if (error) { toast.error("Failed to update lead status"); return; }
+    queryClient.invalidateQueries({ queryKey: ["coach-analytics-gym-leads"] });
+    toast.success(`Lead moved to ${newStatus.replace(/_/g, " ")}`);
+  };
+
   // ════════════════════════════════════════════
   // Active Fighters Modal Data
   // ════════════════════════════════════════════
