@@ -81,8 +81,10 @@ export function DashboardActions({
   const [trialMessage, setTrialMessage] = useState("");
   const [trialSending, setTrialSending] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState<"active" | "completed">("active");
+  const [statusFilter, setStatusFilter] = useState<"active" | "completed" | "bin">("active");
   const [searchFilter, setSearchFilter] = useState("");
+  const [discardedItems, setDiscardedItems] = useState<DiscardedItem[]>([]);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const gymIds = myGyms.map((g) => g.id);
 
