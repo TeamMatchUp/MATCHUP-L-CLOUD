@@ -131,6 +131,7 @@ export function NotificationHistory() {
     }
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
     exitMultiSelect();
     toast.success(`${ids.length} notification(s) deleted`);
   };
