@@ -467,7 +467,7 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
     <div className="space-y-4">
       {events.map((event, i) => {
         const confirmedBouts = event.event_fight_slots?.filter((s: any) => s.status === "confirmed").length ?? 0;
-        const openSlots = event.fight_slots?.filter((s: any) => s.status === "open").length ?? 0;
+        const openSlots = event.event_fight_slots?.filter((s: any) => !s.fighter_a_id && !s.fighter_b_id && s.status !== "confirmed" && s.status !== "declined").length ?? 0;
         const hasTickets = event.tickets && event.tickets.length > 0;
         const isSoldOut = event.sold_out === true;
         const dist = searchCoords && event.latitude != null && event.longitude != null
