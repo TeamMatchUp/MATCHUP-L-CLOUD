@@ -605,8 +605,9 @@ export function DashboardActions({
     });
   };
 
-  const displayItems = statusFilter === "active" ? applyFilters(activeItems) : applyFilters(completedItems);
+  const displayItems = statusFilter === "active" ? applyFilters(activeItems) : statusFilter === "completed" ? applyFilters(completedItems) : [];
   const isCompletedView = statusFilter === "completed";
+  const isBinView = statusFilter === "bin";
 
   const renderActionButtons = (item: ActionItem) => {
     if (isCompletedView) {
