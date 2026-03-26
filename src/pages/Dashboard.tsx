@@ -367,3 +367,55 @@ export default function Dashboard() {
     </SidebarProvider>
   );
 }
+
+/** Inner component that can access useSidebar context */
+function DashboardInner({
+  sectionTitle,
+  pendingCount,
+  unreadCount,
+  actionsCount,
+  renderContent,
+}: {
+  sectionTitle: string;
+  pendingCount: number;
+  unreadCount: number;
+  actionsCount: number;
+  renderContent: () => React.ReactNode;
+}) {
+  const isMobile = useIsMobile();
+  const { toggleSidebar } = useSidebar();
+
+  return (
+    <div className="min-h-screen flex w-full bg-background">
+      <DashboardSidebar
+        pendingCount={pendingCount}
+        unreadCount={unreadCount}
+        actionsCount={actionsCount}
+      />
+
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile hamburger */}
+        {isMobile && (
+          <div className="sticky top-0 z-30 flex items-center h-12 px-3 bg-background border-b border-border">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            >
+              <PanelLeft className="h-5 w-5" />
+            </Button>
+            <span className="ml-2 font-heading text-sm text-foreground">{sectionTitle}</span>
+          </div>
+        )}
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          <h1 className="font-heading text-2xl md:text-3xl text-foreground mb-6">
+            {sectionTitle}
+          </h1>
+          {renderContent()}
+        </main>
+      </div>
+    </div>
+  );
+}
