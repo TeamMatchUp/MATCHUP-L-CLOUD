@@ -73,6 +73,9 @@ export function DashboardActions({
   const [trialModal, setTrialModal] = useState<ActionItem | null>(null);
   const [trialMessage, setTrialMessage] = useState("");
   const [trialSending, setTrialSending] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState<"active" | "completed">("active");
+  const [searchFilter, setSearchFilter] = useState("");
 
   const gymIds = myGyms.map((g) => g.id);
 
