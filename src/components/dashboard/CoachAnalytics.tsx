@@ -576,15 +576,19 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
           <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Win / Loss / Draw by Fighter</h3>
           {wldChartData.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={wldChartData} layout="vertical">
+              <BarChart data={wldChartData} layout="vertical" onClick={(state) => {
+                if (state?.activePayload?.[0]?.payload?.id) {
+                  navigate(`/fighters/${state.activePayload[0].payload.id}`);
+                }
+              }} style={{ cursor: "pointer" }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis type="number" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
                 <YAxis type="category" dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} width={60} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
-                <Bar dataKey="Wins" fill="hsl(var(--primary))" radius={[0, 2, 2, 0]} />
-                <Bar dataKey="Losses" fill="hsl(var(--destructive))" radius={[0, 2, 2, 0]} />
-                <Bar dataKey="Draws" fill="hsl(var(--chart-3))" radius={[0, 2, 2, 0]} />
+                <Bar dataKey="Wins" fill="hsl(var(--primary))" radius={[0, 2, 2, 0]} className="cursor-pointer" />
+                <Bar dataKey="Losses" fill="hsl(var(--destructive))" radius={[0, 2, 2, 0]} className="cursor-pointer" />
+                <Bar dataKey="Draws" fill="hsl(var(--chart-3))" radius={[0, 2, 2, 0]} className="cursor-pointer" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
