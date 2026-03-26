@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { AppLogo } from "@/components/AppLogo";
 import {
   LayoutDashboard,
   Building2,
@@ -107,16 +108,19 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
 
   return (
     <Sidebar collapsible="icon">
-      {/* Collapse toggle at very top */}
+      {/* Logo + collapse toggle in same row */}
       <SidebarHeader className="p-2 border-b border-sidebar-border">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-        >
-          {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-        </Button>
+        <div className="flex items-center justify-between">
+          {!collapsed && <AppLogo className="h-7" />}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+          >
+            {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+          </Button>
+        </div>
       </SidebarHeader>
 
       <SidebarContent>
