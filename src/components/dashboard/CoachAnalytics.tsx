@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { formatEnum } from "@/lib/format";
+import { useAuth } from "@/contexts/AuthContext";
 import { X } from "lucide-react";
 import { format, differenceInDays, subMonths } from "date-fns";
 import {
@@ -75,11 +76,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 /* ── Main component ── */
 
 export function CoachAnalyticsV2({ userId }: { userId: string }) {
+  const { effectiveRoles } = useAuth();
   const [activeMonths, setActiveMonths] = useState<"6m" | "12m">("6m");
   const [showActiveModal, setShowActiveModal] = useState(false);
   const [reachPeriod, setReachPeriod] = useState<"30d" | "all">("30d");
 
   const now = new Date();
+  const hasOrganiserRole = effectiveRoles.includes("organiser");
 
   // ── Fetch coach's gyms ──
   const { data: myGyms = [] } = useQuery({
@@ -202,6 +205,184 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
     },
     enabled: gymIds.length > 0,
   });
+
+  // ════════════════════════════════════════════
+  // SECTION 7 DATA: Organiser Analytics
+  // ════════════════════════════════════════════
+
+  const { data: orgEvents = [] } = useQuery({
+    queryKey: ["coach-org-events", userId],
+    queryFn: async () => {
+      const { data } = await supabase.from("events").select("*, fight_slots(*)").eq("organiser_id", userId).order("date", { ascending: false });
+      return data ?? [];
+    },
+  });
+
+  const { data: orgFightSlots = [] } = useQuery({
+    queryKey: ["coach-org-efs", userId],
+    queryFn: async () => {
+      const eventIds = orgEvents.map((e) => e.id);
+      if (eventIds.length === 0) return [];
+      const { data } = await supabase.from("event_fight_slots").select("*").in("event_id", eventIds);
+      return data ?? [];
+    },
+    enabled: orgEvents.length > 0,
+  });
+
+  const { data: orgSuggestions = [] } = useQuery({
+    queryKey: ["coach-org-suggestions", userId],
+    queryFn: async () => {
+      const eventIds = orgEvents.map((e) => e.id);
+      if (eventIds.length === 0) return [];
+      const { data } = await supabase.from("match_suggestions").select("*").in("event_id", eventIds);
+      return data ?? [];
+    },
+    enabled: orgEvents.length > 0,
+  });
+
+  const { data: orgTickets = [] } = useQuery({
+    queryKey: ["coach-org-tickets", userId],
+    queryFn: async () => {
+      const eventIds = orgEvents.map((e) => e.id);
+      if (eventIds.length === 0) return [];
+      const { data } = await supabase.from("tickets").select("*").in("event_id", eventIds);
+      return data ?? [];
+    },
+    enabled: orgEvents.length > 0,
+  });
+
+  const { data: allPlatformFighters = [] } = useQuery({
+    queryKey: ["coach-org-all-fighters"],
+    queryFn: async () => {
+      const { data } = await supabase.from("fighter_profiles").select("id, weight_class, discipline, available, years_training");
+      return data ?? [];
+    },
+    enabled: orgEvents.length > 0 || hasOrganiserRole,
+  });
+
+  const showOrganiserSection = hasOrganiserRole || orgEvents.length > 0;
+
+  // Organiser computed values
+  const orgNow = now;
+  const orgActiveEvents = orgEvents.filter((e) => new Date(e.date) >= orgNow && e.status !== "cancelled").length;
+  const orgConfirmedBouts = orgFightSlots.filter((s) => s.status === "confirmed").length;
+  const orgFightersBooked = new Set([
+    ...orgFightSlots.filter((s) => s.fighter_a_id).map((s) => s.fighter_a_id),
+    ...orgFightSlots.filter((s) => s.fighter_b_id).map((s) => s.fighter_b_id),
+  ]).size;
+  const orgTotalSlots = orgFightSlots.length;
+  const orgFillRate = orgTotalSlots > 0 ? Math.round((orgConfirmedBouts / orgTotalSlots) * 100) : 0;
+
+  // Matchmaking analytics
+  const orgSuggestionsGenerated = orgSuggestions.length;
+  const orgSuggestionsConfirmed = orgSuggestions.filter((s) => s.status === "confirmed").length;
+  const orgAcceptanceRate = orgSuggestionsGenerated > 0 ? Math.round((orgSuggestionsConfirmed / orgSuggestionsGenerated) * 100) : 0;
+  const orgAvgComposite = orgSuggestions.length > 0
+    ? Math.round(orgSuggestions.reduce((sum, s) => sum + (Number(s.composite_score) || 0), 0) / orgSuggestions.length)
+    : 0;
+  const orgAvgTimeToConfirm = 0; // Would need created_at vs confirmed_at tracking
+
+  // Suggestions vs confirmed per month (last 6 months)
+  const orgSuggestionsLineData = useMemo(() => {
+    const months: { month: string; Suggestions: number; Confirmed: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = subMonths(orgNow, i);
+      const label = format(d, "MMM");
+      const m = d.getMonth();
+      const y = d.getFullYear();
+      const suggested = orgSuggestions.filter((s) => {
+        const sd = new Date(s.created_at);
+        return sd.getMonth() === m && sd.getFullYear() === y;
+      }).length;
+      const confirmed = orgSuggestions.filter((s) => {
+        const sd = new Date(s.created_at);
+        return sd.getMonth() === m && sd.getFullYear() === y && s.status === "confirmed";
+      }).length;
+      months.push({ month: label, Suggestions: suggested, Confirmed: confirmed });
+    }
+    return months;
+  }, [orgSuggestions]);
+
+  // Slot fill per event (stacked bar)
+  const orgSlotFillData = useMemo(() => {
+    return orgEvents.filter((e) => new Date(e.date) >= orgNow).slice(0, 10).map((e) => {
+      const slots = orgFightSlots.filter((s) => s.event_id === e.id);
+      const confirmed = slots.filter((s) => s.status === "confirmed").length;
+      const open = slots.length - confirmed;
+      return { name: (e.title || "Event").slice(0, 12), Confirmed: confirmed, Open: open };
+    });
+  }, [orgEvents, orgFightSlots]);
+
+  // Preset usage doughnut
+  const orgPresetData = useMemo(() => {
+    const presets: Record<string, number> = {};
+    orgSuggestions.forEach((s) => {
+      const p = s.preset_used || "Default";
+      presets[p] = (presets[p] || 0) + 1;
+    });
+    return Object.entries(presets).map(([name, value]) => ({ name, value }));
+  }, [orgSuggestions]);
+
+  // Talent pool
+  const talentWeightClassData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allPlatformFighters.forEach((f) => {
+      const wc = f.weight_class || "Unknown";
+      counts[wc] = (counts[wc] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name: formatEnum(name), value }));
+  }, [allPlatformFighters]);
+
+  const talentDisciplineData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allPlatformFighters.forEach((f) => {
+      const d = f.discipline || "Unknown";
+      counts[d] = (counts[d] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name: formatEnum(name), value }));
+  }, [allPlatformFighters]);
+
+  const talentExpData = useMemo(() => {
+    const tiers = { "0-2 yrs": 0, "3-5 yrs": 0, "6-10 yrs": 0, "10+ yrs": 0 };
+    allPlatformFighters.forEach((f) => {
+      const y = f.years_training || 0;
+      if (y <= 2) tiers["0-2 yrs"]++;
+      else if (y <= 5) tiers["3-5 yrs"]++;
+      else if (y <= 10) tiers["6-10 yrs"]++;
+      else tiers["10+ yrs"]++;
+    });
+    return Object.entries(tiers).map(([name, value]) => ({ name, Fighters: value }));
+  }, [allPlatformFighters]);
+
+  const talentAvailabilityRate = allPlatformFighters.length > 0
+    ? Math.round((allPlatformFighters.filter((f) => f.available).length / allPlatformFighters.length) * 100)
+    : 0;
+
+  // Ticket metrics
+  const orgTotalTickets = orgTickets.reduce((sum, t) => sum + (t.quantity_available || 0), 0);
+  const orgSoldOutEvents = orgEvents.filter((e) => e.sold_out).length;
+  const orgEventsWithTickets = orgEvents.filter((e) => e.ticket_enabled).length;
+  const orgAvgTickets = orgEventsWithTickets > 0 ? Math.round(orgTotalTickets / orgEventsWithTickets) : 0;
+
+  const orgTicketChartData = useMemo(() => {
+    return orgEvents.filter((e) => e.ticket_enabled).slice(0, 10).map((e) => {
+      const tickets = orgTickets.filter((t) => t.event_id === e.id).reduce((s, t) => s + (t.quantity_available || 0), 0);
+      return { name: (e.title || "Event").slice(0, 12), Tickets: tickets };
+    });
+  }, [orgEvents, orgTickets]);
+
+  // Preset performance table
+  const presetPerformanceData = useMemo(() => {
+    const PRESETS = ["Balanced", "Competitive", "Entertainment", "Narrative", "Style First"];
+    return PRESETS.map((preset) => {
+      const matching = orgSuggestions.filter((s) => (s.preset_used || "Balanced") === preset.toLowerCase().replace(/ /g, "_") || (s.preset_used || "Balanced") === preset);
+      const timesUsed = matching.length;
+      const avgScore = timesUsed > 0 ? Math.round(matching.reduce((sum, s) => sum + (Number(s.composite_score) || 0), 0) / timesUsed) : 0;
+      const confirmed = matching.filter((s) => s.status === "confirmed").length;
+      const accRate = timesUsed > 0 ? Math.round((confirmed / timesUsed) * 100) : 0;
+      return { preset, timesUsed, avgScore, accRate };
+    });
+  }, [orgSuggestions]);
 
   // ════════════════════════════════════════════
   // SECTION 1: Roster Overview computations
@@ -803,6 +984,229 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
           </div>
         </div>
       </div>
+
+      {/* ── SECTION 7: Organiser Analytics ── */}
+      {showOrganiserSection && (
+        <>
+          <SectionHeader title="Organiser Analytics" />
+
+          {/* Event Overview — 4 stat cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+            <StatCard label="Active Events" value={orgActiveEvents} sub="Upcoming & not cancelled" />
+            <StatCard label="Confirmed Bouts" value={orgConfirmedBouts} sub="Across all events" />
+            <StatCard label="Fighters Booked" value={orgFightersBooked} sub="Unique fighters in slots" />
+            <StatCard label="Fill Rate" value={`${orgFillRate}%`} sub={`${orgConfirmedBouts} of ${orgTotalSlots} slots`} />
+          </div>
+
+          {/* Matchmaking Analytics — 4 stat cards */}
+          <h3 className="font-heading text-xs font-bold tracking-[2px] uppercase text-muted-foreground mt-4 mb-2">Matchmaking Analytics</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+            <StatCard label="Suggestions Generated" value={orgSuggestionsGenerated} sub="Total match suggestions" />
+            <StatCard label="Acceptance Rate" value={`${orgAcceptanceRate}%`} sub={`${orgSuggestionsConfirmed} confirmed`} />
+            <StatCard label="Avg Composite Score" value={orgAvgComposite} sub="Across all suggestions" />
+            <StatCard label="Avg Time to Confirm" value={orgAvgTimeToConfirm > 0 ? `${orgAvgTimeToConfirm}d` : "—"} sub="Tracking coming soon" />
+          </div>
+
+          {/* Charts: suggestions line + slot fill stacked bar + preset doughnut */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
+            <div className="bg-card border border-border rounded-lg p-4">
+              <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Suggestions vs Confirmed</h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={orgSuggestionsLineData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend />
+                  <Line type="monotone" dataKey="Suggestions" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ r: 3, fill: "hsl(var(--primary))" }} />
+                  <Line type="monotone" dataKey="Confirmed" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ r: 3, fill: "hsl(var(--chart-1))" }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="bg-card border border-border rounded-lg p-4">
+              <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Slot Fill per Event</h3>
+              {orgSlotFillData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={orgSlotFillData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+                    <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} allowDecimals={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Bar dataKey="Confirmed" stackId="a" fill="hsl(var(--primary))" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="Open" stackId="a" fill="hsl(var(--muted))" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">No active events.</p>
+              )}
+            </div>
+
+            <div className="bg-card border border-border rounded-lg p-4">
+              <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Preset Usage</h3>
+              {orgPresetData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={220}>
+                  <PieChart>
+                    <Pie data={orgPresetData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" paddingAngle={3}>
+                      {orgPresetData.map((_, i) => (
+                        <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend formatter={(value) => <span className="text-xs text-muted-foreground">{value}</span>} />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">No suggestion data yet.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Card Fill Management */}
+          <h3 className="font-heading text-xs font-bold tracking-[2px] uppercase text-muted-foreground mt-4 mb-2">Card Fill Management</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+            {orgEvents.filter((e) => new Date(e.date) >= orgNow && e.status !== "cancelled").length === 0 ? (
+              <p className="text-sm text-muted-foreground col-span-full text-center py-6">No active events.</p>
+            ) : (
+              orgEvents.filter((e) => new Date(e.date) >= orgNow && e.status !== "cancelled").slice(0, 6).map((event) => {
+                const slots = orgFightSlots.filter((s) => s.event_id === event.id);
+                const confirmed = slots.filter((s) => s.status === "confirmed").length;
+                const total = slots.length;
+                const pct = total > 0 ? Math.round((confirmed / total) * 100) : 0;
+                return (
+                  <div key={event.id} className="bg-card border border-border rounded-lg p-4">
+                    <div className="font-heading text-sm font-bold text-foreground mb-1">{event.title}</div>
+                    <div className="text-[11px] text-muted-foreground mb-2">{event.date ? format(new Date(event.date), "d MMM yyyy") : "—"} · {event.city || "TBA"}</div>
+                    <div className="w-full bg-accent rounded-full h-2 mb-1.5">
+                      <div
+                        className={`h-full rounded-full transition-all ${pct >= 80 ? "bg-green-500" : pct >= 50 ? "bg-primary" : "bg-destructive"}`}
+                        style={{ width: `${Math.max(pct, 2)}%` }}
+                      />
+                    </div>
+                    <div className="font-heading text-[11px] text-muted-foreground">{confirmed}/{total} slots filled ({pct}%)</div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Talent Pool & Availability */}
+          <h3 className="font-heading text-xs font-bold tracking-[2px] uppercase text-muted-foreground mt-4 mb-2">Talent Pool & Availability</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 mb-3">
+            <div className="bg-card border border-border rounded-lg p-4">
+              <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Weight Classes</h3>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={talentWeightClassData.slice(0, 8)} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" paddingAngle={2}>
+                    {talentWeightClassData.slice(0, 8).map((_, i) => (
+                      <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="bg-card border border-border rounded-lg p-4">
+              <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Disciplines</h3>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={talentDisciplineData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" paddingAngle={2}>
+                    {talentDisciplineData.map((_, i) => (
+                      <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="bg-card border border-border rounded-lg p-4">
+              <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Experience Tiers</h3>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={talentExpData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }} />
+                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="Fighters" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="bg-card border border-border rounded-lg p-4 flex flex-col items-center justify-center">
+              <div className="font-heading text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground mb-1.5">Availability Rate</div>
+              <div className="font-heading text-[40px] font-extrabold text-primary leading-none">{talentAvailabilityRate}%</div>
+              <div className="text-[11px] text-muted-foreground mt-1">{allPlatformFighters.filter((f) => f.available).length} of {allPlatformFighters.length} fighters available</div>
+            </div>
+          </div>
+
+          {/* Ticket & Commercial Metrics */}
+          <h3 className="font-heading text-xs font-bold tracking-[2px] uppercase text-muted-foreground mt-4 mb-2">Ticket & Commercial Metrics</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+            <StatCard label="Total Tickets Available" value={orgTotalTickets} sub="Across all events" />
+            <StatCard label="Sold Out Events" value={orgSoldOutEvents} sub={`Of ${orgEvents.length} total`} />
+            <StatCard label="Avg Tickets Per Event" value={orgAvgTickets} sub="Ticket-enabled events" />
+            <StatCard label="Ticket Info Set" value={orgEventsWithTickets} sub="Events with ticketing" />
+          </div>
+
+          {orgTicketChartData.length > 0 && (
+            <div className="bg-card border border-border rounded-lg p-4 mb-3">
+              <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Ticket Count per Event</h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={orgTicketChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+                  <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="Tickets" fill="hsl(var(--primary))" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* Listing Performance */}
+          <h3 className="font-heading text-xs font-bold tracking-[2px] uppercase text-muted-foreground mt-4 mb-2">Listing Performance</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            {["Event Page Views", "Search Impressions", "Click-through Rate"].map((label) => (
+              <div key={label} className="bg-card border border-border rounded-lg p-4 relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-muted-foreground opacity-30" />
+                <div className="font-heading text-[10px] font-bold tracking-[1.5px] uppercase text-muted-foreground mb-1.5">{label}</div>
+                <div className="font-heading text-[32px] font-extrabold leading-none text-muted-foreground">—</div>
+                <div className="text-[11px] text-primary/60 mt-1">Live tracking coming soon</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Algorithm Preset Performance */}
+          <h3 className="font-heading text-xs font-bold tracking-[2px] uppercase text-muted-foreground mt-4 mb-2">Algorithm Preset Performance</h3>
+          <div className="bg-card border border-border rounded-lg p-4 mb-3">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 px-2 text-[10px] tracking-[1.8px] uppercase text-muted-foreground font-heading font-bold">Preset</th>
+                    <th className="text-left py-2 px-2 text-[10px] tracking-[1.8px] uppercase text-muted-foreground font-heading font-bold">Times Used</th>
+                    <th className="text-left py-2 px-2 text-[10px] tracking-[1.8px] uppercase text-muted-foreground font-heading font-bold">Avg Score</th>
+                    <th className="text-left py-2 px-2 text-[10px] tracking-[1.8px] uppercase text-muted-foreground font-heading font-bold">Acceptance Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {presetPerformanceData.map((row) => (
+                    <tr key={row.preset} className="border-b border-border/50">
+                      <td className="py-2 px-2 font-heading font-bold text-foreground">{row.preset}</td>
+                      <td className="py-2 px-2 text-foreground">{row.timesUsed}</td>
+                      <td className="py-2 px-2 text-primary font-bold">{row.avgScore}</td>
+                      <td className="py-2 px-2 text-foreground">{row.accRate}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Active Fighters Modal ── */}
       {showActiveModal && (
