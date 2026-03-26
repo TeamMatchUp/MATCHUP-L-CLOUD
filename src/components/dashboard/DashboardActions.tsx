@@ -48,6 +48,12 @@ interface RecentAction {
   at: number;
 }
 
+interface DiscardedItem {
+  item: ActionItem;
+  discardedAt: number;
+  previousStatus: string;
+}
+
 interface DashboardActionsProps {
   userId: string;
   isCoachOrOwner: boolean;
