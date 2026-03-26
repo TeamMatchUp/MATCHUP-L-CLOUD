@@ -363,7 +363,7 @@ export default function Explore() {
                 <div className={mapOpen ? "" : "container"}>
                   <div className={`${mapOpen ? "" : "flex gap-6"}`}>
                     <div className={`${mapOpen ? "w-full" : tab !== "fighters" ? "flex-1" : "w-full"}`}>
-                      {tab === "events" && <EventsDirectory events={paginatedItems} isLoading={eventsLoading} />}
+                      {tab === "events" && <EventsDirectory events={paginatedItems} isLoading={eventsLoading} searchCoords={pc.coords} />}
                       {tab === "gyms" && <GymsDirectory gyms={paginatedItems} isLoading={gymsLoading} searchCoords={pc.coords} />}
                       {tab === "fighters" && <FightersDirectory fighters={paginatedItems as any} isLoading={fightersLoading} />}
                       <PaginationControls />
