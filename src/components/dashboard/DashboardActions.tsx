@@ -643,6 +643,16 @@ export function DashboardActions({
                       </Button>
                     </>
                   )}
+                  {item.type === "bout_proposal" && (
+                    <>
+                      <Button size="sm" variant="outline" className="h-8 px-3 text-xs border-green-500/30 text-green-400 hover:bg-green-500/10" onClick={() => handleAcceptBoutProposal(item)}>
+                        <Check className="h-3 w-3 mr-1" /> Accept
+                      </Button>
+                      <Button size="sm" variant="outline" className="h-8 px-3 text-xs border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => handleDeclineBoutProposal(item)}>
+                        <X className="h-3 w-3 mr-1" /> Decline
+                      </Button>
+                    </>
+                  )}
                   {item.type === "event_interest" && item.meta?.eventId && (
                     <Button size="sm" variant="outline" className="h-8 px-3 text-xs" asChild>
                       <Link to={`/events/${item.meta.eventId}`}>
