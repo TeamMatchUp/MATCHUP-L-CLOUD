@@ -8,13 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Share2, Save, Pencil, ShieldCheck, Info, Search } from "lucide-react";
+import { Share2, Save, Pencil, ShieldCheck, Info, Search, Upload, Camera } from "lucide-react";
 import { formatEnum } from "@/lib/format";
 import { FighterFightHistory } from "./FighterFightHistory";
 import { ProfileCompletionBar } from "./ProfileCompletionBar";
 import { Constants } from "@/integrations/supabase/types";
 import { useQuery } from "@tanstack/react-query";
-
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 interface EditableProfilePanelProps {
   fighterProfile: any;
@@ -46,6 +46,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
   const [gymSearch, setGymSearch] = useState("");
   const [gymResults, setGymResults] = useState<GymResult[]>([]);
   const [joiningGym, setJoiningGym] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const { register, handleSubmit, setValue, watch, reset } = useForm({
     defaultValues: {
@@ -63,6 +64,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
       training_background: fighterProfile.training_background || "",
       years_training: fighterProfile.years_training || "",
       region: fighterProfile.region || "",
+      postcode: fighterProfile.postcode || "",
     },
   });
 
@@ -74,15 +76,46 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
     queryFn: async () => {
       const { data } = await supabase
         .from("fighter_gym_links")
-        .select("status, gym:gyms!fighter_gym_links_gym_id_fkey(name)")
+        .select("id, status, gym:gyms!fighter_gym_links_gym_id_fkey(name)")
         .eq("fighter_id", fighterProfile.id)
         .in("status", ["approved", "pending"])
         .limit(1);
       if (!data || data.length === 0) return null;
       const link = data[0] as any;
-      return { name: link.gym?.name ?? "Unknown", status: link.status };
+      return { id: link.id, name: link.gym?.name ?? "Unknown", status: link.status };
     },
     enabled: !!fighterProfile.id,
+  });
+
+  // Fetch fights for analytics
+  const { data: fights = [] } = useQuery({
+    queryKey: ["fighter-fights-profile", fighterProfile.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("fights")
+        .select("*")
+        .eq("fighter_a_id", fighterProfile.id)
+        .order("event_date", { ascending: false });
+      return data ?? [];
+    },
+    enabled: !!fighterProfile.id,
+  });
+
+  // Fetch ranking data
+  const { data: rankingData = [] } = useQuery({
+    queryKey: ["fighter-ranking", fighterProfile.weight_class, fighterProfile.discipline],
+    queryFn: async () => {
+      let query = supabase
+        .from("fighter_profiles")
+        .select("id, name, record_wins, record_losses, record_draws, discipline, weight_class")
+        .eq("weight_class", fighterProfile.weight_class);
+      if (fighterProfile.discipline) {
+        query = query.eq("discipline", fighterProfile.discipline);
+      }
+      const { data } = await query;
+      return data ?? [];
+    },
+    enabled: !!fighterProfile.weight_class,
   });
 
   useEffect(() => {
@@ -111,6 +144,35 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
     setGymSearch(""); setGymResults([]); setJoiningGym(false); refetchGym();
   };
 
+  const handleLeaveGym = async () => {
+    if (!gymAffiliation) return;
+    await supabase.from("fighter_gym_links").update({ status: "declined" }).eq("id", gymAffiliation.id);
+    toast.success("Left gym");
+    refetchGym();
+  };
+
+  const handleCancelRequest = async () => {
+    if (!gymAffiliation) return;
+    await supabase.from("fighter_gym_links").delete().eq("id", gymAffiliation.id);
+    toast.success("Request cancelled");
+    refetchGym();
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingPhoto(true);
+    const ext = file.name.split(".").pop();
+    const path = `${userId}/${Date.now()}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    if (uploadError) { toast.error("Upload failed"); setUploadingPhoto(false); return; }
+    const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
+    await supabase.from("fighter_profiles").update({ profile_image: urlData.publicUrl }).eq("id", fighterProfile.id);
+    toast.success("Photo updated");
+    setUploadingPhoto(false);
+    onRefresh();
+  };
+
   const onSubmit = async (data: any) => {
     setSaving(true);
     const { error } = await supabase.from("fighter_profiles").update({
@@ -121,6 +183,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
       walk_around_weight_kg: data.walk_around_weight_kg ? parseFloat(data.walk_around_weight_kg) : null,
       bio: data.bio || null, country: data.country, training_background: data.training_background || null,
       years_training: data.years_training ? parseInt(data.years_training) : null, region: data.region || null,
+      postcode: data.postcode || null,
     }).eq("id", fighterProfile.id);
     setSaving(false);
     if (error) { toast.error("Failed to update profile"); return; }
@@ -135,17 +198,71 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
   const handleCancel = () => { reset(); setEditing(false); };
 
   const p = fighterProfile;
-  const gymDisplayName = gymAffiliation
-    ? gymAffiliation.status === "approved" ? gymAffiliation.name : `Pending — ${gymAffiliation.name}`
-    : "None";
 
+  // Computed stats
+  const proFights = fights.filter((f: any) => !f.is_amateur);
+  const amFights = fights.filter((f: any) => f.is_amateur);
+  const totalFights = fights.length;
+  const proWins = proFights.filter((f: any) => f.result === "win").length;
+  const proLosses = proFights.filter((f: any) => f.result === "loss").length;
+  const proDraws = proFights.filter((f: any) => f.result === "draw").length;
+  const amWins = amFights.filter((f: any) => f.result === "win").length;
+  const amLosses = amFights.filter((f: any) => f.result === "loss").length;
+  const amDraws = amFights.filter((f: any) => f.result === "draw").length;
+  const winPct = totalFights > 0 ? Math.round((fights.filter((f: any) => f.result === "win").length / totalFights) * 100) : 0;
+  const finishes = fights.filter((f: any) => f.result === "win" && f.method && !f.method.toLowerCase().includes("decision")).length;
+  const finishRate = proWins > 0 ? Math.round((finishes / proWins) * 100) : 0;
+  const koCount = fights.filter((f: any) => f.result === "win" && f.method && (f.method.toLowerCase().includes("ko") || f.method.toLowerCase().includes("tko"))).length;
+  const koPct = proWins > 0 ? Math.round((koCount / proWins) * 100) : 0;
+  const expTier = proFights.length === 0 ? "T0" : proFights.length <= 3 ? "T1" : proFights.length <= 9 ? "T2" : "T3";
+
+  const age = p.date_of_birth ? Math.floor((Date.now() - new Date(p.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
+
+  // Ranking
+  const rankedFighters = useMemo(() => {
+    return rankingData
+      .map((f: any) => {
+        const total = f.record_wins + f.record_losses + f.record_draws;
+        const wp = total > 0 ? (f.record_wins / total) * 100 : 0;
+        return { ...f, winPct: wp };
+      })
+      .sort((a, b) => b.record_wins - a.record_wins)
+      .slice(0, 10);
+  }, [rankingData]);
+
+  const myRankIndex = rankedFighters.findIndex((f: any) => f.id === p.id);
+  const showMyRow = myRankIndex === -1;
+  const myRankInFull = rankingData
+    .map((f: any) => ({ ...f, wp: (f.record_wins + f.record_losses + f.record_draws) > 0 ? f.record_wins / (f.record_wins + f.record_losses + f.record_draws) : 0 }))
+    .sort((a, b) => b.record_wins - a.record_wins)
+    .findIndex((f: any) => f.id === p.id) + 1;
+
+  // Chart data
+  const wldData = [
+    { name: "Wins", value: p.record_wins || 0 },
+    { name: "Losses", value: p.record_losses || 0 },
+    { name: "Draws", value: p.record_draws || 0 },
+  ];
+  const wldColors = ["hsl(var(--primary))", "hsl(var(--destructive))", "hsl(var(--muted-foreground))"];
+
+  const methodCounts: Record<string, number> = {};
+  fights.filter((f: any) => f.result === "win" && f.method).forEach((f: any) => {
+    const m = f.method.toUpperCase();
+    let cat = "Decision";
+    if (m.includes("KO") || m.includes("TKO")) cat = "KO/TKO";
+    else if (m.includes("SUB")) cat = "Submission";
+    else if (!m.includes("DEC")) cat = m;
+    methodCounts[cat] = (methodCounts[cat] || 0) + 1;
+  });
+  const methodData = Object.entries(methodCounts).map(([name, value]) => ({ name, value }));
+  if (methodData.length === 0) methodData.push({ name: "No Data", value: 0 });
 
   return (
     <div className="space-y-8">
       <ProfileCompletionBar fighterId={fighterProfile.id} fighterProfile={fighterProfile} />
 
       <div className="flex items-center justify-between">
-        <div /> {/* No duplicate heading */}
+        <div />
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleShare}>
             <Share2 className="h-3.5 w-3.5 mr-1" /> Share Profile
@@ -204,6 +321,8 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
                   </SelectContent>
                 </Select>
               </div>
+              <div><Label>Region</Label><Input {...register("region")} placeholder="e.g. South London" /></div>
+              <div><Label>Postcode</Label><Input {...register("postcode")} placeholder="e.g. SW1A 1AA" /></div>
             </div>
           </div>
 
@@ -212,10 +331,9 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Label>Training Background</Label>
-                <Textarea {...register("training_background")} rows={2} placeholder="e.g. Wrestling base, BJJ, Boxing" />
+                <Textarea {...register("training_background")} rows={4} placeholder="e.g. Wrestling base, BJJ, Boxing" />
               </div>
               <div><Label>Years Training</Label><Input type="number" {...register("years_training")} placeholder="e.g. 5" /></div>
-              <div><Label>Region</Label><Input {...register("region")} placeholder="e.g. South London" /></div>
             </div>
           </div>
 
@@ -247,62 +365,211 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
         </form>
       ) : (
         <div className="space-y-8">
-          {/* Section 1: Profile Details */}
+          {/* === HERO SECTION === */}
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <div className="flex flex-col md:flex-row">
+              {/* Photo - Left ~35% */}
+              <div className="relative w-full md:w-[35%] aspect-square md:aspect-auto bg-muted flex items-center justify-center min-h-[200px] md:min-h-[280px]">
+                {p.profile_image ? (
+                  <img src={p.profile_image} alt={p.name} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="font-heading text-6xl text-primary">
+                    {p.name?.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()}
+                  </span>
+                )}
+                <label className="absolute bottom-3 right-3 cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
+                  <div className="h-9 w-9 rounded-full bg-card/80 backdrop-blur flex items-center justify-center border border-border hover:bg-card transition-colors">
+                    <Camera className="h-4 w-4 text-foreground" />
+                  </div>
+                </label>
+              </div>
+
+              {/* Right side info */}
+              <div className="flex-1 p-5 md:p-6 flex flex-col justify-between">
+                <div>
+                  <h2 className="font-heading text-2xl md:text-3xl text-foreground">{p.name}</h2>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {gymAffiliation?.status === "approved" ? gymAffiliation.name : gymAffiliation?.status === "pending" ? `Pending — ${gymAffiliation.name}` : "No gym affiliated"}
+                  </p>
+                </div>
+
+                {/* W / L / Win% boxes */}
+                <div className="grid grid-cols-3 gap-3 mt-4">
+                  <div className="rounded-lg bg-primary p-3 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-primary-foreground/70">Wins</p>
+                    <p className="font-heading text-3xl text-primary-foreground">{p.record_wins}</p>
+                  </div>
+                  <div className="rounded-lg bg-destructive p-3 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-destructive-foreground/70">Losses</p>
+                    <p className="font-heading text-3xl text-destructive-foreground">{p.record_losses}</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-card p-3 text-center">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Win%</p>
+                    <p className="font-heading text-3xl text-primary">{winPct}%</p>
+                  </div>
+                </div>
+
+                {/* Physical stats 2x2 */}
+                <div className="grid grid-cols-2 gap-3 mt-4">
+                  <div className="rounded-lg border border-border bg-background p-3">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Height</p>
+                    <p className="font-heading text-lg text-foreground">{p.height ? `${p.height} cm` : "—"}</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-background p-3">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Walk-Around</p>
+                    <p className="font-heading text-lg text-foreground">{p.walk_around_weight_kg ? `${p.walk_around_weight_kg} kg` : "—"}</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-background p-3">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Age</p>
+                    <p className="font-heading text-lg text-foreground">{age ?? "—"}</p>
+                  </div>
+                  <div className="rounded-lg border border-border bg-background p-3">
+                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Country / Region</p>
+                    <p className="font-heading text-lg text-foreground">{[p.country, p.region].filter(Boolean).join(", ") || "—"}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* === CAREER STATS BAR === */}
+          <div className="rounded-lg border border-border bg-card p-4">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Total Fights</p>
+                <p className="font-heading text-xl text-foreground">{totalFights}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Pro Record</p>
+                <p className="font-heading text-xl text-foreground">{proWins}W-{proLosses}L-{proDraws}D</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Amateur Record</p>
+                <p className="font-heading text-xl text-foreground">{amWins}W-{amLosses}L-{amDraws}D</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Finish Rate</p>
+                <p className="font-heading text-xl text-primary">{finishRate}%</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">KO%</p>
+                <p className="font-heading text-xl text-primary">{koPct}%</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Experience</p>
+                <p className="font-heading text-xl text-foreground">{expTier}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* === FIGHTER ANALYTICS === */}
           <div>
             <h3 className="font-heading text-lg text-foreground mb-4">
-              PROFILE <span className="text-primary">DETAILS</span>
+              FIGHTER <span className="text-primary">ANALYTICS</span>
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {[
-                { label: "Name", value: p.name },
-                { label: "Date of Birth", value: p.date_of_birth || "—" },
-                { label: "Weight Class", value: formatEnum(p.weight_class) },
-                { label: "Discipline", value: p.discipline ? formatEnum(p.discipline) : "—" },
-                { label: "Stance", value: p.stance || "—" },
-                { label: "Substyle", value: p.fighting_substyle || "—" },
-                { label: "Height", value: p.height ? `${p.height} cm` : "—" },
-                { label: "Reach", value: p.reach ? `${p.reach} cm` : "—" },
-                { label: "Walk-around Weight", value: p.walk_around_weight_kg ? `${p.walk_around_weight_kg} kg` : "—" },
-                { label: "Country", value: p.country },
-                { label: "Region", value: p.region || "—" },
-                { label: "Years Training", value: p.years_training || "—" },
-              ].map((item) => (
-                <div key={item.label} className="rounded-lg border border-border bg-card p-3">
-                  <p className="text-xs text-muted-foreground">{item.label}</p>
-                  <p className="font-medium text-foreground mt-0.5">{item.value}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Ranking Table */}
+              <div className="rounded-lg border border-border bg-card p-4 md:col-span-1">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
+                  Ranking — {formatEnum(p.weight_class)}{p.discipline ? ` · ${formatEnum(p.discipline)}` : ""}
+                </p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center text-[10px] uppercase text-muted-foreground px-2 pb-1 border-b border-border">
+                    <span className="w-8">#</span>
+                    <span className="flex-1">Fighter</span>
+                    <span className="w-12 text-right">W</span>
+                  </div>
+                  {rankedFighters.map((f: any, i: number) => (
+                    <div key={f.id} className={`flex items-center text-sm px-2 py-1 rounded ${f.id === p.id ? "bg-primary/10 border border-primary/30" : ""}`}>
+                      <span className="w-8 text-muted-foreground font-medium">#{i + 1}</span>
+                      <span className={`flex-1 truncate ${f.id === p.id ? "text-primary font-medium" : "text-foreground"}`}>{f.name}</span>
+                      <span className="w-12 text-right text-muted-foreground">{f.record_wins}</span>
+                    </div>
+                  ))}
+                  {showMyRow && myRankInFull > 0 && (
+                    <>
+                      <div className="border-t border-dashed border-border my-1" />
+                      <div className="flex items-center text-sm px-2 py-1 rounded bg-primary/10 border border-primary/30">
+                        <span className="w-8 text-muted-foreground font-medium">#{myRankInFull}</span>
+                        <span className="flex-1 truncate text-primary font-medium">{p.name}</span>
+                        <span className="w-12 text-right text-muted-foreground">{p.record_wins}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
-              ))}
-            </div>
-
-            {/* Training background text block */}
-            {p.training_background && (
-              <div className="mt-4 rounded-lg border border-border bg-card p-4">
-                <p className="text-xs text-muted-foreground mb-1">Training Background</p>
-                <p className="text-foreground text-sm leading-relaxed">{p.training_background}</p>
               </div>
+
+              {/* Win/Loss/Draw Doughnut */}
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Win / Loss / Draw</p>
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie data={wldData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" stroke="none">
+                      {wldData.map((_, i) => <Cell key={i} fill={wldColors[i]} />)}
+                    </Pie>
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center gap-4 mt-2">
+                  {wldData.map((d, i) => (
+                    <div key={d.name} className="flex items-center gap-1.5 text-xs">
+                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: wldColors[i] }} />
+                      <span className="text-muted-foreground">{d.name}: {d.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Finish Methods Bar Chart */}
+              <div className="rounded-lg border border-border bg-card p-4">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Finish Methods</p>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={methodData}>
+                    <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" }} />
+                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+
+          {/* === TRAINING BACKGROUND === */}
+          <div className="rounded-lg border border-border bg-card p-5">
+            <h3 className="font-heading text-sm text-foreground mb-2 uppercase tracking-wide">Training Background</h3>
+            <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
+              {p.training_background || "No training background added yet."}
+            </p>
+            {p.years_training && (
+              <p className="text-xs text-muted-foreground mt-3">{p.years_training} years training</p>
             )}
+          </div>
 
-            {/* Gym affiliation */}
-            <div className="mt-4 rounded-lg border border-border bg-card p-4">
+          {/* === GYM AFFILIATION === */}
+          <div className="rounded-lg border border-border bg-card p-5">
+            <h3 className="font-heading text-sm text-foreground mb-3 uppercase tracking-wide">Gym Affiliation</h3>
+            {gymAffiliation?.status === "approved" ? (
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Gym Affiliation</p>
-                  <p className="font-medium text-foreground mt-0.5">{gymDisplayName}</p>
-                </div>
-                {p.verified ? (
-                  <Badge className="bg-success/10 text-success border-success/30 text-[10px] gap-1">
-                    <ShieldCheck className="h-3 w-3" /> Coach Verified
+                <div className="flex items-center gap-2">
+                  <p className="text-foreground font-medium">{gymAffiliation.name}</p>
+                  <Badge className="bg-green-500/10 text-green-400 border-green-500/30 text-[10px]">
+                    <ShieldCheck className="h-3 w-3 mr-0.5" /> Member
                   </Badge>
-                ) : (
-                  <Badge variant="outline" className="text-[10px] text-muted-foreground">Self-reported</Badge>
-                )}
+                </div>
+                <Button variant="outline" size="sm" className="text-destructive" onClick={handleLeaveGym}>Leave Gym</Button>
               </div>
-            </div>
-
-            {/* Join a gym */}
-            {!gymAffiliation && (
-              <div className="mt-4 rounded-lg border border-border bg-card p-4 space-y-3">
-                <h4 className="font-heading text-sm text-foreground">JOIN A GYM</h4>
+            ) : gymAffiliation?.status === "pending" ? (
+              <div className="flex items-center justify-between">
+                <p className="text-foreground">
+                  <span className="text-amber-500">Pending</span> — {gymAffiliation.name}
+                </p>
+                <Button variant="outline" size="sm" onClick={handleCancelRequest}>Cancel Request</Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">No gym affiliated. Search to join one.</p>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input value={gymSearch} onChange={(e) => setGymSearch(e.target.value)} placeholder="Search gyms..." className="pl-9" />
@@ -320,27 +587,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             )}
           </div>
 
-
-            {/* Physical Stats 2x2 Grid */}
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Height</p>
-                <p className="font-heading text-xl text-foreground">{p.height ? `${p.height} cm` : "—"}</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Walk-Around Weight</p>
-                <p className="font-heading text-xl text-foreground">{p.walk_around_weight_kg ? `${p.walk_around_weight_kg} kg` : "—"}</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Age</p>
-                <p className="font-heading text-xl text-foreground">{p.date_of_birth ? `${Math.floor((Date.now() - new Date(p.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))}` : "—"}</p>
-              </div>
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">Country / Region</p>
-                <p className="font-heading text-xl text-foreground">{[p.country, p.region].filter(Boolean).join(", ") || "—"}</p>
-              </div>
-            </div>
-
           {/* Bio */}
           {p.bio && (
             <div className="rounded-lg border border-border bg-card p-4">
@@ -349,7 +595,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             </div>
           )}
 
-          {/* Section 3: Fight History */}
+          {/* === FIGHT HISTORY (at the very bottom) === */}
           <div>
             <h3 className="font-heading text-lg text-foreground mb-4">
               FIGHT <span className="text-primary">HISTORY</span>

@@ -13,11 +13,8 @@ import { EditBoutDialog } from "@/components/organiser/EditBoutDialog";
 import { MatchSuggestionsPanel } from "@/components/organiser/MatchSuggestionsPanel";
 import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
 import { AddFightSlotDialog } from "@/components/organiser/AddFightSlotDialog";
-import { ArrowLeft, Globe, Pencil, Plus, Sparkles, GripVertical, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Globe, Pencil, Plus, Sparkles, Eye, EyeOff, ChevronUp, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
 
@@ -43,9 +40,17 @@ const STATUS_PILL: Record<string, { label: string; className: string }> = {
   empty: { label: "Empty", className: "bg-muted text-muted-foreground" },
 };
 
-function SortableBout({ bout, onEdit, onTogglePublic, onMakePublic }: { bout: any; onEdit: (b: any) => void; onTogglePublic: (id: string, val: boolean) => void; onMakePublic: (id: string) => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: bout.id });
-  const style = { transform: CSS.Transform.toString(transform), transition };
+interface BoutBannerProps {
+  bout: any;
+  onEdit: (b: any) => void;
+  onTogglePublic: (id: string, val: boolean) => void;
+  onMoveUp: (id: string) => void;
+  onMoveDown: (id: string) => void;
+  isFirst: boolean;
+  isLast: boolean;
+}
+
+function BoutBanner({ bout, onEdit, onTogglePublic, onMoveUp, onMoveDown, isFirst, isLast }: BoutBannerProps) {
   const fA = unwrap(bout.fighter_a);
   const fB = unwrap(bout.fighter_b);
   const isMain = bout.bout_type === "Main Event";
@@ -53,11 +58,18 @@ function SortableBout({ bout, onEdit, onTogglePublic, onMakePublic }: { bout: an
   const pill = STATUS_PILL[status] || STATUS_PILL.empty;
 
   return (
-    <div ref={setNodeRef} style={style} className={`rounded-lg border ${isMain ? "border-2 border-primary/30" : "border-border"} bg-card ${isMain ? "p-6" : "p-4"}`}>
+    <div className={`rounded-lg border ${isMain ? "border-2 border-primary/30" : "border-border"} bg-card ${isMain ? "p-6" : "p-4"}`}>
       <div className="flex items-center gap-3">
-        <button {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground shrink-0">
-          <GripVertical className="h-4 w-4" />
-        </button>
+        {/* Up/Down arrows */}
+        <div className="flex flex-col gap-0.5 shrink-0">
+          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={isFirst} onClick={() => onMoveUp(bout.id)}>
+            <ChevronUp className="h-3.5 w-3.5" />
+          </Button>
+          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={isLast} onClick={() => onMoveDown(bout.id)}>
+            <ChevronDown className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 justify-between">
             <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -67,7 +79,6 @@ function SortableBout({ bout, onEdit, onTogglePublic, onMakePublic }: { bout: an
                 </div>
               )}
               <div className="flex-1 text-left min-w-0">
-                {/* Organiser always sees full names */}
                 <p className={`font-heading ${isMain ? "text-xl" : "text-sm"} text-foreground uppercase truncate`}>
                   {fA?.name ?? "TBA"}
                 </p>
@@ -104,11 +115,6 @@ function SortableBout({ bout, onEdit, onTogglePublic, onMakePublic }: { bout: an
 
             <div className="flex items-center gap-1.5 shrink-0 ml-2">
               <Badge variant="outline" className={`text-[10px] ${pill.className}`}>{pill.label}</Badge>
-              {status === "confirmed" && bout.is_public !== true && (
-                <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1 border-primary/30 text-primary" onClick={() => onMakePublic(bout.id)}>
-                  Make Public
-                </Button>
-              )}
               <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onTogglePublic(bout.id, !bout.is_public)} title={bout.is_public !== false ? "Make unlisted" : "Make public"}>
                 {bout.is_public !== false ? <Eye className="h-3.5 w-3.5 text-muted-foreground" /> : <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />}
               </Button>
@@ -140,11 +146,6 @@ export default function EventManager() {
   const [mainPage, setMainPage] = useState(0);
   const [underPage, setUnderPage] = useState(0);
   const BOUTS_PER_PAGE = 5;
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["organiser-event", id],
@@ -204,24 +205,20 @@ export default function EventManager() {
     refetchBouts();
   };
 
-  const handleMakePublic = async (boutId: string) => {
-    await supabase.from("event_fight_slots").update({ is_public: true }).eq("id", boutId);
-    toast({ title: "Bout is now public" });
-    refetchBouts();
-  };
+  const handleMoveBout = async (boutId: string, direction: "up" | "down", section: "main" | "under") => {
+    const items = section === "main" ? [...mainBouts] : [...underBouts];
+    const idx = items.findIndex((b: any) => b.id === boutId);
+    if (idx === -1) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= items.length) return;
 
-  const handleDragEnd = async (event: any, section: "main" | "under") => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-    const items = section === "main" ? mainBouts : underBouts;
-    const oldIndex = items.findIndex((b: any) => b.id === active.id);
-    const newIndex = items.findIndex((b: any) => b.id === over.id);
-    if (oldIndex === -1 || newIndex === -1) return;
-    const reordered = arrayMove(items, oldIndex, newIndex);
-    const updates = reordered.map((b: any, i: number) =>
-      supabase.from("event_fight_slots").update({ slot_number: i + 1 }).eq("id", b.id)
-    );
-    await Promise.all(updates);
+    // Swap slot_numbers
+    const slotA = items[idx].slot_number;
+    const slotB = items[swapIdx].slot_number;
+    await Promise.all([
+      supabase.from("event_fight_slots").update({ slot_number: slotB }).eq("id", items[idx].id),
+      supabase.from("event_fight_slots").update({ slot_number: slotA }).eq("id", items[swapIdx].id),
+    ]);
     refetchBouts();
   };
 
@@ -244,7 +241,6 @@ export default function EventManager() {
       is_public: false,
     }).select("id").single();
 
-    // Notify parties
     if (inserted) {
       const notifyIds = new Set<string>();
       if (fighterA.user_id) notifyIds.add(fighterA.user_id);
@@ -297,12 +293,12 @@ export default function EventManager() {
 
   const STATUS_COLORS: Record<string, string> = {
     draft: "bg-muted text-muted-foreground",
-    published: "bg-success/20 text-success border-success/30",
+    published: "bg-green-500/20 text-green-400 border-green-500/30",
     completed: "bg-secondary/20 text-secondary",
     cancelled: "bg-destructive/20 text-destructive",
   };
 
-  const Pagination = ({ page: p, total, setPage: sp }: { page: number; total: number; setPage: (n: number) => void }) => {
+  const PaginationBar = ({ page: p, total, setPage: sp }: { page: number; total: number; setPage: (n: number) => void }) => {
     if (total <= 1) return null;
     return (
       <div className="flex items-center justify-center gap-2 mt-4">
@@ -384,17 +380,22 @@ export default function EventManager() {
               {mainBouts.length === 0 ? (
                 <p className="text-sm text-muted-foreground p-4 border border-dashed border-border rounded-md text-center">No main card bouts yet.</p>
               ) : (
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, "main")}>
-                  <SortableContext items={paginatedMain.map((b: any) => b.id)} strategy={verticalListSortingStrategy}>
-                    <div className="space-y-3">
-                      {paginatedMain.map((bout: any) => (
-                        <SortableBout key={bout.id} bout={bout} onEdit={setEditingBout} onTogglePublic={handleTogglePublic} onMakePublic={handleMakePublic} />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
+                <div className="space-y-3">
+                  {paginatedMain.map((bout: any, idx: number) => (
+                    <BoutBanner
+                      key={bout.id}
+                      bout={bout}
+                      onEdit={setEditingBout}
+                      onTogglePublic={handleTogglePublic}
+                      onMoveUp={(id) => handleMoveBout(id, "up", "main")}
+                      onMoveDown={(id) => handleMoveBout(id, "down", "main")}
+                      isFirst={mainPage * BOUTS_PER_PAGE + idx === 0}
+                      isLast={mainPage * BOUTS_PER_PAGE + idx === mainBouts.length - 1}
+                    />
+                  ))}
+                </div>
               )}
-              <Pagination page={mainPage} total={mainTotal} setPage={setMainPage} />
+              <PaginationBar page={mainPage} total={mainTotal} setPage={setMainPage} />
             </div>
 
             {/* UNDERCARD */}
@@ -426,17 +427,22 @@ export default function EventManager() {
               {underBouts.length === 0 ? (
                 <p className="text-sm text-muted-foreground p-4 border border-dashed border-border rounded-md text-center">No undercard bouts yet.</p>
               ) : (
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={(e) => handleDragEnd(e, "under")}>
-                  <SortableContext items={paginatedUnder.map((b: any) => b.id)} strategy={verticalListSortingStrategy}>
-                    <div className="space-y-2">
-                      {paginatedUnder.map((bout: any) => (
-                        <SortableBout key={bout.id} bout={bout} onEdit={setEditingBout} onTogglePublic={handleTogglePublic} onMakePublic={handleMakePublic} />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
+                <div className="space-y-2">
+                  {paginatedUnder.map((bout: any, idx: number) => (
+                    <BoutBanner
+                      key={bout.id}
+                      bout={bout}
+                      onEdit={setEditingBout}
+                      onTogglePublic={handleTogglePublic}
+                      onMoveUp={(id) => handleMoveBout(id, "up", "under")}
+                      onMoveDown={(id) => handleMoveBout(id, "down", "under")}
+                      isFirst={underPage * BOUTS_PER_PAGE + idx === 0}
+                      isLast={underPage * BOUTS_PER_PAGE + idx === underBouts.length - 1}
+                    />
+                  ))}
+                </div>
               )}
-              <Pagination page={underPage} total={underTotal} setPage={setUnderPage} />
+              <PaginationBar page={underPage} total={underTotal} setPage={setUnderPage} />
             </div>
 
             {/* Tickets Panel */}

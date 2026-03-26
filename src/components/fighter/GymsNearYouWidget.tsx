@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { MapPin, Navigation, Star } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { geocodePostcode, haversineDistance } from "@/hooks/use-postcode-search";
 
 interface GymsNearYouWidgetProps {
@@ -10,60 +9,28 @@ interface GymsNearYouWidgetProps {
 }
 
 export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) {
-  // Get fighter's postcode from profile - we need to look it up via the user's profile
-  const { data: fighterData } = useQuery({
+  // Get fighter's postcode directly from fighter_profiles
+  const { data: fighterPostcode } = useQuery({
     queryKey: ["fighter-postcode", fighterProfileId],
     queryFn: async () => {
       const { data } = await supabase
         .from("fighter_profiles")
-        .select("user_id")
+        .select("postcode")
         .eq("id", fighterProfileId)
         .single();
-      if (!data?.user_id) return null;
-      // Fighter profiles don't have postcode, check gyms they belong to or use profile location
-      // For now, we use the gym location or a separate approach
-      return data;
+      return data?.postcode || null;
     },
     enabled: !!fighterProfileId,
   });
 
-  // Get all gyms with coordinates
   const { data: nearbyGyms = [], isLoading } = useQuery({
-    queryKey: ["gyms-near-fighter", fighterProfileId],
+    queryKey: ["gyms-near-fighter", fighterProfileId, fighterPostcode],
     queryFn: async () => {
-      // Get fighter's linked gym to determine location
-      const { data: links } = await supabase
-        .from("fighter_gym_links")
-        .select("gym_id, gyms(lat, lng, postcode)")
-        .eq("fighter_id", fighterProfileId)
-        .eq("status", "approved")
-        .limit(1);
+      if (!fighterPostcode) return [];
 
-      let fighterLat: number | null = null;
-      let fighterLng: number | null = null;
+      const coords = await geocodePostcode(fighterPostcode);
+      if (!coords) return [];
 
-      // Try to get coords from fighter's gym
-      if (links && links.length > 0) {
-        const gym = (links[0] as any).gyms;
-        if (gym?.lat && gym?.lng) {
-          fighterLat = gym.lat;
-          fighterLng = gym.lng;
-        } else if (gym?.postcode) {
-          const coords = await geocodePostcode(gym.postcode);
-          if (coords) {
-            fighterLat = coords.latitude;
-            fighterLng = coords.longitude;
-          }
-        }
-      }
-
-      // If no location from gym, try UK center as fallback (London)
-      if (fighterLat === null) {
-        fighterLat = 51.5074;
-        fighterLng = -0.1278;
-      }
-
-      // Get all gyms with coords
       const { data: allGyms } = await supabase
         .from("gyms")
         .select("id, name, city, country, lat, lng, discipline_tags, listing_tier")
@@ -72,20 +39,37 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
 
       if (!allGyms) return [];
 
-      // Calculate distances and filter within 20 miles
-      const withDistance = allGyms
+      return allGyms
         .map((gym: any) => ({
           ...gym,
-          distance: haversineDistance(fighterLat!, fighterLng!, gym.lat, gym.lng),
+          distance: haversineDistance(coords.latitude, coords.longitude, gym.lat, gym.lng),
         }))
         .filter((gym) => gym.distance <= 20)
         .sort((a, b) => a.distance - b.distance)
         .slice(0, 5);
-
-      return withDistance;
     },
-    enabled: !!fighterProfileId,
+    enabled: !!fighterProfileId && !!fighterPostcode,
   });
+
+  // No postcode — show prompt only
+  if (!fighterPostcode) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-4">
+        <h3 className="font-heading text-sm text-foreground mb-3">
+          GYMS <span className="text-primary">NEAR YOU</span>
+        </h3>
+        <div className="text-center py-4">
+          <Navigation className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground">
+            Add your postcode to see nearby gyms
+          </p>
+          <Link to="/dashboard?section=my-profile" className="text-xs text-primary hover:underline mt-1 inline-block">
+            Update profile →
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -106,15 +90,7 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
         <h3 className="font-heading text-sm text-foreground mb-3">
           GYMS <span className="text-primary">NEAR YOU</span>
         </h3>
-        <div className="text-center py-4">
-          <Navigation className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-xs text-muted-foreground">
-            Add your location to discover nearby gyms
-          </p>
-          <Link to="/dashboard?section=my-profile" className="text-xs text-primary hover:underline mt-1 inline-block">
-            Update profile →
-          </Link>
-        </div>
+        <p className="text-xs text-muted-foreground text-center py-4">No gyms found within 20 miles.</p>
       </div>
     );
   }

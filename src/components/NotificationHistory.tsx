@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -23,7 +23,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 export function NotificationHistory() {
-  const { user, effectiveRoles } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
@@ -36,52 +36,23 @@ export function NotificationHistory() {
         .select("*")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
-
-      if (filter === "unread") {
-        query = query.eq("read", false);
-      } else if (filter === "read") {
-        query = query.eq("read", true);
-      }
-
+      if (filter === "unread") query = query.eq("read", false);
+      else if (filter === "read") query = query.eq("read", true);
       const { data } = await query;
       return data ?? [];
     },
     enabled: !!user,
   });
 
-  const resolveEventFromProposal = async (proposalId: string): Promise<string | null> => {
-    const { data } = await supabase
-      .from("match_proposals")
-      .select("fight_slot_id")
-      .eq("id", proposalId)
-      .single();
-    if (!data) return null;
-    const { data: slot } = await supabase
-      .from("fight_slots")
-      .select("event_id")
-      .eq("id", data.fight_slot_id)
-      .single();
-    return slot?.event_id ?? null;
-  };
-
   const handleNotificationClick = async (notification: any) => {
-    // Mark as read
-    await supabase
-      .from("notifications")
-      .update({ read: true })
-      .eq("id", notification.id);
+    await supabase.from("notifications").update({ read: true }).eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notification-history"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
-
-    // All notifications route to the Actions tab
     navigate("/dashboard?section=actions");
   };
 
   const toggleRead = async (notification: any) => {
-    await supabase
-      .from("notifications")
-      .update({ read: !notification.read })
-      .eq("id", notification.id);
+    await supabase.from("notifications").update({ read: !notification.read }).eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notification-history"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
     toast.success(notification.read ? "Marked as unread" : "Marked as read");
@@ -118,13 +89,13 @@ export function NotificationHistory() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Notification History</CardTitle>
-            <CardDescription>
-              {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}` : "All caught up!"}
-            </CardDescription>
+            <h3 className="font-heading text-lg font-normal text-foreground">Notifications</h3>
+            <p className="text-sm text-muted-foreground">
+              {unreadCount > 0 ? `${unreadCount} unread` : "All caught up!"}
+            </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={markAllRead} disabled={unreadCount === 0}>
@@ -138,25 +109,13 @@ export function NotificationHistory() {
       </CardHeader>
       <CardContent>
         <div className="flex gap-2 mb-4">
-          <Button
-            variant={filter === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("all")}
-          >
+          <Button variant={filter === "all" ? "default" : "outline"} size="sm" onClick={() => setFilter("all")}>
             All ({notifications.length})
           </Button>
-          <Button
-            variant={filter === "unread" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("unread")}
-          >
+          <Button variant={filter === "unread" ? "default" : "outline"} size="sm" onClick={() => setFilter("unread")}>
             Unread ({unreadCount})
           </Button>
-          <Button
-            variant={filter === "read" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setFilter("read")}
-          >
+          <Button variant={filter === "read" ? "default" : "outline"} size="sm" onClick={() => setFilter("read")}>
             Read ({notifications.length - unreadCount})
           </Button>
         </div>
@@ -169,7 +128,7 @@ export function NotificationHistory() {
               {filter === "unread" ? "No unread notifications" : "No notifications yet"}
             </p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
@@ -180,7 +139,7 @@ export function NotificationHistory() {
                   <div className="flex items-start justify-between gap-3">
                     <button
                       onClick={() => handleNotificationClick(notification)}
-                      className="flex-1 text-left space-y-1"
+                      className="flex-1 text-left space-y-1.5"
                     >
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-sm">{notification.title}</p>
@@ -189,9 +148,9 @@ export function NotificationHistory() {
                         )}
                       </div>
                       {notification.message && (
-                        <p className="text-sm text-muted-foreground">{notification.message}</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">{notification.message}</p>
                       )}
-                      <div className="flex items-center gap-2 pt-1">
+                      <div className="flex items-center gap-2 pt-0.5">
                         <Badge variant="outline" className="text-xs">
                           {TYPE_LABELS[notification.type] || notification.type}
                         </Badge>
@@ -205,10 +164,7 @@ export function NotificationHistory() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleRead(notification);
-                        }}
+                        onClick={(e) => { e.stopPropagation(); toggleRead(notification); }}
                         title={notification.read ? "Mark as unread" : "Mark as read"}
                       >
                         {notification.read ? <Mail className="h-4 w-4" /> : <MailOpen className="h-4 w-4" />}
@@ -217,10 +173,7 @@ export function NotificationHistory() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteNotification(notification.id);
-                        }}
+                        onClick={(e) => { e.stopPropagation(); deleteNotification(notification.id); }}
                         title="Delete notification"
                       >
                         <Trash2 className="h-4 w-4" />
