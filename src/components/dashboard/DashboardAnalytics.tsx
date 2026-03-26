@@ -1,11 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Calendar, TrendingUp, Target, Swords, Building2 } from "lucide-react";
-import { useState, useMemo } from "react";
-import { formatEnum } from "@/lib/format";
+import { Calendar, TrendingUp, Target, Swords } from "lucide-react";
+import { useMemo } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
-  LineChart, Line, CartesianGrid, Legend,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  LineChart, Line, CartesianGrid,
 } from "recharts";
 import { FighterAnalyticsV2 } from "./FighterAnalytics";
 import { CoachAnalyticsV2 } from "./CoachAnalytics";
