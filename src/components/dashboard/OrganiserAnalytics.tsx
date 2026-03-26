@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { formatEnum } from "@/lib/format";
-import { format, subMonths, differenceInHours } from "date-fns";
+import { format, subMonths } from "date-fns";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
   LineChart, Line, CartesianGrid, Legend,
