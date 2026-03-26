@@ -116,6 +116,21 @@ export default function Dashboard() {
     setSearchParams({ section });
   };
 
+  const SECTION_TITLES: Record<string, string> = {
+    overview: "Dashboard",
+    "my-profile": "My Profile",
+    gyms: "My Gyms",
+    roster: "Roster",
+    interests: "Interests",
+    actions: "Actions",
+    events: "My Events",
+    analytics: "Analytics",
+    notifications: "Notifications",
+    "create-profile": "Create Profile",
+  };
+
+  const sectionTitle = SECTION_TITLES[activeSection] || "Dashboard";
+
   const renderContent = () => {
     switch (activeSection) {
       case "overview":
@@ -272,9 +287,6 @@ export default function Dashboard() {
       case "create-profile":
         return (
           <div className="space-y-6">
-            <h2 className="font-heading text-2xl text-foreground">
-              Create your <span className="text-primary">fighter profile</span>
-            </h2>
             <CreateFighterProfileForm
               userId={user!.id}
               userEmail={user!.email ?? ""}
@@ -292,21 +304,14 @@ export default function Dashboard() {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
-        <DashboardSidebar
-          pendingCount={pendingProposals.length}
-          unreadCount={unreadNotifications.length}
-          actionsCount={actionsCount}
-        />
-
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Main Content */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-6">
-            {renderContent()}
-          </main>
-        </div>
-      </div>
+    <SidebarProvider defaultOpen={true}>
+      <DashboardInner
+        sectionTitle={sectionTitle}
+        pendingCount={pendingProposals.length}
+        unreadCount={unreadNotifications.length}
+        actionsCount={actionsCount}
+        renderContent={renderContent}
+      />
 
       {/* Dialogs */}
       {user && (addFighterGymId || primaryGym?.id) && (
