@@ -3,8 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { formatEnum } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
-import { X, ChevronRight, ChevronLeft } from "lucide-react";
+import { X, ChevronRight, ChevronLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { format, differenceInDays, subMonths } from "date-fns";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
@@ -463,6 +470,8 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
   }, [gymLeads]);
 
   const STATUS_ORDER = ["pending", "contacted", "trial_attended", "converted"];
+  const [pipelineModalStatus, setPipelineModalStatus] = useState<string | null>(null);
+
   const handleLeadMove = async (leadId: string, currentStatus: string, direction: "forward" | "back") => {
     const idx = STATUS_ORDER.indexOf(currentStatus);
     const newIdx = direction === "forward" ? idx + 1 : idx - 1;
@@ -473,6 +482,19 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
     queryClient.invalidateQueries({ queryKey: ["coach-analytics-gym-leads"] });
     toast.success(`Lead moved to ${newStatus.replace(/_/g, " ")}`);
   };
+
+  const handleLeadDelete = async (leadId: string) => {
+    const { error } = await supabase.from("gym_leads").delete().eq("id", leadId);
+    if (error) { toast.error("Failed to delete lead"); return; }
+    queryClient.invalidateQueries({ queryKey: ["coach-analytics-gym-leads"] });
+    toast.success("Lead deleted");
+  };
+
+  const pipelineModalItems = useMemo(() => {
+    if (!pipelineModalStatus) return [];
+    const col = pipelineColumns.find((c) => c.status === pipelineModalStatus);
+    return col?.items ?? [];
+  }, [pipelineModalStatus, pipelineColumns]);
 
   // ════════════════════════════════════════════
   // Active Fighters Modal Data
@@ -804,7 +826,7 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
           </div>
         </div>
 
-        {/* Pipeline */}
+        {/* Pipeline — Count Tiles */}
         <div className="bg-card border border-border rounded-lg p-4">
           <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3 flex items-center justify-between">
             Lead Pipeline
@@ -815,52 +837,97 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
             )}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-            {pipelineColumns.map((col, colIdx) => (
-              <div key={col.label} className="bg-accent rounded-md p-3">
-                <div className="font-heading text-[10px] tracking-[1.8px] uppercase text-muted-foreground mb-2.5 flex items-center justify-between">
-                  {col.label}
-                  <span className="font-heading text-xs font-bold bg-card border border-border text-foreground px-2 py-0.5 rounded-full">{col.items.length}</span>
-                </div>
-                {col.items.length === 0 ? (
-                  <p className="text-[11px] text-muted-foreground text-center py-2">—</p>
-                ) : (
-                  col.items.slice(0, 6).map((item) => (
-                    <div key={item.id} className="bg-card border border-border rounded p-2.5 mb-1.5 last:mb-0">
-                      <div className="font-heading text-xs font-bold text-foreground truncate">{item.name}</div>
-                      <div className="text-[10px] text-muted-foreground truncate">{item.email}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5">{item.type === "trial_request" ? "Trial Request" : "Interest"}</div>
-                      <div className="text-[10px] text-primary/60 mt-1 font-heading">
-                        {format(new Date(item.created_at), "d MMM yyyy")}
-                      </div>
-                      <div className="flex items-center gap-1 mt-2">
-                        <button
-                          disabled={colIdx === 0}
-                          onClick={() => handleLeadMove(item.id, col.status, "back")}
-                          className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded border border-border bg-accent text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        >
-                          <ChevronLeft className="h-3 w-3" /> Back
-                        </button>
-                        <button
-                          disabled={colIdx === pipelineColumns.length - 1}
-                          onClick={() => handleLeadMove(item.id, col.status, "forward")}
-                          className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors ml-auto"
-                        >
-                          Forward <ChevronRight className="h-3 w-3" />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
+            {pipelineColumns.map((col) => (
+              <button
+                key={col.label}
+                onClick={() => setPipelineModalStatus(col.status)}
+                className="bg-accent rounded-md p-4 text-center cursor-pointer hover:border-primary/50 border border-border transition-colors"
+              >
+                <div className="font-heading text-3xl font-extrabold text-primary">{col.items.length}</div>
+                <div className="font-heading text-[10px] tracking-[1.8px] uppercase text-muted-foreground mt-1">{col.label}</div>
+              </button>
             ))}
           </div>
         </div>
       </div>
 
+      {/* ── Lead Pipeline Popup Modal ── */}
+      <Dialog open={!!pipelineModalStatus} onOpenChange={(open) => { if (!open) setPipelineModalStatus(null); }}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-lg">
+              {pipelineColumns.find((c) => c.status === pipelineModalStatus)?.label || ""} Leads
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              {pipelineModalItems.length} lead{pipelineModalItems.length !== 1 ? "s" : ""} at this stage
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+            {pipelineModalItems.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">No leads at this stage.</p>
+            ) : (
+              pipelineModalItems.map((item) => {
+                const colIdx = STATUS_ORDER.indexOf(pipelineModalStatus!);
+                return (
+                  <div key={item.id} className="bg-accent border border-border rounded-md p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-heading text-sm font-bold text-foreground truncate">{item.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">{item.email}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {item.type === "trial_request" ? "Trial Request" : "Interest"} · {format(new Date(item.created_at), "d MMM yyyy")}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-2.5">
+                      <button
+                        disabled={colIdx === 0}
+                        onClick={() => handleLeadMove(item.id, pipelineModalStatus!, "back")}
+                        className="flex items-center gap-0.5 text-[10px] px-2 py-1 rounded border border-border bg-card text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <ChevronLeft className="h-3 w-3" /> Back
+                      </button>
+                      <button
+                        disabled={colIdx === STATUS_ORDER.length - 1}
+                        onClick={() => handleLeadMove(item.id, pipelineModalStatus!, "forward")}
+                        className="flex items-center gap-0.5 text-[10px] px-2 py-1 rounded border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Forward <ChevronRight className="h-3 w-3" />
+                      </button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button className="flex items-center gap-0.5 text-[10px] px-2 py-1 rounded border border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors ml-auto">
+                            <Trash2 className="h-3 w-3" /> Delete
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Lead</AlertDialogTitle>
+                            <AlertDialogDescription>Permanently delete {item.name}'s lead record? This cannot be undone.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleLeadDelete(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* ── SECTION 7: Organiser Analytics ── */}
       {showOrganiserSection && (
         <>
-          <SectionHeader title="Organiser Analytics" large />
+          <div className="flex items-end justify-between mb-2 mt-8">
+            <h2 className="font-heading text-2xl text-foreground">
+              Organiser <span className="text-primary">Analytics</span>
+            </h2>
+          </div>
           <OrganiserAnalyticsShared userId={userId} embedded />
         </>
       )}
