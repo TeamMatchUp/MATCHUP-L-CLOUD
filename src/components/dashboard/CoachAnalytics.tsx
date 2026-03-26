@@ -207,6 +207,184 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
   });
 
   // ════════════════════════════════════════════
+  // SECTION 7 DATA: Organiser Analytics
+  // ════════════════════════════════════════════
+
+  const { data: orgEvents = [] } = useQuery({
+    queryKey: ["coach-org-events", userId],
+    queryFn: async () => {
+      const { data } = await supabase.from("events").select("*, fight_slots(*)").eq("organiser_id", userId).order("date", { ascending: false });
+      return data ?? [];
+    },
+  });
+
+  const { data: orgFightSlots = [] } = useQuery({
+    queryKey: ["coach-org-efs", userId],
+    queryFn: async () => {
+      const eventIds = orgEvents.map((e) => e.id);
+      if (eventIds.length === 0) return [];
+      const { data } = await supabase.from("event_fight_slots").select("*").in("event_id", eventIds);
+      return data ?? [];
+    },
+    enabled: orgEvents.length > 0,
+  });
+
+  const { data: orgSuggestions = [] } = useQuery({
+    queryKey: ["coach-org-suggestions", userId],
+    queryFn: async () => {
+      const eventIds = orgEvents.map((e) => e.id);
+      if (eventIds.length === 0) return [];
+      const { data } = await supabase.from("match_suggestions").select("*").in("event_id", eventIds);
+      return data ?? [];
+    },
+    enabled: orgEvents.length > 0,
+  });
+
+  const { data: orgTickets = [] } = useQuery({
+    queryKey: ["coach-org-tickets", userId],
+    queryFn: async () => {
+      const eventIds = orgEvents.map((e) => e.id);
+      if (eventIds.length === 0) return [];
+      const { data } = await supabase.from("tickets").select("*").in("event_id", eventIds);
+      return data ?? [];
+    },
+    enabled: orgEvents.length > 0,
+  });
+
+  const { data: allPlatformFighters = [] } = useQuery({
+    queryKey: ["coach-org-all-fighters"],
+    queryFn: async () => {
+      const { data } = await supabase.from("fighter_profiles").select("id, weight_class, discipline, available, years_training");
+      return data ?? [];
+    },
+    enabled: orgEvents.length > 0 || hasOrganiserRole,
+  });
+
+  const showOrganiserSection = hasOrganiserRole || orgEvents.length > 0;
+
+  // Organiser computed values
+  const orgNow = now;
+  const orgActiveEvents = orgEvents.filter((e) => new Date(e.date) >= orgNow && e.status !== "cancelled").length;
+  const orgConfirmedBouts = orgFightSlots.filter((s) => s.status === "confirmed").length;
+  const orgFightersBooked = new Set([
+    ...orgFightSlots.filter((s) => s.fighter_a_id).map((s) => s.fighter_a_id),
+    ...orgFightSlots.filter((s) => s.fighter_b_id).map((s) => s.fighter_b_id),
+  ]).size;
+  const orgTotalSlots = orgFightSlots.length;
+  const orgFillRate = orgTotalSlots > 0 ? Math.round((orgConfirmedBouts / orgTotalSlots) * 100) : 0;
+
+  // Matchmaking analytics
+  const orgSuggestionsGenerated = orgSuggestions.length;
+  const orgSuggestionsConfirmed = orgSuggestions.filter((s) => s.status === "confirmed").length;
+  const orgAcceptanceRate = orgSuggestionsGenerated > 0 ? Math.round((orgSuggestionsConfirmed / orgSuggestionsGenerated) * 100) : 0;
+  const orgAvgComposite = orgSuggestions.length > 0
+    ? Math.round(orgSuggestions.reduce((sum, s) => sum + (Number(s.composite_score) || 0), 0) / orgSuggestions.length)
+    : 0;
+  const orgAvgTimeToConfirm = 0; // Would need created_at vs confirmed_at tracking
+
+  // Suggestions vs confirmed per month (last 6 months)
+  const orgSuggestionsLineData = useMemo(() => {
+    const months: { month: string; Suggestions: number; Confirmed: number }[] = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = subMonths(orgNow, i);
+      const label = format(d, "MMM");
+      const m = d.getMonth();
+      const y = d.getFullYear();
+      const suggested = orgSuggestions.filter((s) => {
+        const sd = new Date(s.created_at);
+        return sd.getMonth() === m && sd.getFullYear() === y;
+      }).length;
+      const confirmed = orgSuggestions.filter((s) => {
+        const sd = new Date(s.created_at);
+        return sd.getMonth() === m && sd.getFullYear() === y && s.status === "confirmed";
+      }).length;
+      months.push({ month: label, Suggestions: suggested, Confirmed: confirmed });
+    }
+    return months;
+  }, [orgSuggestions]);
+
+  // Slot fill per event (stacked bar)
+  const orgSlotFillData = useMemo(() => {
+    return orgEvents.filter((e) => new Date(e.date) >= orgNow).slice(0, 10).map((e) => {
+      const slots = orgFightSlots.filter((s) => s.event_id === e.id);
+      const confirmed = slots.filter((s) => s.status === "confirmed").length;
+      const open = slots.length - confirmed;
+      return { name: (e.title || "Event").slice(0, 12), Confirmed: confirmed, Open: open };
+    });
+  }, [orgEvents, orgFightSlots]);
+
+  // Preset usage doughnut
+  const orgPresetData = useMemo(() => {
+    const presets: Record<string, number> = {};
+    orgSuggestions.forEach((s) => {
+      const p = s.preset_used || "Default";
+      presets[p] = (presets[p] || 0) + 1;
+    });
+    return Object.entries(presets).map(([name, value]) => ({ name, value }));
+  }, [orgSuggestions]);
+
+  // Talent pool
+  const talentWeightClassData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allPlatformFighters.forEach((f) => {
+      const wc = f.weight_class || "Unknown";
+      counts[wc] = (counts[wc] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name: formatEnum(name), value }));
+  }, [allPlatformFighters]);
+
+  const talentDisciplineData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    allPlatformFighters.forEach((f) => {
+      const d = f.discipline || "Unknown";
+      counts[d] = (counts[d] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name: formatEnum(name), value }));
+  }, [allPlatformFighters]);
+
+  const talentExpData = useMemo(() => {
+    const tiers = { "0-2 yrs": 0, "3-5 yrs": 0, "6-10 yrs": 0, "10+ yrs": 0 };
+    allPlatformFighters.forEach((f) => {
+      const y = f.years_training || 0;
+      if (y <= 2) tiers["0-2 yrs"]++;
+      else if (y <= 5) tiers["3-5 yrs"]++;
+      else if (y <= 10) tiers["6-10 yrs"]++;
+      else tiers["10+ yrs"]++;
+    });
+    return Object.entries(tiers).map(([name, value]) => ({ name, Fighters: value }));
+  }, [allPlatformFighters]);
+
+  const talentAvailabilityRate = allPlatformFighters.length > 0
+    ? Math.round((allPlatformFighters.filter((f) => f.available).length / allPlatformFighters.length) * 100)
+    : 0;
+
+  // Ticket metrics
+  const orgTotalTickets = orgTickets.reduce((sum, t) => sum + (t.quantity_available || 0), 0);
+  const orgSoldOutEvents = orgEvents.filter((e) => e.sold_out).length;
+  const orgEventsWithTickets = orgEvents.filter((e) => e.ticket_enabled).length;
+  const orgAvgTickets = orgEventsWithTickets > 0 ? Math.round(orgTotalTickets / orgEventsWithTickets) : 0;
+
+  const orgTicketChartData = useMemo(() => {
+    return orgEvents.filter((e) => e.ticket_enabled).slice(0, 10).map((e) => {
+      const tickets = orgTickets.filter((t) => t.event_id === e.id).reduce((s, t) => s + (t.quantity_available || 0), 0);
+      return { name: (e.title || "Event").slice(0, 12), Tickets: tickets };
+    });
+  }, [orgEvents, orgTickets]);
+
+  // Preset performance table
+  const presetPerformanceData = useMemo(() => {
+    const PRESETS = ["Balanced", "Competitive", "Entertainment", "Narrative", "Style First"];
+    return PRESETS.map((preset) => {
+      const matching = orgSuggestions.filter((s) => (s.preset_used || "Balanced") === preset.toLowerCase().replace(/ /g, "_") || (s.preset_used || "Balanced") === preset);
+      const timesUsed = matching.length;
+      const avgScore = timesUsed > 0 ? Math.round(matching.reduce((sum, s) => sum + (Number(s.composite_score) || 0), 0) / timesUsed) : 0;
+      const confirmed = matching.filter((s) => s.status === "confirmed").length;
+      const accRate = timesUsed > 0 ? Math.round((confirmed / timesUsed) * 100) : 0;
+      return { preset, timesUsed, avgScore, accRate };
+    });
+  }, [orgSuggestions]);
+
+  // ════════════════════════════════════════════
   // SECTION 1: Roster Overview computations
   // ════════════════════════════════════════════
 
