@@ -54,6 +54,7 @@ export default function Explore() {
 
   const [tab, setTab] = useState<TabType>(getInitialTab);
   const [mapOpen, setMapOpen] = useState(false);
+  const [mapExpanded, setMapExpanded] = useState(false);
   const [popupItem, setPopupItem] = useState<any>(null);
   const [page, setPage] = useState(0);
 
@@ -359,7 +360,7 @@ export default function Explore() {
             {/* Content area: directory + map tile / split-screen */}
             <div className={`flex-1 flex ${mapOpen ? "overflow-hidden" : ""}`}>
               {/* Directory cards */}
-              <div className={`${mapOpen ? "w-[420px] overflow-y-auto border-r border-border shrink-0 px-4 pb-4" : "flex-1"}`}>
+              <div className={`${mapOpen && !mapExpanded ? "w-[420px] overflow-y-auto border-r border-border shrink-0 px-4 pb-4" : mapOpen && mapExpanded ? "hidden" : "flex-1"}`}>
                 <div className={mapOpen ? "" : "container"}>
                   <div className={`${mapOpen ? "" : "flex gap-6"}`}>
                     <div className={`${mapOpen ? "w-full" : tab !== "fighters" ? "flex-1" : "w-full"}`}>
@@ -408,8 +409,11 @@ export default function Explore() {
               {mapOpen && tab !== "fighters" && (
                 <div className="flex-1 min-h-[500px] relative">
                   <div className="absolute top-3 left-3 z-10 flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => { setMapOpen(false); setPopupItem(null); }}>
+                    <Button variant="outline" size="sm" onClick={() => { setMapOpen(false); setMapExpanded(false); setPopupItem(null); }}>
                       <X className="h-4 w-4 mr-1" /> Close Map
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setMapExpanded(!mapExpanded)}>
+                      {mapExpanded ? "↙ Collapse" : "↗ Expand"}
                     </Button>
                   </div>
                   <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={500}>
