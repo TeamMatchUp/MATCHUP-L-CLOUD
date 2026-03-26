@@ -67,6 +67,7 @@ export function NotificationHistory() {
     await supabase.from("notifications").update({ read: !notification.read }).eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
     toast.success(notification.read ? "Marked as unread" : "Marked as read");
   };
 
