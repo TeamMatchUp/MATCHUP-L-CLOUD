@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { formatEnum } from "@/lib/format";
+import { useAuth } from "@/contexts/AuthContext";
 import { X } from "lucide-react";
 import { format, differenceInDays, subMonths } from "date-fns";
 import {
