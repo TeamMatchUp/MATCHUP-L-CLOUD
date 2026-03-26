@@ -34,9 +34,6 @@ export function DashboardEvents({
   if (isFighter && !isCoachOrOwner && !isOrganiser && fighterProfileId) {
     return (
       <div>
-        <h2 className="font-heading text-2xl text-foreground mb-4">
-          MY <span className="text-primary">EVENTS</span>
-        </h2>
         <InterestedEventsPanel fighterProfileId={fighterProfileId} />
       </div>
     );
