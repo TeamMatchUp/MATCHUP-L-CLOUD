@@ -148,6 +148,7 @@ export default function EventManager() {
   const [showAddUnder, setShowAddUnder] = useState(false);
   const [editingBout, setEditingBout] = useState<any>(null);
   const [showSuggestionsMain, setShowSuggestionsMain] = useState(false);
+  const [showSuggestionsUnder, setShowSuggestionsUnder] = useState(false);
   const [showAddSlot, setShowAddSlot] = useState(false);
   const [showOpenSlotMain, setShowOpenSlotMain] = useState(false);
   const [showOpenSlotUnder, setShowOpenSlotUnder] = useState(false);
