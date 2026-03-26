@@ -178,15 +178,14 @@ export default function EventDetail() {
   const hasContact = event.contact_email || event.contact_phone || event.contact_website;
   const hasCoords = event.latitude != null && event.longitude != null;
 
+  const isOpen = (bout: any) => !bout.fighter_a_id && !bout.fighter_b_id && bout.status === "open";
   const getStatusIndicator = (bout: any) => {
     const isConfirmedPublic = bout.status === "confirmed" && bout.is_public === true;
     if (isConfirmedPublic) return null;
-    if (bout.status === "proposed") {
-      return <Badge className="bg-primary/15 text-primary border-primary/30 text-xs">Proposed</Badge>;
-    }
-    if (!bout.fighter_a_id && !bout.fighter_b_id) {
+    if (isOpen(bout)) {
       return <Badge className="bg-primary/15 text-primary border-primary/30 text-xs">Slot Open</Badge>;
     }
+    // No badge for proposed — just show TBA vs TBA
     return null;
   };
 
