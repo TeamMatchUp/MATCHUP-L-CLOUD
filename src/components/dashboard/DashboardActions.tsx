@@ -372,7 +372,11 @@ export function DashboardActions({
     enabled: isOrganiser,
   });
 
-  // Build active + completed lists
+  // Auto-purge discarded items older than 30 days
+  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+  const discardedIds = new Set(discardedItems.filter(d => Date.now() - d.discardedAt < THIRTY_DAYS).map(d => d.item.id));
+
+  // Build active + completed lists excluding discarded
   const activeItems: ActionItem[] = [
     ...gymRequestsActive,
     ...trialLeadsActive,
@@ -382,16 +386,33 @@ export function DashboardActions({
     ...eventInterests,
     ...eventClaims,
     ...organiserSuggestionsActive,
-  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  ].filter(i => !discardedIds.has(i.id)).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   const completedItems: ActionItem[] = [
     ...gymRequestsCompleted,
     ...fightProposals,
     ...boutProposalsCompleted,
     ...organiserSuggestionsCompleted,
-  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  ].filter(i => !discardedIds.has(i.id)).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   const recentlyActioned = recentActions.filter((a) => Date.now() - a.at < 24 * 60 * 60 * 1000);
+
+  const validDiscarded = discardedItems.filter(d => Date.now() - d.discardedAt < THIRTY_DAYS);
+
+  const handleDiscard = (item: ActionItem) => {
+    setDiscardedItems(prev => [...prev, { item, discardedAt: Date.now(), previousStatus: item.status }]);
+  };
+
+  const handleRecover = (discardedItem: DiscardedItem) => {
+    setDiscardedItems(prev => prev.filter(d => d.item.id !== discardedItem.item.id));
+    toast.success("Item recovered");
+  };
+
+  const handlePermanentDelete = (discardedItem: DiscardedItem) => {
+    setDiscardedItems(prev => prev.filter(d => d.item.id !== discardedItem.item.id));
+    setConfirmDeleteId(null);
+    toast.success("Permanently deleted");
+  };
 
   // ── Action handlers ──
 
