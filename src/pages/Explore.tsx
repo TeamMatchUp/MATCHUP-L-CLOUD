@@ -54,6 +54,7 @@ export default function Explore() {
 
   const [tab, setTab] = useState<TabType>(getInitialTab);
   const [mapOpen, setMapOpen] = useState(false);
+  const [mapExpanded, setMapExpanded] = useState(false);
   const [popupItem, setPopupItem] = useState<any>(null);
   const [page, setPage] = useState(0);
 
