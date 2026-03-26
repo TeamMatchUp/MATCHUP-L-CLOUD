@@ -33,6 +33,20 @@ export function NotificationBell() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
+  const { data: unreadCountData = 0 } = useQuery({
+    queryKey: ["notifications-unread-count", user?.id],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user!.id)
+        .eq("read", false);
+      return count ?? 0;
+    },
+    enabled: !!user,
+    refetchInterval: 15000,
+  });
+
   const { data: notifications = [] } = useQuery({
     queryKey: ["notifications", user?.id],
     queryFn: async () => {
@@ -48,7 +62,7 @@ export function NotificationBell() {
     refetchInterval: 15000,
   });
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = unreadCountData;
 
   const markAllRead = async () => {
     const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
