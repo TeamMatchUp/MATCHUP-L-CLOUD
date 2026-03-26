@@ -25,6 +25,7 @@ import { DashboardRoster } from "@/components/dashboard/DashboardRoster";
 import { DashboardActions, useActionsCount } from "@/components/dashboard/DashboardActions";
 import { DashboardEvents } from "@/components/dashboard/DashboardEvents";
 import { NotificationHistory } from "@/components/NotificationHistory";
+import { DashboardInterests } from "@/components/dashboard/DashboardInterests";
 import { CreateFighterProfileForm } from "@/components/fighter/CreateFighterProfileForm";
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { GymsNearYouWidget } from "@/components/fighter/GymsNearYouWidget";
