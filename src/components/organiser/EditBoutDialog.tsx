@@ -22,6 +22,52 @@ interface EditBoutDialogProps {
   onSuccess: () => void;
 }
 
+async function notifyFighterRemoval(
+  removedFighter: FighterProfile | null,
+  otherFighter: FighterProfile | null,
+  eventId: string,
+  slotId: string,
+  weightClass: string | null
+) {
+  if (!removedFighter) return;
+  // Get event name
+  const { data: evt } = await supabase.from("events").select("title").eq("id", eventId).single();
+  const eventTitle = evt?.title ?? "an event";
+  const wcLabel = weightClass ? formatEnum(weightClass) : "N/A";
+
+  // Collect all party user IDs: both fighters + their coaches
+  const notifyIds = new Set<string>();
+  if (removedFighter.user_id) notifyIds.add(removedFighter.user_id);
+  if (otherFighter?.user_id) notifyIds.add(otherFighter.user_id);
+  if (removedFighter.created_by_coach_id) notifyIds.add(removedFighter.created_by_coach_id);
+  if (otherFighter?.created_by_coach_id) notifyIds.add(otherFighter.created_by_coach_id);
+
+  // Also find coaches via gym links
+  const fighterIds = [removedFighter.id];
+  if (otherFighter) fighterIds.push(otherFighter.id);
+  const { data: gymLinks } = await supabase
+    .from("fighter_gym_links")
+    .select("fighter_id, gym:gyms(coach_id)")
+    .in("fighter_id", fighterIds)
+    .eq("status", "approved");
+
+  (gymLinks ?? []).forEach((link: any) => {
+    const gym = Array.isArray(link.gym) ? link.gym[0] : link.gym;
+    if (gym?.coach_id) notifyIds.add(gym.coach_id);
+  });
+
+  const promises = Array.from(notifyIds).map((uid) =>
+    supabase.rpc("create_notification", {
+      _user_id: uid,
+      _title: "Fighter Removed from Bout",
+      _message: `${removedFighter.name} has been removed from a ${wcLabel} bout at ${eventTitle}.`,
+      _type: "match_declined" as any,
+      _reference_id: slotId,
+    })
+  );
+  await Promise.all(promises);
+}
+
 export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: EditBoutDialogProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -57,6 +103,13 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: EditBout
   const handleSave = async () => {
     setLoading(true);
     const wc = fighterA?.weight_class || fighterB?.weight_class || bout.weight_class;
+
+    // Check if a fighter was removed
+    const originalA = fAInitial;
+    const originalB = fBInitial;
+    const removedA = originalA && (!fighterA || fighterA.id !== originalA.id);
+    const removedB = originalB && (!fighterB || fighterB.id !== originalB.id);
+
     const { error } = await supabase.from("event_fight_slots").update({
       fighter_a_id: fighterA?.id || null,
       fighter_b_id: fighterB?.id || null,
@@ -67,20 +120,30 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: EditBout
     if (error) {
       toast({ title: "Error updating bout", description: error.message, variant: "destructive" });
     } else {
-      // Notify affected fighters/coaches
-      const notifyIds = new Set<string>();
-      if (fighterA?.user_id) notifyIds.add(fighterA.user_id);
-      if (fighterB?.user_id) notifyIds.add(fighterB.user_id);
-      if (fighterA?.created_by_coach_id) notifyIds.add(fighterA.created_by_coach_id);
-      if (fighterB?.created_by_coach_id) notifyIds.add(fighterB.created_by_coach_id);
-      for (const uid of notifyIds) {
-        await supabase.rpc("create_notification", {
-          _user_id: uid,
-          _title: "Bout updated",
-          _message: `A bout has been updated: ${fighterA?.name || "TBA"} vs ${fighterB?.name || "TBA"}.`,
-          _type: "event_update",
-          _reference_id: bout.event_id,
-        });
+      // Send removal notifications
+      if (removedA) {
+        await notifyFighterRemoval(originalA, originalB, bout.event_id, bout.id, bout.weight_class);
+      }
+      if (removedB) {
+        await notifyFighterRemoval(originalB, originalA, bout.event_id, bout.id, bout.weight_class);
+      }
+
+      // Notify affected fighters/coaches of update
+      if (!removedA && !removedB) {
+        const notifyIds = new Set<string>();
+        if (fighterA?.user_id) notifyIds.add(fighterA.user_id);
+        if (fighterB?.user_id) notifyIds.add(fighterB.user_id);
+        if (fighterA?.created_by_coach_id) notifyIds.add(fighterA.created_by_coach_id);
+        if (fighterB?.created_by_coach_id) notifyIds.add(fighterB.created_by_coach_id);
+        for (const uid of notifyIds) {
+          await supabase.rpc("create_notification", {
+            _user_id: uid,
+            _title: "Bout updated",
+            _message: `A bout has been updated: ${fighterA?.name || "TBA"} vs ${fighterB?.name || "TBA"}.`,
+            _type: "event_update",
+            _reference_id: bout.event_id,
+          });
+        }
       }
       toast({ title: "Bout updated" });
       onSuccess();
@@ -91,6 +154,11 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: EditBout
 
   const handleDelete = async () => {
     setLoading(true);
+    // Send removal notifications for both fighters before deleting
+    if (fAInitial || fBInitial) {
+      if (fAInitial) await notifyFighterRemoval(fAInitial, fBInitial, bout.event_id, bout.id, bout.weight_class);
+      if (fBInitial) await notifyFighterRemoval(fBInitial, fAInitial, bout.event_id, bout.id, bout.weight_class);
+    }
     const { error } = await supabase.from("event_fight_slots").delete().eq("id", bout.id);
     if (error) {
       toast({ title: "Error deleting bout", description: error.message, variant: "destructive" });
@@ -136,7 +204,7 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: EditBout
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-heading">Edit Bout</DialogTitle>
         </DialogHeader>
