@@ -53,9 +53,6 @@ export function DashboardEvents({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-heading text-2xl text-foreground">
-          MY <span className="text-primary">EVENTS</span>
-        </h2>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" asChild>
             <Link to="/explore?tab=events">
