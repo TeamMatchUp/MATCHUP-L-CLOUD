@@ -1,0 +1,1 @@
+CREATE POLICY "Coaches can delete their gym leads" ON public.gym_leads FOR DELETE TO authenticated USING (EXISTS (SELECT 1 FROM gyms g WHERE g.id = gym_leads.gym_id AND g.coach_id = auth.uid()));
