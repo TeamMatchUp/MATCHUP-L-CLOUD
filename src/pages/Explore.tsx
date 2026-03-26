@@ -85,7 +85,7 @@ export default function Explore() {
   const { data: events, isLoading: eventsLoading } = useQuery({
     queryKey: ["explore-events", countryFilter],
     queryFn: async () => {
-      let q = supabase.from("events").select("*, fight_slots(*), tickets(*)").eq("status", "published").order("date", { ascending: true });
+      let q = supabase.from("events").select("*, fight_slots(*), tickets(*), event_fight_slots(id, status)").eq("status", "published").order("date", { ascending: true });
       if (countryFilter !== "all") q = q.eq("country", countryFilter as CountryCode);
       const { data } = await q;
       return data ?? [];
