@@ -147,7 +147,7 @@ export function DashboardAnalytics(props: DashboardAnalyticsProps) {
 
   return (
     <div className="space-y-8">
-      {isCoachOrOwner && <CoachAnalytics myGyms={myGyms} allFighters={allFighters} events={events} userId={userId} />}
+      {isCoachOrOwner && <CoachAnalyticsV2 userId={userId} />}
       {isFighter && fighterProfile && <FighterAnalyticsV2 fighterProfile={fighterProfile} />}
       {isOrganiser && <OrganiserAnalytics events={events} userId={userId} />}
       {!isCoachOrOwner && !isFighter && !isOrganiser && (
