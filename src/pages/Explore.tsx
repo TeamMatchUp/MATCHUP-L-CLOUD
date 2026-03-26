@@ -380,7 +380,7 @@ export default function Explore() {
                           <div className="absolute inset-0 opacity-30 pointer-events-none">
                             <PigeonMap defaultCenter={[54.5, -2]} defaultZoom={5} height={360} attribution={false}>
                               {mapMarkers.slice(0, 10).map((m) => (
-                                <Marker key={`preview-${m.id}`} anchor={[m.lat, m.lng]} color={m.type === "event" ? "hsl(46, 93%, 61%)" : "#ffffff"} width={20} />
+                                <Marker key={`preview-${m.id}`} anchor={[m.lat, m.lng]} color="hsl(46, 93%, 61%)" width={20} />
                               ))}
                             </PigeonMap>
                           </div>
