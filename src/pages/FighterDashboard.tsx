@@ -11,13 +11,15 @@ import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
 import { NotificationHistory } from "@/components/NotificationHistory";
 import { InterestedEventsPanel } from "@/components/fighter/InterestedEventsPanel";
 import { ProfileCompletionBar } from "@/components/fighter/ProfileCompletionBar";
-import { MyProfilePanel } from "@/components/fighter/MyProfilePanel";
 import { GymsNearYouWidget } from "@/components/fighter/GymsNearYouWidget";
 import { MyRequestsPanel } from "@/components/fighter/MyRequestsPanel";
 import { EditableProfilePanel } from "@/components/fighter/EditableProfilePanel";
+import { EventCalendar } from "@/components/dashboard/EventCalendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building2, Inbox, Bell, Star, User, Send } from "lucide-react";
+import { Building2, Inbox, Bell, Star, User, Send, Calendar, Search, Plus } from "lucide-react";
 import { formatEnum } from "@/lib/format";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 export default function FighterDashboard() {
   const { user } = useAuth();
@@ -73,6 +75,21 @@ export default function FighterDashboard() {
     enabled: !!fighterProfile,
   });
 
+  // Calendar events
+  const { data: calendarEvents = [] } = useQuery({
+    queryKey: ["fighter-calendar-events"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("events")
+        .select("id, title, date, location, city, country, status")
+        .eq("status", "published")
+        .gte("date", new Date().toISOString().split("T")[0])
+        .order("date", { ascending: true })
+        .limit(20);
+      return data ?? [];
+    },
+  });
+
   const pendingProposals = proposals.filter((p) => p.status === "pending");
   const confirmedFights = proposals.filter((p) => p.status === "confirmed");
   const awaitingOthers = proposals.filter(() => false);
@@ -109,10 +126,9 @@ export default function FighterDashboard() {
               />
             ) : (
               <>
-                {/* Profile Completion */}
                 <ProfileCompletionBar fighterId={fighterProfile.id} fighterProfile={fighterProfile} />
-                {/* Gym Invites */}
                 <GymInvitesPanel fighterProfileId={fighterProfile.id} />
+
                 {/* Profile Summary */}
                 <div className="rounded-lg border border-border bg-card p-5 mb-8">
                   <div className="flex items-center gap-4">
@@ -146,9 +162,35 @@ export default function FighterDashboard() {
                   ))}
                 </div>
 
-                {/* (13) Gyms Near You */}
-                <div className="mb-10">
-                  <GymsNearYouWidget fighterProfileId={fighterProfile.id} />
+                {/* Calendar + Gyms Near You side by side */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-10">
+                  <div className="lg:col-span-2">
+                    <EventCalendar events={calendarEvents} />
+                  </div>
+                  <div>
+                    <GymsNearYouWidget fighterProfileId={fighterProfile.id} />
+                  </div>
+                </div>
+
+                {/* Quick Actions — below calendar, full width */}
+                <div className="rounded-lg border border-border bg-card p-4 mb-10">
+                  <h3 className="font-heading text-lg text-foreground mb-3">
+                    QUICK <span className="text-primary">ACTIONS</span>
+                  </h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <Button variant="outline" className="justify-start gap-2 h-10" asChild>
+                      <Link to="/explore?tab=events"><Search className="h-4 w-4 text-primary" /> Browse Events</Link>
+                    </Button>
+                    <Button variant="outline" className="justify-start gap-2 h-10" asChild>
+                      <Link to="/explore?tab=gyms"><Building2 className="h-4 w-4 text-primary" /> Find Gyms</Link>
+                    </Button>
+                    <Button variant="outline" className="justify-start gap-2 h-10" asChild>
+                      <Link to="/explore?tab=fighters"><User className="h-4 w-4 text-primary" /> Explore Fighters</Link>
+                    </Button>
+                    <Button variant="outline" className="justify-start gap-2 h-10" asChild>
+                      <Link to={`/fighters/${fighterProfile.id}`}><Star className="h-4 w-4 text-primary" /> View Public Profile</Link>
+                    </Button>
+                  </div>
                 </div>
 
                 {/* View Selector */}
@@ -210,7 +252,6 @@ export default function FighterDashboard() {
                         </div>
                       </>
                     )}
-
                     {confirmedFights.length > 0 && (
                       <>
                         <h2 className="font-heading text-2xl text-foreground mb-4">
