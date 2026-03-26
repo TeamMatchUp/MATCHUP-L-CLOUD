@@ -529,7 +529,7 @@ export default function EventDetail() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={sending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmInterest} disabled={sending}>
+            <AlertDialogAction onClick={handleToggleInterest} disabled={sending}>
               {sending ? "Sending..." : "Confirm"}
             </AlertDialogAction>
           </AlertDialogFooter>
