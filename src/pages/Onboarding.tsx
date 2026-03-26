@@ -395,10 +395,24 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
   const [disciplines, setDisciplines] = useState<string[]>([]);
   const [rosterSize, setRosterSize] = useState("");
   const [loading, setLoading] = useState(false);
+  const [matchedGym, setMatchedGym] = useState<{ id: string; name: string } | null>(null);
+  const [dismissedMatch, setDismissedMatch] = useState(false);
+  const navigate = useNavigate();
 
   const toggleDiscipline = (d: string) => {
     setDisciplines((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]);
   };
+
+  // (7) Gym name matching — debounce search after 3 chars
+  useEffect(() => {
+    if (dismissedMatch || gymName.length < 3) { setMatchedGym(null); return; }
+    const timeout = setTimeout(async () => {
+      const { data } = await supabase.from("gyms").select("id, name").ilike("name", `%${gymName}%`).limit(1);
+      if (data && data.length > 0) setMatchedGym(data[0]);
+      else setMatchedGym(null);
+    }, 400);
+    return () => clearTimeout(timeout);
+  }, [gymName, dismissedMatch]);
 
   const handleSubmit = async () => {
     if (!gymName) {
@@ -406,6 +420,7 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
       return;
     }
     setLoading(true);
+    // (1) Explicitly set claimed=true and listing_tier='free'
     await supabase.from("gyms").insert({
       name: gymName, postcode: postcode || null, claimed: true, listing_tier: "free",
       coach_id: user!.id, discipline_tags: disciplines.length > 0 ? disciplines.join(", ") : null,
@@ -420,7 +435,22 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
       <h3 className="font-heading text-xl text-foreground">Coach Setup</h3>
       <div className="space-y-2">
         <Label>Gym Name *</Label>
-        <Input value={gymName} onChange={(e) => setGymName(e.target.value)} placeholder="Your gym name" />
+        <Input value={gymName} onChange={(e) => { setGymName(e.target.value); setDismissedMatch(false); }} placeholder="Your gym name" />
+        {/* (7) Gym name match banner */}
+        {matchedGym && !dismissedMatch && (
+          <div className="rounded-md border border-primary/30 bg-primary/5 p-3 space-y-2">
+            <p className="text-sm text-foreground">
+              Your gym may already be in our directory — <strong className="text-primary">{matchedGym.name}</strong>. Claim this listing?
+            </p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" className="text-xs" onClick={async () => {
+                await markOnboardingComplete(queryClient);
+                navigate(`/gyms/${matchedGym.id}`);
+              }}>Claim Existing Listing</Button>
+              <Button size="sm" variant="ghost" className="text-xs" onClick={() => setDismissedMatch(true)}>Continue Creating New</Button>
+            </div>
+          </div>
+        )}
       </div>
       <div className="space-y-2">
         <Label>Postcode</Label>
