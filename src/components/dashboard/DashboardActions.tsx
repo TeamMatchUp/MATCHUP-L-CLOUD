@@ -535,11 +535,64 @@ export function DashboardActions({
     }
   };
 
+  // Category options per role
+  const categoryOptions = (() => {
+    if (isFighter) return ["All", "Fight Proposals", "Session Invites", "Gym Requests"];
+    if (isCoachOrOwner) return ["All", "Gym Join Requests", "Roster Proposals"];
+    if (isOrganiser) return ["All", "Bout Proposals"];
+    return ["All"];
+  })();
+
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState<"active" | "completed">("active");
+  const [searchFilter, setSearchFilter] = useState("");
+
+  const categoryTypeMap: Record<string, string[]> = {
+    "Fight Proposals": ["bout_proposal", "fight_proposal", "match_suggestion"],
+    "Session Invites": ["trial_lead"],
+    "Gym Requests": ["gym_request"],
+    "Gym Join Requests": ["gym_request", "trial_lead"],
+    "Roster Proposals": ["bout_proposal", "fight_proposal"],
+    "Bout Proposals": ["bout_proposal", "match_suggestion"],
+  };
+
+  const filteredActiveItems = activeItems.filter((item) => {
+    if (categoryFilter !== "All") {
+      const types = categoryTypeMap[categoryFilter] || [];
+      if (!types.includes(item.type)) return false;
+    }
+    if (searchFilter.trim()) {
+      const q = searchFilter.toLowerCase();
+      if (!item.title.toLowerCase().includes(q) && !item.subtitle.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-4">
       <h2 className="font-heading text-2xl text-foreground">
         ACTION <span className="text-primary">CENTRE</span>
       </h2>
+
+      {/* (11) Filter bar */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-full sm:w-[200px] h-9 text-xs">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categoryOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <div className="flex gap-1">
+          <Button size="sm" variant={statusFilter === "active" ? "default" : "outline"} className="h-9 text-xs" onClick={() => setStatusFilter("active")}>Active</Button>
+          <Button size="sm" variant={statusFilter === "completed" ? "default" : "outline"} className="h-9 text-xs" onClick={() => setStatusFilter("completed")}>Completed</Button>
+        </div>
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} placeholder="Search by name or event..." className="pl-9 h-9 text-xs" />
+        </div>
+      </div>
 
       {/* Recently actioned - undo section */}
       {recentlyActioned.length > 0 && (
