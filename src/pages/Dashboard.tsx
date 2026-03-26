@@ -226,6 +226,14 @@ export default function Dashboard() {
         );
 
       case "interests":
+        if (isFighter && fighterProfile) {
+          return (
+            <FighterInterestsPage
+              fighterProfileId={fighterProfile.id}
+              fighterPostcode={fighterProfile.postcode}
+            />
+          );
+        }
         return (
           <DashboardInterests
             userId={user!.id}
