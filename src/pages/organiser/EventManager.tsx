@@ -365,9 +365,17 @@ export default function EventManager() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-heading text-2xl text-foreground">MAIN <span className="text-primary">CARD</span></h2>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowAddMain(true)}>
-                    <Plus className="h-3 w-3" /> Add Fight Manually
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Plus className="h-3 w-3" /> Add Fight Slot
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setShowOpenSlotMain(true)}>Add Open Slot</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setShowAddMain(true)}>Add Fight Manually</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowSuggestionsMain(!showSuggestionsMain)}>
                     <Sparkles className="h-3 w-3" /> Get Match Suggestions
                   </Button>
