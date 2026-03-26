@@ -13,7 +13,14 @@ import { EditBoutDialog } from "@/components/organiser/EditBoutDialog";
 import { MatchSuggestionsPanel } from "@/components/organiser/MatchSuggestionsPanel";
 import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
 import { AddFightSlotDialog } from "@/components/organiser/AddFightSlotDialog";
+import { AddOpenSlotDialog } from "@/components/organiser/AddOpenSlotDialog";
 import { ArrowLeft, Globe, Pencil, Plus, Sparkles, Eye, EyeOff, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
@@ -143,6 +150,8 @@ export default function EventManager() {
   const [showSuggestionsMain, setShowSuggestionsMain] = useState(false);
   const [showSuggestionsUnder, setShowSuggestionsUnder] = useState(false);
   const [showAddSlot, setShowAddSlot] = useState(false);
+  const [showOpenSlotMain, setShowOpenSlotMain] = useState(false);
+  const [showOpenSlotUnder, setShowOpenSlotUnder] = useState(false);
   const [mainPage, setMainPage] = useState(0);
   const [underPage, setUnderPage] = useState(0);
   const BOUTS_PER_PAGE = 5;
@@ -356,9 +365,17 @@ export default function EventManager() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-heading text-2xl text-foreground">MAIN <span className="text-primary">CARD</span></h2>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowAddMain(true)}>
-                    <Plus className="h-3 w-3" /> Add Fight Manually
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Plus className="h-3 w-3" /> Add Fight Slot
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setShowOpenSlotMain(true)}>Add Open Slot</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setShowAddMain(true)}>Add Fight Manually</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowSuggestionsMain(!showSuggestionsMain)}>
                     <Sparkles className="h-3 w-3" /> Get Match Suggestions
                   </Button>
@@ -403,9 +420,17 @@ export default function EventManager() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-heading text-2xl text-foreground">UNDER<span className="text-primary">CARD</span></h2>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowAddUnder(true)}>
-                    <Plus className="h-3 w-3" /> Add Fight Manually
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-1">
+                        <Plus className="h-3 w-3" /> Add Fight Slot
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setShowOpenSlotUnder(true)}>Add Open Slot</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setShowAddUnder(true)}>Add Fight Manually</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowSuggestionsUnder(!showSuggestionsUnder)}>
                     <Sparkles className="h-3 w-3" /> Get Match Suggestions
                   </Button>
@@ -494,6 +519,22 @@ export default function EventManager() {
               eventId={id!}
               nextSlotNumber={slots.length + 1}
               onSuccess={() => queryClient.invalidateQueries({ queryKey: ["event-slots", id] })}
+            />
+            <AddOpenSlotDialog
+              open={showOpenSlotMain}
+              onOpenChange={setShowOpenSlotMain}
+              eventId={id!}
+              sectionType="Main Event"
+              nextSlotNumber={bouts.length + 1}
+              onSuccess={handleBoutSuccess}
+            />
+            <AddOpenSlotDialog
+              open={showOpenSlotUnder}
+              onOpenChange={setShowOpenSlotUnder}
+              eventId={id!}
+              sectionType="Undercard"
+              nextSlotNumber={bouts.length + 1}
+              onSuccess={handleBoutSuccess}
             />
           </div>
         </section>

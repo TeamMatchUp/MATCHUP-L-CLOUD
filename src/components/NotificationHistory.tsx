@@ -59,6 +59,7 @@ export function NotificationHistory() {
     await supabase.from("notifications").update({ read: true }).eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
     navigate("/dashboard?section=actions");
   };
 
@@ -66,6 +67,7 @@ export function NotificationHistory() {
     await supabase.from("notifications").update({ read: !notification.read }).eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
     toast.success(notification.read ? "Marked as unread" : "Marked as read");
   };
 
@@ -74,6 +76,7 @@ export function NotificationHistory() {
     if (error) { toast.error("Failed to delete: " + error.message); return; }
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
     toast.success("Notification deleted");
   };
 
@@ -83,6 +86,7 @@ export function NotificationHistory() {
     await supabase.from("notifications").update({ read: true }).in("id", unreadIds);
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
     toast.success("All notifications marked as read");
   };
 
@@ -92,6 +96,7 @@ export function NotificationHistory() {
     if (error) { toast.error("Failed to clear: " + error.message); return; }
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
     toast.success("All notifications deleted");
   };
 
@@ -114,6 +119,7 @@ export function NotificationHistory() {
     await supabase.from("notifications").update({ read: true }).in("id", ids);
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
     exitMultiSelect();
     toast.success(`${ids.length} notification(s) marked as read`);
   };
@@ -125,6 +131,7 @@ export function NotificationHistory() {
     }
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
     exitMultiSelect();
     toast.success(`${ids.length} notification(s) deleted`);
   };

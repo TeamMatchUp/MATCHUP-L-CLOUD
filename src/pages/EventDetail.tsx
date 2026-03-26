@@ -178,15 +178,14 @@ export default function EventDetail() {
   const hasContact = event.contact_email || event.contact_phone || event.contact_website;
   const hasCoords = event.latitude != null && event.longitude != null;
 
+  const isOpen = (bout: any) => !bout.fighter_a_id && !bout.fighter_b_id && bout.status === "open";
   const getStatusIndicator = (bout: any) => {
     const isConfirmedPublic = bout.status === "confirmed" && bout.is_public === true;
     if (isConfirmedPublic) return null;
-    if (bout.status === "proposed") {
-      return <Badge className="bg-primary/15 text-primary border-primary/30 text-xs">Proposed</Badge>;
-    }
-    if (!bout.fighter_a_id && !bout.fighter_b_id) {
+    if (isOpen(bout)) {
       return <Badge className="bg-primary/15 text-primary border-primary/30 text-xs">Slot Open</Badge>;
     }
+    // No badge for proposed — just show TBA vs TBA
     return null;
   };
 
@@ -221,7 +220,8 @@ export default function EventDetail() {
             </div>
           </div>
           {/* Centre — VS + weight class */}
-          <div className="flex flex-col items-center px-4">
+            <div className="flex flex-col items-center px-4">
+            {isOpen(bout) && <span className="text-primary text-xs font-semibold uppercase tracking-wide">Open</span>}
             <span className="font-heading text-primary text-2xl">VS</span>
             {bout.weight_class && <p className="text-xs text-muted-foreground mt-1">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
@@ -278,6 +278,7 @@ export default function EventDetail() {
           </div>
           {/* Centre */}
           <div className="flex flex-col items-center">
+            {isOpen(bout) && <span className="text-primary text-[10px] font-semibold uppercase tracking-wide">Open</span>}
             <span className="font-heading text-primary text-xs">VS</span>
             {bout.weight_class && <p className="text-[10px] text-muted-foreground mt-0.5">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
@@ -411,7 +412,7 @@ export default function EventDetail() {
                   )}
 
                   <div className="flex flex-wrap gap-3">
-                    {isFighter && fighterProfile && (
+                    {user && isFighter && fighterProfile && (
                       existingInterest ? (
                         <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
                           <Star className="h-4 w-4 fill-primary" /> Interested

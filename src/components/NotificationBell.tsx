@@ -33,6 +33,20 @@ export function NotificationBell() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
+  const { data: unreadCountData = 0 } = useQuery({
+    queryKey: ["notifications-unread-count", user?.id],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user!.id)
+        .eq("read", false);
+      return count ?? 0;
+    },
+    enabled: !!user,
+    refetchInterval: 15000,
+  });
+
   const { data: notifications = [] } = useQuery({
     queryKey: ["notifications", user?.id],
     queryFn: async () => {
@@ -48,7 +62,7 @@ export function NotificationBell() {
     refetchInterval: 15000,
   });
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = unreadCountData;
 
   const markAllRead = async () => {
     const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
@@ -58,15 +72,16 @@ export function NotificationBell() {
       .update({ read: true })
       .in("id", unreadIds);
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
   };
 
   const handleNotificationClick = async (notification: any) => {
-    // Mark as read
     await supabase
       .from("notifications")
       .update({ read: true })
       .eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
 
     setOpen(false);
     navigate("/dashboard?section=actions");
