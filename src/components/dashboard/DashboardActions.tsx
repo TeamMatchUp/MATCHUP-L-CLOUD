@@ -630,14 +630,14 @@ export function DashboardActions({
         </div>
       )}
 
-      {activeItems.length === 0 ? (
+      {filteredActiveItems.length === 0 ? (
         <div className="text-center py-12 rounded-lg border border-border bg-card">
           <Check className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground">All caught up — no actions required.</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {activeItems.map((item) => {
+          {filteredActiveItems.map((item) => {
             const Icon = getIcon(item.type);
             const badge = getTypeBadge(item.type);
             const isCoachGymRequest = item.type === "gym_request" && isCoachOrOwner && item.status === "pending";
