@@ -770,7 +770,7 @@ export function DashboardActions({
       </div>
 
       {/* Multi-select bulk action bar */}
-      {multiSelectMode && selectedIds.size > 0 && !isBinView && (
+      {multiSelectMode && selectedIds.size > 0 && (
         <div className="flex items-center gap-2 p-3 rounded-lg border border-primary/30 bg-primary/5">
           <span className="text-sm text-foreground font-medium">{selectedIds.size} selected</span>
           <div className="flex-1" />
@@ -779,14 +779,42 @@ export function DashboardActions({
               <Check className="h-3 w-3" /> Mark as Complete
             </Button>
           )}
-          <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-destructive/30 text-destructive" onClick={handleBulkDiscard}>
-            <Trash2 className="h-3 w-3" /> Delete
-          </Button>
+          {isBinView ? (
+            <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-destructive/30 text-destructive" onClick={() => setConfirmBulkDelete(true)}>
+              <Trash2 className="h-3 w-3" /> Delete Permanently
+            </Button>
+          ) : (
+            <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-destructive/30 text-destructive" onClick={handleBulkDiscard}>
+              <Trash2 className="h-3 w-3" /> Delete
+            </Button>
+          )}
           <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={exitMultiSelect}>
             Cancel
           </Button>
         </div>
       )}
+
+      {/* Bulk delete confirmation dialog */}
+      <Dialog open={confirmBulkDelete} onOpenChange={setConfirmBulkDelete}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /> Permanently Delete {selectedIds.size} Item{selectedIds.size !== 1 ? "s" : ""}?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">This action cannot be undone. These records will be permanently removed from the database.</p>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setConfirmBulkDelete(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={async () => {
+              const ids = Array.from(selectedIds);
+              for (const id of ids) {
+                const d = validDiscarded.find(dd => dd.item.id === id);
+                if (d) await handlePermanentDelete(d);
+              }
+              setConfirmBulkDelete(false);
+              exitMultiSelect();
+            }}>Delete Permanently</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Bin View */}
       {isBinView ? (
