@@ -77,9 +77,6 @@ export function DashboardRoster({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-heading text-2xl text-foreground">
-          FIGHTER <span className="text-primary">ROSTER</span>
-        </h2>
         <div className="flex gap-2">
           {onImportFighters && (
             <Button size="sm" variant="outline" className="gap-1" onClick={onImportFighters}>

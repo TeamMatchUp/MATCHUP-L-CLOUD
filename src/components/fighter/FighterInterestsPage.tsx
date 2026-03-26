@@ -134,9 +134,6 @@ export function FighterInterestsPage({ fighterProfileId, fighterPostcode }: Prop
 
   return (
     <div className="space-y-4">
-      <h2 className="font-heading text-2xl text-foreground">
-        MY <span className="text-primary">INTERESTS</span>
-      </h2>
 
       {!fighterPostcode && (
         <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">

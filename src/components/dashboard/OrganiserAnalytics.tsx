@@ -396,13 +396,13 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
 
       {/* Stacked bar (slot fill per event) + Preset doughnut */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
-        <div className="bg-card border border-border rounded-lg p-4">
+        <div className="bg-card border border-border rounded-lg p-4 overflow-hidden">
           <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Slot Fill per Event</h3>
           {slotFillData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={slotFillData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }} />
+                <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }} interval={0} angle={-30} textAnchor="end" height={50} />
                 <YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} allowDecimals={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
@@ -416,18 +416,22 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
           )}
         </div>
 
-        <div className="bg-card border border-border rounded-lg p-4">
+        <div className="bg-card border border-border rounded-lg p-4 overflow-hidden">
           <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Preset Usage</h3>
           {presetUsageData.some((d) => d.value > 0) ? (
             <ResponsiveContainer width="100%" height={220}>
               <PieChart>
-                <Pie data={presetUsageData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" paddingAngle={3}>
+                <Pie data={presetUsageData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value" paddingAngle={3}>
                   {presetUsageData.map((_, i) => (
                     <Cell key={i} fill={DONUT_COLORS[i % DONUT_COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
-                <Legend formatter={(value) => <span className="text-xs text-muted-foreground">{value}</span>} />
+                <Legend
+                  layout="horizontal"
+                  wrapperStyle={{ fontSize: "11px", lineHeight: "1.6" }}
+                  formatter={(value) => <span className="text-xs text-muted-foreground">{value}</span>}
+                />
               </PieChart>
             </ResponsiveContainer>
           ) : (

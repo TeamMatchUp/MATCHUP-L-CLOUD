@@ -689,9 +689,6 @@ export function DashboardActions({
 
   return (
     <div className="space-y-4">
-      <h2 className="font-heading text-2xl text-foreground">
-        ACTION <span className="text-primary">CENTRE</span>
-      </h2>
 
       {/* Filter bar */}
       <div className="flex flex-col sm:flex-row gap-2">

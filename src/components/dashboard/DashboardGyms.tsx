@@ -99,9 +99,6 @@ export function DashboardGyms({
   if (isFighter && !isCoachOrOwner && fighterProfileId) {
     return (
       <div className="space-y-6">
-        <h2 className="font-heading text-2xl text-foreground">
-          MY <span className="text-primary">GYMS</span>
-        </h2>
         <GymInvitesPanel fighterProfileId={fighterProfileId} />
         <MyGymsPanel fighterProfileId={fighterProfileId} />
       </div>
@@ -112,9 +109,6 @@ export function DashboardGyms({
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-heading text-2xl text-foreground">
-          MY <span className="text-primary">GYMS</span>
-        </h2>
         <Button
           size="sm"
           className="gap-1"

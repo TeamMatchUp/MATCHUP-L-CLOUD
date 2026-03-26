@@ -120,11 +120,11 @@ export default function Dashboard() {
     overview: "Dashboard",
     "my-profile": "My Profile",
     gyms: "My Gyms",
-    roster: "Roster",
-    interests: "Interests",
-    actions: "Actions",
+    roster: "Fighter Roster",
+    interests: "Fighter Interests",
+    actions: "Action Centre",
     events: "My Events",
-    analytics: "Analytics",
+    analytics: "Analytics Centre",
     notifications: "Notifications",
     "create-profile": "Create Profile",
   };
@@ -394,7 +394,7 @@ function DashboardInner({
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile hamburger */}
+        {/* Mobile hamburger — icon only, no text */}
         {isMobile && (
           <div className="sticky top-0 z-30 flex items-center h-12 px-3 bg-background border-b border-border">
             <Button
@@ -405,7 +405,6 @@ function DashboardInner({
             >
               <PanelLeft className="h-5 w-5" />
             </Button>
-            <span className="ml-2 font-heading text-sm text-foreground">{sectionTitle}</span>
           </div>
         )}
 
