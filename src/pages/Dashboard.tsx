@@ -311,66 +311,9 @@ export default function Dashboard() {
         />
 
         <div className="flex-1 flex flex-col min-w-0">
-          {/* Top Bar */}
-          <header className="h-14 flex items-center justify-between border-b border-border bg-card/50 backdrop-blur-sm px-4 shrink-0 sticky top-0 z-40">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger className="text-muted-foreground" />
-              <Link to="/" className="hidden sm:block">
-                <AppLogo className="h-7" />
-              </Link>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <NotificationBell />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <Avatar className="h-7 w-7">
-                      {profile?.avatar_url && <AvatarImage src={profile.avatar_url} alt="Profile" />}
-                      <AvatarFallback className="text-[10px] bg-muted text-muted-foreground">
-                        {initials}
-                      </AvatarFallback>
-                    </Avatar>
-                    {activeRole && (
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium hidden sm:inline">
-                        {ROLE_LABELS[activeRole] || activeRole}
-                      </span>
-                    )}
-                    <ChevronDown className="h-3 w-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  {roles.length > 1 && (
-                    <>
-                      <DropdownMenuLabel className="text-xs text-muted-foreground">
-                        Switch Role
-                      </DropdownMenuLabel>
-                      {roles.map((role) => (
-                        <DropdownMenuItem
-                          key={role}
-                          onClick={() => handleRoleSwitch(role)}
-                          className={role === activeRole ? "bg-primary/10 text-primary" : ""}
-                        >
-                          {ROLE_LABELS[role] || role}
-                        </DropdownMenuItem>
-                      ))}
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  <DropdownMenuItem asChild>
-                    <Link to="/account/settings">
-                      <Settings className="h-4 w-4 mr-2" />
-                      Account Settings
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+          {/* Minimal top bar with sidebar trigger */}
+          <header className="h-12 flex items-center border-b border-border bg-card/50 backdrop-blur-sm px-4 shrink-0 sticky top-0 z-40">
+            <SidebarTrigger className="text-muted-foreground" />
           </header>
 
           {/* Main Content */}

@@ -14,10 +14,10 @@ import { useNavigate } from "react-router-dom";
 
 /* ── Reusable sub-components ── */
 
-function SectionHeader({ title }: { title: string }) {
+function SectionHeader({ title, large }: { title: string; large?: boolean }) {
   return (
     <div className="flex items-center gap-3.5 mt-6 mb-3.5">
-      <span className="font-heading text-xs font-bold tracking-[2.5px] uppercase text-muted-foreground whitespace-nowrap">{title}</span>
+      <span className={`font-heading font-bold tracking-[2.5px] uppercase text-muted-foreground whitespace-nowrap ${large ? "text-sm" : "text-xs"}`}>{title}</span>
       <div className="flex-1 h-px bg-border" />
     </div>
   );

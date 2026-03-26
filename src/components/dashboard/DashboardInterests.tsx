@@ -78,9 +78,6 @@ export function DashboardInterests({ userId, rosterFighterIds }: DashboardIntere
 
   return (
     <div>
-      <h2 className="font-heading text-2xl text-foreground mb-4">
-        INTERESTS
-      </h2>
       <Tabs defaultValue="roster" className="space-y-4">
         <TabsList className="bg-card border border-border">
           <TabsTrigger value="roster">Roster Interests ({rosterInterests.length})</TabsTrigger>
