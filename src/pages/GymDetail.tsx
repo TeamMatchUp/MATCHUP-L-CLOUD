@@ -316,36 +316,40 @@ export default function GymDetail() {
                 </div>
               )}
 
-              {/* Unclaimed gym: invite coach message for all non-coach users */}
-              {!isOwner && !gym.claimed && (
-                <div className="mb-8 rounded-lg border border-border bg-muted/50 p-5 space-y-3">
+              {/* Unclaimed gym: styled invite card — hidden for organisers */}
+              {!isOwner && !gym.claimed && !isOrganiserOnly && (
+                <div className="mb-8 rounded-lg border-2 border-primary/40 bg-card p-6 space-y-4">
+                  <h3 className="font-heading text-lg text-foreground">This gym hasn't been claimed yet</h3>
                   {isCoach ? (
                     <>
                       <p className="text-sm text-muted-foreground">
-                        This gym does not have an active owner account yet.
+                        Are you the coach here? Claim this listing to manage your gym's profile, roster, and analytics.
                       </p>
                       <Button variant="hero" size="sm" onClick={handleClaimClick}>
-                        Claim This Gym
+                        Coach? Claim this gym
                       </Button>
                     </>
-                  ) : isFighter ? (
-                    <p className="text-sm text-muted-foreground">
-                      Only coaches can claim a gym listing. Ask your coach to sign up and claim this gym.
-                    </p>
-                  ) : isOrganiserOnly ? (
-                    null
                   ) : (
                     <>
                       <p className="text-sm text-muted-foreground">
-                        This gym does not have an active owner account yet. Know the coach? Share this link to invite them to claim their listing.
+                        Know the coach? Share this invite link so they can claim their listing.
                       </p>
-                      <button
-                        onClick={handleCopyCoachUrl}
-                        className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
-                      >
-                        {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                        {copied ? "Copied!" : "Copy coach signup URL"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-muted border border-border rounded-md px-3 py-2 text-xs text-muted-foreground truncate">
+                          {`${window.location.origin}/gyms/${gym.id}?action=claim`}
+                        </div>
+                        <Button size="sm" variant="outline" className="gap-1 shrink-0" onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/gyms/${gym.id}?action=claim`);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        }}>
+                          {copied ? <CheckIcon className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                          {copied ? "Copied" : "Copy"}
+                        </Button>
+                      </div>
+                      <Button variant="outline" size="sm" className="gap-1 text-primary border-primary/30" onClick={handleClaimClick}>
+                        Coach? Claim this gym
+                      </Button>
                     </>
                   )}
                 </div>
