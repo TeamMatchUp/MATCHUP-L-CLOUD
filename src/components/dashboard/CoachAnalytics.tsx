@@ -10,6 +10,7 @@ import {
   LineChart, Line, CartesianGrid, Legend,
 } from "recharts";
 import { OrganiserAnalyticsShared } from "./OrganiserAnalytics";
+import { useNavigate } from "react-router-dom";
 
 /* ── Reusable sub-components ── */
 
