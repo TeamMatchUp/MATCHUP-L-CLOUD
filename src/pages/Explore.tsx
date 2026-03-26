@@ -407,9 +407,11 @@ export default function Explore() {
               {/* Map panel - pigeon-maps */}
               {mapOpen && tab !== "fighters" && (
                 <div className="flex-1 min-h-[500px] relative">
-                  <Button variant="outline" size="sm" className="absolute top-3 left-3 z-10" onClick={() => { setMapOpen(false); setPopupItem(null); }}>
-                    <X className="h-4 w-4 mr-1" /> Close Map
-                  </Button>
+                  <div className="absolute top-3 left-3 z-10 flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => { setMapOpen(false); setPopupItem(null); }}>
+                      <X className="h-4 w-4 mr-1" /> Close Map
+                    </Button>
+                  </div>
                   <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={500}>
                     {mapMarkers.map((m) => (
                       <Marker
