@@ -79,6 +79,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function CoachAnalyticsV2({ userId }: { userId: string }) {
   const { effectiveRoles } = useAuth();
+  const navigate = useNavigate();
   const [activeMonths, setActiveMonths] = useState<"6m" | "12m">("6m");
   const [showActiveModal, setShowActiveModal] = useState(false);
   const [reachPeriod, setReachPeriod] = useState<"30d" | "all">("30d");
