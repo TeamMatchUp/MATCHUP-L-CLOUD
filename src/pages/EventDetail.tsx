@@ -356,7 +356,31 @@ export default function EventDetail() {
                     </div>
                   )}
 
-                  {event.tickets_url && (
+                  {/* Ticket Sales Section — controlled by show_ticket_sales */}
+                  {(event as any).show_ticket_sales && (
+                    <div className="rounded-lg border border-border bg-card p-5 mb-6">
+                      <h3 className="font-heading text-sm text-muted-foreground uppercase tracking-wide mb-3">Tickets</h3>
+                      {event.sold_out ? (
+                        <Badge className="bg-destructive/15 text-destructive border-destructive/30 text-sm px-3 py-1">Sold Out</Badge>
+                      ) : (
+                        <div className="space-y-3">
+                          {event.ticket_count && (
+                            <p className="text-sm text-foreground font-medium">{event.ticket_count} tickets available</p>
+                          )}
+                          {event.tickets_url && (
+                            <Button asChild className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
+                              <a href={event.tickets_url} target="_blank" rel="noopener noreferrer">
+                                <Ticket className="h-4 w-4" /> Buy Tickets
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Legacy fallback: show Buy Tickets button if show_ticket_sales is not set but tickets_url exists */}
+                  {!(event as any).show_ticket_sales && event.tickets_url && (
                     <Button asChild className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 mb-6">
                       <a href={event.tickets_url} target="_blank" rel="noopener noreferrer">
                         <Ticket className="h-4 w-4" /> Buy Tickets
