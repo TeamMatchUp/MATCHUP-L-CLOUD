@@ -80,7 +80,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
     { key: "my-profile", label: "My Profile", icon: User, roles: ["fighter"] },
     { key: "gyms", label: "My Gyms", icon: Building2, roles: ["gym_owner", "coach"] },
     { key: "roster", label: "Roster", icon: Users, roles: ["gym_owner", "coach"] },
-    { key: "interests", label: "Interests", icon: Heart, roles: ["gym_owner", "coach"] },
+    { key: "interests", label: "Interests", icon: Heart, roles: ["gym_owner", "coach", "fighter"] },
     { key: "actions", label: "Actions", icon: Zap, badgeCount: actionsCount },
     { key: "events", label: "My Events", icon: Calendar, roles: ["gym_owner", "coach", "organiser"] },
     { key: "analytics", label: "Analytics", icon: BarChart3 },
