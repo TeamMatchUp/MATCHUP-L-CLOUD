@@ -759,11 +759,9 @@ export function DashboardActions({
           </Button>
         </div>
         <div className="flex gap-1 items-center">
-          {!isBinView && (
-            <Button size="sm" variant={multiSelectMode ? "default" : "outline"} className="h-9 text-xs gap-1" onClick={() => multiSelectMode ? exitMultiSelect() : setMultiSelectMode(true)}>
+          <Button size="sm" variant={multiSelectMode ? "default" : "outline"} className="h-9 text-xs gap-1" onClick={() => multiSelectMode ? exitMultiSelect() : setMultiSelectMode(true)}>
               <CheckSquare className="h-3 w-3" /> Select
             </Button>
-          )}
         </div>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
