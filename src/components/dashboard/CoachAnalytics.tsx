@@ -470,6 +470,8 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
   }, [gymLeads]);
 
   const STATUS_ORDER = ["pending", "contacted", "trial_attended", "converted"];
+  const [pipelineModalStatus, setPipelineModalStatus] = useState<string | null>(null);
+
   const handleLeadMove = async (leadId: string, currentStatus: string, direction: "forward" | "back") => {
     const idx = STATUS_ORDER.indexOf(currentStatus);
     const newIdx = direction === "forward" ? idx + 1 : idx - 1;
@@ -480,6 +482,19 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
     queryClient.invalidateQueries({ queryKey: ["coach-analytics-gym-leads"] });
     toast.success(`Lead moved to ${newStatus.replace(/_/g, " ")}`);
   };
+
+  const handleLeadDelete = async (leadId: string) => {
+    const { error } = await supabase.from("gym_leads").delete().eq("id", leadId);
+    if (error) { toast.error("Failed to delete lead"); return; }
+    queryClient.invalidateQueries({ queryKey: ["coach-analytics-gym-leads"] });
+    toast.success("Lead deleted");
+  };
+
+  const pipelineModalItems = useMemo(() => {
+    if (!pipelineModalStatus) return [];
+    const col = pipelineColumns.find((c) => c.status === pipelineModalStatus);
+    return col?.items ?? [];
+  }, [pipelineModalStatus, pipelineColumns]);
 
   // ════════════════════════════════════════════
   // Active Fighters Modal Data
