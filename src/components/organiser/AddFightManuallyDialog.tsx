@@ -141,6 +141,7 @@ export function AddFightManuallyDialog({ open, onOpenChange, eventId, sectionTyp
               onClear={() => setFighterA(null)}
               excludeId={fighterB?.id}
               coachId={isCoach ? user?.id : null}
+              eventId={eventId}
             />
 
             <FighterSearchDropdown
@@ -150,6 +151,7 @@ export function AddFightManuallyDialog({ open, onOpenChange, eventId, sectionTyp
               onClear={() => setFighterB(null)}
               excludeId={fighterA?.id}
               coachId={isCoach ? user?.id : null}
+              eventId={eventId}
             />
 
             <DialogFooter>
