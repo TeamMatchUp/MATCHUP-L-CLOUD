@@ -421,7 +421,7 @@ export default function Explore() {
                       <Marker
                         key={`${m.type}-${m.id}`}
                         anchor={[m.lat, m.lng]}
-                        color={m.type === "event" ? "hsl(46, 93%, 61%)" : "#ffffff"}
+                        color="hsl(46, 93%, 61%)"
                         width={32}
                         onClick={() => setPopupItem(m)}
                       />
