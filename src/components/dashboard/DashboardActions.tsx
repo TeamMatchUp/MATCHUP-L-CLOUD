@@ -194,6 +194,52 @@ export function DashboardActions({
     enabled: isFighter && !!fighterProfile,
   });
 
+  // Fighter/Coach: bout proposals from event_fight_slots
+  const { data: boutProposals = [] } = useQuery({
+    queryKey: ["actions-bout-proposals", fighterProfile?.id, allFighterIds],
+    queryFn: async () => {
+      const ids = fighterProfile ? [fighterProfile.id, ...allFighterIds] : allFighterIds;
+      if (ids.length === 0) return [];
+      const uniqueIds = [...new Set(ids)];
+      const { data: asA } = await supabase
+        .from("event_fight_slots")
+        .select("id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)")
+        .in("fighter_a_id", uniqueIds)
+        .eq("status", "proposed");
+      const { data: asB } = await supabase
+        .from("event_fight_slots")
+        .select("id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)")
+        .in("fighter_b_id", uniqueIds)
+        .eq("status", "proposed");
+      const map = new Map<string, any>();
+      [...(asA ?? []), ...(asB ?? [])].forEach((s) => map.set(s.id, s));
+      // Check which ones user has already accepted
+      const slotIds = Array.from(map.keys());
+      let myAcceptances = new Set<string>();
+      if (slotIds.length > 0) {
+        const { data: accs } = await supabase.from("bout_acceptances").select("slot_id").eq("user_id", userId).in("slot_id", slotIds);
+        myAcceptances = new Set((accs ?? []).map((a: any) => a.slot_id));
+      }
+      return Array.from(map.values())
+        .filter((s: any) => !myAcceptances.has(s.id))
+        .map((s: any) => {
+          const fA = Array.isArray(s.fighter_a) ? s.fighter_a[0] : s.fighter_a;
+          const fB = Array.isArray(s.fighter_b) ? s.fighter_b[0] : s.fighter_b;
+          const evt = Array.isArray(s.event) ? s.event[0] : s.event;
+          return {
+            id: s.id,
+            type: "bout_proposal" as const,
+            title: `Fight proposal: ${fA?.name ?? "TBA"} vs ${fB?.name ?? "TBA"}`,
+            subtitle: `${evt?.title ?? "Event"} · ${s.bout_type ?? "Undercard"} · ${formatEnum(s.weight_class ?? "")}`,
+            timestamp: s.created_at,
+            status: "proposed",
+            meta: { ...s, eventId: s.event_id, fighterAName: fA?.name, fighterBName: fB?.name, eventTitle: evt?.title },
+          };
+        });
+    },
+    enabled: (isFighter && !!fighterProfile) || (isCoachOrOwner && allFighterIds.length > 0),
+  });
+
   // Fighter: event interests
   const { data: eventInterests = [] } = useQuery({
     queryKey: ["actions-event-interests", fighterProfile?.id],
