@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, Search } from "lucide-react";
+import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, Search, Trash2, RotateCcw, AlertTriangle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { formatEnum } from "@/lib/format";
@@ -46,6 +46,12 @@ interface RecentAction {
   action: "accepted" | "declined";
   previousStatus: string;
   at: number;
+}
+
+interface DiscardedItem {
+  item: ActionItem;
+  discardedAt: number;
+  previousStatus: string;
 }
 
 interface DashboardActionsProps {
@@ -75,8 +81,10 @@ export function DashboardActions({
   const [trialMessage, setTrialMessage] = useState("");
   const [trialSending, setTrialSending] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState<"active" | "completed">("active");
+  const [statusFilter, setStatusFilter] = useState<"active" | "completed" | "bin">("active");
   const [searchFilter, setSearchFilter] = useState("");
+  const [discardedItems, setDiscardedItems] = useState<DiscardedItem[]>([]);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const gymIds = myGyms.map((g) => g.id);
 
@@ -364,7 +372,11 @@ export function DashboardActions({
     enabled: isOrganiser,
   });
 
-  // Build active + completed lists
+  // Auto-purge discarded items older than 30 days
+  const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+  const discardedIds = new Set(discardedItems.filter(d => Date.now() - d.discardedAt < THIRTY_DAYS).map(d => d.item.id));
+
+  // Build active + completed lists excluding discarded
   const activeItems: ActionItem[] = [
     ...gymRequestsActive,
     ...trialLeadsActive,
@@ -374,16 +386,33 @@ export function DashboardActions({
     ...eventInterests,
     ...eventClaims,
     ...organiserSuggestionsActive,
-  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  ].filter(i => !discardedIds.has(i.id)).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   const completedItems: ActionItem[] = [
     ...gymRequestsCompleted,
     ...fightProposals,
     ...boutProposalsCompleted,
     ...organiserSuggestionsCompleted,
-  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  ].filter(i => !discardedIds.has(i.id)).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   const recentlyActioned = recentActions.filter((a) => Date.now() - a.at < 24 * 60 * 60 * 1000);
+
+  const validDiscarded = discardedItems.filter(d => Date.now() - d.discardedAt < THIRTY_DAYS);
+
+  const handleDiscard = (item: ActionItem) => {
+    setDiscardedItems(prev => [...prev, { item, discardedAt: Date.now(), previousStatus: item.status }]);
+  };
+
+  const handleRecover = (discardedItem: DiscardedItem) => {
+    setDiscardedItems(prev => prev.filter(d => d.item.id !== discardedItem.item.id));
+    toast.success("Item recovered");
+  };
+
+  const handlePermanentDelete = (discardedItem: DiscardedItem) => {
+    setDiscardedItems(prev => prev.filter(d => d.item.id !== discardedItem.item.id));
+    setConfirmDeleteId(null);
+    toast.success("Permanently deleted");
+  };
 
   // ── Action handlers ──
 
@@ -576,8 +605,9 @@ export function DashboardActions({
     });
   };
 
-  const displayItems = statusFilter === "active" ? applyFilters(activeItems) : applyFilters(completedItems);
+  const displayItems = statusFilter === "active" ? applyFilters(activeItems) : statusFilter === "completed" ? applyFilters(completedItems) : [];
   const isCompletedView = statusFilter === "completed";
+  const isBinView = statusFilter === "bin";
 
   const renderActionButtons = (item: ActionItem) => {
     if (isCompletedView) {
@@ -680,6 +710,9 @@ export function DashboardActions({
           <Button size="sm" variant={statusFilter === "completed" ? "default" : "outline"} className="h-9 text-xs" onClick={() => setStatusFilter("completed")}>
             Completed ({completedItems.length})
           </Button>
+          <Button size="sm" variant={statusFilter === "bin" ? "default" : "outline"} className="h-9 text-xs gap-1" onClick={() => setStatusFilter("bin")}>
+            <Trash2 className="h-3 w-3" /> Bin ({validDiscarded.length})
+          </Button>
         </div>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -687,7 +720,55 @@ export function DashboardActions({
         </div>
       </div>
 
-      {displayItems.length === 0 ? (
+      {/* Bin View */}
+      {isBinView ? (
+        validDiscarded.length === 0 ? (
+          <div className="text-center py-12 rounded-lg border border-border bg-card">
+            <Trash2 className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">Bin is empty.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {validDiscarded.map((d) => {
+              const Icon = getIcon(d.item.type);
+              const badge = getTypeBadge(d.item.type);
+              const daysLeft = Math.max(1, Math.ceil((THIRTY_DAYS - (Date.now() - d.discardedAt)) / (24 * 60 * 60 * 1000)));
+              return (
+                <div key={d.item.id} className="rounded-lg border border-border/50 bg-card p-4 flex items-start gap-4 opacity-60">
+                  <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <Badge variant="outline" className={badge.className + " text-[10px]"}>{badge.label}</Badge>
+                      <span className="text-[10px] text-muted-foreground">
+                        Deleted {formatDistanceToNow(new Date(d.discardedAt), { addSuffix: true })} · {daysLeft} day{daysLeft !== 1 ? "s" : ""} until permanent deletion
+                      </span>
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground">{d.item.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{d.item.subtitle}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Button size="sm" variant="outline" className="h-8 px-3 text-xs gap-1" onClick={() => handleRecover(d)}>
+                      <RotateCcw className="h-3 w-3" /> Recover
+                    </Button>
+                    {confirmDeleteId === d.item.id ? (
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="destructive" className="h-8 px-3 text-xs" onClick={() => handlePermanentDelete(d)}>Confirm</Button>
+                        <Button size="sm" variant="ghost" className="h-8 px-2 text-xs" onClick={() => setConfirmDeleteId(null)}>Cancel</Button>
+                      </div>
+                    ) : (
+                      <Button size="sm" variant="outline" className="h-8 px-3 text-xs gap-1 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => setConfirmDeleteId(d.item.id)}>
+                        <Trash2 className="h-3 w-3" /> Delete
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )
+      ) : displayItems.length === 0 ? (
         <div className="text-center py-12 rounded-lg border border-border bg-card">
           <Check className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground">
@@ -725,6 +806,9 @@ export function DashboardActions({
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {renderActionButtons(item)}
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleDiscard(item)} title="Move to bin">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               </div>
             );

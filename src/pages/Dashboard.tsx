@@ -25,6 +25,8 @@ import { DashboardRoster } from "@/components/dashboard/DashboardRoster";
 import { DashboardActions, useActionsCount } from "@/components/dashboard/DashboardActions";
 import { DashboardEvents } from "@/components/dashboard/DashboardEvents";
 import { NotificationHistory } from "@/components/NotificationHistory";
+import { DashboardInterests } from "@/components/dashboard/DashboardInterests";
+import { FighterInterestsPage } from "@/components/fighter/FighterInterestsPage";
 import { CreateFighterProfileForm } from "@/components/fighter/CreateFighterProfileForm";
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { GymsNearYouWidget } from "@/components/fighter/GymsNearYouWidget";
@@ -223,6 +225,22 @@ export default function Dashboard() {
           />
         );
 
+      case "interests":
+        if (isFighter && fighterProfile) {
+          return (
+            <FighterInterestsPage
+              fighterProfileId={fighterProfile.id}
+              fighterPostcode={fighterProfile.postcode}
+            />
+          );
+        }
+        return (
+          <DashboardInterests
+            userId={user!.id}
+            rosterFighterIds={allFighterIds}
+          />
+        );
+
       case "notifications":
         return <NotificationHistory />;
 
@@ -300,14 +318,6 @@ export default function Dashboard() {
               <Link to="/" className="hidden sm:block">
                 <AppLogo className="h-7" />
               </Link>
-              <nav className="hidden md:flex items-center gap-6 ml-4">
-                <Link to="/" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide">
-                  Home
-                </Link>
-                <Link to="/explore" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide">
-                  Explore
-                </Link>
-              </nav>
             </div>
 
             <div className="flex items-center gap-2">

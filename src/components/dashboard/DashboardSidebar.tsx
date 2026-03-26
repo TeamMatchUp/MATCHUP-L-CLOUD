@@ -28,6 +28,8 @@ import {
   User,
   BarChart3,
   Heart,
+  Home,
+  Compass,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -78,7 +80,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
     { key: "my-profile", label: "My Profile", icon: User, roles: ["fighter"] },
     { key: "gyms", label: "My Gyms", icon: Building2, roles: ["gym_owner", "coach"] },
     { key: "roster", label: "Roster", icon: Users, roles: ["gym_owner", "coach"] },
-    { key: "interests", label: "Interests", icon: Heart, roles: ["gym_owner", "coach"] },
+    { key: "interests", label: "Interests", icon: Heart, roles: ["gym_owner", "coach", "fighter"] },
     { key: "actions", label: "Actions", icon: Zap, badgeCount: actionsCount },
     { key: "events", label: "My Events", icon: Calendar, roles: ["gym_owner", "coach", "organiser"] },
     { key: "analytics", label: "Analytics", icon: BarChart3 },
@@ -132,6 +134,30 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
       </SidebarHeader>
 
       <SidebarContent>
+        {/* Top nav: Home + Explore */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Home" className="sidebar-pill">
+                  <Link to="/">
+                    <Home className="h-4 w-4" />
+                    {!collapsed && <span>Home</span>}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Explore" className="sidebar-pill">
+                  <Link to="/explore">
+                    <Compass className="h-4 w-4" />
+                    {!collapsed && <span>Explore</span>}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
         <SidebarGroup>
           <SidebarGroupLabel>MENU</SidebarGroupLabel>
           <SidebarGroupContent>
