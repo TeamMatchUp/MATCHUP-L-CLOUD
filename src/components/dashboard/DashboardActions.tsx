@@ -710,6 +710,9 @@ export function DashboardActions({
           <Button size="sm" variant={statusFilter === "completed" ? "default" : "outline"} className="h-9 text-xs" onClick={() => setStatusFilter("completed")}>
             Completed ({completedItems.length})
           </Button>
+          <Button size="sm" variant={statusFilter === "bin" ? "default" : "outline"} className="h-9 text-xs gap-1" onClick={() => setStatusFilter("bin")}>
+            <Trash2 className="h-3 w-3" /> Bin ({validDiscarded.length})
+          </Button>
         </div>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
