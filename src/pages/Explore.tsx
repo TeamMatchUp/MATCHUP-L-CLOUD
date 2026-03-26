@@ -360,7 +360,7 @@ export default function Explore() {
             {/* Content area: directory + map tile / split-screen */}
             <div className={`flex-1 flex ${mapOpen ? "overflow-hidden" : ""}`}>
               {/* Directory cards */}
-              <div className={`${mapOpen ? "w-[420px] overflow-y-auto border-r border-border shrink-0 px-4 pb-4" : "flex-1"}`}>
+              <div className={`${mapOpen && !mapExpanded ? "w-[420px] overflow-y-auto border-r border-border shrink-0 px-4 pb-4" : mapOpen && mapExpanded ? "hidden" : "flex-1"}`}>
                 <div className={mapOpen ? "" : "container"}>
                   <div className={`${mapOpen ? "" : "flex gap-6"}`}>
                     <div className={`${mapOpen ? "w-full" : tab !== "fighters" ? "flex-1" : "w-full"}`}>
