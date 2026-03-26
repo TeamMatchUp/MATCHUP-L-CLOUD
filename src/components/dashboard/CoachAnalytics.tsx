@@ -87,6 +87,7 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
 
   const now = new Date();
   const hasOrganiserRole = effectiveRoles.includes("organiser");
+  const queryClient = useQueryClient();
 
   // ── Fetch coach's gyms ──
   const { data: myGyms = [] } = useQuery({
