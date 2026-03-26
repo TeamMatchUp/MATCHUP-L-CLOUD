@@ -28,6 +28,8 @@ import {
   User,
   BarChart3,
   Heart,
+  Home,
+  Compass,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
