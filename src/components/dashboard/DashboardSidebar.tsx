@@ -27,6 +27,7 @@ import {
   LogOut,
   User,
   BarChart3,
+  Heart,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
