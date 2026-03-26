@@ -25,7 +25,7 @@ function unwrap<T>(val: T | T[] | null | undefined): T | null {
 
 interface ActionItem {
   id: string;
-  type: "gym_request" | "trial_lead" | "match_suggestion" | "event_interest" | "match_proposal" | "event_claim" | "fight_proposal";
+  type: "gym_request" | "trial_lead" | "match_suggestion" | "event_interest" | "match_proposal" | "event_claim" | "fight_proposal" | "bout_proposal";
   title: string;
   subtitle: string;
   timestamp: string;
