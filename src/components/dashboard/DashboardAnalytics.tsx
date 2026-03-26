@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Calendar, TrendingUp, Target, Swords, Building2 } from "lucide-react";
-import { useState, useMemo } from "react";
-import { formatEnum } from "@/lib/format";
+import { Calendar, TrendingUp, Target, Swords } from "lucide-react";
+import { useMemo } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
-  LineChart, Line, CartesianGrid, Legend,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  LineChart, Line, CartesianGrid,
 } from "recharts";
 import { FighterAnalyticsV2 } from "./FighterAnalytics";
+import { CoachAnalyticsV2 } from "./CoachAnalytics";
 
 interface DashboardAnalyticsProps {
   isCoachOrOwner: boolean;
@@ -18,7 +18,6 @@ interface DashboardAnalyticsProps {
   events: any[];
   fighterProfile: any | null;
   userId: string;
-  embedded?: boolean;
 }
 
 const GOLD = "hsl(44 87% 58%)";
@@ -51,141 +50,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-function CoachAnalytics({ myGyms, allFighters, events, userId }: { myGyms: any[]; allFighters: any[]; events: any[]; userId: string }) {
-  const gymIds = myGyms.map((g) => g.id);
-
-  const { data: gymLeads = [] } = useQuery({
-    queryKey: ["analytics-gym-leads", gymIds],
-    queryFn: async () => {
-      if (gymIds.length === 0) return [];
-      const { data } = await supabase.from("gym_leads").select("id, type, created_at").in("gym_id", gymIds);
-      return data ?? [];
-    },
-    enabled: gymIds.length > 0,
-  });
-
-  const totalWins = allFighters.reduce((sum, f) => sum + (f.record_wins || 0), 0);
-  const totalLosses = allFighters.reduce((sum, f) => sum + (f.record_losses || 0), 0);
-
-  const now = new Date();
-  const trialThisMonth = gymLeads.filter((l) => l.type === "trial_request" && new Date(l.created_at).getMonth() === now.getMonth() && new Date(l.created_at).getFullYear() === now.getFullYear()).length;
-  const upcomingEvents = events.filter((e) => new Date(e.date) >= now).length;
-
-  // Bar chart: per-fighter win/loss
-  const rosterChart = allFighters.slice(0, 10).map((f) => ({
-    name: f.name?.split(" ")[0] ?? "?",
-    Wins: f.record_wins || 0,
-    Losses: f.record_losses || 0,
-  }));
-
-  // Line chart: leads over last 30 days
-  const leadsChart = useMemo(() => {
-    const days: { date: string; leads: number }[] = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(Date.now() - i * 86400000);
-      const key = d.toISOString().split("T")[0];
-      days.push({ date: key.slice(5), leads: 0 });
-    }
-    gymLeads.forEach((l) => {
-      const key = l.created_at.split("T")[0].slice(5);
-      const entry = days.find((d) => d.date === key);
-      if (entry) entry.leads++;
-    });
-    return days;
-  }, [gymLeads]);
-
-  // Leaderboard
-  const leaderboard = [...allFighters]
-    .map((f) => {
-      const total = (f.record_wins || 0) + (f.record_losses || 0);
-      return { ...f, winPct: total > 0 ? Math.round(((f.record_wins || 0) / total) * 100) : 0, totalFights: total };
-    })
-    .filter((f) => f.totalFights > 0)
-    .sort((a, b) => b.winPct - a.winPct);
-
-  return (
-    <div className="space-y-6">
-      <h2 className="font-heading text-2xl text-foreground">Coach <span className="text-primary">analytics</span></h2>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Total fighters" value={allFighters.length} icon={Users} />
-        <StatCard label="Total leads" value={gymLeads.length} icon={Target} />
-        <StatCard label="Active gyms" value={myGyms.length} icon={Building2} />
-        <StatCard label="Upcoming events" value={upcomingEvents} icon={Calendar} />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Roster Win/Loss */}
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h3 className="font-heading text-sm text-foreground mb-4">Roster win/loss record</h3>
-          {rosterChart.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={rosterChart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 9% 20%)" />
-                <XAxis dataKey="name" tick={{ fill: GREY, fontSize: 11 }} />
-                <YAxis tick={{ fill: GREY, fontSize: 11 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="Wins" fill={GOLD} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Losses" fill={RED} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-8">No fighter data yet.</p>
-          )}
-        </div>
-
-        {/* Leads over time */}
-        <div className="rounded-lg border border-border bg-card p-4">
-          <h3 className="font-heading text-sm text-foreground mb-4">Gym leads (last 30 days)</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={leadsChart}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220 9% 20%)" />
-              <XAxis dataKey="date" tick={{ fill: GREY, fontSize: 10 }} interval="preserveStartEnd" />
-              <YAxis tick={{ fill: GREY, fontSize: 11 }} allowDecimals={false} />
-              <Tooltip content={<CustomTooltip />} />
-              <Line type="monotone" dataKey="leads" stroke={GOLD} strokeWidth={2} dot={false} name="Leads" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Leaderboard */}
-      <div className="rounded-lg border border-border bg-card p-4">
-        <h3 className="font-heading text-sm text-foreground mb-4">Fighter leaderboard</h3>
-        {leaderboard.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-2 px-3 text-xs text-muted-foreground font-medium">#</th>
-                  <th className="text-left py-2 px-3 text-xs text-muted-foreground font-medium">Fighter</th>
-                  <th className="text-left py-2 px-3 text-xs text-muted-foreground font-medium">Record</th>
-                  <th className="text-right py-2 px-3 text-xs text-muted-foreground font-medium">Win%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map((f, i) => (
-                  <tr
-                    key={f.id}
-                    className={`border-b border-border/50 ${i === 0 ? "bg-primary/5" : "hover:bg-muted/30"}`}
-                  >
-                    <td className={`py-2 px-3 ${i === 0 ? "text-primary font-bold" : "text-muted-foreground"}`}>{i + 1}</td>
-                    <td className={`py-2 px-3 font-medium ${i === 0 ? "text-primary" : "text-foreground"}`}>{f.name}</td>
-                    <td className="py-2 px-3 text-muted-foreground">{f.record_wins}W-{f.record_losses}L-{f.record_draws || 0}D</td>
-                    <td className={`py-2 px-3 text-right font-medium ${i === 0 ? "text-primary" : "text-foreground"}`}>{f.winPct}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-4">No fight records yet.</p>
-        )}
-      </div>
-    </div>
-  );
-}
-
+// Old CoachAnalytics removed — now in CoachAnalytics.tsx
 // FighterAnalytics is now in FighterAnalytics.tsx
 
 function OrganiserAnalytics({ events, userId }: { events: any[]; userId: string }) {
@@ -281,7 +146,7 @@ export function DashboardAnalytics(props: DashboardAnalyticsProps) {
 
   return (
     <div className="space-y-8">
-      {isCoachOrOwner && <CoachAnalytics myGyms={myGyms} allFighters={allFighters} events={events} userId={userId} />}
+      {isCoachOrOwner && <CoachAnalyticsV2 userId={userId} />}
       {isFighter && fighterProfile && <FighterAnalyticsV2 fighterProfile={fighterProfile} />}
       {isOrganiser && <OrganiserAnalytics events={events} userId={userId} />}
       {!isCoachOrOwner && !isFighter && !isOrganiser && (
