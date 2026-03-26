@@ -75,9 +75,7 @@ export default function EventDetail() {
     setSending(true);
     try {
       if (existingInterest) {
-        // Remove interest
         await supabase.from("fighter_event_interests").delete().eq("id", existingInterest.id);
-        // Clean up coach notifications about this interest
         const { data: gymLinks } = await supabase
           .from("fighter_gym_links").select("gym_id, gyms(coach_id)")
           .eq("fighter_id", fighterProfile.id).eq("status", "approved");
@@ -91,7 +89,6 @@ export default function EventDetail() {
         queryClient.invalidateQueries({ queryKey: ["fighter-event-interests"] });
         toast.success("Interest removed");
       } else {
-        // Add interest
         const { error: insertError } = await supabase
           .from("fighter_event_interests").insert({ fighter_id: fighterProfile.id, event_id: id! });
         if (insertError) throw insertError;
@@ -168,26 +165,29 @@ export default function EventDetail() {
     );
   }
 
-  // PUBLIC page: show ALL bouts in order, but mask fighter info unless confirmed AND public
+  // All bouts in order
   const allOrderedBouts = allBouts;
   const mainEvents = allOrderedBouts.filter((b: any) => b.bout_type === "Main Event");
   const undercards = allOrderedBouts.filter((b: any) => b.bout_type !== "Main Event");
 
-  const mainTotal = Math.ceil(mainEvents.length / BOUTS_PER_PAGE);
-  const underTotal = Math.ceil(undercards.length / BOUTS_PER_PAGE);
+  const mainTotal = Math.ceil(mainEvents.length / BOUTS_PER_PAGE) || 1;
+  const underTotal = Math.ceil(undercards.length / BOUTS_PER_PAGE) || 1;
   const paginatedMain = mainEvents.slice(mainPage * BOUTS_PER_PAGE, (mainPage + 1) * BOUTS_PER_PAGE);
   const paginatedUnder = undercards.slice(underPage * BOUTS_PER_PAGE, (underPage + 1) * BOUTS_PER_PAGE);
 
   const hasContact = event.contact_email || event.contact_phone || event.contact_website;
   const hasCoords = event.latitude != null && event.longitude != null;
 
-  const renderFighterPhoto = (fighter: any, side: "left" | "right") => {
-    if (!fighter?.profile_image) return null;
-    return (
-      <div className={`h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 shrink-0 ${side === "right" ? "order-last" : ""}`}>
-        <img src={fighter.profile_image} alt={fighter.name} className="h-full w-full object-cover" />
-      </div>
-    );
+  const getStatusIndicator = (bout: any) => {
+    const isConfirmedPublic = bout.status === "confirmed" && bout.is_public === true;
+    if (isConfirmedPublic) return null;
+    if (bout.status === "proposed") {
+      return <Badge className="bg-primary/15 text-primary border-primary/30 text-xs">Proposed</Badge>;
+    }
+    if (!bout.fighter_a_id && !bout.fighter_b_id) {
+      return <Badge className="bg-primary/15 text-primary border-primary/30 text-xs">Slot Open</Badge>;
+    }
+    return null;
   };
 
   const renderMainBout = (bout: any) => {
@@ -196,35 +196,53 @@ export default function EventDetail() {
     const fB = isPublic ? unwrap(bout.fighter_b) : null;
     const nameA = isPublic ? (fA?.name ?? "TBA") : "TBA";
     const nameB = isPublic ? (fB?.name ?? "TBA") : "TBA";
+    const statusBadge = getStatusIndicator(bout);
     return (
-      <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6">
-        <div className="flex items-center gap-4 justify-between">
-          {isPublic && renderFighterPhoto(fA, "left")}
-          <div className="flex-1 text-left">
-            {isPublic && fA ? (
-              <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
-                <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameA}</p>
-              </Link>
-            ) : (
-              <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameA}</p>
+      <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6 relative">
+        {statusBadge && <div className="absolute top-3 right-3">{statusBadge}</div>}
+        {/* Three-column layout: Fighter A | VS + Weight | Fighter B */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+          {/* Fighter A — left aligned */}
+          <div className="flex items-center gap-3">
+            {isPublic && fA?.profile_image && (
+              <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 shrink-0">
+                <img src={fA.profile_image} alt={fA.name} className="h-full w-full object-cover" />
+              </div>
             )}
-            {isPublic && fA && <p className="text-primary font-bold text-lg mt-1">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
+            <div className="text-left">
+              {isPublic && fA ? (
+                <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
+                  <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameA}</p>
+                </Link>
+              ) : (
+                <p className="font-heading text-xl md:text-2xl text-muted-foreground uppercase">{nameA}</p>
+              )}
+              {isPublic && fA && <p className="text-primary font-bold text-lg mt-1">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
+            </div>
           </div>
+          {/* Centre — VS + weight class */}
           <div className="flex flex-col items-center px-4">
             <span className="font-heading text-primary text-2xl">VS</span>
             {bout.weight_class && <p className="text-xs text-muted-foreground mt-1">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
-          <div className="flex-1 text-right">
-            {isPublic && fB ? (
-              <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
-                <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameB}</p>
-              </Link>
-            ) : (
-              <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameB}</p>
+          {/* Fighter B — right aligned */}
+          <div className="flex items-center gap-3 justify-end">
+            <div className="text-right">
+              {isPublic && fB ? (
+                <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
+                  <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameB}</p>
+                </Link>
+              ) : (
+                <p className="font-heading text-xl md:text-2xl text-muted-foreground uppercase">{nameB}</p>
+              )}
+              {isPublic && fB && <p className="text-primary font-bold text-lg mt-1">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
+            </div>
+            {isPublic && fB?.profile_image && (
+              <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 shrink-0">
+                <img src={fB.profile_image} alt={fB.name} className="h-full w-full object-cover" />
+              </div>
             )}
-            {isPublic && fB && <p className="text-primary font-bold text-lg mt-1">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
           </div>
-          {isPublic && renderFighterPhoto(fB, "right")}
         </div>
       </div>
     );
@@ -236,39 +254,49 @@ export default function EventDetail() {
     const fB = isPublic ? unwrap(bout.fighter_b) : null;
     const nameA = isPublic ? (fA?.name ?? "TBA") : "TBA";
     const nameB = isPublic ? (fB?.name ?? "TBA") : "TBA";
+    const statusBadge = getStatusIndicator(bout);
     return (
-      <div key={bout.id} className="rounded-lg border border-border bg-card p-4">
-        <div className="flex items-center gap-3 justify-between">
-          {isPublic && fA?.profile_image && (
-            <div className="h-10 w-10 rounded-full overflow-hidden border border-primary/20 shrink-0">
-              <img src={fA.profile_image} alt={fA.name} className="h-full w-full object-cover" />
+      <div key={bout.id} className="rounded-lg border border-border bg-card p-4 relative">
+        {statusBadge && <div className="absolute top-2 right-2">{statusBadge}</div>}
+        {/* Three-column layout */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+          {/* Fighter A */}
+          <div className="flex items-center gap-2">
+            {isPublic && fA?.profile_image && (
+              <div className="h-10 w-10 rounded-full overflow-hidden border border-primary/20 shrink-0">
+                <img src={fA.profile_image} alt={fA.name} className="h-full w-full object-cover" />
+              </div>
+            )}
+            <div className="text-left">
+              {isPublic && fA ? (
+                <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
+                  <p className="font-heading text-sm text-foreground uppercase">{nameA}</p>
+                </Link>
+              ) : <p className="font-heading text-sm text-muted-foreground uppercase">{nameA}</p>}
+              {isPublic && fA && <p className="text-xs text-muted-foreground">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
             </div>
-          )}
-          <div className="flex-1 text-left">
-            {isPublic && fA ? (
-              <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
-                <p className="font-heading text-sm text-foreground uppercase">{nameA}</p>
-              </Link>
-            ) : <p className="font-heading text-sm text-foreground uppercase">{nameA}</p>}
-            {isPublic && fA && <p className="text-xs text-muted-foreground">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
           </div>
+          {/* Centre */}
           <div className="flex flex-col items-center">
             <span className="font-heading text-primary text-xs">VS</span>
             {bout.weight_class && <p className="text-[10px] text-muted-foreground mt-0.5">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
-          <div className="flex-1 text-right">
-            {isPublic && fB ? (
-              <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
-                <p className="font-heading text-sm text-foreground uppercase">{nameB}</p>
-              </Link>
-            ) : <p className="font-heading text-sm text-foreground uppercase">{nameB}</p>}
-            {isPublic && fB && <p className="text-xs text-muted-foreground">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
-          </div>
-          {isPublic && fB?.profile_image && (
-            <div className="h-10 w-10 rounded-full overflow-hidden border border-primary/20 shrink-0">
-              <img src={fB.profile_image} alt={fB.name} className="h-full w-full object-cover" />
+          {/* Fighter B */}
+          <div className="flex items-center gap-2 justify-end">
+            <div className="text-right">
+              {isPublic && fB ? (
+                <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
+                  <p className="font-heading text-sm text-foreground uppercase">{nameB}</p>
+                </Link>
+              ) : <p className="font-heading text-sm text-muted-foreground uppercase">{nameB}</p>}
+              {isPublic && fB && <p className="text-xs text-muted-foreground">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
             </div>
-          )}
+            {isPublic && fB?.profile_image && (
+              <div className="h-10 w-10 rounded-full overflow-hidden border border-primary/20 shrink-0">
+                <img src={fB.profile_image} alt={fB.name} className="h-full w-full object-cover" />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -291,31 +319,8 @@ export default function EventDetail() {
     );
   };
 
-  // Also show bouts that aren't public yet but as TBA
-  const tbaBouts = allBouts.filter((b: any) => !(b.status === "confirmed" && b.is_public === true));
-  const tbaMain = tbaBouts.filter((b: any) => b.bout_type === "Main Event");
-  const tbaUnder = tbaBouts.filter((b: any) => b.bout_type !== "Main Event");
-
-  const renderTbaBout = (bout: any, isMain: boolean) => (
-    <div key={bout.id} className={`rounded-lg border ${isMain ? "border-2 border-primary/30" : "border-border"} bg-card ${isMain ? "p-6" : "p-4"}`}>
-      <div className="flex items-center gap-3 justify-between">
-        <div className="flex-1 text-left">
-          <p className={`font-heading ${isMain ? "text-xl md:text-2xl" : "text-sm"} text-muted-foreground uppercase`}>TBA</p>
-        </div>
-        <div className="flex flex-col items-center px-4">
-          <span className={`font-heading text-primary ${isMain ? "text-2xl" : "text-xs"}`}>VS</span>
-          {bout.weight_class && <p className={`text-${isMain ? "xs" : "[10px]"} text-muted-foreground mt-1`}>{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
-        </div>
-        <div className="flex-1 text-right">
-          <p className={`font-heading ${isMain ? "text-xl md:text-2xl" : "text-sm"} text-muted-foreground uppercase`}>TBA</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const allMainVisible = [...paginatedMain, ...tbaMain];
-  const allUnderVisible = [...paginatedUnder, ...tbaUnder];
-  const showFightCard = allMainVisible.length > 0 || allUnderVisible.length > 0 || (event.fight_slots && event.fight_slots.length > 0);
+  // Always show fight card structure
+  const showFightCard = true;
 
   return (
     <div className="min-h-screen bg-background">
@@ -328,8 +333,8 @@ export default function EventDetail() {
             </Button>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              {/* Two-panel layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-8 mb-12">
+              {/* Two-panel layout — equal width, aligned with fight card below */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                 {/* Left panel */}
                 <div>
                   <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>
@@ -375,7 +380,6 @@ export default function EventDetail() {
                     </div>
                   )}
 
-                  {/* Ticket Sales Section — controlled by show_ticket_sales */}
                   {(event as any).show_ticket_sales && (
                     <div className="rounded-lg border border-border bg-card p-5 mb-6">
                       <h3 className="font-heading text-sm text-muted-foreground uppercase tracking-wide mb-3">Tickets</h3>
@@ -398,7 +402,6 @@ export default function EventDetail() {
                     </div>
                   )}
 
-                  {/* Legacy fallback: show Buy Tickets button if show_ticket_sales is not set but tickets_url exists */}
                   {!(event as any).show_ticket_sales && event.tickets_url && (
                     <Button asChild className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 mb-6">
                       <a href={event.tickets_url} target="_blank" rel="noopener noreferrer">
@@ -460,7 +463,7 @@ export default function EventDetail() {
               </div>
             </motion.div>
 
-            {/* FIGHT CARD */}
+            {/* FIGHT CARD — always rendered */}
             {showFightCard && (
               <>
                 <h2 className="font-heading text-2xl text-foreground mb-6">
@@ -468,35 +471,31 @@ export default function EventDetail() {
                 </h2>
                 {paginatedMain.length > 0 ? (
                   <div className="space-y-4 mb-4">{paginatedMain.map(renderMainBout)}</div>
-                ) : null}
-                {tbaMain.length > 0 && (
-                  <div className="space-y-4 mb-4">{tbaMain.map((b) => renderTbaBout(b, true))}</div>
+                ) : (
+                  <div className="rounded-lg border-2 border-dashed border-border bg-card/50 p-8 text-center mb-4">
+                    <p className="text-muted-foreground text-sm">No main card bouts announced yet.</p>
+                  </div>
                 )}
-                {mainEvents.length === 0 && tbaMain.length === 0 && (
-                  <p className="text-muted-foreground text-sm mb-4">No main card bouts announced yet.</p>
-                )}
-                <Pagination page={mainPage} total={mainTotal} setPage={setMainPage} />
+                <Pagination page={mainPage} total={Math.ceil(mainEvents.length / BOUTS_PER_PAGE) || 1} setPage={setMainPage} />
 
                 <h2 className="font-heading text-2xl text-foreground mb-6 mt-12">
                   UNDER<span className="text-primary">CARD</span>
                 </h2>
                 {paginatedUnder.length > 0 ? (
                   <div className="space-y-2 mb-4">{paginatedUnder.map(renderUndercardBout)}</div>
-                ) : null}
-                {tbaUnder.length > 0 && (
-                  <div className="space-y-2 mb-4">{tbaUnder.map((b) => renderTbaBout(b, false))}</div>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-border bg-card/50 p-6 text-center mb-4">
+                    <p className="text-muted-foreground text-sm">No undercard bouts announced yet.</p>
+                  </div>
                 )}
-                {undercards.length === 0 && tbaUnder.length === 0 && (
-                  <p className="text-muted-foreground text-sm mb-4">No undercard bouts announced yet.</p>
-                )}
-                <Pagination page={underPage} total={underTotal} setPage={setUnderPage} />
+                <Pagination page={underPage} total={Math.ceil(undercards.length / BOUTS_PER_PAGE) || 1} setPage={setUnderPage} />
               </>
             )}
 
             {/* Fallback to fight_slots if no event_fight_slots */}
             {allBouts.length === 0 && event.fight_slots && event.fight_slots.length > 0 && (
               <>
-                <h2 className="font-heading text-2xl text-foreground mb-6">
+                <h2 className="font-heading text-2xl text-foreground mb-6 mt-12">
                   FIGHT <span className="text-primary">CARD</span>
                 </h2>
                 <div className="space-y-3 mb-12">
@@ -518,7 +517,6 @@ export default function EventDetail() {
         </section>
       </main>
 
-      {/* Interest Confirmation Dialog */}
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>

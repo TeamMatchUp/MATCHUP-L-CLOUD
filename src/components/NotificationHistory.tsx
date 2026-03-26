@@ -6,8 +6,9 @@ import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Trash2, Mail, MailOpen } from "lucide-react";
+import { Trash2, Mail, MailOpen, CheckSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 
@@ -20,6 +21,7 @@ const TYPE_LABELS: Record<string, string> = {
   event_update: "Event Update",
   system: "System",
   gym_invite: "Gym Invite",
+  gym_request: "Gym Request",
 };
 
 export function NotificationHistory() {
@@ -27,8 +29,9 @@ export function NotificationHistory() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Always fetch ALL notifications for counts
   const { data: allNotifications = [], isLoading } = useQuery({
     queryKey: ["notification-history-all", user?.id],
     queryFn: async () => {
@@ -42,14 +45,12 @@ export function NotificationHistory() {
     enabled: !!user,
   });
 
-  // Derive filtered list from the full dataset
   const filteredNotifications = allNotifications.filter((n) => {
     if (filter === "unread") return !n.read;
     if (filter === "read") return n.read;
     return true;
   });
 
-  // Fixed counts — always computed from full list, never change on filter click
   const totalCount = allNotifications.length;
   const unreadCount = allNotifications.filter((n) => !n.read).length;
   const readCount = allNotifications.filter((n) => n.read).length;
@@ -94,6 +95,40 @@ export function NotificationHistory() {
     toast.success("All notifications deleted");
   };
 
+  // Multi-select handlers
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const exitMultiSelect = () => {
+    setMultiSelectMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkMarkRead = async () => {
+    const ids = Array.from(selectedIds);
+    await supabase.from("notifications").update({ read: true }).in("id", ids);
+    queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    exitMultiSelect();
+    toast.success(`${ids.length} notification(s) marked as read`);
+  };
+
+  const handleBulkDelete = async () => {
+    const ids = Array.from(selectedIds);
+    for (const id of ids) {
+      await supabase.from("notifications").delete().eq("id", id);
+    }
+    queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    exitMultiSelect();
+    toast.success(`${ids.length} notification(s) deleted`);
+  };
+
   if (!user) return null;
 
   return (
@@ -110,6 +145,9 @@ export function NotificationHistory() {
             Read ({readCount})
           </Button>
           <div className="flex-1" />
+          <Button size="sm" variant={multiSelectMode ? "default" : "outline"} className="gap-1" onClick={() => multiSelectMode ? exitMultiSelect() : setMultiSelectMode(true)}>
+            <CheckSquare className="h-3 w-3" /> Select
+          </Button>
           <Button variant="outline" size="sm" onClick={markAllRead} disabled={unreadCount === 0}>
             Mark all read
           </Button>
@@ -117,6 +155,23 @@ export function NotificationHistory() {
             Clear all
           </Button>
         </div>
+
+        {/* Multi-select bulk action bar */}
+        {multiSelectMode && selectedIds.size > 0 && (
+          <div className="flex items-center gap-2 p-3 rounded-lg border border-primary/30 bg-primary/5 mb-4">
+            <span className="text-sm text-foreground font-medium">{selectedIds.size} selected</span>
+            <div className="flex-1" />
+            <Button size="sm" variant="outline" className="h-8 text-xs gap-1" onClick={handleBulkMarkRead}>
+              <MailOpen className="h-3 w-3" /> Mark as Read
+            </Button>
+            <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-destructive/30 text-destructive" onClick={handleBulkDelete}>
+              <Trash2 className="h-3 w-3" /> Delete
+            </Button>
+            <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={exitMultiSelect}>
+              Cancel
+            </Button>
+          </div>
+        )}
 
         <ScrollArea className="h-[500px] pr-4">
           {isLoading ? (
@@ -135,6 +190,14 @@ export function NotificationHistory() {
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
+                    {multiSelectMode && (
+                      <div className="shrink-0 mt-1">
+                        <Checkbox
+                          checked={selectedIds.has(notification.id)}
+                          onCheckedChange={() => toggleSelect(notification.id)}
+                        />
+                      </div>
+                    )}
                     <button
                       onClick={() => handleNotificationClick(notification)}
                       className="flex-1 text-left space-y-1.5"
@@ -157,26 +220,28 @@ export function NotificationHistory() {
                         </span>
                       </div>
                     </button>
-                    <div className="flex gap-1 shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={(e) => { e.stopPropagation(); toggleRead(notification); }}
-                        title={notification.read ? "Mark as unread" : "Mark as read"}
-                      >
-                        {notification.read ? <Mail className="h-4 w-4" /> : <MailOpen className="h-4 w-4" />}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-destructive"
-                        onClick={(e) => { e.stopPropagation(); deleteNotification(notification.id); }}
-                        title="Delete notification"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {!multiSelectMode && (
+                      <div className="flex gap-1 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={(e) => { e.stopPropagation(); toggleRead(notification); }}
+                          title={notification.read ? "Mark as unread" : "Mark as read"}
+                        >
+                          {notification.read ? <Mail className="h-4 w-4" /> : <MailOpen className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive"
+                          onClick={(e) => { e.stopPropagation(); deleteNotification(notification.id); }}
+                          title="Delete notification"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

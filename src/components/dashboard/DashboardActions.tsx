@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -21,7 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, Search, Trash2, RotateCcw, AlertTriangle } from "lucide-react";
+import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, Search, Trash2, RotateCcw, AlertTriangle, CheckSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { formatEnum } from "@/lib/format";
@@ -85,12 +86,13 @@ export function DashboardActions({
   const [searchFilter, setSearchFilter] = useState("");
   const [discardedItems, setDiscardedItems] = useState<DiscardedItem[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const gymIds = myGyms.map((g) => g.id);
 
   // ── ACTIVE QUERIES (pending/unresolved items) ──
 
-  // Coach: pending gym join requests
   const { data: gymRequestsActive = [] } = useQuery({
     queryKey: ["actions-gym-requests-active", gymIds],
     queryFn: async () => {
@@ -111,7 +113,6 @@ export function DashboardActions({
     enabled: isCoachOrOwner && gymIds.length > 0,
   });
 
-  // Coach: completed gym join requests
   const { data: gymRequestsCompleted = [] } = useQuery({
     queryKey: ["actions-gym-requests-completed", gymIds],
     queryFn: async () => {
@@ -132,7 +133,6 @@ export function DashboardActions({
     enabled: isCoachOrOwner && gymIds.length > 0,
   });
 
-  // Coach: trial session leads (pending = active)
   const { data: trialLeadsActive = [] } = useQuery({
     queryKey: ["actions-trial-leads-active", gymIds],
     queryFn: async () => {
@@ -152,7 +152,6 @@ export function DashboardActions({
     enabled: isCoachOrOwner && gymIds.length > 0,
   });
 
-  // Fighter: pending gym requests they sent
   const { data: fighterGymRequests = [] } = useQuery({
     queryKey: ["actions-fighter-gym-reqs", fighterProfile?.id],
     queryFn: async () => {
@@ -171,7 +170,6 @@ export function DashboardActions({
     enabled: isFighter && !!fighterProfile,
   });
 
-  // Fighter: match suggestions (suggested status = active)
   const { data: matchSuggestions = [] } = useQuery({
     queryKey: ["actions-match-suggestions", fighterProfile?.id],
     queryFn: async () => {
@@ -195,7 +193,6 @@ export function DashboardActions({
     enabled: isFighter && !!fighterProfile,
   });
 
-  // Fighter: confirmed fight proposals (completed)
   const { data: fightProposals = [] } = useQuery({
     queryKey: ["actions-fight-proposals", fighterProfile?.id],
     queryFn: async () => {
@@ -220,7 +217,6 @@ export function DashboardActions({
     enabled: isFighter && !!fighterProfile,
   });
 
-  // Fighter/Coach: bout proposals (proposed = active)
   const { data: boutProposalsActive = [] } = useQuery({
     queryKey: ["actions-bout-proposals-active", fighterProfile?.id, allFighterIds],
     queryFn: async () => {
@@ -261,7 +257,6 @@ export function DashboardActions({
     enabled: (isFighter && !!fighterProfile) || (isCoachOrOwner && allFighterIds.length > 0),
   });
 
-  // Fighter/Coach: bout proposals (confirmed/declined = completed)
   const { data: boutProposalsCompleted = [] } = useQuery({
     queryKey: ["actions-bout-proposals-completed", fighterProfile?.id, allFighterIds],
     queryFn: async () => {
@@ -294,7 +289,6 @@ export function DashboardActions({
     enabled: (isFighter && !!fighterProfile) || (isCoachOrOwner && allFighterIds.length > 0),
   });
 
-  // Fighter: event interests (informational - active)
   const { data: eventInterests = [] } = useQuery({
     queryKey: ["actions-event-interests", fighterProfile?.id],
     queryFn: async () => {
@@ -313,7 +307,6 @@ export function DashboardActions({
     enabled: isFighter && !!fighterProfile,
   });
 
-  // Organiser: pending event claims (active)
   const { data: eventClaims = [] } = useQuery({
     queryKey: ["actions-event-claims", userId],
     queryFn: async () => {
@@ -331,7 +324,6 @@ export function DashboardActions({
     enabled: isOrganiser,
   });
 
-  // Organiser: match suggestions for their events
   const { data: organiserSuggestionsActive = [] } = useQuery({
     queryKey: ["actions-organiser-suggestions-active", userId],
     queryFn: async () => {
@@ -376,7 +368,6 @@ export function DashboardActions({
   const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
   const discardedIds = new Set(discardedItems.filter(d => Date.now() - d.discardedAt < THIRTY_DAYS).map(d => d.item.id));
 
-  // Build active + completed lists excluding discarded
   const activeItems: ActionItem[] = [
     ...gymRequestsActive,
     ...trialLeadsActive,
@@ -408,9 +399,29 @@ export function DashboardActions({
     toast.success("Item recovered");
   };
 
-  const handlePermanentDelete = (discardedItem: DiscardedItem) => {
+  const handlePermanentDelete = async (discardedItem: DiscardedItem) => {
+    // Actually delete from the database
+    const item = discardedItem.item;
+    try {
+      if (item.type === "gym_request") {
+        await supabase.from("fighter_gym_links").delete().eq("id", item.id);
+      } else if (item.type === "trial_lead") {
+        await supabase.from("gym_leads").delete().eq("id", item.id);
+      } else if (item.type === "match_suggestion" || item.type === "fight_proposal") {
+        await supabase.from("match_suggestions").update({ status: "dismissed" }).eq("id", item.id);
+      } else if (item.type === "bout_proposal") {
+        await supabase.from("event_fight_slots").delete().eq("id", item.id);
+      } else if (item.type === "event_interest") {
+        await supabase.from("fighter_event_interests").delete().eq("id", item.id);
+      } else if (item.type === "event_claim") {
+        // Can't delete event claims, just remove from local state
+      }
+    } catch (err) {
+      console.error("Failed to permanently delete:", err);
+    }
     setDiscardedItems(prev => prev.filter(d => d.item.id !== discardedItem.item.id));
     setConfirmDeleteId(null);
+    invalidate();
     toast.success("Permanently deleted");
   };
 
@@ -530,7 +541,6 @@ export function DashboardActions({
 
   const handleUndo = async (ra: RecentAction) => {
     if (ra.previousStatus === "pending") {
-      // gym_request or trial_lead — revert to pending
       const item = [...activeItems, ...completedItems].find((i) => i.id === ra.itemId);
       if (item?.type === "gym_request") {
         await supabase.from("fighter_gym_links").update({ status: "pending" }).eq("id", ra.itemId);
@@ -548,6 +558,44 @@ export function DashboardActions({
   const invalidate = () => {
     queryClient.invalidateQueries({ predicate: (q) => (q.queryKey[0] as string)?.startsWith("actions-") });
     onRefresh();
+  };
+
+  // ── Multi-select handlers ──
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const exitMultiSelect = () => {
+    setMultiSelectMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkDiscard = () => {
+    const items = statusFilter === "active" ? activeItems : completedItems;
+    selectedIds.forEach(id => {
+      const item = items.find(i => i.id === id);
+      if (item) handleDiscard(item);
+    });
+    exitMultiSelect();
+    toast.success("Items moved to bin");
+  };
+
+  const handleBulkComplete = async () => {
+    // For active items: accept gym requests, accept bout proposals where possible
+    for (const id of selectedIds) {
+      const item = activeItems.find(i => i.id === id);
+      if (!item) continue;
+      if (item.type === "gym_request" && isCoachOrOwner && item.status === "pending") {
+        await handleAcceptGymRequest(item);
+      } else if (item.type === "bout_proposal") {
+        await handleAcceptBoutProposal(item);
+      }
+    }
+    exitMultiSelect();
   };
 
   const getIcon = (type: string) => {
@@ -611,7 +659,6 @@ export function DashboardActions({
 
   const renderActionButtons = (item: ActionItem) => {
     if (isCompletedView) {
-      // Check for undo within 24h
       const ra = recentlyActioned.find((a) => a.itemId === item.id);
       if (ra) {
         return (
@@ -620,7 +667,6 @@ export function DashboardActions({
           </Button>
         );
       }
-      // View buttons for completed items
       if (item.meta?.eventId) {
         return (
           <Button size="sm" variant="outline" className="h-8 px-3 text-xs" asChild>
@@ -701,21 +747,47 @@ export function DashboardActions({
           </SelectContent>
         </Select>
         <div className="flex gap-1">
-          <Button size="sm" variant={statusFilter === "active" ? "default" : "outline"} className="h-9 text-xs" onClick={() => setStatusFilter("active")}>
+          <Button size="sm" variant={statusFilter === "active" ? "default" : "outline"} className="h-9 text-xs" onClick={() => { setStatusFilter("active"); exitMultiSelect(); }}>
             Active ({activeItems.length})
           </Button>
-          <Button size="sm" variant={statusFilter === "completed" ? "default" : "outline"} className="h-9 text-xs" onClick={() => setStatusFilter("completed")}>
+          <Button size="sm" variant={statusFilter === "completed" ? "default" : "outline"} className="h-9 text-xs" onClick={() => { setStatusFilter("completed"); exitMultiSelect(); }}>
             Completed ({completedItems.length})
           </Button>
-          <Button size="sm" variant={statusFilter === "bin" ? "default" : "outline"} className="h-9 text-xs gap-1" onClick={() => setStatusFilter("bin")}>
+          <Button size="sm" variant={statusFilter === "bin" ? "default" : "outline"} className="h-9 text-xs gap-1" onClick={() => { setStatusFilter("bin"); exitMultiSelect(); }}>
             <Trash2 className="h-3 w-3" /> Bin ({validDiscarded.length})
           </Button>
+        </div>
+        <div className="flex gap-1 items-center">
+          {!isBinView && (
+            <Button size="sm" variant={multiSelectMode ? "default" : "outline"} className="h-9 text-xs gap-1" onClick={() => multiSelectMode ? exitMultiSelect() : setMultiSelectMode(true)}>
+              <CheckSquare className="h-3 w-3" /> Select
+            </Button>
+          )}
         </div>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} placeholder="Search by name or event..." className="pl-9 h-9 text-xs" />
         </div>
       </div>
+
+      {/* Multi-select bulk action bar */}
+      {multiSelectMode && selectedIds.size > 0 && !isBinView && (
+        <div className="flex items-center gap-2 p-3 rounded-lg border border-primary/30 bg-primary/5">
+          <span className="text-sm text-foreground font-medium">{selectedIds.size} selected</span>
+          <div className="flex-1" />
+          {statusFilter === "active" && (
+            <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-green-500/30 text-green-400" onClick={handleBulkComplete}>
+              <Check className="h-3 w-3" /> Mark as Complete
+            </Button>
+          )}
+          <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-destructive/30 text-destructive" onClick={handleBulkDiscard}>
+            <Trash2 className="h-3 w-3" /> Delete
+          </Button>
+          <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={exitMultiSelect}>
+            Cancel
+          </Button>
+        </div>
+      )}
 
       {/* Bin View */}
       {isBinView ? (
@@ -783,6 +855,14 @@ export function DashboardActions({
                 key={item.id}
                 className={`rounded-lg border bg-card p-4 flex items-start gap-4 transition-colors ${isCompleted ? "border-border/50 opacity-60" : "border-border hover:border-primary/20"}`}
               >
+                {multiSelectMode && (
+                  <div className="shrink-0 mt-1">
+                    <Checkbox
+                      checked={selectedIds.has(item.id)}
+                      onCheckedChange={() => toggleSelect(item.id)}
+                    />
+                  </div>
+                )}
                 <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
                   <Icon className="h-4 w-4 text-muted-foreground" />
                 </div>
@@ -801,12 +881,14 @@ export function DashboardActions({
                   <p className={`text-sm font-medium ${isCompleted ? "text-muted-foreground" : "text-foreground"}`}>{item.title}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{item.subtitle}</p>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {renderActionButtons(item)}
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleDiscard(item)} title="Move to bin">
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
+                {!multiSelectMode && (
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {renderActionButtons(item)}
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleDiscard(item)} title="Move to bin">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
             );
           })}
