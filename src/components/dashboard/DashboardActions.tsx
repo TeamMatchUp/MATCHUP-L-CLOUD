@@ -720,7 +720,55 @@ export function DashboardActions({
         </div>
       </div>
 
-      {displayItems.length === 0 ? (
+      {/* Bin View */}
+      {isBinView ? (
+        validDiscarded.length === 0 ? (
+          <div className="text-center py-12 rounded-lg border border-border bg-card">
+            <Trash2 className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground">Bin is empty.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {validDiscarded.map((d) => {
+              const Icon = getIcon(d.item.type);
+              const badge = getTypeBadge(d.item.type);
+              const daysLeft = Math.max(1, Math.ceil((THIRTY_DAYS - (Date.now() - d.discardedAt)) / (24 * 60 * 60 * 1000)));
+              return (
+                <div key={d.item.id} className="rounded-lg border border-border/50 bg-card p-4 flex items-start gap-4 opacity-60">
+                  <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <Badge variant="outline" className={badge.className + " text-[10px]"}>{badge.label}</Badge>
+                      <span className="text-[10px] text-muted-foreground">
+                        Deleted {formatDistanceToNow(new Date(d.discardedAt), { addSuffix: true })} · {daysLeft} day{daysLeft !== 1 ? "s" : ""} until permanent deletion
+                      </span>
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground">{d.item.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{d.item.subtitle}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Button size="sm" variant="outline" className="h-8 px-3 text-xs gap-1" onClick={() => handleRecover(d)}>
+                      <RotateCcw className="h-3 w-3" /> Recover
+                    </Button>
+                    {confirmDeleteId === d.item.id ? (
+                      <div className="flex items-center gap-1">
+                        <Button size="sm" variant="destructive" className="h-8 px-3 text-xs" onClick={() => handlePermanentDelete(d)}>Confirm</Button>
+                        <Button size="sm" variant="ghost" className="h-8 px-2 text-xs" onClick={() => setConfirmDeleteId(null)}>Cancel</Button>
+                      </div>
+                    ) : (
+                      <Button size="sm" variant="outline" className="h-8 px-3 text-xs gap-1 border-destructive/30 text-destructive hover:bg-destructive/10" onClick={() => setConfirmDeleteId(d.item.id)}>
+                        <Trash2 className="h-3 w-3" /> Delete
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )
+      ) : displayItems.length === 0 ? (
         <div className="text-center py-12 rounded-lg border border-border bg-card">
           <Check className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground">
@@ -758,6 +806,9 @@ export function DashboardActions({
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {renderActionButtons(item)}
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleDiscard(item)} title="Move to bin">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               </div>
             );
