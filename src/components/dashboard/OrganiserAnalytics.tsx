@@ -174,10 +174,8 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
     ? (orgSuggestions.reduce((sum, s) => sum + (Number(s.composite_score) || 0), 0) / suggestionsGenerated).toFixed(2)
     : "0.00";
 
-  const confirmedWithTimes = orgSuggestions.filter((s) => s.status === "confirmed" && s.created_at && s.updated_at);
-  const avgTimeToConfirmHrs = confirmedWithTimes.length > 0
-    ? Math.round(confirmedWithTimes.reduce((sum, s) => sum + Math.abs(differenceInHours(new Date(s.updated_at || s.created_at), new Date(s.created_at))), 0) / confirmedWithTimes.length)
-    : 0;
+  // match_suggestions has no updated_at column; avg time to confirm not yet trackable
+  const avgTimeToConfirmHrs = 0;
   const avgTimeToConfirmLabel = avgTimeToConfirmHrs > 0
     ? avgTimeToConfirmHrs >= 24 ? `${Math.round(avgTimeToConfirmHrs / 24)}d` : `${avgTimeToConfirmHrs}h`
     : "—";
