@@ -309,14 +309,6 @@ export default function Dashboard() {
               <Link to="/" className="hidden sm:block">
                 <AppLogo className="h-7" />
               </Link>
-              <nav className="hidden md:flex items-center gap-6 ml-4">
-                <Link to="/" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide">
-                  Home
-                </Link>
-                <Link to="/explore" className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide">
-                  Explore
-                </Link>
-              </nav>
             </div>
 
             <div className="flex items-center gap-2">
