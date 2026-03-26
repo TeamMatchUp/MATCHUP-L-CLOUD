@@ -422,11 +422,81 @@ export function DashboardActions({
     }
   };
 
+  const handleAcceptBoutProposal = async (item: ActionItem) => {
+    try {
+      await supabase.from("bout_acceptances").insert({
+        slot_id: item.id,
+        user_id: userId,
+        role: isFighter ? "fighter" : "coach",
+      });
+      // Check if all required parties have accepted
+      const { data: accs } = await supabase.from("bout_acceptances").select("user_id").eq("slot_id", item.id);
+      const acceptedIds = new Set((accs ?? []).map((a: any) => a.user_id));
+      // Get required parties
+      const meta = item.meta;
+      const requiredIds = new Set<string>();
+      const { data: slotData } = await supabase.from("event_fight_slots")
+        .select("fighter_a_id, fighter_b_id, event_id, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(user_id, created_by_coach_id), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(user_id, created_by_coach_id)")
+        .eq("id", item.id).single();
+      if (slotData) {
+        const fA = Array.isArray(slotData.fighter_a) ? slotData.fighter_a[0] : slotData.fighter_a;
+        const fB = Array.isArray(slotData.fighter_b) ? slotData.fighter_b[0] : slotData.fighter_b;
+        if (fA?.user_id) requiredIds.add(fA.user_id);
+        if (fB?.user_id) requiredIds.add(fB.user_id);
+        if (fA?.created_by_coach_id) requiredIds.add(fA.created_by_coach_id);
+        if (fB?.created_by_coach_id) requiredIds.add(fB.created_by_coach_id);
+        // Gym coaches
+        const { data: gymLinks } = await supabase.from("fighter_gym_links")
+          .select("gym:gyms(coach_id)").in("fighter_id", [slotData.fighter_a_id, slotData.fighter_b_id]).eq("status", "approved");
+        (gymLinks ?? []).forEach((l: any) => { const g = Array.isArray(l.gym) ? l.gym[0] : l.gym; if (g?.coach_id) requiredIds.add(g.coach_id); });
+
+        const allAccepted = Array.from(requiredIds).every((id) => acceptedIds.has(id));
+        if (allAccepted) {
+          await supabase.from("event_fight_slots").update({ status: "confirmed" }).eq("id", item.id);
+          // Notify all parties + organiser
+          const { data: evt } = await supabase.from("events").select("organiser_id, title").eq("id", slotData.event_id).single();
+          const notifyIds = new Set(requiredIds);
+          if (evt?.organiser_id) notifyIds.add(evt.organiser_id);
+          notifyIds.delete(userId);
+          for (const nid of notifyIds) {
+            await supabase.rpc("create_notification", { _user_id: nid, _title: "Bout Confirmed", _message: `${meta.fighterAName ?? "Fighter"} vs ${meta.fighterBName ?? "Fighter"} is now confirmed for ${evt?.title ?? "an event"}.`, _type: "match_confirmed" as any, _reference_id: item.id });
+          }
+          toast.success("Bout confirmed — all parties accepted!");
+        } else {
+          toast.success("Accepted — waiting for other parties");
+        }
+      }
+      setRecentActions((prev) => [...prev, { itemId: item.id, action: "accepted", at: Date.now() }]);
+      invalidate();
+    } catch { toast.error("Failed to accept"); }
+  };
+
+  const handleDeclineBoutProposal = async (item: ActionItem) => {
+    try {
+      await supabase.from("event_fight_slots").update({ status: "declined" }).eq("id", item.id);
+      // Notify organiser
+      const { data: slotData } = await supabase.from("event_fight_slots").select("event_id").eq("id", item.id).single();
+      if (slotData) {
+        const { data: evt } = await supabase.from("events").select("organiser_id, title").eq("id", slotData.event_id).single();
+        if (evt?.organiser_id) {
+          await supabase.rpc("create_notification", { _user_id: evt.organiser_id, _title: "Proposal Declined", _message: `A fight proposal for ${evt.title} was declined.`, _type: "match_declined" as any, _reference_id: item.id });
+        }
+      }
+      setRecentActions((prev) => [...prev, { itemId: item.id, action: "declined", at: Date.now() }]);
+      toast.success("Proposal declined");
+      invalidate();
+    } catch { toast.error("Failed to decline"); }
+  };
+
   const handleUndo = async (ra: RecentAction) => {
     const item = allItems.find((i) => i.id === ra.itemId);
     if (!item) return;
     if (item.type === "gym_request") {
       await supabase.from("fighter_gym_links").update({ status: "pending" }).eq("id", item.id);
+    }
+    if (item.type === "bout_proposal") {
+      await supabase.from("bout_acceptances").delete().eq("slot_id", item.id).eq("user_id", userId);
+      await supabase.from("event_fight_slots").update({ status: "proposed" }).eq("id", item.id);
     }
     setRecentActions((prev) => prev.filter((a) => a.itemId !== ra.itemId));
     toast.success("Action undone");
@@ -444,6 +514,7 @@ export function DashboardActions({
       case "trial_lead": return Send;
       case "match_suggestion": return Swords;
       case "fight_proposal": return Swords;
+      case "bout_proposal": return Swords;
       case "event_interest": return Calendar;
       case "match_proposal": return Swords;
       case "event_claim": return Users;
@@ -457,6 +528,7 @@ export function DashboardActions({
       case "trial_lead": return { label: "Trial request", className: "bg-green-500/15 text-green-400 border-green-500/30" };
       case "match_suggestion": return { label: "Match", className: "bg-primary/15 text-primary border-primary/30" };
       case "fight_proposal": return { label: "Fight proposal", className: "bg-amber-500/15 text-amber-400 border-amber-500/30" };
+      case "bout_proposal": return { label: "Bout proposal", className: "bg-primary/15 text-primary border-primary/30" };
       case "event_interest": return { label: "Event interest", className: "bg-purple-500/15 text-purple-400 border-purple-500/30" };
       case "event_claim": return { label: "Event claim", className: "bg-amber-500/15 text-amber-400 border-amber-500/30" };
       default: return { label: type, className: "" };
