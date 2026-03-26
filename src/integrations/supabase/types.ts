@@ -53,6 +53,30 @@ export type Database = {
         }
         Relationships: []
       }
+      bout_acceptances: {
+        Row: {
+          accepted_at: string
+          id: string
+          role: string
+          slot_id: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          id?: string
+          role: string
+          slot_id: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string
+          id?: string
+          role?: string
+          slot_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       coach_event_nominations: {
         Row: {
           coach_id: string
