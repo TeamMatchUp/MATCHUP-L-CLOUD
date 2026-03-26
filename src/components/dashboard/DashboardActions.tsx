@@ -324,6 +324,7 @@ export function DashboardActions({
     ...fighterGymRequests,
     ...matchSuggestions,
     ...fightProposals,
+    ...boutProposals,
     ...eventInterests,
     ...eventClaims,
     ...organiserSuggestions,
