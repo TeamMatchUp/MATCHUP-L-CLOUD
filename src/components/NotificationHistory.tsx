@@ -59,6 +59,7 @@ export function NotificationHistory() {
     await supabase.from("notifications").update({ read: true }).eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
     navigate("/dashboard?section=actions");
   };
 
