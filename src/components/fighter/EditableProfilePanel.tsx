@@ -102,23 +102,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
     enabled: !!fighterProfile.id,
   });
 
-  // Fetch ranking data
-  const { data: rankingData = [] } = useQuery({
-    queryKey: ["fighter-ranking", fighterProfile.weight_class, fighterProfile.discipline],
-    queryFn: async () => {
-      let query = supabase
-        .from("fighter_profiles")
-        .select("id, name, record_wins, record_losses, record_draws, discipline, weight_class")
-        .eq("weight_class", fighterProfile.weight_class);
-      if (fighterProfile.discipline) {
-        query = query.eq("discipline", fighterProfile.discipline);
-      }
-      const { data } = await query;
-      return data ?? [];
-    },
-    enabled: !!fighterProfile.weight_class,
-  });
-
   useEffect(() => {
     if (!gymSearch || gymSearch.length < 2) { setGymResults([]); return; }
     const timeout = setTimeout(async () => {
