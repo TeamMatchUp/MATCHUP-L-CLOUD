@@ -177,6 +177,22 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Home" className="sidebar-pill">
+                  <Link to="/">
+                    <Home className="h-4 w-4" />
+                    {!collapsed && <span>Home</span>}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Explore" className="sidebar-pill">
+                  <Link to="/explore">
+                    <Compass className="h-4 w-4" />
+                    {!collapsed && <span>Explore</span>}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Settings" className="sidebar-pill">
                   <Link to="/account/settings">
                     <Settings className="h-4 w-4" />
