@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Sparkles, Plus, Swords } from "lucide-react";
+import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Plus, Phone, Globe, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,17 +11,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PutForwardFightersDialog } from "@/components/coach/PutForwardFightersDialog";
 import { ClaimEventDialog } from "@/components/organiser/ClaimEventDialog";
+import { Map as PigeonMap, Marker } from "pigeon-maps";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -46,34 +41,29 @@ export default function EventDetail() {
   const [showPutForward, setShowPutForward] = useState(false);
   const [showClaimEvent, setShowClaimEvent] = useState(false);
   const [sending, setSending] = useState(false);
+  const [mainPage, setMainPage] = useState(0);
+  const [underPage, setUnderPage] = useState(0);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const BOUTS_PER_PAGE = 5;
 
-  // Get fighter profile for the current user
   const { data: fighterProfile } = useQuery({
     queryKey: ["my-fighter-profile", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("fighter_profiles")
-        .select("id, name")
-        .eq("user_id", user!.id)
-        .maybeSingle();
+        .from("fighter_profiles").select("id, name").eq("user_id", user!.id).maybeSingle();
       if (error) throw error;
       return data;
     },
     enabled: !!user && isFighter,
   });
 
-  // Check if already interested
   const { data: existingInterest } = useQuery({
     queryKey: ["fighter-event-interest", fighterProfile?.id, id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("fighter_event_interests")
-        .select("id")
-        .eq("fighter_id", fighterProfile!.id)
-        .eq("event_id", id!)
-        .maybeSingle();
+        .from("fighter_event_interests").select("id")
+        .eq("fighter_id", fighterProfile!.id).eq("event_id", id!).maybeSingle();
       if (error) throw error;
       return data;
     },
@@ -85,31 +75,21 @@ export default function EventDetail() {
     setSending(true);
     try {
       const { error: insertError } = await supabase
-        .from("fighter_event_interests")
-        .insert({ fighter_id: fighterProfile.id, event_id: id! });
+        .from("fighter_event_interests").insert({ fighter_id: fighterProfile.id, event_id: id! });
       if (insertError) throw insertError;
-
       const { data: gymLinks } = await supabase
-        .from("fighter_gym_links")
-        .select("gym_id, gyms(coach_id)")
-        .eq("fighter_id", fighterProfile.id)
-        .eq("status", "approved");
-
+        .from("fighter_gym_links").select("gym_id, gyms(coach_id)")
+        .eq("fighter_id", fighterProfile.id).eq("status", "approved");
       const coachIds = new Set<string>();
-      (gymLinks ?? []).forEach((link: any) => {
-        if (link.gyms?.coach_id) coachIds.add(link.gyms.coach_id);
-      });
-
+      (gymLinks ?? []).forEach((link: any) => { if (link.gyms?.coach_id) coachIds.add(link.gyms.coach_id); });
       for (const coachId of coachIds) {
         await supabase.rpc("create_notification", {
           _user_id: coachId,
           _title: `${fighterProfile.name} is interested in an event`,
           _message: `${fighterProfile.name} is interested in "${event.title}" on ${new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}.`,
-          _type: "event_update",
-          _reference_id: id!,
+          _type: "event_update", _reference_id: id!,
         });
       }
-
       queryClient.invalidateQueries({ queryKey: ["fighter-event-interest", fighterProfile.id, id] });
       queryClient.invalidateQueries({ queryKey: ["fighter-event-interests"] });
       toast.success("Your interest has been registered and your coach has been notified!");
@@ -126,39 +106,20 @@ export default function EventDetail() {
     queryKey: ["event", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("events")
-        .select("*, fight_slots(*)")
-        .eq("id", id!)
-        .single();
+        .from("events").select("*, fight_slots(*)").eq("id", id!).single();
       if (error) throw error;
       return data;
     },
     enabled: !!id,
   });
 
-  const { data: tickets = [] } = useQuery({
-    queryKey: ["event-tickets-public", id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tickets")
-        .select("*")
-        .eq("event_id", id!)
-        .order("price");
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!id && !!event?.ticket_enabled,
-  });
-
-  // Confirmed fight slots with fighter names
   const { data: confirmedBouts = [] } = useQuery({
     queryKey: ["event-confirmed-bouts", id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("event_fight_slots")
-        .select("*, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(id, name, record_wins, record_losses, record_draws, weight_class), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(id, name, record_wins, record_losses, record_draws, weight_class)")
+        .select("*, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(id, name, record_wins, record_losses, record_draws, weight_class, profile_image), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(id, name, record_wins, record_losses, record_draws, weight_class, profile_image)")
         .eq("event_id", id!)
-        .eq("status", "confirmed")
         .order("slot_number", { ascending: true });
       if (error) throw error;
       return data ?? [];
@@ -170,12 +131,7 @@ export default function EventDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-16">
-          <div className="container py-16">
-            <div className="h-8 w-64 bg-card animate-pulse rounded mb-4" />
-            <div className="h-4 w-48 bg-card animate-pulse rounded" />
-          </div>
-        </main>
+        <main className="pt-16"><div className="container py-16"><div className="h-8 w-64 bg-card animate-pulse rounded mb-4" /><div className="h-4 w-48 bg-card animate-pulse rounded" /></div></main>
       </div>
     );
   }
@@ -184,21 +140,135 @@ export default function EventDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-16">
-          <div className="container py-16 text-center">
-            <h1 className="font-heading text-3xl text-foreground mb-4">Event Not Found</h1>
-            <Button variant="ghost" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />Back
-            </Button>
-          </div>
-        </main>
+        <main className="pt-16"><div className="container py-16 text-center">
+          <h1 className="font-heading text-3xl text-foreground mb-4">Event Not Found</h1>
+          <Button variant="ghost" onClick={() => navigate(-1)}><ArrowLeft className="h-4 w-4 mr-2" />Back</Button>
+        </div></main>
         <Footer />
       </div>
     );
   }
 
-  const mainEvents = confirmedBouts.filter((b: any) => b.bout_type === "Main Event");
-  const undercards = confirmedBouts.filter((b: any) => b.bout_type !== "Main Event");
+  // Only show public bouts (is_public=true or is_public is null which defaults to true)
+  const publicBouts = confirmedBouts.filter((b: any) => b.is_public !== false);
+  const mainEvents = publicBouts.filter((b: any) => b.bout_type === "Main Event");
+  const undercards = publicBouts.filter((b: any) => b.bout_type !== "Main Event");
+
+  const mainTotal = Math.ceil(mainEvents.length / BOUTS_PER_PAGE);
+  const underTotal = Math.ceil(undercards.length / BOUTS_PER_PAGE);
+  const paginatedMain = mainEvents.slice(mainPage * BOUTS_PER_PAGE, (mainPage + 1) * BOUTS_PER_PAGE);
+  const paginatedUnder = undercards.slice(underPage * BOUTS_PER_PAGE, (underPage + 1) * BOUTS_PER_PAGE);
+
+  const hasContact = event.contact_email || event.contact_phone || event.contact_website;
+  const hasCoords = event.latitude != null && event.longitude != null;
+
+  const renderFighterPhoto = (fighter: any, side: "left" | "right") => {
+    if (!fighter?.profile_image) return null;
+    return (
+      <div className={`h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 shrink-0 ${side === "right" ? "order-last" : ""}`}>
+        <img src={fighter.profile_image} alt={fighter.name} className="h-full w-full object-cover" />
+      </div>
+    );
+  };
+
+  const renderMainBout = (bout: any) => {
+    const fA = bout.is_public === false ? null : unwrap(bout.fighter_a);
+    const fB = bout.is_public === false ? null : unwrap(bout.fighter_b);
+    const nameA = fA?.name ?? "TBA";
+    const nameB = fB?.name ?? "TBA";
+    return (
+      <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6">
+        <div className="flex items-center gap-4 justify-between">
+          {renderFighterPhoto(fA, "left")}
+          <div className="flex-1 text-left">
+            {fA ? (
+              <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
+                <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameA}</p>
+              </Link>
+            ) : (
+              <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameA}</p>
+            )}
+            {fA && <p className="text-primary font-bold text-lg mt-1">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
+          </div>
+          <div className="flex flex-col items-center px-4">
+            <span className="font-heading text-primary text-2xl">VS</span>
+            {bout.weight_class && <p className="text-xs text-muted-foreground mt-1">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
+          </div>
+          <div className="flex-1 text-right">
+            {fB ? (
+              <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
+                <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameB}</p>
+              </Link>
+            ) : (
+              <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameB}</p>
+            )}
+            {fB && <p className="text-primary font-bold text-lg mt-1">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
+          </div>
+          {renderFighterPhoto(fB, "right")}
+        </div>
+      </div>
+    );
+  };
+
+  const renderUndercardBout = (bout: any) => {
+    const fA = bout.is_public === false ? null : unwrap(bout.fighter_a);
+    const fB = bout.is_public === false ? null : unwrap(bout.fighter_b);
+    const nameA = fA?.name ?? "TBA";
+    const nameB = fB?.name ?? "TBA";
+    return (
+      <div key={bout.id} className="rounded-lg border border-border bg-card p-4">
+        <div className="flex items-center gap-3 justify-between">
+          {fA?.profile_image && (
+            <div className="h-10 w-10 rounded-full overflow-hidden border border-primary/20 shrink-0">
+              <img src={fA.profile_image} alt={fA.name} className="h-full w-full object-cover" />
+            </div>
+          )}
+          <div className="flex-1 text-left">
+            {fA ? (
+              <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
+                <p className="font-heading text-sm text-foreground uppercase">{nameA}</p>
+              </Link>
+            ) : <p className="font-heading text-sm text-foreground uppercase">{nameA}</p>}
+            {fA && <p className="text-xs text-muted-foreground">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="font-heading text-primary text-xs">VS</span>
+            {bout.weight_class && <p className="text-[10px] text-muted-foreground mt-0.5">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
+          </div>
+          <div className="flex-1 text-right">
+            {fB ? (
+              <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
+                <p className="font-heading text-sm text-foreground uppercase">{nameB}</p>
+              </Link>
+            ) : <p className="font-heading text-sm text-foreground uppercase">{nameB}</p>}
+            {fB && <p className="text-xs text-muted-foreground">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
+          </div>
+          {fB?.profile_image && (
+            <div className="h-10 w-10 rounded-full overflow-hidden border border-primary/20 shrink-0">
+              <img src={fB.profile_image} alt={fB.name} className="h-full w-full object-cover" />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const Pagination = ({ page: p, total, setPage: sp }: { page: number; total: number; setPage: (n: number) => void }) => {
+    if (total <= 1) return null;
+    return (
+      <div className="flex items-center justify-center gap-2 mt-4">
+        <Button variant="outline" size="sm" disabled={p === 0} onClick={() => sp(p - 1)}>
+          <ArrowLeft className="h-3 w-3 mr-1" /> Prev
+        </Button>
+        {Array.from({ length: total }, (_, i) => (
+          <Button key={i} variant={i === p ? "default" : "outline"} size="sm" className="w-8 h-8 p-0" onClick={() => sp(i)}>{i + 1}</Button>
+        ))}
+        <Button variant="outline" size="sm" disabled={p >= total - 1} onClick={() => sp(p + 1)}>
+          Next <ArrowLeft className="h-3 w-3 ml-1 rotate-180" />
+        </Button>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -210,234 +280,166 @@ export default function EventDetail() {
               <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Button>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>
-              <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              {/* Two-panel layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-[55%_45%] gap-8 mb-12">
+                {/* Left panel */}
+                <div>
+                  <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>
+                  {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
 
-              <div className="flex flex-wrap gap-6 text-sm text-muted-foreground mb-8">
-                <span className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {new Date(event.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                </span>
-                <span className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  {event.location}
-                </span>
-              </div>
+                  {/* Description card */}
+                  {event.description && (
+                    <div className="rounded-lg border border-border bg-card p-5 mb-6">
+                      <p className="text-muted-foreground">{event.description}</p>
+                    </div>
+                  )}
 
-              {event.description && (
-                <p className="text-muted-foreground max-w-2xl mb-8">{event.description}</p>
-              )}
+                  {/* Date and venue */}
+                  <div className="flex flex-wrap gap-6 text-sm text-muted-foreground mb-6">
+                    <span className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      {new Date(event.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
+                    </span>
+                  </div>
 
-              {/* Role action buttons */}
-              <div className="flex flex-wrap gap-3 mb-8">
-                {isFighter && fighterProfile && (
-                  existingInterest ? (
-                    <Button variant="outline" className="gap-2 border-primary/50 text-primary cursor-default" disabled>
-                      <Star className="h-4 w-4 fill-primary" /> Interested
+                  {/* Contact details card */}
+                  {hasContact && (
+                    <div className="rounded-lg border border-border bg-card p-5 mb-6">
+                      <h3 className="font-heading text-sm text-muted-foreground uppercase tracking-wide mb-3">Contact</h3>
+                      <div className="space-y-2 text-sm">
+                        {event.contact_email && (
+                          <a href={`mailto:${event.contact_email}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                            <Mail className="h-4 w-4 text-muted-foreground" /> {event.contact_email}
+                          </a>
+                        )}
+                        {event.contact_phone && (
+                          <a href={`tel:${event.contact_phone}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                            <Phone className="h-4 w-4 text-muted-foreground" /> {event.contact_phone}
+                          </a>
+                        )}
+                        {event.contact_website && (
+                          <a href={event.contact_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                            <Globe className="h-4 w-4 text-muted-foreground" /> {event.contact_website}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Buy Tickets */}
+                  {event.tickets_url && (
+                    <Button asChild className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 mb-6">
+                      <a href={event.tickets_url} target="_blank" rel="noopener noreferrer">
+                        <Ticket className="h-4 w-4" /> Buy Tickets
+                      </a>
                     </Button>
+                  )}
+
+                  {/* Role action buttons */}
+                  <div className="flex flex-wrap gap-3">
+                    {isFighter && fighterProfile && (
+                      existingInterest ? (
+                        <Button variant="outline" className="gap-2 border-primary/50 text-primary cursor-default" disabled>
+                          <Star className="h-4 w-4 fill-primary" /> Interested
+                        </Button>
+                      ) : (
+                        <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowConfirm(true)}>
+                          <Star className="h-4 w-4" /> I'm Interested
+                        </Button>
+                      )
+                    )}
+                    {isCoach && user && (
+                      <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowPutForward(true)}>
+                        <Users className="h-4 w-4" /> Put Forward Fighters
+                      </Button>
+                    )}
+                    {isOrganiser && user && event.organiser_id === user.id && (
+                      <Button className="gap-2" asChild>
+                        <Link to={`/organiser/events/${id}`}>
+                          <Plus className="h-4 w-4" /> Manage Event
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right panel — map */}
+                <div>
+                  {hasCoords ? (
+                    <div className="rounded-lg border border-border overflow-hidden">
+                      <div style={{ height: 320 }}>
+                        <PigeonMap defaultCenter={[event.latitude!, event.longitude!]} defaultZoom={14} height={320}>
+                          <Marker anchor={[event.latitude!, event.longitude!]} color="hsl(46, 93%, 61%)" width={36} />
+                        </PigeonMap>
+                      </div>
+                      <div className="bg-card px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
+                      </div>
+                    </div>
                   ) : (
-                    <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowConfirm(true)}>
-                      <Star className="h-4 w-4" /> I'm Interested
-                    </Button>
-                  )
-                )}
-                {isCoach && user && (
-                  <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowPutForward(true)}>
-                    <Users className="h-4 w-4" /> Put Forward Fighters
-                  </Button>
-                )}
-                {isOrganiser && user && event.organiser_id === user.id && (
-                  <Button className="gap-2" asChild>
-                    <Link to={`/events/${id}/matchmaking`}>
-                      <Sparkles className="h-4 w-4" /> Get Match Suggestions
-                    </Link>
-                  </Button>
-                )}
-              </div>
-
-              {/* Map */}
-              <div className="rounded-lg border border-border overflow-hidden mb-12">
-                <iframe
-                  title="Event Location"
-                  width="100%"
-                  height="300"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  allowFullScreen
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                    [event.venue_name, event.location, event.city, event.country].filter(Boolean).join(", ")
-                  )}&output=embed&z=14`}
-                />
-                <div className="bg-card px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
+                    <div className="rounded-lg border border-border bg-card p-8 flex items-center justify-center h-[320px]">
+                      <div className="text-center text-muted-foreground">
+                        <MapPin className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                        <p className="text-sm">Map unavailable — no coordinates set</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
 
-            {/* Tickets */}
-            {event.ticket_enabled && tickets.length > 0 && (
+            {/* FIGHT CARD */}
+            {/* Main Card Section */}
+            {(mainEvents.length > 0 || undercards.length > 0 || (event.fight_slots && event.fight_slots.length > 0)) && (
               <>
                 <h2 className="font-heading text-2xl text-foreground mb-6">
-                  <Ticket className="inline h-5 w-5 mr-2 text-primary" />
-                  TICKETS AVAILABLE
+                  MAIN <span className="text-primary">CARD</span>
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-12">
-                  {tickets.map((ticket: any) => (
-                    <div key={ticket.id} className="rounded-lg border border-border bg-card p-5 flex flex-col">
-                      <Badge variant="outline" className="self-start mb-3 text-xs">{ticket.ticket_type}</Badge>
-                      {ticket.price != null && (
-                        <p className="font-heading text-3xl text-foreground mb-1">
-                          £{Number(ticket.price).toFixed(2)}
-                        </p>
-                      )}
-                      {ticket.quantity_available != null && (
-                        <p className="text-xs text-muted-foreground mb-4">
-                          {ticket.quantity_available} available
-                        </p>
-                      )}
-                      {ticket.external_link ? (
-                        <Button asChild className="mt-auto gap-2 w-full">
-                          <a href={ticket.external_link} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="h-4 w-4" /> Buy Tickets
-                          </a>
-                        </Button>
-                      ) : (
-                        <Button variant="outline" className="mt-auto gap-2 w-full" disabled>
-                          <Ticket className="h-4 w-4" /> Coming Soon
-                        </Button>
-                      )}
+                {paginatedMain.length > 0 ? (
+                  <div className="space-y-4 mb-4">{paginatedMain.map(renderMainBout)}</div>
+                ) : mainEvents.length === 0 ? (
+                  <p className="text-muted-foreground text-sm mb-4">No main card bouts announced yet.</p>
+                ) : null}
+                <Pagination page={mainPage} total={mainTotal} setPage={setMainPage} />
+
+                <h2 className="font-heading text-2xl text-foreground mb-6 mt-12">
+                  UNDER<span className="text-primary">CARD</span>
+                </h2>
+                {paginatedUnder.length > 0 ? (
+                  <div className="space-y-2 mb-4">{paginatedUnder.map(renderUndercardBout)}</div>
+                ) : undercards.length === 0 ? (
+                  <p className="text-muted-foreground text-sm mb-4">No undercard bouts announced yet.</p>
+                ) : null}
+                <Pagination page={underPage} total={underTotal} setPage={setUnderPage} />
+              </>
+            )}
+
+            {/* Fallback to fight_slots if no event_fight_slots */}
+            {confirmedBouts.length === 0 && event.fight_slots && event.fight_slots.length > 0 && (
+              <>
+                <h2 className="font-heading text-2xl text-foreground mb-6">
+                  FIGHT <span className="text-primary">CARD</span>
+                </h2>
+                <div className="space-y-3 mb-12">
+                  {event.fight_slots.sort((a: any, b: any) => a.slot_number - b.slot_number).map((slot: any) => (
+                    <div key={slot.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
+                      <div className="flex items-center gap-4">
+                        <span className="font-heading text-lg text-muted-foreground w-8">#{slot.slot_number}</span>
+                        <p className="text-sm font-medium text-foreground">{WEIGHT_CLASS_LABELS[slot.weight_class]}</p>
+                      </div>
+                      <Badge className={slot.status === "open" ? "bg-primary/10 text-primary" : slot.status === "confirmed" ? "bg-success/10 text-success" : ""} variant="outline">
+                        {slot.status.charAt(0).toUpperCase() + slot.status.slice(1)}
+                      </Badge>
                     </div>
                   ))}
                 </div>
               </>
-            )}
-
-            {/* Fight Card — Head-to-head display */}
-            <h2 className="font-heading text-2xl text-foreground mb-6">
-              FIGHT <span className="text-primary">CARD</span>
-            </h2>
-
-            {confirmedBouts.length > 0 ? (
-              <div className="space-y-8 mb-12">
-                {/* Main Events */}
-                {mainEvents.length > 0 && (
-                  <div>
-                    <Badge className="bg-primary/15 text-primary border-primary/30 mb-4">MAIN EVENT</Badge>
-                    <div className="space-y-4">
-                      {mainEvents.map((bout: any) => {
-                        const fA = unwrap(bout.fighter_a);
-                        const fB = unwrap(bout.fighter_b);
-                        return (
-                          <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6">
-                            <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
-                              {/* Fighter A */}
-                              <div className="text-left">
-                                <Link to={fA ? `/fighters/${fA.id}` : "#"} className="hover:text-primary transition-colors">
-                                  <p className="font-heading text-xl text-foreground uppercase">{fA?.name ?? "TBA"}</p>
-                                </Link>
-                                {fA && (
-                                  <p className="text-primary font-bold text-lg mt-1">
-                                    {fA.record_wins}-{fA.record_losses}-{fA.record_draws}
-                                  </p>
-                                )}
-                              </div>
-
-                              <div className="flex flex-col items-center">
-                                <Swords className="h-6 w-6 text-primary mb-1" />
-                                <span className="font-heading text-primary text-lg">VS</span>
-                                {bout.weight_class && (
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    {WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Fighter B */}
-                              <div className="text-right">
-                                <Link to={fB ? `/fighters/${fB.id}` : "#"} className="hover:text-primary transition-colors">
-                                  <p className="font-heading text-xl text-foreground uppercase">{fB?.name ?? "TBA"}</p>
-                                </Link>
-                                {fB && (
-                                  <p className="text-primary font-bold text-lg mt-1">
-                                    {fB.record_wins}-{fB.record_losses}-{fB.record_draws}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Undercard */}
-                {undercards.length > 0 && (
-                  <div>
-                    <Badge variant="outline" className="mb-4">UNDERCARD</Badge>
-                    <div className="space-y-2">
-                      {undercards.map((bout: any) => {
-                        const fA = unwrap(bout.fighter_a);
-                        const fB = unwrap(bout.fighter_b);
-                         return (
-                          <div key={bout.id} className="rounded-lg border border-border bg-card p-4">
-                            <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
-                              <div className="text-left">
-                                <Link to={fA ? `/fighters/${fA.id}` : "#"} className="hover:text-primary transition-colors">
-                                  <p className="font-heading text-sm text-foreground uppercase">{fA?.name ?? "TBA"}</p>
-                                </Link>
-                                {fA && <p className="text-xs text-muted-foreground">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
-                              </div>
-                              <div className="flex flex-col items-center">
-                                <span className="font-heading text-primary text-xs">VS</span>
-                                {bout.weight_class && (
-                                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                                    {WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}
-                                  </p>
-                                )}
-                              </div>
-                              <div className="text-right">
-                                <Link to={fB ? `/fighters/${fB.id}` : "#"} className="hover:text-primary transition-colors">
-                                  <p className="font-heading text-sm text-foreground uppercase">{fB?.name ?? "TBA"}</p>
-                                </Link>
-                                {fB && <p className="text-xs text-muted-foreground">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* Fall back to fight_slots display if no confirmed bouts */
-              event.fight_slots && event.fight_slots.length > 0 ? (
-                <div className="space-y-3 mb-12">
-                  {event.fight_slots
-                    .sort((a: any, b: any) => a.slot_number - b.slot_number)
-                    .map((slot: any) => (
-                      <div key={slot.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
-                        <div className="flex items-center gap-4">
-                          <span className="font-heading text-lg text-muted-foreground w-8">#{slot.slot_number}</span>
-                          <p className="text-sm font-medium text-foreground">{WEIGHT_CLASS_LABELS[slot.weight_class]}</p>
-                        </div>
-                        <Badge className={slot.status === "open" ? "bg-primary/10 text-primary" : slot.status === "confirmed" ? "bg-success/10 text-success" : ""} variant="outline">
-                          {slot.status.charAt(0).toUpperCase() + slot.status.slice(1)}
-                        </Badge>
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <p className="text-muted-foreground mb-12">No fight slots defined yet.</p>
-              )
             )}
           </div>
         </section>
@@ -461,23 +463,15 @@ export default function EventDetail() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Coach Put Forward Dialog */}
       {isCoach && user && event && (
-        <PutForwardFightersDialog
-          open={showPutForward}
-          onOpenChange={setShowPutForward}
-          coachId={user.id}
-          eventId={id!}
-          eventTitle={event.title}
-        />
+        <PutForwardFightersDialog open={showPutForward} onOpenChange={setShowPutForward} coachId={user.id} eventId={id!} eventTitle={event.title} />
       )}
 
-      {/* Event Claim Banner */}
       {user && (isCoach || effectiveRoles.includes("organiser")) && event && !event.organiser_id && (
         <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-card/95 backdrop-blur-sm px-4 py-3">
           <div className="container flex items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              Are you the promoter of this event? <span className="text-foreground font-medium">Claim this listing</span> to manage it, add fight slots, and receive proposals.
+              Are you the promoter of this event? <span className="text-foreground font-medium">Claim this listing</span> to manage it.
             </p>
             <Button size="sm" onClick={() => setShowClaimEvent(true)}>Claim Event</Button>
           </div>
@@ -485,12 +479,7 @@ export default function EventDetail() {
       )}
 
       {showClaimEvent && event && (
-        <ClaimEventDialog
-          open={showClaimEvent}
-          onOpenChange={setShowClaimEvent}
-          eventId={id!}
-          eventTitle={event.title}
-        />
+        <ClaimEventDialog open={showClaimEvent} onOpenChange={setShowClaimEvent} eventId={id!} eventTitle={event.title} />
       )}
 
       <Footer />
