@@ -219,44 +219,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
 
   const age = p.date_of_birth ? Math.floor((Date.now() - new Date(p.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
 
-  // Ranking
-  const rankedFighters = useMemo(() => {
-    return rankingData
-      .map((f: any) => {
-        const total = f.record_wins + f.record_losses + f.record_draws;
-        const wp = total > 0 ? (f.record_wins / total) * 100 : 0;
-        return { ...f, winPct: wp };
-      })
-      .sort((a, b) => b.record_wins - a.record_wins)
-      .slice(0, 10);
-  }, [rankingData]);
-
-  const myRankIndex = rankedFighters.findIndex((f: any) => f.id === p.id);
-  const showMyRow = myRankIndex === -1;
-  const myRankInFull = rankingData
-    .map((f: any) => ({ ...f, wp: (f.record_wins + f.record_losses + f.record_draws) > 0 ? f.record_wins / (f.record_wins + f.record_losses + f.record_draws) : 0 }))
-    .sort((a, b) => b.record_wins - a.record_wins)
-    .findIndex((f: any) => f.id === p.id) + 1;
-
-  // Chart data
-  const wldData = [
-    { name: "Wins", value: p.record_wins || 0 },
-    { name: "Losses", value: p.record_losses || 0 },
-    { name: "Draws", value: p.record_draws || 0 },
-  ];
-  const wldColors = ["hsl(var(--primary))", "hsl(var(--destructive))", "hsl(var(--muted-foreground))"];
-
-  const methodCounts: Record<string, number> = {};
-  fights.filter((f: any) => f.result === "win" && f.method).forEach((f: any) => {
-    const m = f.method.toUpperCase();
-    let cat = "Decision";
-    if (m.includes("KO") || m.includes("TKO")) cat = "KO/TKO";
-    else if (m.includes("SUB")) cat = "Submission";
-    else if (!m.includes("DEC")) cat = m;
-    methodCounts[cat] = (methodCounts[cat] || 0) + 1;
-  });
-  const methodData = Object.entries(methodCounts).map(([name, value]) => ({ name, value }));
-  if (methodData.length === 0) methodData.push({ name: "No Data", value: 0 });
 
   return (
     <div className="space-y-8">
