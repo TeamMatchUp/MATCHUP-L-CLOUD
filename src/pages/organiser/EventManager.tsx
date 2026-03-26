@@ -7,9 +7,6 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { EditEventDialog } from "@/components/organiser/EditEventDialog";
 import { AddFightManuallyDialog } from "@/components/organiser/AddFightManuallyDialog";
 import { EditBoutDialog } from "@/components/organiser/EditBoutDialog";
@@ -39,12 +36,21 @@ function unwrap<T>(val: T | T[] | null | undefined): T | null {
   return val ?? null;
 }
 
-function SortableBout({ bout, onEdit, onTogglePublic }: { bout: any; onEdit: (b: any) => void; onTogglePublic: (id: string, val: boolean) => void }) {
+const STATUS_PILL: Record<string, { label: string; className: string }> = {
+  proposed: { label: "Proposed", className: "bg-primary/15 text-primary border-primary/30" },
+  confirmed: { label: "Confirmed", className: "bg-green-500/15 text-green-400 border-green-500/30" },
+  declined: { label: "Declined", className: "bg-destructive/15 text-destructive border-destructive/30" },
+  empty: { label: "Empty", className: "bg-muted text-muted-foreground" },
+};
+
+function SortableBout({ bout, onEdit, onTogglePublic, onMakePublic }: { bout: any; onEdit: (b: any) => void; onTogglePublic: (id: string, val: boolean) => void; onMakePublic: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: bout.id });
   const style = { transform: CSS.Transform.toString(transform), transition };
   const fA = unwrap(bout.fighter_a);
   const fB = unwrap(bout.fighter_b);
   const isMain = bout.bout_type === "Main Event";
+  const status = bout.status || "empty";
+  const pill = STATUS_PILL[status] || STATUS_PILL.empty;
 
   return (
     <div ref={setNodeRef} style={style} className={`rounded-lg border ${isMain ? "border-2 border-primary/30" : "border-border"} bg-card ${isMain ? "p-6" : "p-4"}`}>
@@ -61,10 +67,11 @@ function SortableBout({ bout, onEdit, onTogglePublic }: { bout: any; onEdit: (b:
                 </div>
               )}
               <div className="flex-1 text-left min-w-0">
+                {/* Organiser always sees full names */}
                 <p className={`font-heading ${isMain ? "text-xl" : "text-sm"} text-foreground uppercase truncate`}>
-                  {bout.is_public !== false ? (fA?.name ?? "TBA") : "TBA"}
+                  {fA?.name ?? "TBA"}
                 </p>
-                {bout.is_public !== false && fA && (
+                {fA && (
                   <p className={`${isMain ? "text-primary font-bold" : "text-xs text-muted-foreground"}`}>
                     {fA.record_wins}-{fA.record_losses}-{fA.record_draws}
                   </p>
@@ -80,9 +87,9 @@ function SortableBout({ bout, onEdit, onTogglePublic }: { bout: any; onEdit: (b:
 
               <div className="flex-1 text-right min-w-0">
                 <p className={`font-heading ${isMain ? "text-xl" : "text-sm"} text-foreground uppercase truncate`}>
-                  {bout.is_public !== false ? (fB?.name ?? "TBA") : "TBA"}
+                  {fB?.name ?? "TBA"}
                 </p>
-                {bout.is_public !== false && fB && (
+                {fB && (
                   <p className={`${isMain ? "text-primary font-bold" : "text-xs text-muted-foreground"}`}>
                     {fB.record_wins}-{fB.record_losses}-{fB.record_draws}
                   </p>
@@ -95,7 +102,13 @@ function SortableBout({ bout, onEdit, onTogglePublic }: { bout: any; onEdit: (b:
               )}
             </div>
 
-            <div className="flex items-center gap-1 shrink-0 ml-2">
+            <div className="flex items-center gap-1.5 shrink-0 ml-2">
+              <Badge variant="outline" className={`text-[10px] ${pill.className}`}>{pill.label}</Badge>
+              {status === "confirmed" && bout.is_public !== true && (
+                <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1 border-primary/30 text-primary" onClick={() => onMakePublic(bout.id)}>
+                  Make Public
+                </Button>
+              )}
               <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onTogglePublic(bout.id, !bout.is_public)} title={bout.is_public !== false ? "Make unlisted" : "Make public"}>
                 {bout.is_public !== false ? <Eye className="h-3.5 w-3.5 text-muted-foreground" /> : <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />}
               </Button>
@@ -191,6 +204,12 @@ export default function EventManager() {
     refetchBouts();
   };
 
+  const handleMakePublic = async (boutId: string) => {
+    await supabase.from("event_fight_slots").update({ is_public: true }).eq("id", boutId);
+    toast({ title: "Bout is now public" });
+    refetchBouts();
+  };
+
   const handleDragEnd = async (event: any, section: "main" | "under") => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -199,7 +218,6 @@ export default function EventManager() {
     const newIndex = items.findIndex((b: any) => b.id === over.id);
     if (oldIndex === -1 || newIndex === -1) return;
     const reordered = arrayMove(items, oldIndex, newIndex);
-    // Update slot_number for all reordered items
     const updates = reordered.map((b: any, i: number) =>
       supabase.from("event_fight_slots").update({ slot_number: i + 1 }).eq("id", b.id)
     );
@@ -215,17 +233,44 @@ export default function EventManager() {
   const handleSuggestionConfirm = async (fighterA: FighterProfile, fighterB: FighterProfile, section: "main" | "under") => {
     const nextSlot = bouts.length + 1;
     const wc = fighterA.weight_class || fighterB.weight_class;
-    await supabase.from("event_fight_slots").insert({
+    const { data: inserted } = await supabase.from("event_fight_slots").insert({
       event_id: id!,
       slot_number: nextSlot,
       fighter_a_id: fighterA.id,
       fighter_b_id: fighterB.id,
       weight_class: wc,
       bout_type: section === "main" ? "Main Event" : "Undercard",
-      status: "confirmed",
-      is_public: true,
-    });
-    toast({ title: "Bout added from suggestion" });
+      status: "proposed",
+      is_public: false,
+    }).select("id").single();
+
+    // Notify parties
+    if (inserted) {
+      const notifyIds = new Set<string>();
+      if (fighterA.user_id) notifyIds.add(fighterA.user_id);
+      if (fighterB.user_id) notifyIds.add(fighterB.user_id);
+      if (fighterA.created_by_coach_id) notifyIds.add(fighterA.created_by_coach_id);
+      if (fighterB.created_by_coach_id) notifyIds.add(fighterB.created_by_coach_id);
+      const { data: gymLinks } = await supabase
+        .from("fighter_gym_links").select("fighter_id, gym:gyms(coach_id)")
+        .in("fighter_id", [fighterA.id, fighterB.id]).eq("status", "approved");
+      (gymLinks ?? []).forEach((link: any) => {
+        const gym = Array.isArray(link.gym) ? link.gym[0] : link.gym;
+        if (gym?.coach_id) notifyIds.add(gym.coach_id);
+      });
+      const promises = Array.from(notifyIds).map((uid) =>
+        supabase.rpc("create_notification", {
+          _user_id: uid,
+          _title: "New Fight Proposal",
+          _message: `${fighterA.name} vs ${fighterB.name} has been proposed for ${event?.title ?? "an event"}.`,
+          _type: "match_proposed" as any,
+          _reference_id: inserted.id,
+        })
+      );
+      await Promise.all(promises);
+    }
+
+    toast({ title: "Fight proposed — awaiting acceptance from all parties" });
     refetchBouts();
   };
 
@@ -330,6 +375,7 @@ export default function EventManager() {
                     slot={slots[0]}
                     existingProposalFighterIds={existingFighterIds}
                     onSelectPair={(a, b) => handleSuggestionConfirm(a, b, "main")}
+                    eventId={id}
                   />
                   <Button variant="ghost" size="sm" onClick={() => setShowSuggestionsMain(false)} className="mt-2">Close</Button>
                 </div>
@@ -342,7 +388,7 @@ export default function EventManager() {
                   <SortableContext items={paginatedMain.map((b: any) => b.id)} strategy={verticalListSortingStrategy}>
                     <div className="space-y-3">
                       {paginatedMain.map((bout: any) => (
-                        <SortableBout key={bout.id} bout={bout} onEdit={setEditingBout} onTogglePublic={handleTogglePublic} />
+                        <SortableBout key={bout.id} bout={bout} onEdit={setEditingBout} onTogglePublic={handleTogglePublic} onMakePublic={handleMakePublic} />
                       ))}
                     </div>
                   </SortableContext>
@@ -371,6 +417,7 @@ export default function EventManager() {
                     slot={slots[0]}
                     existingProposalFighterIds={existingFighterIds}
                     onSelectPair={(a, b) => handleSuggestionConfirm(a, b, "under")}
+                    eventId={id}
                   />
                   <Button variant="ghost" size="sm" onClick={() => setShowSuggestionsUnder(false)} className="mt-2">Close</Button>
                 </div>
@@ -383,7 +430,7 @@ export default function EventManager() {
                   <SortableContext items={paginatedUnder.map((b: any) => b.id)} strategy={verticalListSortingStrategy}>
                     <div className="space-y-2">
                       {paginatedUnder.map((bout: any) => (
-                        <SortableBout key={bout.id} bout={bout} onEdit={setEditingBout} onTogglePublic={handleTogglePublic} />
+                        <SortableBout key={bout.id} bout={bout} onEdit={setEditingBout} onTogglePublic={handleTogglePublic} onMakePublic={handleMakePublic} />
                       ))}
                     </div>
                   </SortableContext>

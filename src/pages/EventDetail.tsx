@@ -113,7 +113,7 @@ export default function EventDetail() {
     enabled: !!id,
   });
 
-  const { data: confirmedBouts = [] } = useQuery({
+  const { data: allBouts = [] } = useQuery({
     queryKey: ["event-confirmed-bouts", id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -149,8 +149,8 @@ export default function EventDetail() {
     );
   }
 
-  // Only show public bouts (is_public=true or is_public is null which defaults to true)
-  const publicBouts = confirmedBouts.filter((b: any) => b.is_public !== false);
+  // PUBLIC page: only show bouts that are BOTH confirmed AND is_public=true
+  const publicBouts = allBouts.filter((b: any) => b.status === "confirmed" && b.is_public === true);
   const mainEvents = publicBouts.filter((b: any) => b.bout_type === "Main Event");
   const undercards = publicBouts.filter((b: any) => b.bout_type !== "Main Event");
 
@@ -172,8 +172,8 @@ export default function EventDetail() {
   };
 
   const renderMainBout = (bout: any) => {
-    const fA = bout.is_public === false ? null : unwrap(bout.fighter_a);
-    const fB = bout.is_public === false ? null : unwrap(bout.fighter_b);
+    const fA = unwrap(bout.fighter_a);
+    const fB = unwrap(bout.fighter_b);
     const nameA = fA?.name ?? "TBA";
     const nameB = fB?.name ?? "TBA";
     return (
@@ -211,8 +211,8 @@ export default function EventDetail() {
   };
 
   const renderUndercardBout = (bout: any) => {
-    const fA = bout.is_public === false ? null : unwrap(bout.fighter_a);
-    const fB = bout.is_public === false ? null : unwrap(bout.fighter_b);
+    const fA = unwrap(bout.fighter_a);
+    const fB = unwrap(bout.fighter_b);
     const nameA = fA?.name ?? "TBA";
     const nameB = fB?.name ?? "TBA";
     return (
@@ -270,6 +270,32 @@ export default function EventDetail() {
     );
   };
 
+  // Also show bouts that aren't public yet but as TBA
+  const tbaBouts = allBouts.filter((b: any) => !(b.status === "confirmed" && b.is_public === true));
+  const tbaMain = tbaBouts.filter((b: any) => b.bout_type === "Main Event");
+  const tbaUnder = tbaBouts.filter((b: any) => b.bout_type !== "Main Event");
+
+  const renderTbaBout = (bout: any, isMain: boolean) => (
+    <div key={bout.id} className={`rounded-lg border ${isMain ? "border-2 border-primary/30" : "border-border"} bg-card ${isMain ? "p-6" : "p-4"}`}>
+      <div className="flex items-center gap-3 justify-between">
+        <div className="flex-1 text-left">
+          <p className={`font-heading ${isMain ? "text-xl md:text-2xl" : "text-sm"} text-muted-foreground uppercase`}>TBA</p>
+        </div>
+        <div className="flex flex-col items-center px-4">
+          <span className={`font-heading text-primary ${isMain ? "text-2xl" : "text-xs"}`}>VS</span>
+          {bout.weight_class && <p className={`text-${isMain ? "xs" : "[10px]"} text-muted-foreground mt-1`}>{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
+        </div>
+        <div className="flex-1 text-right">
+          <p className={`font-heading ${isMain ? "text-xl md:text-2xl" : "text-sm"} text-muted-foreground uppercase`}>TBA</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const allMainVisible = [...paginatedMain, ...tbaMain];
+  const allUnderVisible = [...paginatedUnder, ...tbaUnder];
+  const showFightCard = allMainVisible.length > 0 || allUnderVisible.length > 0 || (event.fight_slots && event.fight_slots.length > 0);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -288,14 +314,12 @@ export default function EventDetail() {
                   <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>
                   {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
 
-                  {/* Description card */}
                   {event.description && (
                     <div className="rounded-lg border border-border bg-card p-5 mb-6">
                       <p className="text-muted-foreground">{event.description}</p>
                     </div>
                   )}
 
-                  {/* Date and venue */}
                   <div className="flex flex-wrap gap-6 text-sm text-muted-foreground mb-6">
                     <span className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-primary" />
@@ -307,7 +331,6 @@ export default function EventDetail() {
                     </span>
                   </div>
 
-                  {/* Contact details card */}
                   {hasContact && (
                     <div className="rounded-lg border border-border bg-card p-5 mb-6">
                       <h3 className="font-heading text-sm text-muted-foreground uppercase tracking-wide mb-3">Contact</h3>
@@ -331,7 +354,6 @@ export default function EventDetail() {
                     </div>
                   )}
 
-                  {/* Buy Tickets */}
                   {event.tickets_url && (
                     <Button asChild className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 mb-6">
                       <a href={event.tickets_url} target="_blank" rel="noopener noreferrer">
@@ -340,7 +362,6 @@ export default function EventDetail() {
                     </Button>
                   )}
 
-                  {/* Role action buttons */}
                   <div className="flex flex-wrap gap-3">
                     {isFighter && fighterProfile && (
                       existingInterest ? (
@@ -395,17 +416,20 @@ export default function EventDetail() {
             </motion.div>
 
             {/* FIGHT CARD */}
-            {/* Main Card Section */}
-            {(mainEvents.length > 0 || undercards.length > 0 || (event.fight_slots && event.fight_slots.length > 0)) && (
+            {showFightCard && (
               <>
                 <h2 className="font-heading text-2xl text-foreground mb-6">
                   MAIN <span className="text-primary">CARD</span>
                 </h2>
                 {paginatedMain.length > 0 ? (
                   <div className="space-y-4 mb-4">{paginatedMain.map(renderMainBout)}</div>
-                ) : mainEvents.length === 0 ? (
-                  <p className="text-muted-foreground text-sm mb-4">No main card bouts announced yet.</p>
                 ) : null}
+                {tbaMain.length > 0 && (
+                  <div className="space-y-4 mb-4">{tbaMain.map((b) => renderTbaBout(b, true))}</div>
+                )}
+                {mainEvents.length === 0 && tbaMain.length === 0 && (
+                  <p className="text-muted-foreground text-sm mb-4">No main card bouts announced yet.</p>
+                )}
                 <Pagination page={mainPage} total={mainTotal} setPage={setMainPage} />
 
                 <h2 className="font-heading text-2xl text-foreground mb-6 mt-12">
@@ -413,15 +437,19 @@ export default function EventDetail() {
                 </h2>
                 {paginatedUnder.length > 0 ? (
                   <div className="space-y-2 mb-4">{paginatedUnder.map(renderUndercardBout)}</div>
-                ) : undercards.length === 0 ? (
-                  <p className="text-muted-foreground text-sm mb-4">No undercard bouts announced yet.</p>
                 ) : null}
+                {tbaUnder.length > 0 && (
+                  <div className="space-y-2 mb-4">{tbaUnder.map((b) => renderTbaBout(b, false))}</div>
+                )}
+                {undercards.length === 0 && tbaUnder.length === 0 && (
+                  <p className="text-muted-foreground text-sm mb-4">No undercard bouts announced yet.</p>
+                )}
                 <Pagination page={underPage} total={underTotal} setPage={setUnderPage} />
               </>
             )}
 
             {/* Fallback to fight_slots if no event_fight_slots */}
-            {confirmedBouts.length === 0 && event.fight_slots && event.fight_slots.length > 0 && (
+            {allBouts.length === 0 && event.fight_slots && event.fight_slots.length > 0 && (
               <>
                 <h2 className="font-heading text-2xl text-foreground mb-6">
                   FIGHT <span className="text-primary">CARD</span>
