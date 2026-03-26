@@ -149,10 +149,10 @@ export default function EventDetail() {
     );
   }
 
-  // PUBLIC page: only show bouts that are BOTH confirmed AND is_public=true
-  const publicBouts = allBouts.filter((b: any) => b.status === "confirmed" && b.is_public === true);
-  const mainEvents = publicBouts.filter((b: any) => b.bout_type === "Main Event");
-  const undercards = publicBouts.filter((b: any) => b.bout_type !== "Main Event");
+  // PUBLIC page: show ALL bouts in order, but mask fighter info unless confirmed AND public
+  const allOrderedBouts = allBouts;
+  const mainEvents = allOrderedBouts.filter((b: any) => b.bout_type === "Main Event");
+  const undercards = allOrderedBouts.filter((b: any) => b.bout_type !== "Main Event");
 
   const mainTotal = Math.ceil(mainEvents.length / BOUTS_PER_PAGE);
   const underTotal = Math.ceil(undercards.length / BOUTS_PER_PAGE);
