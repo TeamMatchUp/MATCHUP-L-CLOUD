@@ -85,7 +85,7 @@ export default function Explore() {
   const { data: events, isLoading: eventsLoading } = useQuery({
     queryKey: ["explore-events", countryFilter],
     queryFn: async () => {
-      let q = supabase.from("events").select("*, fight_slots(*), tickets(*)").eq("status", "published").order("date", { ascending: true });
+      let q = supabase.from("events").select("*, fight_slots(*), tickets(*), event_fight_slots(id, status)").eq("status", "published").order("date", { ascending: true });
       if (countryFilter !== "all") q = q.eq("country", countryFilter as CountryCode);
       const { data } = await q;
       return data ?? [];
@@ -363,7 +363,7 @@ export default function Explore() {
                 <div className={mapOpen ? "" : "container"}>
                   <div className={`${mapOpen ? "" : "flex gap-6"}`}>
                     <div className={`${mapOpen ? "w-full" : tab !== "fighters" ? "flex-1" : "w-full"}`}>
-                      {tab === "events" && <EventsDirectory events={paginatedItems} isLoading={eventsLoading} />}
+                      {tab === "events" && <EventsDirectory events={paginatedItems} isLoading={eventsLoading} searchCoords={pc.coords} />}
                       {tab === "gyms" && <GymsDirectory gyms={paginatedItems} isLoading={gymsLoading} searchCoords={pc.coords} />}
                       {tab === "fighters" && <FightersDirectory fighters={paginatedItems as any} isLoading={fightersLoading} />}
                       <PaginationControls />
@@ -454,15 +454,19 @@ export default function Explore() {
 
 // ── Sub-components ──
 
-function EventsDirectory({ events, isLoading }: { events: any[]; isLoading: boolean }) {
+function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null }) {
   if (isLoading) return <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-24 rounded-lg bg-card animate-pulse" />)}</div>;
   if (events.length === 0) return <p className="text-muted-foreground text-center py-12">No events found matching your filters.</p>;
   return (
     <div className="space-y-4">
       {events.map((event, i) => {
+        const confirmedBouts = event.event_fight_slots?.filter((s: any) => s.status === "confirmed").length ?? 0;
         const openSlots = event.fight_slots?.filter((s: any) => s.status === "open").length ?? 0;
-        const confirmedFights = event.fight_slots?.filter((s: any) => s.status === "confirmed").length ?? 0;
         const hasTickets = event.tickets && event.tickets.length > 0;
+        const isSoldOut = event.sold_out === true;
+        const dist = searchCoords && event.latitude != null && event.longitude != null
+          ? haversineDistance(searchCoords.latitude, searchCoords.longitude, event.latitude, event.longitude)
+          : null;
         return (
           <React.Fragment key={event.id}>
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }}>
@@ -473,13 +477,20 @@ function EventsDirectory({ events, isLoading }: { events: any[]; isLoading: bool
                   <div className="flex flex-wrap gap-4 mt-1.5 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
                     <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{event.city ? `${event.city}, ${event.location}` : event.location}</span>
-                    {hasTickets && <span className="flex items-center gap-1 text-primary"><Ticket className="h-3.5 w-3.5" /> Tickets</span>}
+                    {dist !== null && <span className="text-primary font-medium">{dist.toFixed(1)} mi</span>}
+                    {isSoldOut ? (
+                      <Badge className="bg-destructive/15 text-destructive border-destructive/30 text-[10px]">Sold Out</Badge>
+                    ) : hasTickets ? (
+                      <span className="flex items-center gap-1 text-primary"><Ticket className="h-3.5 w-3.5" /> Tickets</span>
+                    ) : event.ticket_count ? (
+                      <span className="text-xs text-muted-foreground">{event.ticket_count} tickets</span>
+                    ) : null}
                   </div>
                 </div>
                 <div className="flex items-center gap-6 mt-3 md:mt-0">
                   <div className="text-right">
-                    <span className="block text-primary font-semibold text-sm">{openSlots} open</span>
-                    <span className="block text-xs text-muted-foreground">{confirmedFights} confirmed</span>
+                    {confirmedBouts > 0 && <span className="block text-foreground font-semibold text-sm">{confirmedBouts} bout{confirmedBouts !== 1 ? "s" : ""}</span>}
+                    <span className="block text-xs text-muted-foreground">{openSlots} open slot{openSlots !== 1 ? "s" : ""}</span>
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
                 </div>
