@@ -350,6 +350,7 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
 
   const wldChartData = rosterRecords.slice(0, 8).map((f) => ({
     name: f.name?.split(" ")[0] ?? "?",
+    id: f.id,
     Wins: f.wins,
     Losses: f.losses,
     Draws: f.draws,
