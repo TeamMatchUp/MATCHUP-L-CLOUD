@@ -424,11 +424,11 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
     return months;
   }, [gymLeads, now]);
 
-  // Funnel
+  // Funnel — exact status counts per stage
   const funnelData = useMemo(() => {
     const total = gymLeads.length;
-    const contacted = gymLeads.filter((l) => l.status === "contacted" || l.status === "trial_attended" || l.status === "converted").length;
-    const trialAttended = gymLeads.filter((l) => l.status === "trial_attended" || l.status === "converted").length;
+    const contacted = gymLeads.filter((l) => l.status === "contacted").length;
+    const trialAttended = gymLeads.filter((l) => l.status === "trial_attended").length;
     const converted = gymLeads.filter((l) => l.status === "converted").length;
     return [
       { label: "Leads Generated", count: total, pct: 100, color: "hsl(var(--chart-3))" },
