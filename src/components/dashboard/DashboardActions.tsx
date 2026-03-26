@@ -88,6 +88,7 @@ export function DashboardActions({
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
   const gymIds = myGyms.map((g) => g.id);
 
