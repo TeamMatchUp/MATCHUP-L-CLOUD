@@ -520,6 +520,22 @@ export default function EventManager() {
               nextSlotNumber={slots.length + 1}
               onSuccess={() => queryClient.invalidateQueries({ queryKey: ["event-slots", id] })}
             />
+            <AddOpenSlotDialog
+              open={showOpenSlotMain}
+              onOpenChange={setShowOpenSlotMain}
+              eventId={id!}
+              sectionType="Main Event"
+              nextSlotNumber={bouts.length + 1}
+              onSuccess={handleBoutSuccess}
+            />
+            <AddOpenSlotDialog
+              open={showOpenSlotUnder}
+              onOpenChange={setShowOpenSlotUnder}
+              eventId={id!}
+              sectionType="Undercard"
+              nextSlotNumber={bouts.length + 1}
+              onSuccess={handleBoutSuccess}
+            />
           </div>
         </section>
       </main>
