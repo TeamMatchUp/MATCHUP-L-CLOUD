@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { formatEnum } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
-import { X } from "lucide-react";
+import { X, ChevronRight, ChevronLeft } from "lucide-react";
+import { toast } from "sonner";
 import { format, differenceInDays, subMonths } from "date-fns";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
@@ -86,6 +87,7 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
 
   const now = new Date();
   const hasOrganiserRole = effectiveRoles.includes("organiser");
+  const queryClient = useQueryClient();
 
   // ── Fetch coach's gyms ──
   const { data: myGyms = [] } = useQuery({
@@ -460,6 +462,18 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
     return cols;
   }, [gymLeads]);
 
+  const STATUS_ORDER = ["pending", "contacted", "trial_attended", "converted"];
+  const handleLeadMove = async (leadId: string, currentStatus: string, direction: "forward" | "back") => {
+    const idx = STATUS_ORDER.indexOf(currentStatus);
+    const newIdx = direction === "forward" ? idx + 1 : idx - 1;
+    if (newIdx < 0 || newIdx >= STATUS_ORDER.length) return;
+    const newStatus = STATUS_ORDER[newIdx];
+    const { error } = await supabase.from("gym_leads").update({ status: newStatus }).eq("id", leadId);
+    if (error) { toast.error("Failed to update lead status"); return; }
+    queryClient.invalidateQueries({ queryKey: ["coach-analytics-gym-leads"] });
+    toast.success(`Lead moved to ${newStatus.replace(/_/g, " ")}`);
+  };
+
   // ════════════════════════════════════════════
   // Active Fighters Modal Data
   // ════════════════════════════════════════════
@@ -801,7 +815,7 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
             )}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-            {pipelineColumns.map((col) => (
+            {pipelineColumns.map((col, colIdx) => (
               <div key={col.label} className="bg-accent rounded-md p-3">
                 <div className="font-heading text-[10px] tracking-[1.8px] uppercase text-muted-foreground mb-2.5 flex items-center justify-between">
                   {col.label}
@@ -810,12 +824,29 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
                 {col.items.length === 0 ? (
                   <p className="text-[11px] text-muted-foreground text-center py-2">—</p>
                 ) : (
-                  col.items.slice(0, 4).map((item) => (
+                  col.items.slice(0, 6).map((item) => (
                     <div key={item.id} className="bg-card border border-border rounded p-2.5 mb-1.5 last:mb-0">
-                      <div className="font-heading text-xs font-bold text-foreground">{item.name}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5">{item.type === "trial_request" ? "Trial" : "Interest"}</div>
+                      <div className="font-heading text-xs font-bold text-foreground truncate">{item.name}</div>
+                      <div className="text-[10px] text-muted-foreground truncate">{item.email}</div>
+                      <div className="text-[11px] text-muted-foreground mt-0.5">{item.type === "trial_request" ? "Trial Request" : "Interest"}</div>
                       <div className="text-[10px] text-primary/60 mt-1 font-heading">
                         {format(new Date(item.created_at), "d MMM yyyy")}
+                      </div>
+                      <div className="flex items-center gap-1 mt-2">
+                        <button
+                          disabled={colIdx === 0}
+                          onClick={() => handleLeadMove(item.id, col.status, "back")}
+                          className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded border border-border bg-accent text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <ChevronLeft className="h-3 w-3" /> Back
+                        </button>
+                        <button
+                          disabled={colIdx === pipelineColumns.length - 1}
+                          onClick={() => handleLeadMove(item.id, col.status, "forward")}
+                          className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors ml-auto"
+                        >
+                          Forward <ChevronRight className="h-3 w-3" />
+                        </button>
                       </div>
                     </div>
                   ))
