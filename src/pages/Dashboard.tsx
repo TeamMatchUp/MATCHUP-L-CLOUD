@@ -304,10 +304,6 @@ export default function Dashboard() {
             {renderContent()}
           </main>
         </div>
-
-            {renderContent()}
-          </main>
-        </div>
       </div>
 
       {/* Dialogs */}
