@@ -826,7 +826,7 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
           </div>
         </div>
 
-        {/* Pipeline */}
+        {/* Pipeline — Count Tiles */}
         <div className="bg-card border border-border rounded-lg p-4">
           <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3 flex items-center justify-between">
             Lead Pipeline
@@ -837,37 +837,18 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
             )}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-            {pipelineColumns.map((col, colIdx) => (
-              <div key={col.label} className="bg-accent rounded-md p-3">
-                <div className="font-heading text-[10px] tracking-[1.8px] uppercase text-muted-foreground mb-2.5 flex items-center justify-between">
-                  {col.label}
-                  <span className="font-heading text-xs font-bold bg-card border border-border text-foreground px-2 py-0.5 rounded-full">{col.items.length}</span>
-                </div>
-                {col.items.length === 0 ? (
-                  <p className="text-[11px] text-muted-foreground text-center py-2">—</p>
-                ) : (
-                  col.items.slice(0, 6).map((item) => (
-                    <div key={item.id} className="bg-card border border-border rounded p-2.5 mb-1.5 last:mb-0">
-                      <div className="font-heading text-xs font-bold text-foreground truncate">{item.name}</div>
-                      <div className="text-[10px] text-muted-foreground truncate">{item.email}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5">{item.type === "trial_request" ? "Trial Request" : "Interest"}</div>
-                      <div className="text-[10px] text-primary/60 mt-1 font-heading">
-                        {format(new Date(item.created_at), "d MMM yyyy")}
-                      </div>
-                      <div className="flex items-center gap-1 mt-2">
-                        <button
-                          disabled={colIdx === 0}
-                          onClick={() => handleLeadMove(item.id, col.status, "back")}
-                          className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded border border-border bg-accent text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        >
-                          <ChevronLeft className="h-3 w-3" /> Back
-                        </button>
-                        <button
-                          disabled={colIdx === pipelineColumns.length - 1}
-                          onClick={() => handleLeadMove(item.id, col.status, "forward")}
-                          className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors ml-auto"
-                        >
-                          Forward <ChevronRight className="h-3 w-3" />
+            {pipelineColumns.map((col) => (
+              <button
+                key={col.label}
+                onClick={() => setPipelineModalStatus(col.status)}
+                className="bg-accent rounded-md p-4 text-center cursor-pointer hover:border-primary/50 border border-border transition-colors"
+              >
+                <div className="font-heading text-3xl font-extrabold text-primary">{col.items.length}</div>
+                <div className="font-heading text-[10px] tracking-[1.8px] uppercase text-muted-foreground mt-1">{col.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
                         </button>
                       </div>
                     </div>
