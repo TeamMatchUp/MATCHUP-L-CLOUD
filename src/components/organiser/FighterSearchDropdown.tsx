@@ -37,8 +37,8 @@ export function FighterSearchDropdown({ label, selected, onSelect, onClear, excl
     queryFn: async () => {
       let q = supabase.from("fighter_profiles").select("*").eq("available", true).order("name").range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
       if (name.trim()) q = q.ilike("name", `%${name.trim()}%`);
-      if (weightClass !== "all") q = q.eq("weight_class", weightClass);
-      if (country !== "all") q = q.eq("country", country);
+      if (weightClass !== "all") q = q.eq("weight_class", weightClass as any);
+      if (country !== "all") q = q.eq("country", country as any);
       if (discipline !== "all") q = q.eq("discipline", discipline);
       if (coachNominated && coachId) q = q.eq("created_by_coach_id", coachId);
       const { data } = await q;
