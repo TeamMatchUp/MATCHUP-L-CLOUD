@@ -1,0 +1,1 @@
+CREATE POLICY "Coaches can update their gym leads" ON public.gym_leads FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM gyms g WHERE g.id = gym_leads.gym_id AND g.coach_id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM gyms g WHERE g.id = gym_leads.gym_id AND g.coach_id = auth.uid()));
