@@ -9,10 +9,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
+  SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +32,8 @@ import {
   Heart,
   Home,
   Compass,
+  PanelLeft,
+  PanelLeftClose,
 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -54,7 +58,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
   const activeSection = searchParams.get("section") || "overview";
   const { user, effectiveRoles, signOut } = useAuth();
   const navigate = useNavigate();
-  const { state } = useSidebar();
+  const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
 
   const { data: profile } = useQuery({
@@ -103,34 +107,16 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-4 border-b border-sidebar-border">
-        {!collapsed ? (
-          <div className="flex items-center gap-3">
-            <Avatar className="h-10 w-10 shrink-0">
-              {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-              <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-accent-foreground truncate">
-                {profile?.full_name || "User"}
-              </p>
-              <p className="text-xs text-sidebar-foreground truncate">
-                {user?.email}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex justify-center">
-            <Avatar className="h-8 w-8">
-              {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
-              <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        )}
+      {/* Collapse toggle at very top */}
+      <SidebarHeader className="p-2 border-b border-sidebar-border">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={toggleSidebar}
+          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+        >
+          {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+        </Button>
       </SidebarHeader>
 
       <SidebarContent>
@@ -214,6 +200,37 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      {/* Profile pinned to bottom */}
+      <SidebarFooter className="border-t border-sidebar-border p-3">
+        {!collapsed ? (
+          <div className="flex items-center gap-3">
+            <Avatar className="h-9 w-9 shrink-0">
+              {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+              <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-sidebar-accent-foreground truncate">
+                {profile?.full_name || "User"}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.email}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-center">
+            <Avatar className="h-8 w-8">
+              {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
+              <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        )}
+      </SidebarFooter>
     </Sidebar>
   );
 }
