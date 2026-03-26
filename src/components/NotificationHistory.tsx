@@ -96,6 +96,7 @@ export function NotificationHistory() {
     if (error) { toast.error("Failed to clear: " + error.message); return; }
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
     toast.success("All notifications deleted");
   };
 
