@@ -316,36 +316,40 @@ export default function GymDetail() {
                 </div>
               )}
 
-              {/* Unclaimed gym: invite coach message for all non-coach users */}
-              {!isOwner && !gym.claimed && (
-                <div className="mb-8 rounded-lg border border-border bg-muted/50 p-5 space-y-3">
+              {/* Unclaimed gym: styled invite card — hidden for organisers */}
+              {!isOwner && !gym.claimed && !isOrganiserOnly && (
+                <div className="mb-8 rounded-lg border-2 border-primary/40 bg-card p-6 space-y-4">
+                  <h3 className="font-heading text-lg text-foreground">This gym hasn't been claimed yet</h3>
                   {isCoach ? (
                     <>
                       <p className="text-sm text-muted-foreground">
-                        This gym does not have an active owner account yet.
+                        Are you the coach here? Claim this listing to manage your gym's profile, roster, and analytics.
                       </p>
                       <Button variant="hero" size="sm" onClick={handleClaimClick}>
-                        Claim This Gym
+                        Coach? Claim this gym
                       </Button>
                     </>
-                  ) : isFighter ? (
-                    <p className="text-sm text-muted-foreground">
-                      Only coaches can claim a gym listing. Ask your coach to sign up and claim this gym.
-                    </p>
-                  ) : isOrganiserOnly ? (
-                    null
                   ) : (
                     <>
                       <p className="text-sm text-muted-foreground">
-                        This gym does not have an active owner account yet. Know the coach? Share this link to invite them to claim their listing.
+                        Know the coach? Share this invite link so they can claim their listing.
                       </p>
-                      <button
-                        onClick={handleCopyCoachUrl}
-                        className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
-                      >
-                        {copied ? <CheckIcon className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                        {copied ? "Copied!" : "Copy coach signup URL"}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-muted border border-border rounded-md px-3 py-2 text-xs text-muted-foreground truncate">
+                          {`${window.location.origin}/gyms/${gym.id}?action=claim`}
+                        </div>
+                        <Button size="sm" variant="outline" className="gap-1 shrink-0" onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/gyms/${gym.id}?action=claim`);
+                          setCopied(true);
+                          setTimeout(() => setCopied(false), 2000);
+                        }}>
+                          {copied ? <CheckIcon className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                          {copied ? "Copied" : "Copy"}
+                        </Button>
+                      </div>
+                      <Button variant="outline" size="sm" className="gap-1 text-primary border-primary/30" onClick={handleClaimClick}>
+                        Coach? Claim this gym
+                      </Button>
                     </>
                   )}
                 </div>
@@ -441,67 +445,68 @@ export default function GymDetail() {
                 )}
               </div>
 
-              {links.length > 0 ? (
-                <div className="space-y-3">
-                  {links.map((link: any) => {
-                    const fighter = link.fighter_profiles;
-                    if (!fighter) return null;
-                    const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
-                    const statusInfo = STATUS_BADGE[link.status] ?? STATUS_BADGE.approved;
-                    return (
-                      <div
-                        key={link.id}
-                        className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-all"
-                      >
+              {(() => {
+                const approvedLinks = links.filter((l: any) => l.status === "approved" && l.fighter_profiles);
+                // Sort by win count descending for ranking
+                const sorted = [...approvedLinks].sort((a: any, b: any) =>
+                  (b.fighter_profiles?.record_wins ?? 0) - (a.fighter_profiles?.record_wins ?? 0)
+                );
+                if (sorted.length === 0) {
+                  return (
+                    <div className="rounded-lg border border-border bg-card p-8 text-center">
+                      <p className="text-muted-foreground mb-4">No fighters registered at this gym yet.</p>
+                      {isOwner && (
+                        <Button onClick={() => setShowAddFighter(true)} className="gap-1">
+                          <Plus className="h-4 w-4" /> Add Your First Fighter
+                        </Button>
+                      )}
+                    </div>
+                  );
+                }
+                return (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {sorted.map((link: any, idx: number) => {
+                      const fighter = link.fighter_profiles;
+                      const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
+                      const initials = fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2);
+                      return (
                         <Link
+                          key={link.id}
                           to={`/fighters/${fighter.id}`}
-                          className="flex items-center gap-4 flex-1 min-w-0"
+                          className="rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-all flex items-center gap-4"
                         >
-                          <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-heading text-sm text-muted-foreground shrink-0">
-                            {fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)}
+                          <span className="font-heading text-lg text-muted-foreground w-6 text-center shrink-0">#{idx + 1}</span>
+                          <div className="h-11 w-11 rounded-full bg-muted flex items-center justify-center font-heading text-sm text-muted-foreground shrink-0 overflow-hidden">
+                            {fighter.profile_image ? (
+                              <img src={fighter.profile_image} alt={fighter.name} className="h-full w-full object-cover" />
+                            ) : initials}
                           </div>
-                          <div className="min-w-0">
+                          <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{fighter.name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {WEIGHT_CLASS_LABELS[fighter.weight_class]} · {fighter.style ? STYLE_LABELS[fighter.style] : "—"}
+                              {WEIGHT_CLASS_LABELS[fighter.weight_class]}
+                              {fighter.style ? ` · ${STYLE_LABELS[fighter.style]}` : ""}
                             </p>
                           </div>
-                        </Link>
-                        <div className="flex items-center gap-3 shrink-0">
-                          <Badge variant="outline" className={statusInfo.className}>
-                            {statusInfo.label}
-                          </Badge>
-                          <div className="text-right">
+                          <div className="text-right shrink-0">
                             <p className="text-primary font-bold text-sm">{record}</p>
-                            <span className={`text-xs ${fighter.available ? "text-success" : "text-muted-foreground"}`}>
-                              {fighter.available ? "Available" : "Booked"}
-                            </span>
                           </div>
                           {isOwner && (
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                              onClick={() => removeFighterMutation.mutate(link.id)}
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeFighterMutation.mutate(link.id); }}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="rounded-lg border border-border bg-card p-8 text-center">
-                  <p className="text-muted-foreground mb-4">No fighters registered at this gym yet.</p>
-                  {isOwner && (
-                    <Button onClick={() => setShowAddFighter(true)} className="gap-1">
-                      <Plus className="h-4 w-4" /> Add Your First Fighter
-                    </Button>
-                  )}
-                </div>
-              )}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </motion.div>
 
             {isOwner && (

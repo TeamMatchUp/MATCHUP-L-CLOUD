@@ -28,32 +28,42 @@ export function NotificationHistory() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<"all" | "unread" | "read">("all");
 
-  const { data: notifications = [], isLoading } = useQuery({
-    queryKey: ["notification-history", user?.id, filter],
+  // Always fetch ALL notifications for counts
+  const { data: allNotifications = [], isLoading } = useQuery({
+    queryKey: ["notification-history-all", user?.id],
     queryFn: async () => {
-      let query = supabase
+      const { data } = await supabase
         .from("notifications")
         .select("*")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
-      if (filter === "unread") query = query.eq("read", false);
-      else if (filter === "read") query = query.eq("read", true);
-      const { data } = await query;
       return data ?? [];
     },
     enabled: !!user,
   });
 
+  // Derive filtered list from the full dataset
+  const filteredNotifications = allNotifications.filter((n) => {
+    if (filter === "unread") return !n.read;
+    if (filter === "read") return n.read;
+    return true;
+  });
+
+  // Fixed counts — always computed from full list, never change on filter click
+  const totalCount = allNotifications.length;
+  const unreadCount = allNotifications.filter((n) => !n.read).length;
+  const readCount = allNotifications.filter((n) => n.read).length;
+
   const handleNotificationClick = async (notification: any) => {
     await supabase.from("notifications").update({ read: true }).eq("id", notification.id);
-    queryClient.invalidateQueries({ queryKey: ["notification-history"] });
+    queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
     navigate("/dashboard?section=actions");
   };
 
   const toggleRead = async (notification: any) => {
     await supabase.from("notifications").update({ read: !notification.read }).eq("id", notification.id);
-    queryClient.invalidateQueries({ queryKey: ["notification-history"] });
+    queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
     toast.success(notification.read ? "Marked as unread" : "Marked as read");
   };
@@ -61,33 +71,30 @@ export function NotificationHistory() {
   const deleteNotification = async (notifId: string) => {
     const { error } = await supabase.from("notifications").delete().eq("id", notifId);
     if (error) { toast.error("Failed to delete: " + error.message); return; }
-    queryClient.invalidateQueries({ queryKey: ["notification-history"] });
+    queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
     toast.success("Notification deleted");
   };
 
   const markAllRead = async () => {
-    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
+    const unreadIds = allNotifications.filter((n) => !n.read).map((n) => n.id);
     if (unreadIds.length === 0) return;
     await supabase.from("notifications").update({ read: true }).in("id", unreadIds);
-    queryClient.invalidateQueries({ queryKey: ["notification-history"] });
+    queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
     toast.success("All notifications marked as read");
   };
 
   const deleteAll = async () => {
     if (!user) return;
-    // (13) Delete all notifications for this user from the database
     const { error } = await supabase.from("notifications").delete().eq("user_id", user.id);
     if (error) { toast.error("Failed to clear: " + error.message); return; }
-    queryClient.invalidateQueries({ queryKey: ["notification-history"] });
+    queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
     toast.success("All notifications deleted");
   };
 
   if (!user) return null;
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <Card>
@@ -103,7 +110,7 @@ export function NotificationHistory() {
             <Button variant="outline" size="sm" onClick={markAllRead} disabled={unreadCount === 0}>
               Mark all read
             </Button>
-            <Button variant="outline" size="sm" onClick={deleteAll} disabled={notifications.length === 0}>
+            <Button variant="outline" size="sm" onClick={deleteAll} disabled={totalCount === 0}>
               Clear all
             </Button>
           </div>
@@ -112,26 +119,26 @@ export function NotificationHistory() {
       <CardContent>
         <div className="flex gap-2 mb-4">
           <Button variant={filter === "all" ? "default" : "outline"} size="sm" onClick={() => setFilter("all")}>
-            All ({notifications.length})
+            All ({totalCount})
           </Button>
           <Button variant={filter === "unread" ? "default" : "outline"} size="sm" onClick={() => setFilter("unread")}>
             Unread ({unreadCount})
           </Button>
           <Button variant={filter === "read" ? "default" : "outline"} size="sm" onClick={() => setFilter("read")}>
-            Read ({notifications.length - unreadCount})
+            Read ({readCount})
           </Button>
         </div>
 
         <ScrollArea className="h-[500px] pr-4">
           {isLoading ? (
             <p className="text-sm text-muted-foreground text-center py-8">Loading...</p>
-          ) : notifications.length === 0 ? (
+          ) : filteredNotifications.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
               {filter === "unread" ? "No unread notifications" : "No notifications yet"}
             </p>
           ) : (
             <div className="space-y-4">
-              {notifications.map((notification) => (
+              {filteredNotifications.map((notification) => (
                 <div
                   key={notification.id}
                   className={`border rounded-lg p-4 transition-colors ${

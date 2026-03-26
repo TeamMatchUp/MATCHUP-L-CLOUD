@@ -285,6 +285,7 @@ export type Database = {
           postcode: string | null
           promotion_name: string | null
           promotion_status: string | null
+          show_ticket_sales: boolean | null
           sold_out: boolean | null
           status: Database["public"]["Enums"]["event_status"]
           ticket_count: number | null
@@ -314,6 +315,7 @@ export type Database = {
           postcode?: string | null
           promotion_name?: string | null
           promotion_status?: string | null
+          show_ticket_sales?: boolean | null
           sold_out?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
           ticket_count?: number | null
@@ -343,6 +345,7 @@ export type Database = {
           postcode?: string | null
           promotion_name?: string | null
           promotion_status?: string | null
+          show_ticket_sales?: boolean | null
           sold_out?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
           ticket_count?: number | null
