@@ -21,7 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, Search } from "lucide-react";
+import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, Search, Trash2, RotateCcw, AlertTriangle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { formatEnum } from "@/lib/format";
