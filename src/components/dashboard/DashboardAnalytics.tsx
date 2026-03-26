@@ -8,6 +8,7 @@ import {
   LineChart, Line, CartesianGrid, Legend,
 } from "recharts";
 import { FighterAnalyticsV2 } from "./FighterAnalytics";
+import { CoachAnalyticsV2 } from "./CoachAnalytics";
 
 interface DashboardAnalyticsProps {
   isCoachOrOwner: boolean;
@@ -18,7 +19,6 @@ interface DashboardAnalyticsProps {
   events: any[];
   fighterProfile: any | null;
   userId: string;
-  embedded?: boolean;
 }
 
 const GOLD = "hsl(44 87% 58%)";
