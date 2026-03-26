@@ -849,16 +849,76 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
             ))}
           </div>
         </div>
-                        </button>
+      </div>
+
+      {/* ── Lead Pipeline Popup Modal ── */}
+      <Dialog open={!!pipelineModalStatus} onOpenChange={(open) => { if (!open) setPipelineModalStatus(null); }}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-lg">
+              {pipelineColumns.find((c) => c.status === pipelineModalStatus)?.label || ""} Leads
+            </DialogTitle>
+            <DialogDescription className="text-sm text-muted-foreground">
+              {pipelineModalItems.length} lead{pipelineModalItems.length !== 1 ? "s" : ""} at this stage
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+            {pipelineModalItems.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-6">No leads at this stage.</p>
+            ) : (
+              pipelineModalItems.map((item) => {
+                const colIdx = STATUS_ORDER.indexOf(pipelineModalStatus!);
+                return (
+                  <div key={item.id} className="bg-accent border border-border rounded-md p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-heading text-sm font-bold text-foreground truncate">{item.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">{item.email}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {item.type === "trial_request" ? "Trial Request" : "Interest"} · {format(new Date(item.created_at), "d MMM yyyy")}
+                        </div>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            ))}
+                    <div className="flex items-center gap-1.5 mt-2.5">
+                      <button
+                        disabled={colIdx === 0}
+                        onClick={() => handleLeadMove(item.id, pipelineModalStatus!, "back")}
+                        className="flex items-center gap-0.5 text-[10px] px-2 py-1 rounded border border-border bg-card text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <ChevronLeft className="h-3 w-3" /> Back
+                      </button>
+                      <button
+                        disabled={colIdx === STATUS_ORDER.length - 1}
+                        onClick={() => handleLeadMove(item.id, pipelineModalStatus!, "forward")}
+                        className="flex items-center gap-0.5 text-[10px] px-2 py-1 rounded border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      >
+                        Forward <ChevronRight className="h-3 w-3" />
+                      </button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button className="flex items-center gap-0.5 text-[10px] px-2 py-1 rounded border border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors ml-auto">
+                            <Trash2 className="h-3 w-3" /> Delete
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Lead</AlertDialogTitle>
+                            <AlertDialogDescription>Permanently delete {item.name}'s lead record? This cannot be undone.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleLeadDelete(item.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
 
       {/* ── SECTION 7: Organiser Analytics ── */}
       {showOrganiserSection && (
