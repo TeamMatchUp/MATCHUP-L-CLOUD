@@ -829,7 +829,7 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
       {/* ── SECTION 7: Organiser Analytics ── */}
       {showOrganiserSection && (
         <>
-          <SectionHeader title="Organiser Analytics" />
+          <SectionHeader title="Organiser Analytics" large />
           <OrganiserAnalyticsShared userId={userId} embedded />
         </>
       )}
