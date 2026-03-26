@@ -224,6 +224,14 @@ export default function Dashboard() {
           />
         );
 
+      case "interests":
+        return (
+          <DashboardInterests
+            userId={user!.id}
+            rosterFighterIds={allFighterIds}
+          />
+        );
+
       case "notifications":
         return <NotificationHistory />;
 
