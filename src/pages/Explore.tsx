@@ -496,7 +496,7 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
                 <div className="flex items-center gap-6 mt-3 md:mt-0">
                   <div className="text-right">
                     {confirmedBouts > 0 && <span className="block text-foreground font-semibold text-sm">{confirmedBouts} bout{confirmedBouts !== 1 ? "s" : ""} confirmed</span>}
-                    <span className="block text-xs text-muted-foreground">{openSlots} open slot{openSlots !== 1 ? "s" : ""}</span>
+                    {openSlots > 0 && <span className="block text-xs text-primary font-medium">{openSlots} slot{openSlots !== 1 ? "s" : ""} open</span>}
                   </div>
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
                 </div>

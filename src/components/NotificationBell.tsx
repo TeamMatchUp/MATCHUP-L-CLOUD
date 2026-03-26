@@ -72,15 +72,16 @@ export function NotificationBell() {
       .update({ read: true })
       .in("id", unreadIds);
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
   };
 
   const handleNotificationClick = async (notification: any) => {
-    // Mark as read
     await supabase
       .from("notifications")
       .update({ read: true })
       .eq("id", notification.id);
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
 
     setOpen(false);
     navigate("/dashboard?section=actions");

@@ -78,14 +78,14 @@ export function FighterSearchDropdown({ label, selected, onSelect, onClear, excl
       if (weightClass !== "all") q = q.eq("weight_class", weightClass as any);
       if (country !== "all") q = q.eq("country", country as any);
       if (discipline !== "all") q = q.eq("discipline", discipline);
-      if (coachNominated && !coachId) {
-        // Filter to nominated fighters for this event
-        q = q.in("id", nominatedFighterIds);
-      } else if (coachNominated && coachId) {
-        // Coach's own fighters OR nominated for this event
-        q = q.eq("created_by_coach_id", coachId);
-      } else if (!coachNominated && coachId && false) {
-        // No filter — show all
+      if (coachNominated) {
+        // Show fighters that were added by any coach (created_by_coach_id is not null)
+        // OR nominated for this event
+        if (nominatedFighterIds.length > 0) {
+          q = q.or(`created_by_coach_id.not.is.null,id.in.(${nominatedFighterIds.join(",")})`);
+        } else {
+          q = q.not("created_by_coach_id", "is", null);
+        }
       }
       const { data } = await q;
       return data ?? [];

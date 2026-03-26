@@ -831,6 +831,14 @@ export function DashboardActions({
               const daysLeft = Math.max(1, Math.ceil((THIRTY_DAYS - (Date.now() - d.discardedAt)) / (24 * 60 * 60 * 1000)));
               return (
                 <div key={d.item.id} className="rounded-lg border border-border/50 bg-card p-4 flex items-start gap-4 opacity-60">
+                  {multiSelectMode && (
+                    <div className="shrink-0 mt-1">
+                      <Checkbox
+                        checked={selectedIds.has(d.item.id)}
+                        onCheckedChange={() => toggleSelect(d.item.id)}
+                      />
+                    </div>
+                  )}
                   <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
                     <Icon className="h-4 w-4 text-muted-foreground" />
                   </div>
