@@ -98,26 +98,8 @@ export function NotificationHistory() {
 
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-heading text-lg font-normal text-foreground">Notifications</h3>
-            <p className="text-sm text-muted-foreground">
-              {unreadCount > 0 ? `${unreadCount} unread` : "All caught up!"}
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={markAllRead} disabled={unreadCount === 0}>
-              Mark all read
-            </Button>
-            <Button variant="outline" size="sm" onClick={deleteAll} disabled={totalCount === 0}>
-              Clear all
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="flex gap-2 mb-4">
+      <CardContent className="pt-6">
+        <div className="flex flex-wrap items-center gap-2 mb-4">
           <Button variant={filter === "all" ? "default" : "outline"} size="sm" onClick={() => setFilter("all")}>
             All ({totalCount})
           </Button>
@@ -126,6 +108,13 @@ export function NotificationHistory() {
           </Button>
           <Button variant={filter === "read" ? "default" : "outline"} size="sm" onClick={() => setFilter("read")}>
             Read ({readCount})
+          </Button>
+          <div className="flex-1" />
+          <Button variant="outline" size="sm" onClick={markAllRead} disabled={unreadCount === 0}>
+            Mark all read
+          </Button>
+          <Button variant="outline" size="sm" onClick={deleteAll} disabled={totalCount === 0}>
+            Clear all
           </Button>
         </div>
 
