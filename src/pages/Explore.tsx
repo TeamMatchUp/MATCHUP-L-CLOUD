@@ -409,8 +409,11 @@ export default function Explore() {
               {mapOpen && tab !== "fighters" && (
                 <div className="flex-1 min-h-[500px] relative">
                   <div className="absolute top-3 left-3 z-10 flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => { setMapOpen(false); setPopupItem(null); }}>
+                    <Button variant="outline" size="sm" onClick={() => { setMapOpen(false); setMapExpanded(false); setPopupItem(null); }}>
                       <X className="h-4 w-4 mr-1" /> Close Map
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setMapExpanded(!mapExpanded)}>
+                      {mapExpanded ? "↙ Collapse" : "↗ Expand"}
                     </Button>
                   </div>
                   <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={500}>
