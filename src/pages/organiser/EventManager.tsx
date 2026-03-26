@@ -13,7 +13,14 @@ import { EditBoutDialog } from "@/components/organiser/EditBoutDialog";
 import { MatchSuggestionsPanel } from "@/components/organiser/MatchSuggestionsPanel";
 import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
 import { AddFightSlotDialog } from "@/components/organiser/AddFightSlotDialog";
+import { AddOpenSlotDialog } from "@/components/organiser/AddOpenSlotDialog";
 import { ArrowLeft, Globe, Pencil, Plus, Sparkles, Eye, EyeOff, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
