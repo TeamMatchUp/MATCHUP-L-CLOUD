@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { FighterFightHistory } from "./FighterFightHistory";
 import { ProfileCompletionBar } from "./ProfileCompletionBar";
 import { Constants } from "@/integrations/supabase/types";
 import { useQuery } from "@tanstack/react-query";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+
 
 interface EditableProfilePanelProps {
   fighterProfile: any;
@@ -100,23 +100,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
       return data ?? [];
     },
     enabled: !!fighterProfile.id,
-  });
-
-  // Fetch ranking data
-  const { data: rankingData = [] } = useQuery({
-    queryKey: ["fighter-ranking", fighterProfile.weight_class, fighterProfile.discipline],
-    queryFn: async () => {
-      let query = supabase
-        .from("fighter_profiles")
-        .select("id, name, record_wins, record_losses, record_draws, discipline, weight_class")
-        .eq("weight_class", fighterProfile.weight_class);
-      if (fighterProfile.discipline) {
-        query = query.eq("discipline", fighterProfile.discipline);
-      }
-      const { data } = await query;
-      return data ?? [];
-    },
-    enabled: !!fighterProfile.weight_class,
   });
 
   useEffect(() => {
@@ -219,44 +202,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
 
   const age = p.date_of_birth ? Math.floor((Date.now() - new Date(p.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : null;
 
-  // Ranking
-  const rankedFighters = useMemo(() => {
-    return rankingData
-      .map((f: any) => {
-        const total = f.record_wins + f.record_losses + f.record_draws;
-        const wp = total > 0 ? (f.record_wins / total) * 100 : 0;
-        return { ...f, winPct: wp };
-      })
-      .sort((a, b) => b.record_wins - a.record_wins)
-      .slice(0, 10);
-  }, [rankingData]);
-
-  const myRankIndex = rankedFighters.findIndex((f: any) => f.id === p.id);
-  const showMyRow = myRankIndex === -1;
-  const myRankInFull = rankingData
-    .map((f: any) => ({ ...f, wp: (f.record_wins + f.record_losses + f.record_draws) > 0 ? f.record_wins / (f.record_wins + f.record_losses + f.record_draws) : 0 }))
-    .sort((a, b) => b.record_wins - a.record_wins)
-    .findIndex((f: any) => f.id === p.id) + 1;
-
-  // Chart data
-  const wldData = [
-    { name: "Wins", value: p.record_wins || 0 },
-    { name: "Losses", value: p.record_losses || 0 },
-    { name: "Draws", value: p.record_draws || 0 },
-  ];
-  const wldColors = ["hsl(var(--primary))", "hsl(var(--destructive))", "hsl(var(--muted-foreground))"];
-
-  const methodCounts: Record<string, number> = {};
-  fights.filter((f: any) => f.result === "win" && f.method).forEach((f: any) => {
-    const m = f.method.toUpperCase();
-    let cat = "Decision";
-    if (m.includes("KO") || m.includes("TKO")) cat = "KO/TKO";
-    else if (m.includes("SUB")) cat = "Submission";
-    else if (!m.includes("DEC")) cat = m;
-    methodCounts[cat] = (methodCounts[cat] || 0) + 1;
-  });
-  const methodData = Object.entries(methodCounts).map(([name, value]) => ({ name, value }));
-  if (methodData.length === 0) methodData.push({ name: "No Data", value: 0 });
 
   return (
     <div className="space-y-8">
@@ -488,78 +433,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             </div>
           </div>
 
-          {/* === FIGHTER ANALYTICS === */}
-          <div>
-            <h3 className="font-heading text-lg text-foreground mb-4">
-              FIGHTER <span className="text-primary">ANALYTICS</span>
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Ranking Table */}
-              <div className="rounded-lg border border-border bg-card p-4 md:col-span-1">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">
-                  Ranking — {formatEnum(p.weight_class)}{p.discipline ? ` · ${formatEnum(p.discipline)}` : ""}
-                </p>
-                <div className="space-y-1.5">
-                  <div className="flex items-center text-[10px] uppercase text-muted-foreground px-2 pb-1 border-b border-border">
-                    <span className="w-8">#</span>
-                    <span className="flex-1">Fighter</span>
-                    <span className="w-12 text-right">W</span>
-                  </div>
-                  {rankedFighters.map((f: any, i: number) => (
-                    <div key={f.id} className={`flex items-center text-sm px-2 py-1 rounded ${f.id === p.id ? "bg-primary/10 border border-primary/30" : ""}`}>
-                      <span className="w-8 text-muted-foreground font-medium">#{i + 1}</span>
-                      <span className={`flex-1 truncate ${f.id === p.id ? "text-primary font-medium" : "text-foreground"}`}>{f.name}</span>
-                      <span className="w-12 text-right text-muted-foreground">{f.record_wins}</span>
-                    </div>
-                  ))}
-                  {showMyRow && myRankInFull > 0 && (
-                    <>
-                      <div className="border-t border-dashed border-border my-1" />
-                      <div className="flex items-center text-sm px-2 py-1 rounded bg-primary/10 border border-primary/30">
-                        <span className="w-8 text-muted-foreground font-medium">#{myRankInFull}</span>
-                        <span className="flex-1 truncate text-primary font-medium">{p.name}</span>
-                        <span className="w-12 text-right text-muted-foreground">{p.record_wins}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Win/Loss/Draw Doughnut */}
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Win / Loss / Draw</p>
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie data={wldData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} dataKey="value" stroke="none">
-                      {wldData.map((_, i) => <Cell key={i} fill={wldColors[i]} />)}
-                    </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" }} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="flex justify-center gap-4 mt-2">
-                  {wldData.map((d, i) => (
-                    <div key={d.name} className="flex items-center gap-1.5 text-xs">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: wldColors[i] }} />
-                      <span className="text-muted-foreground">{d.name}: {d.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Finish Methods Bar Chart */}
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Finish Methods</p>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={methodData}>
-                    <XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ backgroundColor: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", color: "hsl(var(--foreground))" }} />
-                    <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
 
           {/* === TRAINING BACKGROUND === */}
           <div className="rounded-lg border border-border bg-card p-5">

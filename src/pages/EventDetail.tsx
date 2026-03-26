@@ -70,29 +70,48 @@ export default function EventDetail() {
     enabled: !!fighterProfile && !!id,
   });
 
-  const handleConfirmInterest = async () => {
+  const handleToggleInterest = async () => {
     if (!fighterProfile || !event) return;
     setSending(true);
     try {
-      const { error: insertError } = await supabase
-        .from("fighter_event_interests").insert({ fighter_id: fighterProfile.id, event_id: id! });
-      if (insertError) throw insertError;
-      const { data: gymLinks } = await supabase
-        .from("fighter_gym_links").select("gym_id, gyms(coach_id)")
-        .eq("fighter_id", fighterProfile.id).eq("status", "approved");
-      const coachIds = new Set<string>();
-      (gymLinks ?? []).forEach((link: any) => { if (link.gyms?.coach_id) coachIds.add(link.gyms.coach_id); });
-      for (const coachId of coachIds) {
-        await supabase.rpc("create_notification", {
-          _user_id: coachId,
-          _title: `${fighterProfile.name} is interested in an event`,
-          _message: `${fighterProfile.name} is interested in "${event.title}" on ${new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}.`,
-          _type: "event_update", _reference_id: id!,
-        });
+      if (existingInterest) {
+        // Remove interest
+        await supabase.from("fighter_event_interests").delete().eq("id", existingInterest.id);
+        // Clean up coach notifications about this interest
+        const { data: gymLinks } = await supabase
+          .from("fighter_gym_links").select("gym_id, gyms(coach_id)")
+          .eq("fighter_id", fighterProfile.id).eq("status", "approved");
+        const coachIds = new Set<string>();
+        (gymLinks ?? []).forEach((link: any) => { if (link.gyms?.coach_id) coachIds.add(link.gyms.coach_id); });
+        for (const coachId of coachIds) {
+          await supabase.from("notifications").delete()
+            .eq("user_id", coachId).eq("reference_id", id!).eq("type", "event_update");
+        }
+        queryClient.invalidateQueries({ queryKey: ["fighter-event-interest", fighterProfile.id, id] });
+        queryClient.invalidateQueries({ queryKey: ["fighter-event-interests"] });
+        toast.success("Interest removed");
+      } else {
+        // Add interest
+        const { error: insertError } = await supabase
+          .from("fighter_event_interests").insert({ fighter_id: fighterProfile.id, event_id: id! });
+        if (insertError) throw insertError;
+        const { data: gymLinks } = await supabase
+          .from("fighter_gym_links").select("gym_id, gyms(coach_id)")
+          .eq("fighter_id", fighterProfile.id).eq("status", "approved");
+        const coachIds = new Set<string>();
+        (gymLinks ?? []).forEach((link: any) => { if (link.gyms?.coach_id) coachIds.add(link.gyms.coach_id); });
+        for (const coachId of coachIds) {
+          await supabase.rpc("create_notification", {
+            _user_id: coachId,
+            _title: `${fighterProfile.name} is interested in an event`,
+            _message: `${fighterProfile.name} is interested in "${event.title}" on ${new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}.`,
+            _type: "event_update", _reference_id: id!,
+          });
+        }
+        queryClient.invalidateQueries({ queryKey: ["fighter-event-interest", fighterProfile.id, id] });
+        queryClient.invalidateQueries({ queryKey: ["fighter-event-interests"] });
+        toast.success("Your interest has been registered and your coach has been notified!");
       }
-      queryClient.invalidateQueries({ queryKey: ["fighter-event-interest", fighterProfile.id, id] });
-      queryClient.invalidateQueries({ queryKey: ["fighter-event-interests"] });
-      toast.success("Your interest has been registered and your coach has been notified!");
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong. Please try again.");
@@ -391,11 +410,11 @@ export default function EventDetail() {
                   <div className="flex flex-wrap gap-3">
                     {isFighter && fighterProfile && (
                       existingInterest ? (
-                        <Button variant="outline" className="gap-2 border-primary/50 text-primary cursor-default" disabled>
+                        <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
                           <Star className="h-4 w-4 fill-primary" /> Interested
                         </Button>
                       ) : (
-                        <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowConfirm(true)}>
+                        <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={handleToggleInterest} disabled={sending}>
                           <Star className="h-4 w-4" /> I'm Interested
                         </Button>
                       )
@@ -510,7 +529,7 @@ export default function EventDetail() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={sending}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmInterest} disabled={sending}>
+            <AlertDialogAction onClick={handleToggleInterest} disabled={sending}>
               {sending ? "Sending..." : "Confirm"}
             </AlertDialogAction>
           </AlertDialogFooter>
