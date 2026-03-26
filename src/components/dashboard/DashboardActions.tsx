@@ -554,9 +554,6 @@ export function DashboardActions({
     return ["All"];
   })();
 
-  const [categoryFilter, setCategoryFilter] = useState("All");
-  const [statusFilter, setStatusFilter] = useState<"active" | "completed">("active");
-  const [searchFilter, setSearchFilter] = useState("");
 
   const categoryTypeMap: Record<string, string[]> = {
     "Fight Proposals": ["bout_proposal", "fight_proposal", "match_suggestion"],
