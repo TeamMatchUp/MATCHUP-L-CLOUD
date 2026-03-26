@@ -3,13 +3,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileText, Search, ShieldCheck, UserCheck, Upload } from "lucide-react";
-
+import { Plus, FileText, Search, ShieldCheck, UserCheck, Upload, Pencil } from "lucide-react";
+import { EditFighterDialog } from "./EditFighterDialog";
 import { formatEnum } from "@/lib/format";
 
 interface Fighter {
   id: string;
   name: string;
+  email: string | null;
   record_wins: number;
   record_losses: number;
   record_draws: number;
@@ -17,6 +18,9 @@ interface Fighter {
   style: string | null;
   country: string;
   available: boolean;
+  height: number | null;
+  reach: number | null;
+  bio: string | null;
 }
 
 interface Gym {
@@ -50,6 +54,7 @@ export function FighterRosterPanel({
 }: FighterRosterPanelProps) {
   const [selectedGymId, setSelectedGymId] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [editingFighter, setEditingFighter] = useState<any>(null);
 
   const filteredFighters = useMemo(() => {
     let result = fighters;
@@ -170,17 +175,38 @@ export function FighterRosterPanel({
                   {f.available ? "Available" : "Unavailable"}
                 </Badge>
               </div>
-              <Button
-                size="sm"
-                variant="outline"
-                className="mt-3 gap-1 text-xs"
-                onClick={() => onAddFightResult({ id: f.id, name: f.name })}
-              >
-                <FileText className="h-3 w-3" /> Add Fight Result
-              </Button>
+              <div className="flex gap-1 mt-3">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1 text-xs"
+                  onClick={() => onAddFightResult({ id: f.id, name: f.name })}
+                >
+                  <FileText className="h-3 w-3" /> Add Result
+                </Button>
+                {/* (5) Full edit button */}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1 text-xs"
+                  onClick={() => setEditingFighter(f)}
+                >
+                  <Pencil className="h-3 w-3" /> Edit
+                </Button>
+              </div>
             </div>
           )})}
         </div>
+      )}
+
+      {/* (5) Full profile edit modal */}
+      {editingFighter && (
+        <EditFighterDialog
+          open={!!editingFighter}
+          onOpenChange={(open) => { if (!open) setEditingFighter(null); }}
+          fighter={editingFighter}
+          onSuccess={() => { setEditingFighter(null); onAddFightResult({ id: "", name: "" }); /* trigger refresh */ }}
+        />
       )}
     </div>
   );

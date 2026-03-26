@@ -58,8 +58,9 @@ export function NotificationHistory() {
     toast.success(notification.read ? "Marked as unread" : "Marked as read");
   };
 
-  const deleteNotification = async (id: string) => {
-    await supabase.from("notifications").delete().eq("id", id);
+  const deleteNotification = async (notifId: string) => {
+    const { error } = await supabase.from("notifications").delete().eq("id", notifId);
+    if (error) { toast.error("Failed to delete: " + error.message); return; }
     queryClient.invalidateQueries({ queryKey: ["notification-history"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
     toast.success("Notification deleted");
@@ -75,9 +76,10 @@ export function NotificationHistory() {
   };
 
   const deleteAll = async () => {
-    const ids = notifications.map((n) => n.id);
-    if (ids.length === 0) return;
-    await supabase.from("notifications").delete().in("id", ids);
+    if (!user) return;
+    // (13) Delete all notifications for this user from the database
+    const { error } = await supabase.from("notifications").delete().eq("user_id", user.id);
+    if (error) { toast.error("Failed to clear: " + error.message); return; }
     queryClient.invalidateQueries({ queryKey: ["notification-history"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
     toast.success("All notifications deleted");

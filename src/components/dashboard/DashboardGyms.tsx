@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Pencil, ArrowUp } from "lucide-react";
+import { Plus, Pencil, ArrowUp, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
@@ -22,6 +22,8 @@ import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
 import { GymTierBadge } from "@/components/gym/GymTierBadge";
 import { GymAnalyticsStrip } from "@/components/gym/GymAnalyticsStrip";
 import { UpgradeGymDialog } from "@/components/gym/UpgradeGymDialog";
+import { EditGymDialog } from "@/components/gym/EditGymDialog";
+import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 const COUNTRIES = Constants.public.Enums.country_code;
@@ -49,10 +51,23 @@ export function DashboardGyms({
   const queryClient = useQueryClient();
   const [showCreateGym, setShowCreateGym] = useState(false);
   const [upgradeGym, setUpgradeGym] = useState<any>(null);
+  const [editGym, setEditGym] = useState<any>(null);
+  const [importGym, setImportGym] = useState<any>(null);
   const [newGymName, setNewGymName] = useState("");
   const [newGymLocation, setNewGymLocation] = useState("");
   const [newGymCountry, setNewGymCountry] = useState<CountryCode>("UK");
   const [newGymDescription, setNewGymDescription] = useState("");
+
+  // (1) Belt-and-braces: fix unclaimed gyms on mount
+  useEffect(() => {
+    if (!isCoachOrOwner || myGyms.length === 0) return;
+    myGyms.forEach(async (gym) => {
+      if (gym.coach_id === userId && gym.claimed === false) {
+        await supabase.from("gyms").update({ claimed: true, listing_tier: gym.listing_tier === "unclaimed" ? "free" : gym.listing_tier }).eq("id", gym.id);
+        onRefresh();
+      }
+    });
+  }, [myGyms, userId, isCoachOrOwner]);
 
   const createGymMutation = useMutation({
     mutationFn: async () => {
@@ -62,6 +77,8 @@ export function DashboardGyms({
         country: newGymCountry,
         description: newGymDescription || null,
         coach_id: userId,
+        claimed: true,
+        listing_tier: "free",
       });
       if (error) throw error;
     },
@@ -181,6 +198,7 @@ export function DashboardGyms({
               <Link to={`/gyms/${gym.id}`}>
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-heading text-lg text-foreground">{gym.name}</h3>
+                  {/* (8) Tier badge on gym cards */}
                   <GymTierBadge tier={gym.listing_tier} />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -192,7 +210,7 @@ export function DashboardGyms({
               </Link>
               {/* Analytics Strip */}
               <GymAnalyticsStrip gymId={gym.id} listingTier={gym.listing_tier} />
-              <div className="flex gap-2 mt-3">
+              <div className="flex gap-2 mt-3 flex-wrap">
                 <Button
                   size="sm"
                   variant="outline"
@@ -201,15 +219,18 @@ export function DashboardGyms({
                 >
                   <Plus className="h-3 w-3" /> Add Fighter
                 </Button>
+                {/* (4) CSV upload button */}
+                <Button size="sm" variant="outline" className="gap-1" onClick={() => setImportGym(gym)}>
+                  <Upload className="h-3 w-3" /> CSV
+                </Button>
                 {(gym.listing_tier === "free" || gym.listing_tier === "unclaimed") && (
                   <Button size="sm" variant="outline" className="gap-1" onClick={() => setUpgradeGym(gym)}>
                     <ArrowUp className="h-3 w-3" /> Upgrade
                   </Button>
                 )}
-                <Button size="sm" variant="ghost" className="gap-1" asChild>
-                  <Link to={`/gyms/${gym.id}`}>
-                    <Pencil className="h-3 w-3" /> Edit
-                  </Link>
+                {/* (3) Edit button opens modal inline */}
+                <Button size="sm" variant="ghost" className="gap-1" onClick={() => setEditGym(gym)}>
+                  <Pencil className="h-3 w-3" /> Edit
                 </Button>
               </div>
             </div>
@@ -222,6 +243,27 @@ export function DashboardGyms({
           onOpenChange={(open) => { if (!open) setUpgradeGym(null); }}
           gymId={upgradeGym.id}
           gymName={upgradeGym.name}
+        />
+      )}
+      {/* (3) Edit gym modal inline */}
+      {editGym && (
+        <EditGymDialog
+          open={!!editGym}
+          onOpenChange={(open) => { if (!open) setEditGym(null); }}
+          gym={editGym}
+          onSuccess={onRefresh}
+          onDelete={onRefresh}
+        />
+      )}
+      {/* (4) Import fighters CSV dialog */}
+      {importGym && (
+        <ImportFightersDialog
+          open={!!importGym}
+          onOpenChange={(open) => { if (!open) setImportGym(null); }}
+          coachId={userId}
+          gymId={importGym.id}
+          gymName={importGym.name}
+          onSuccess={onRefresh}
         />
       )}
     </div>

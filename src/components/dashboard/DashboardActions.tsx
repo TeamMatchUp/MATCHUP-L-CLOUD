@@ -5,7 +5,15 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +21,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users } from "lucide-react";
+import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, Search } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { formatEnum } from "@/lib/format";
@@ -65,6 +73,9 @@ export function DashboardActions({
   const [trialModal, setTrialModal] = useState<ActionItem | null>(null);
   const [trialMessage, setTrialMessage] = useState("");
   const [trialSending, setTrialSending] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState<"active" | "completed">("active");
+  const [searchFilter, setSearchFilter] = useState("");
 
   const gymIds = myGyms.map((g) => g.id);
 
@@ -535,11 +546,61 @@ export function DashboardActions({
     }
   };
 
+  // Category options per role
+  const categoryOptions = (() => {
+    if (isFighter) return ["All", "Fight Proposals", "Session Invites", "Gym Requests"];
+    if (isCoachOrOwner) return ["All", "Gym Join Requests", "Roster Proposals"];
+    if (isOrganiser) return ["All", "Bout Proposals"];
+    return ["All"];
+  })();
+
+
+  const categoryTypeMap: Record<string, string[]> = {
+    "Fight Proposals": ["bout_proposal", "fight_proposal", "match_suggestion"],
+    "Session Invites": ["trial_lead"],
+    "Gym Requests": ["gym_request"],
+    "Gym Join Requests": ["gym_request", "trial_lead"],
+    "Roster Proposals": ["bout_proposal", "fight_proposal"],
+    "Bout Proposals": ["bout_proposal", "match_suggestion"],
+  };
+
+  const filteredActiveItems = activeItems.filter((item) => {
+    if (categoryFilter !== "All") {
+      const types = categoryTypeMap[categoryFilter] || [];
+      if (!types.includes(item.type)) return false;
+    }
+    if (searchFilter.trim()) {
+      const q = searchFilter.toLowerCase();
+      if (!item.title.toLowerCase().includes(q) && !item.subtitle.toLowerCase().includes(q)) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-4">
       <h2 className="font-heading text-2xl text-foreground">
         ACTION <span className="text-primary">CENTRE</span>
       </h2>
+
+      {/* (11) Filter bar */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-full sm:w-[200px] h-9 text-xs">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categoryOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <div className="flex gap-1">
+          <Button size="sm" variant={statusFilter === "active" ? "default" : "outline"} className="h-9 text-xs" onClick={() => setStatusFilter("active")}>Active</Button>
+          <Button size="sm" variant={statusFilter === "completed" ? "default" : "outline"} className="h-9 text-xs" onClick={() => setStatusFilter("completed")}>Completed</Button>
+        </div>
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} placeholder="Search by name or event..." className="pl-9 h-9 text-xs" />
+        </div>
+      </div>
 
       {/* Recently actioned - undo section */}
       {recentlyActioned.length > 0 && (
@@ -569,14 +630,14 @@ export function DashboardActions({
         </div>
       )}
 
-      {activeItems.length === 0 ? (
+      {filteredActiveItems.length === 0 ? (
         <div className="text-center py-12 rounded-lg border border-border bg-card">
           <Check className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground">All caught up — no actions required.</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {activeItems.map((item) => {
+          {filteredActiveItems.map((item) => {
             const Icon = getIcon(item.type);
             const badge = getTypeBadge(item.type);
             const isCoachGymRequest = item.type === "gym_request" && isCoachOrOwner && item.status === "pending";
