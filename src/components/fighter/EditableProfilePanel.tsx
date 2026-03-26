@@ -394,21 +394,45 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
                   </p>
                 </div>
 
-                {/* W / L / Win% boxes */}
-                <div className="grid grid-cols-3 gap-3 mt-4">
-                  <div className="rounded-lg bg-primary p-3 text-center">
-                    <p className="text-[10px] uppercase tracking-widest text-primary-foreground/70">Wins</p>
-                    <p className="font-heading text-3xl text-primary-foreground">{p.record_wins}</p>
-                  </div>
-                  <div className="rounded-lg bg-destructive p-3 text-center">
-                    <p className="text-[10px] uppercase tracking-widest text-destructive-foreground/70">Losses</p>
-                    <p className="font-heading text-3xl text-destructive-foreground">{p.record_losses}</p>
-                  </div>
-                  <div className="rounded-lg border border-border bg-card p-3 text-center">
-                    <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Win%</p>
-                    <p className="font-heading text-3xl text-primary">{winPct}%</p>
-                  </div>
-                </div>
+                {/* Pro / Amateur / Total toggle + W / L / D / Win% boxes */}
+                {(() => {
+                  const [recordFilter, setRecordFilter] = [heroRecordFilter, setHeroRecordFilter];
+                  const filtered = recordFilter === "pro" ? fights.filter((f: any) => !f.is_amateur) : recordFilter === "amateur" ? fights.filter((f: any) => f.is_amateur) : fights;
+                  const w = filtered.filter((f: any) => f.result === "win").length;
+                  const l = filtered.filter((f: any) => f.result === "loss").length;
+                  const d = filtered.filter((f: any) => f.result === "draw").length;
+                  const total = filtered.length;
+                  const wp = total > 0 ? Math.round((w / total) * 100) : 0;
+                  return (
+                    <>
+                      <div className="flex gap-1 mt-4 mb-2">
+                        {(["pro", "amateur", "total"] as const).map((opt) => (
+                          <button key={opt} onClick={() => setRecordFilter(opt)} className={`px-3 py-1 text-xs rounded-md font-medium transition-colors ${recordFilter === opt ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+                            {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-4 gap-3">
+                        <div className="rounded-lg bg-primary p-3 text-center">
+                          <p className="text-[10px] uppercase tracking-widest text-primary-foreground/70">Wins</p>
+                          <p className="font-heading text-3xl text-primary-foreground">{w}</p>
+                        </div>
+                        <div className="rounded-lg bg-destructive p-3 text-center">
+                          <p className="text-[10px] uppercase tracking-widest text-destructive-foreground/70">Losses</p>
+                          <p className="font-heading text-3xl text-destructive-foreground">{l}</p>
+                        </div>
+                        <div className="rounded-lg bg-muted p-3 text-center">
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Draws</p>
+                          <p className="font-heading text-3xl text-foreground">{d}</p>
+                        </div>
+                        <div className="rounded-lg border border-border bg-card p-3 text-center">
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Win%</p>
+                          <p className="font-heading text-3xl text-primary">{wp}%</p>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
 
                 {/* Physical stats 2x2 */}
                 <div className="grid grid-cols-2 gap-3 mt-4">
