@@ -165,7 +165,7 @@ export default function FighterDashboard() {
                 {/* Calendar + Gyms Near You side by side */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-10">
                   <div className="lg:col-span-2">
-                    <EventCalendar events={calendarEvents} />
+                    <EventCalendar events={calendarEvents} highlightedDates={fighterHighlightedDates} />
                   </div>
                   <div>
                     <GymsNearYouWidget fighterProfileId={fighterProfile.id} />
