@@ -64,7 +64,11 @@ function createSlot(cardPosition: string = "undercard"): SlotRow {
 export default function CreateEvent() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+
+  const fromParam = searchParams.get("from");
+  const backRoute = fromParam === "overview" ? "/dashboard?section=overview" : "/dashboard?section=my-events";
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState<Date>();
