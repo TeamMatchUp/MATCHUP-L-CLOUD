@@ -333,8 +333,8 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         </h2>
       )}
 
-      {/* ── SECTION 1: Event Overview ── */}
-      <SectionHeader title="Event Overview" />
+      <SectionHeader title="Event Overview" collapsed={isCollapsed("overview")} onToggle={() => toggle("overview")} />
+      {!isCollapsed("overview") && <>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-3">
         <StatCard label="Total Events" value={totalEvents} sub="Lifetime events created" />
         <StatCard label="Upcoming Events" value={upcomingEvents} sub="Scheduled & published" />
