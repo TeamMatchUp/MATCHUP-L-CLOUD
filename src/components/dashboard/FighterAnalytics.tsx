@@ -530,8 +530,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         </div>
       </div>
 
+      </>}
+
       {/* ── S8: Profile completeness ── */}
-      <SectionHeader title="Profile completeness" />
+      <SectionHeader title="Profile completeness" collapsed={isCollapsed("completeness")} onToggle={() => toggle("completeness")} />
+      {!isCollapsed("completeness") && <>
       <div className="bg-card border border-border rounded-lg p-5 mb-3">
         <div className="flex items-center gap-5 mb-4">
           {/* Ring */}
