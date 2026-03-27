@@ -555,8 +555,10 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
         <StatCard label="Fights Booked – 90d" value={bookedInDays(90)} sub="Confirmed matchups" />
       </div>
 
-      {/* ── SECTION 3: Upcoming Events ── */}
-      <SectionHeader title="Upcoming Events" />
+      </>}
+
+      <SectionHeader title="Upcoming Events" collapsed={isCollapsed("events")} onToggle={() => toggle("events")} />
+      {!isCollapsed("events") && <>
       <div className="bg-card border border-border rounded-lg p-4 mb-3">
         <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Events with Roster Participation</h3>
         {eventMap.length === 0 ? (
