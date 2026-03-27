@@ -547,8 +547,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         </div>
       </div>
 
-      {/* ── SECTION 4: Talent Pool & Availability ── */}
-      <SectionHeader title="Talent Pool & Availability" />
+      </>}
+
+      <SectionHeader title="Talent Pool & Availability" collapsed={isCollapsed("talent")} onToggle={() => toggle("talent")} />
+      {!isCollapsed("talent") && <>
 
       {/* Weight class grid */}
       <div className="bg-card border border-border rounded-lg p-4 mb-3">
