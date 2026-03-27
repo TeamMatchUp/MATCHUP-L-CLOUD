@@ -250,7 +250,7 @@ export default function Explore() {
         <section className="py-8 flex-1 flex flex-col">
           <div className="container flex-1 flex flex-col">
             {/* Title + Tabs */}
-            <div className={mapOpen ? "container" : ""}>
+            <div>
               <motion.h1 className="font-heading text-4xl md:text-5xl text-foreground mb-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 EXPLORE
               </motion.h1>
