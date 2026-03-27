@@ -309,8 +309,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         <RecordPillText label="Years training" value={fighterProfile.years_training?.toString() || "—"} />
       </div>
 
+      </>}
+
       {/* ── S2: Career stats ── */}
-      <SectionHeader title="Career stats" />
+      <SectionHeader title="Career stats" collapsed={isCollapsed("career")} onToggle={() => toggle("career")} />
+      {!isCollapsed("career") && <>
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 mb-3">
         <StatCardFA label="Total fights" value={rec.total} sub={`${statsFilter === "pro" ? "Pro" : statsFilter === "am" ? "Amateur" : "All"} career fights`} toggle={<Toggle value={statsFilter} onChange={setStatsFilter} />} />
         <StatCardFA label="Win rate" value={`${rec.winPct}%`} sub={`${rec.wins}W of ${rec.total} fights`} toggle={<Toggle value={statsFilter} onChange={setStatsFilter} />} />
