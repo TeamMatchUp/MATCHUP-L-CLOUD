@@ -397,8 +397,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         <DoughnutCard title="Loss method breakdown" data={lossMethodData.map((d, i) => ({ ...d, color: lossMethodColors[i] || "hsl(var(--muted-foreground))" }))} filter={lmFilter} onFilter={setLmFilter} />
       </div>
 
+      </>}
+
       {/* ── S5: Rankings & Elo ── */}
-      <SectionHeader title="Rankings & Elo" />
+      <SectionHeader title="Rankings & Elo" collapsed={isCollapsed("rankings")} onToggle={() => toggle("rankings")} />
+      {!isCollapsed("rankings") && <>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_3fr] gap-3 mb-3">
         {/* Rank card */}
         <div className="bg-card border border-border rounded-lg p-5 flex flex-col items-center justify-center text-center">
