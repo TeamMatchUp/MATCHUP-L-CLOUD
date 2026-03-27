@@ -446,8 +446,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         </div>
       </div>
 
-      {/* ── SECTION 3: Card Fill Management ── */}
-      <SectionHeader title="Card Fill Management" />
+      </>}
+
+      <SectionHeader title="Card Fill Management" collapsed={isCollapsed("fill")} onToggle={() => toggle("fill")} />
+      {!isCollapsed("fill") && <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
         {/* Fill rate bars + history */}
         <div className="bg-card border border-border rounded-lg p-4">
