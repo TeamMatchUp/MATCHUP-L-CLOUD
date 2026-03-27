@@ -29,7 +29,7 @@ export function DashboardOverview({
   const quickActions = [
     ...(isCoachOrOwner
       ? [
-          { label: "Create Gym", icon: Building2, to: "/register-gym" },
+          { label: "Create Gym", icon: Building2, to: "/register-gym?from=overview" },
           { label: "Add Fighter", icon: Plus, section: "roster" },
         ]
       : []),
