@@ -33,7 +33,7 @@ export function FighterSearchDropdown({ label, selected, onSelect, onClear, excl
   const [coachNominated, setCoachNominated] = useState(false);
   const [page, setPage] = useState(0);
 
-  // Get nominated fighter IDs for this event (from coach_event_nominations and event_fight_slots)
+  // Get nominated fighter IDs for this event + coach-linked fighters
   const { data: nominatedFighterIds = [] } = useQuery({
     queryKey: ["nominated-fighter-ids", eventId],
     queryFn: async () => {
@@ -45,22 +45,19 @@ export function FighterSearchDropdown({ label, selected, onSelect, onClear, excl
         .eq("event_id", eventId!);
       (nominations ?? []).forEach((n: any) => ids.add(n.fighter_id));
 
-      // From event_fight_slots (fighters already proposed/confirmed for this event)
-      const { data: slots } = await supabase
-        .from("event_fight_slots")
-        .select("fighter_a_id, fighter_b_id")
-        .eq("event_id", eventId!);
-      (slots ?? []).forEach((s: any) => {
-        if (s.fighter_a_id) ids.add(s.fighter_a_id);
-        if (s.fighter_b_id) ids.add(s.fighter_b_id);
-      });
-
       // From fighter_event_interests
       const { data: interests } = await supabase
         .from("fighter_event_interests")
         .select("fighter_id")
         .eq("event_id", eventId!);
       (interests ?? []).forEach((i: any) => ids.add(i.fighter_id));
+
+      // Fighters linked to gyms via approved gym links (coach-managed fighters)
+      const { data: gymFighters } = await supabase
+        .from("fighter_gym_links")
+        .select("fighter_id")
+        .eq("status", "approved");
+      (gymFighters ?? []).forEach((f: any) => ids.add(f.fighter_id));
 
       return Array.from(ids);
     },
