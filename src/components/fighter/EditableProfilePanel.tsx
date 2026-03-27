@@ -511,6 +511,16 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
           </div>
         </div>
       )}
+
+      {showCrop && cropSrc && (
+        <ImageCropDialog
+          open={showCrop}
+          onOpenChange={setShowCrop}
+          imageSrc={cropSrc}
+          aspect={1}
+          onCropComplete={handleCroppedUpload}
+        />
+      )}
     </div>
   );
 }
