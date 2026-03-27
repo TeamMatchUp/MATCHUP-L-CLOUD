@@ -325,6 +325,7 @@ export function useDashboardData() {
     confirmedProposals,
     events,
     calendarEvents,
+    highlightedDates,
     notifications,
     unreadNotifications,
     handleRefresh,
