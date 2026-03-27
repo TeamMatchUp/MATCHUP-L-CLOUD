@@ -14,6 +14,7 @@ import { FighterFightHistory } from "./FighterFightHistory";
 import { ProfileCompletionBar } from "./ProfileCompletionBar";
 import { Constants } from "@/integrations/supabase/types";
 import { useQuery } from "@tanstack/react-query";
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 
 interface EditableProfilePanelProps {
@@ -48,6 +49,8 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
   const [joiningGym, setJoiningGym] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [heroRecordFilter, setHeroRecordFilter] = useState<"pro" | "amateur" | "total">("pro");
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [showCrop, setShowCrop] = useState(false);
 
   const { register, handleSubmit, setValue, watch, reset } = useForm({
     defaultValues: {
@@ -142,13 +145,22 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
     refetchGym();
   };
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropSrc(reader.result as string);
+      setShowCrop(true);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleCroppedUpload = async (blob: Blob) => {
     setUploadingPhoto(true);
-    const ext = file.name.split(".").pop();
-    const path = `${userId}/${Date.now()}.${ext}`;
-    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    const path = `${userId}/${Date.now()}.jpg`;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
     if (uploadError) { toast.error("Upload failed"); setUploadingPhoto(false); return; }
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
     await supabase.from("fighter_profiles").update({ profile_image: urlData.publicUrl }).eq("id", fighterProfile.id);
@@ -324,7 +336,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
                   </span>
                 )}
                 <label className="absolute bottom-3 right-3 cursor-pointer">
-                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
+                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} disabled={uploadingPhoto} />
                   <div className="h-9 w-9 rounded-full bg-card/80 backdrop-blur flex items-center justify-center border border-border hover:bg-card transition-colors">
                     <Camera className="h-4 w-4 text-foreground" />
                   </div>
@@ -498,6 +510,16 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             <FighterFightHistory fighterId={fighterProfile.id} fighterUserId={userId} isOwner={true} />
           </div>
         </div>
+      )}
+
+      {showCrop && cropSrc && (
+        <ImageCropDialog
+          open={showCrop}
+          onOpenChange={setShowCrop}
+          imageSrc={cropSrc}
+          aspect={1}
+          onCropComplete={handleCroppedUpload}
+        />
       )}
     </div>
   );

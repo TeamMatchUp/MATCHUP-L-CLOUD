@@ -34,7 +34,7 @@ export function AddOpenSlotDialog({ open, onOpenChange, eventId, sectionType, ne
       slot_number: nextSlotNumber,
       fighter_a_id: null,
       fighter_b_id: null,
-      weight_class: weightClass,
+      weight_class: weightClass || null,
       discipline: discipline || null,
       bout_type: sectionType,
       status: "open",
@@ -64,9 +64,10 @@ export function AddOpenSlotDialog({ open, onOpenChange, eventId, sectionType, ne
         <div className="space-y-4">
           <div className="space-y-1">
             <Label className="text-xs">Weight Class</Label>
-            <Select value={weightClass} onValueChange={(v) => setWeightClass(v as WeightClass)}>
+            <Select value={weightClass || "any"} onValueChange={(v) => setWeightClass(v === "any" ? "" as any : v as WeightClass)}>
               <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[200px] overflow-y-auto">
+                <SelectItem value="any">Any</SelectItem>
                 {WEIGHT_CLASSES.map((wc) => (
                   <SelectItem key={wc} value={wc}>{formatEnum(wc)}</SelectItem>
                 ))}
@@ -78,7 +79,7 @@ export function AddOpenSlotDialog({ open, onOpenChange, eventId, sectionType, ne
             <Label className="text-xs">Discipline (optional)</Label>
             <Select value={discipline || "none"} onValueChange={(v) => setDiscipline(v === "none" ? "" : v)}>
               <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Any" /></SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[200px] overflow-y-auto">
                 <SelectItem value="none">Any</SelectItem>
                 {Constants.public.Enums.fighting_style.map((s) => (
                   <SelectItem key={s} value={s}>{formatEnum(s)}</SelectItem>

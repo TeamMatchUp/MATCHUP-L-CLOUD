@@ -2,13 +2,12 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, ShieldCheck } from "lucide-react";
-import { FightHistory } from "@/components/fighter/FightHistory";
 import { FighterFightHistory } from "@/components/fighter/FighterFightHistory";
 import { ProfileCompletionBar } from "@/components/fighter/ProfileCompletionBar";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
@@ -24,7 +23,9 @@ import { STYLE_LABELS } from "@/lib/format";
 export default function FighterDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const fromParam = searchParams.get("from");
 
   const { data: fighter, isLoading } = useQuery({
     queryKey: ["fighter", id],
@@ -91,8 +92,8 @@ export default function FighterDetail() {
       <main className="pt-16">
         <section className="py-16">
           <div className="container max-w-3xl">
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6">
-              <ArrowLeft className="h-4 w-4 mr-2" />Back
+            <Button variant="ghost" size="sm" onClick={() => fromParam === "roster" ? navigate("/dashboard?section=roster") : navigate(-1)} className="mb-6">
+              <ArrowLeft className="h-4 w-4 mr-2" />{fromParam === "roster" ? "Back to Roster" : "Back"}
             </Button>
 
             <motion.div
@@ -105,11 +106,11 @@ export default function FighterDetail() {
               )}
 
               <div className="flex items-start gap-6 mb-8">
-                <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center font-heading text-2xl text-muted-foreground shrink-0 overflow-hidden">
+                <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center font-heading text-2xl text-primary shrink-0 overflow-hidden">
                   {fighter._avatar ? (
                     <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" />
                   ) : (
-                    fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)
+                    fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
                   )}
                 </div>
                 <div>
@@ -117,7 +118,7 @@ export default function FighterDetail() {
                     <h1 className="font-heading text-3xl md:text-4xl text-foreground">{fighter.name}</h1>
                     {fighter.verified && <ShieldCheck className="h-5 w-5 text-primary" />}
                   </div>
-                  <FightHistory fighterId={fighter.id} />
+                  <p className="text-primary font-bold text-xl mt-1">{fighter.record_wins}-{fighter.record_losses}-{fighter.record_draws}</p>
                   <span className={`inline-block mt-2 text-xs font-medium px-3 py-1 rounded-full ${fighter.available ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                     {fighter.available ? "Available for fights" : "Currently booked"}
                   </span>
