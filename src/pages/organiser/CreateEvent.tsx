@@ -68,7 +68,7 @@ export default function CreateEvent() {
   const { toast } = useToast();
 
   const fromParam = searchParams.get("from");
-  const backRoute = fromParam === "overview" ? "/dashboard?section=overview" : "/dashboard?section=my-events";
+  const backRoute = fromParam === "overview" ? "/dashboard?section=overview" : "/dashboard?section=events";
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState<Date>();

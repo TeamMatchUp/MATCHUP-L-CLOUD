@@ -33,7 +33,7 @@ export default function RegisterGym() {
   const { toast } = useToast();
 
   const fromParam = searchParams.get("from");
-  const backRoute = fromParam === "overview" ? "/dashboard?section=overview" : "/dashboard?section=my-gyms";
+  const backRoute = fromParam === "overview" ? "/dashboard?section=overview" : "/dashboard?section=gyms";
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");

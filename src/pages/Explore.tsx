@@ -232,11 +232,11 @@ export default function Explore() {
     if (totalPages <= 1) return null;
     return (
       <div className="flex items-center justify-center gap-3 py-4">
-        <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => p - 1)}>
+        <Button variant="outline" size="sm" disabled={page === 0} onClick={() => { setPage(p => p - 1); document.getElementById("gym-map-list")?.scrollTo({ top: 0, behavior: "smooth" }); }}>
           <ArrowLeft className="h-4 w-4 mr-1" /> Previous
         </Button>
         <span className="text-xs text-muted-foreground">Page {page + 1} of {totalPages}</span>
-        <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+        <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => { setPage(p => p + 1); document.getElementById("gym-map-list")?.scrollTo({ top: 0, behavior: "smooth" }); }}>
           Next <ArrowRight className="h-4 w-4 ml-1" />
         </Button>
       </div>
@@ -248,9 +248,9 @@ export default function Explore() {
       <Header />
       <main className="pt-16 flex-1 flex flex-col">
         <section className="py-8 flex-1 flex flex-col">
-          <div className={`${mapOpen ? "px-0" : "container"} flex-1 flex flex-col`}>
+          <div className="container flex-1 flex flex-col">
             {/* Title + Tabs */}
-            <div className={mapOpen ? "container" : ""}>
+            <div>
               <motion.h1 className="font-heading text-4xl md:text-5xl text-foreground mb-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 EXPLORE
               </motion.h1>
@@ -282,10 +282,11 @@ export default function Explore() {
                   {tab === "gyms" && (
                     <Button
                       variant={mapOpen ? "default" : "outline"}
+                      size="icon"
                       onClick={() => { setMapOpen(!mapOpen); setPopupItem(null); setHighlightedGymId(null); }}
-                      className="shrink-0 h-10 gap-2"
+                      className="shrink-0 h-10 w-10"
                     >
-                      <MapPin className="h-4 w-4" /> Map
+                      <MapPin className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
@@ -367,20 +368,42 @@ export default function Explore() {
             </div>
 
             {/* Content area */}
-            <div className="flex-1 flex gap-4">
-              {/* Directory cards */}
-              <div className={`${mapOpen && tab === "gyms" ? "flex-1 overflow-y-auto" : "flex-1"}`}>
-                <div className={mapOpen ? "" : "container"}>
-                  {tab === "events" && <EventsDirectory events={paginatedItems} isLoading={eventsLoading} searchCoords={pc.coords} />}
-                  {tab === "gyms" && <GymsDirectory gyms={paginatedItems} isLoading={gymsLoading} searchCoords={pc.coords} mapOpen={mapOpen} highlightedGymId={highlightedGymId} />}
-                  {tab === "fighters" && <FightersDirectory fighters={paginatedItems as any} isLoading={fightersLoading} />}
+            {mapOpen && tab === "gyms" && !isMobile ? (
+              <div className="flex gap-4 flex-1">
+                {/* Scrollable gym list */}
+                <div className="flex-1 flex flex-col" style={{ minWidth: 0 }}>
+                  <div className="overflow-y-auto" style={{ height: 520 }} id="gym-map-list">
+                    <div className="space-y-2 pr-1">
+                      {paginatedItems.map((gym: any) => (
+                        <Link
+                          key={gym.id}
+                          id={`gym-card-${gym.id}`}
+                          to={`/gyms/${gym.id}`}
+                          className={`flex items-center gap-3 rounded-lg border bg-card p-3 hover:border-primary/30 transition-all ${highlightedGymId === gym.id ? "border-primary" : "border-border"}`}
+                        >
+                          <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center font-heading text-sm text-muted-foreground shrink-0 overflow-hidden">
+                            {gym.logo_url ? (
+                              <img src={gym.logo_url} alt={gym.name} className="h-full w-full object-cover" />
+                            ) : (
+                              gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-heading text-sm text-foreground truncate">{gym.name}</p>
+                            <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                              <MapPin className="h-3 w-3 shrink-0" />
+                              {gym.city ? `${gym.city}, ${gym.country}` : gym.location || gym.country}
+                            </p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Pagination below scrollable area */}
                   <PaginationControls />
                 </div>
-              </div>
-
-              {/* Map panel for gyms only */}
-              {mapOpen && tab === "gyms" && !isMobile && (
-                <div className="shrink-0 rounded-lg border border-border overflow-hidden" style={{ width: "calc(75% - 1rem)", height: 520 }}>
+                {/* Map */}
+                <div className="shrink-0 rounded-lg border border-border overflow-hidden" style={{ width: "60%", height: 520 }}>
                   <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={520}>
                     {mapMarkers.map((m) => (
                       <Marker
@@ -401,7 +424,7 @@ export default function Explore() {
                         <div className="bg-card border border-border rounded-lg shadow-lg p-3 min-w-[180px]" onClick={(e) => e.stopPropagation()}>
                           <p className="font-heading text-sm text-foreground mb-1">{popupItem.name}</p>
                           <p className="text-xs text-muted-foreground mb-2">{popupItem.city}</p>
-                          <Badge variant="outline" className="text-[10px] mb-2">{popupItem.type === "event" ? "Event" : "Gym"}</Badge>
+                          <Badge variant="outline" className="text-[10px] mb-2">Gym</Badge>
                           <div>
                             <Link to={`/gyms/${popupItem.id}`} className="text-xs text-primary hover:underline">View Profile →</Link>
                           </div>
@@ -413,8 +436,15 @@ export default function Explore() {
                     )}
                   </PigeonMap>
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex-1">
+                {tab === "events" && <EventsDirectory events={paginatedItems} isLoading={eventsLoading} searchCoords={pc.coords} />}
+                {tab === "gyms" && <GymsDirectory gyms={paginatedItems} isLoading={gymsLoading} searchCoords={pc.coords} mapOpen={false} highlightedGymId={null} />}
+                {tab === "fighters" && <FightersDirectory fighters={paginatedItems as any} isLoading={fightersLoading} />}
+                <PaginationControls />
+              </div>
+            )}
           </div>
         </section>
       </main>
