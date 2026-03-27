@@ -46,7 +46,7 @@ export function DashboardOverview({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Calendar */}
         <div className="lg:col-span-2">
-          <EventCalendar events={calendarEvents} />
+          <EventCalendar events={calendarEvents} highlightedDates={highlightedDates} />
         </div>
 
         {/* Quick Actions */}
