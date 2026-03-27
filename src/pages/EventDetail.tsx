@@ -193,9 +193,8 @@ export default function EventDetail() {
     const statusBadge = getStatusIndicator(bout);
     return (
       <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6 relative">
-        {statusBadge && <div className="absolute top-3 right-3">{statusBadge}</div>}
-        {/* Three-column layout: Fighter A | VS + Weight | Fighter B */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+        {/* Three-column layout with fixed center: Fighter A | VS + Weight | Fighter B */}
+        <div className="grid grid-cols-[1fr_120px_1fr] items-center gap-4">
           {/* Fighter A — left aligned */}
           <div className="flex items-center gap-3">
             {isPublic && fA?.profile_image && (
