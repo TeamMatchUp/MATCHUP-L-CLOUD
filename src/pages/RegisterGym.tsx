@@ -91,6 +91,9 @@ export default function RegisterGym() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
             >
+              <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate("/dashboard?section=my-gyms")}>
+                <Building2 className="h-4 w-4 mr-2" />Back to My Gyms
+              </Button>
               <div className="flex items-center gap-3 mb-2">
                 <Building2 className="h-8 w-8 text-primary" />
                 <h1 className="font-heading text-4xl md:text-5xl text-foreground">

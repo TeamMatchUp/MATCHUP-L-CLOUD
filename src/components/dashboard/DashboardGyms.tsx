@@ -183,7 +183,8 @@ export function DashboardGyms({
           </Button>
         </div>
       )}
-        {myGyms.length > 0 && (
+      {myGyms.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {myGyms.map((gym) => (
             <div
               key={gym.id}
@@ -192,7 +193,6 @@ export function DashboardGyms({
               <Link to={`/gyms/${gym.id}`}>
                 <div className="flex items-center gap-2 mb-1">
                   <h3 className="font-heading text-lg text-foreground">{gym.name}</h3>
-                  {/* (8) Tier badge on gym cards */}
                   <GymTierBadge tier={gym.listing_tier} />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
@@ -202,18 +202,11 @@ export function DashboardGyms({
                   {gym.fighter_gym_links?.length ?? 0} fighters
                 </p>
               </Link>
-              {/* Analytics Strip */}
               <GymAnalyticsStrip gymId={gym.id} listingTier={gym.listing_tier} />
               <div className="flex gap-2 mt-3 flex-wrap">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="gap-1 flex-1"
-                  onClick={() => onAddFighter(gym.id)}
-                >
+                <Button size="sm" variant="outline" className="gap-1 flex-1" onClick={() => onAddFighter(gym.id)}>
                   <Plus className="h-3 w-3" /> Add Fighter
                 </Button>
-                {/* (4) CSV upload button */}
                 <Button size="sm" variant="outline" className="gap-1" onClick={() => setImportGym(gym)}>
                   <Upload className="h-3 w-3" /> CSV
                 </Button>
@@ -222,7 +215,6 @@ export function DashboardGyms({
                     <ArrowUp className="h-3 w-3" /> Upgrade
                   </Button>
                 )}
-                {/* (3) Edit button opens modal inline */}
                 <Button size="sm" variant="ghost" className="gap-1" onClick={() => setEditGym(gym)}>
                   <Pencil className="h-3 w-3" /> Edit
                 </Button>

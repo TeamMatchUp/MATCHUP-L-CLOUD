@@ -64,21 +64,20 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
     enabled: !!userCoords,
   });
 
-  // No postcode — show prompt only
-  if (!fighterPostcode) {
+  if (!locationEnabled || !userCoords) {
     return (
       <div className="rounded-lg border border-border bg-card p-4">
         <h3 className="font-heading text-sm text-foreground mb-3">
           GYMS <span className="text-primary">NEAR YOU</span>
         </h3>
         <div className="text-center py-4">
-          <Navigation className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-xs text-muted-foreground">
-            Add your postcode to see nearby gyms
+          <LocateFixed className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground mb-2">
+            {locationError ? "Location access was denied. Please enable it in your browser settings." : "Enable location services to see nearby gyms"}
           </p>
-          <Link to="/dashboard?section=my-profile" className="text-xs text-primary hover:underline mt-1 inline-block">
-            Update profile →
-          </Link>
+          <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={requestLocation}>
+            <LocateFixed className="h-3 w-3" /> Enable Location
+          </Button>
         </div>
       </div>
     );

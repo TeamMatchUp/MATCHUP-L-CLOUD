@@ -281,6 +281,9 @@ export default function CreateEvent() {
       <main className="pt-16">
         <section className="py-16">
           <div className="container max-w-2xl">
+            <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate("/dashboard?section=my-events")}>
+              <MapPin className="h-4 w-4 mr-2" />Back to My Events
+            </Button>
             <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">
               CREATE <span className="text-primary">EVENT</span>
             </h1>
