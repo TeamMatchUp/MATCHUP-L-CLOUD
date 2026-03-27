@@ -697,6 +697,7 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
           </table>
         </div>
       </div>
+      </>}
     </div>
   );
 }
