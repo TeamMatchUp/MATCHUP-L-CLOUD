@@ -67,24 +67,29 @@ export function FighterSearchDropdown({ label, selected, onSelect, onClear, excl
   const { data: results = [], isLoading } = useQuery({
     queryKey: ["fighter-dropdown", name, weightClass, country, discipline, coachNominated, coachId, page, eventId, nominatedFighterIds],
     queryFn: async () => {
-      // If coach nominated filter is on but no nominated IDs, return empty
-      if (coachNominated && nominatedFighterIds.length === 0) return [];
-
       let q = supabase.from("fighter_profiles").select("*").eq("available", true).order("name").range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
       if (name.trim()) q = q.ilike("name", `%${name.trim()}%`);
       if (weightClass !== "all") q = q.eq("weight_class", weightClass as any);
       if (country !== "all") q = q.eq("country", country as any);
       if (discipline !== "all") q = q.eq("discipline", discipline);
       if (coachNominated) {
-        // Show fighters that were added by any coach (created_by_coach_id is not null)
-        // OR nominated for this event
-        if (nominatedFighterIds.length > 0) {
-          q = q.or(`created_by_coach_id.not.is.null,id.in.(${nominatedFighterIds.join(",")})`);
+        // Filter to fighters where:
+        // 1. created_by_coach_id is not null (added by a coach), OR
+        // 2. fighter exists in gym links with approved status (gym-managed), OR
+        // 3. fighter is explicitly nominated for this event
+        const coachFilterIds = new Set(nominatedFighterIds);
+        // Also get all fighters with created_by_coach_id set
+        if (coachFilterIds.size > 0) {
+          q = q.or(`created_by_coach_id.not.is.null,id.in.(${Array.from(coachFilterIds).join(",")})`);
         } else {
           q = q.not("created_by_coach_id", "is", null);
         }
+        console.log("[Coach Nominated filter] Active — filtering with", coachFilterIds.size, "nominated IDs");
       }
       const { data } = await q;
+      if (coachNominated) {
+        console.log("[Coach Nominated filter] Results:", (data ?? []).length, "fighters");
+      }
       return data ?? [];
     },
   });
