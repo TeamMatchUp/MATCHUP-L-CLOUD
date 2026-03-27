@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { formatEnum } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
-import { X, ChevronRight, ChevronLeft, Trash2 } from "lucide-react";
+import { X, ChevronRight, ChevronLeft, Trash2, ChevronDown } from "lucide-react";
+import { useCollapsibleSections } from "@/hooks/use-collapsible-sections";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
