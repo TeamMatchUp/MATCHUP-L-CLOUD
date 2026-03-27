@@ -197,20 +197,20 @@ export default function EventDetail() {
       <div className="grid" style={{ gridTemplateColumns: "1fr 140px 1fr" }}>
           {/* Fighter A — left aligned */}
           <div className="flex items-center gap-3 overflow-hidden">
-            {isPublic && fA?.profile_image && (
+            {showDetails && fA?.profile_image && (
               <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 shrink-0">
                 <img src={fA.profile_image} alt={fA.name} className="h-full w-full object-cover" />
               </div>
             )}
             <div className="text-left min-w-0">
-              {isPublic && fA ? (
+              {showDetails && fA ? (
                 <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-xl md:text-2xl text-foreground uppercase truncate">{nameA}</p>
                 </Link>
               ) : (
                 <p className="font-heading text-xl md:text-2xl text-muted-foreground uppercase">{nameA}</p>
               )}
-              {isPublic && fA && <p className="text-primary font-bold text-lg mt-1">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
+              {showDetails && fA && <p className="text-primary font-bold text-lg mt-1">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
             </div>
           </div>
           {/* Centre — VS + weight class */}
@@ -222,16 +222,16 @@ export default function EventDetail() {
           {/* Fighter B — right aligned */}
           <div className="flex items-center gap-3 justify-end overflow-hidden">
             <div className="text-right min-w-0">
-              {isPublic && fB ? (
+              {showDetails && fB ? (
                 <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-xl md:text-2xl text-foreground uppercase truncate">{nameB}</p>
                 </Link>
               ) : (
                 <p className="font-heading text-xl md:text-2xl text-muted-foreground uppercase">{nameB}</p>
               )}
-              {isPublic && fB && <p className="text-primary font-bold text-lg mt-1">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
+              {showDetails && fB && <p className="text-primary font-bold text-lg mt-1">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
             </div>
-            {isPublic && fB?.profile_image && (
+            {showDetails && fB?.profile_image && (
               <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 shrink-0">
                 <img src={fB.profile_image} alt={fB.name} className="h-full w-full object-cover" />
               </div>
