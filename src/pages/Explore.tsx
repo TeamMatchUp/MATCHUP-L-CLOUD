@@ -474,43 +474,40 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
   );
 }
 
-function GymsDirectory({ gyms, isLoading, searchCoords }: { gyms: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null }) {
-  if (isLoading) return <div className="grid grid-cols-1 md:grid-cols-3 gap-6">{[1,2,3].map(i => <div key={i} className="h-40 rounded-lg bg-card animate-pulse" />)}</div>;
+function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymId }: { gyms: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null; mapOpen?: boolean; highlightedGymId?: string | null }) {
+  const gridClass = mapOpen ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4";
+  if (isLoading) return <div className={gridClass}>{[1,2,3,4].map(i => <div key={i} className="h-[220px] rounded-lg bg-card animate-pulse" />)}</div>;
   if (gyms.length === 0) return <p className="text-muted-foreground text-center py-12">No gyms found matching your filters.</p>;
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className={gridClass}>
       {gyms.map((gym, i) => {
         const dist = searchCoords && gym.lat != null && gym.lng != null
           ? haversineDistance(searchCoords.latitude, searchCoords.longitude, gym.lat, gym.lng)
           : null;
         return (
-          <motion.div key={gym.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }}>
-            <Link to={`/gyms/${gym.id}`} className="rounded-lg border border-border bg-card p-6 hover:border-primary/30 transition-all block h-full relative">
+          <motion.div key={gym.id} id={`gym-card-${gym.id}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.03 }}>
+            <Link to={`/gyms/${gym.id}`} className={`rounded-lg border bg-card p-5 hover:border-primary/30 transition-all block h-[220px] overflow-hidden relative ${highlightedGymId === gym.id ? "border-primary" : "border-border"}`}>
               {gym.claimed && (
                 <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-semibold">
                   <ShieldCheck className="h-3 w-3" /> Verified
                 </span>
               )}
-              <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground mb-4">
+              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center font-heading text-sm text-muted-foreground mb-3">
                 {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
               </div>
-              <h3 className="font-heading text-xl text-foreground mb-1">{gym.name}</h3>
+              <h3 className="font-heading text-lg text-foreground mb-1 truncate">{gym.name}</h3>
               {gym.discipline_tags && (
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {gym.discipline_tags.split(",").map((tag: string) => (
-                    <span key={tag.trim()} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
-                      {tag.trim()}
-                    </span>
+                <div className="flex flex-wrap gap-1 mb-1 overflow-hidden max-h-5">
+                  {gym.discipline_tags.split(",").slice(0, 3).map((tag: string) => (
+                    <span key={tag.trim()} className="px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-primary/10 text-primary border border-primary/20">{tag.trim()}</span>
                   ))}
                 </div>
               )}
               {(gym.city || gym.location) && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1"><MapPin className="h-3 w-3" />{gym.city ? `${gym.city}, ${gym.location || gym.country}` : gym.location}</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1 truncate"><MapPin className="h-3 w-3 shrink-0" />{gym.city ? `${gym.city}, ${gym.location || gym.country}` : gym.location}</p>
               )}
-              {dist !== null && (
-                <p className="text-xs text-primary font-medium mb-2">{dist.toFixed(1)} miles</p>
-              )}
-              {gym.description && <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{gym.description}</p>}
+              {dist !== null && <p className="text-xs text-primary font-medium mb-1">{dist.toFixed(1)} miles</p>}
+              {gym.description && <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{gym.description}</p>}
               <div className="flex items-center gap-1 text-xs text-muted-foreground"><Users className="h-3.5 w-3.5" />{gym.fighter_gym_links?.length ?? 0} fighters</div>
             </Link>
           </motion.div>
