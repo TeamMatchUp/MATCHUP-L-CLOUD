@@ -502,8 +502,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         </div>
       </div>
 
+      </>}
+
       {/* ── S7: Opponent record quality ── */}
-      <SectionHeader title="Opponent record quality" />
+      <SectionHeader title="Opponent record quality" collapsed={isCollapsed("opponents")} onToggle={() => toggle("opponents")} />
+      {!isCollapsed("opponents") && <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <div className="bg-card border border-border rounded-lg p-5">
           <div className="font-heading text-[13px] font-bold tracking-[1.5px] uppercase text-foreground mb-3.5 flex items-center justify-between">
