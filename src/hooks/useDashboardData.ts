@@ -190,6 +190,95 @@ export function useDashboardData() {
     enabled: !!user,
   });
 
+  // Highlighted dates for calendar based on role
+  const { data: highlightedDates = [] } = useQuery({
+    queryKey: ["dash-highlighted-dates", user?.id, isFighter, isCoachOrOwner, isOrganiser],
+    queryFn: async () => {
+      const dates = new Set<string>();
+
+      if (isOrganiser) {
+        // Organiser: events they own
+        const { data } = await supabase
+          .from("events")
+          .select("date")
+          .eq("organiser_id", user!.id);
+        (data ?? []).forEach((e) => dates.add(e.date));
+      }
+
+      if (isFighter) {
+        // Fighter: confirmed event_fight_slots
+        const { data: fp } = await supabase
+          .from("fighter_profiles")
+          .select("id")
+          .eq("user_id", user!.id)
+          .maybeSingle();
+        if (fp) {
+          const { data: slots } = await supabase
+            .from("event_fight_slots")
+            .select("event_id")
+            .or(`fighter_a_id.eq.${fp.id},fighter_b_id.eq.${fp.id}`)
+            .eq("status", "confirmed");
+          const eventIds = [...new Set((slots ?? []).map((s) => s.event_id))];
+          if (eventIds.length > 0) {
+            const { data: evts } = await supabase
+              .from("events")
+              .select("date")
+              .in("id", eventIds);
+            (evts ?? []).forEach((e) => dates.add(e.date));
+          }
+        }
+      }
+
+      if (isCoachOrOwner) {
+        // Coach: roster fighters in confirmed slots
+        const { data: rosterFighters } = await supabase
+          .from("fighter_profiles")
+          .select("id")
+          .eq("created_by_coach_id", user!.id);
+        const rosterIds = (rosterFighters ?? []).map((f) => f.id);
+        
+        // Also include gym-linked fighters
+        const { data: coachGyms } = await supabase
+          .from("gyms")
+          .select("id")
+          .eq("coach_id", user!.id);
+        const gymIds = (coachGyms ?? []).map((g) => g.id);
+        if (gymIds.length > 0) {
+          const { data: links } = await supabase
+            .from("fighter_gym_links")
+            .select("fighter_id")
+            .in("gym_id", gymIds)
+            .eq("status", "approved");
+          (links ?? []).forEach((l) => { if (!rosterIds.includes(l.fighter_id)) rosterIds.push(l.fighter_id); });
+        }
+
+        if (rosterIds.length > 0) {
+          const { data: slotsA } = await supabase
+            .from("event_fight_slots")
+            .select("event_id")
+            .in("fighter_a_id", rosterIds)
+            .eq("status", "confirmed");
+          const { data: slotsB } = await supabase
+            .from("event_fight_slots")
+            .select("event_id")
+            .in("fighter_b_id", rosterIds)
+            .eq("status", "confirmed");
+          const eIds = [...new Set([...(slotsA ?? []), ...(slotsB ?? [])].map((s) => s.event_id))];
+          if (eIds.length > 0) {
+            const { data: evts } = await supabase
+              .from("events")
+              .select("date")
+              .in("id", eIds);
+            (evts ?? []).forEach((e) => dates.add(e.date));
+          }
+        }
+      }
+
+      return Array.from(dates);
+    },
+    enabled: !!user,
+  });
+
   // Notifications
   const { data: notifications = [] } = useQuery({
     queryKey: ["dash-notifications", user?.id],
