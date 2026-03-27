@@ -90,6 +90,28 @@ export default function FighterDashboard() {
     },
   });
 
+  // Highlighted dates: events where this fighter has confirmed slots
+  const { data: fighterHighlightedDates = [] } = useQuery({
+    queryKey: ["fighter-highlighted-dates", fighterProfile?.id],
+    queryFn: async () => {
+      const { data: slotsA } = await supabase
+        .from("event_fight_slots")
+        .select("event_id")
+        .eq("fighter_a_id", fighterProfile!.id)
+        .eq("status", "confirmed");
+      const { data: slotsB } = await supabase
+        .from("event_fight_slots")
+        .select("event_id")
+        .eq("fighter_b_id", fighterProfile!.id)
+        .eq("status", "confirmed");
+      const eventIds = [...new Set([...(slotsA ?? []), ...(slotsB ?? [])].map((s) => s.event_id))];
+      if (eventIds.length === 0) return [];
+      const { data: evts } = await supabase.from("events").select("date").in("id", eventIds);
+      return (evts ?? []).map((e) => e.date);
+    },
+    enabled: !!fighterProfile,
+  });
+
   const pendingProposals = proposals.filter((p) => p.status === "pending");
   const confirmedFights = proposals.filter((p) => p.status === "confirmed");
   const awaitingOthers = proposals.filter(() => false);
