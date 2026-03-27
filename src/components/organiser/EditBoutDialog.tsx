@@ -3,24 +3,18 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
+import { FighterSearchDropdown } from "./FighterSearchDropdown";
+import { useAuth } from "@/contexts/AuthContext";
 
 type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
-
-interface EditBoutDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  bout: any;
-  onSuccess: () => void;
-}
 
 async function notifyFighterRemoval(
   removedFighter: FighterProfile | null,
@@ -30,19 +24,16 @@ async function notifyFighterRemoval(
   weightClass: string | null
 ) {
   if (!removedFighter) return;
-  // Get event name
   const { data: evt } = await supabase.from("events").select("title").eq("id", eventId).single();
   const eventTitle = evt?.title ?? "an event";
   const wcLabel = weightClass ? formatEnum(weightClass) : "N/A";
 
-  // Collect all party user IDs: both fighters + their coaches
   const notifyIds = new Set<string>();
   if (removedFighter.user_id) notifyIds.add(removedFighter.user_id);
   if (otherFighter?.user_id) notifyIds.add(otherFighter.user_id);
   if (removedFighter.created_by_coach_id) notifyIds.add(removedFighter.created_by_coach_id);
   if (otherFighter?.created_by_coach_id) notifyIds.add(otherFighter.created_by_coach_id);
 
-  // Also find coaches via gym links
   const fighterIds = [removedFighter.id];
   if (otherFighter) fighterIds.push(otherFighter.id);
   const { data: gymLinks } = await supabase
@@ -68,43 +59,26 @@ async function notifyFighterRemoval(
   await Promise.all(promises);
 }
 
-export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: EditBoutDialogProps) {
+export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  bout: any;
+  onSuccess: () => void;
+}) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [boutType, setBoutType] = useState(bout.bout_type || "Undercard");
   const [isPublic, setIsPublic] = useState(bout.is_public !== false);
-  const [searchA, setSearchA] = useState("");
-  const [searchB, setSearchB] = useState("");
   const fAInitial = Array.isArray(bout.fighter_a) ? bout.fighter_a[0] : bout.fighter_a;
   const fBInitial = Array.isArray(bout.fighter_b) ? bout.fighter_b[0] : bout.fighter_b;
   const [fighterA, setFighterA] = useState<FighterProfile | null>(fAInitial || null);
   const [fighterB, setFighterB] = useState<FighterProfile | null>(fBInitial || null);
 
-  const { data: resultsA = [] } = useQuery({
-    queryKey: ["edit-bout-search-a", searchA],
-    queryFn: async () => {
-      if (!searchA.trim()) return [];
-      const { data } = await supabase.from("fighter_profiles").select("*").ilike("name", `%${searchA.trim()}%`).limit(10);
-      return data ?? [];
-    },
-    enabled: searchA.trim().length > 1,
-  });
-
-  const { data: resultsB = [] } = useQuery({
-    queryKey: ["edit-bout-search-b", searchB],
-    queryFn: async () => {
-      if (!searchB.trim()) return [];
-      const { data } = await supabase.from("fighter_profiles").select("*").ilike("name", `%${searchB.trim()}%`).limit(10);
-      return data ?? [];
-    },
-    enabled: searchB.trim().length > 1,
-  });
-
   const handleSave = async () => {
     setLoading(true);
     const wc = fighterA?.weight_class || fighterB?.weight_class || bout.weight_class;
 
-    // Check if a fighter was removed
     const originalA = fAInitial;
     const originalB = fBInitial;
     const removedA = originalA && (!fighterA || fighterA.id !== originalA.id);
@@ -120,7 +94,6 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: EditBout
     if (error) {
       toast({ title: "Error updating bout", description: error.message, variant: "destructive" });
     } else {
-      // Send removal notifications
       if (removedA) {
         await notifyFighterRemoval(originalA, originalB, bout.event_id, bout.id, bout.weight_class);
       }
@@ -128,7 +101,6 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: EditBout
         await notifyFighterRemoval(originalB, originalA, bout.event_id, bout.id, bout.weight_class);
       }
 
-      // Notify affected fighters/coaches of update
       if (!removedA && !removedB) {
         const notifyIds = new Set<string>();
         if (fighterA?.user_id) notifyIds.add(fighterA.user_id);
@@ -154,7 +126,6 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: EditBout
 
   const handleDelete = async () => {
     setLoading(true);
-    // Send removal notifications for both fighters before deleting
     if (fAInitial || fBInitial) {
       if (fAInitial) await notifyFighterRemoval(fAInitial, fBInitial, bout.event_id, bout.id, bout.weight_class);
       if (fBInitial) await notifyFighterRemoval(fBInitial, fAInitial, bout.event_id, bout.id, bout.weight_class);
@@ -170,47 +141,29 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: EditBout
     setLoading(false);
   };
 
-  const renderFighterPicker = (label: string, fighter: FighterProfile | null, setFighter: (f: FighterProfile | null) => void, search: string, setSearch: (s: string) => void, results: FighterProfile[]) => (
-    <div className="space-y-1">
-      <Label className="text-xs">{label}</Label>
-      {fighter ? (
-        <div className="flex items-center justify-between rounded-md border border-primary/30 bg-primary/5 p-2">
-          <div>
-            <p className="text-sm font-medium text-foreground">{fighter.name}</p>
-            <p className="text-xs text-muted-foreground">{formatEnum(fighter.weight_class)}</p>
-          </div>
-          <Button variant="ghost" size="sm" onClick={() => { setFighter(null); setSearch(""); }}>Change</Button>
-        </div>
-      ) : (
-        <div>
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8 h-9 text-sm" />
-          </div>
-          {results.length > 0 && (
-            <div className="border border-border rounded-md mt-1 max-h-32 overflow-y-auto">
-              {results.map((f) => (
-                <button key={f.id} onClick={() => { setFighter(f); setSearch(""); }} className="w-full text-left px-3 py-2 hover:bg-muted/50 text-sm">
-                  <span className="text-foreground">{f.name}</span>
-                  <span className="text-xs text-muted-foreground ml-2">{formatEnum(f.weight_class)}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-heading">Edit Bout</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          {renderFighterPicker("Fighter A", fighterA, setFighterA, searchA, setSearchA, resultsA)}
-          {renderFighterPicker("Fighter B", fighterB, setFighterB, searchB, setSearchB, resultsB)}
+          <FighterSearchDropdown
+            label="Fighter A"
+            selected={fighterA}
+            onSelect={setFighterA}
+            onClear={() => setFighterA(null)}
+            excludeId={fighterB?.id}
+            eventId={bout.event_id}
+          />
+          <FighterSearchDropdown
+            label="Fighter B"
+            selected={fighterB}
+            onSelect={setFighterB}
+            onClear={() => setFighterB(null)}
+            excludeId={fighterA?.id}
+            eventId={bout.event_id}
+          />
 
           <div className="space-y-1">
             <Label className="text-xs">Card Position</Label>
