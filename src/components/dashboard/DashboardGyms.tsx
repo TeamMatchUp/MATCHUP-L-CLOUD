@@ -179,7 +179,7 @@ export function DashboardGyms({
         <div className="rounded-lg border border-border bg-card p-8 text-center">
           <p className="text-muted-foreground mb-4">You haven't created any gyms yet.</p>
           <Button asChild className="gap-1">
-            <Link to="/register-gym"><Plus className="h-4 w-4" /> Create Your First Gym</Link>
+            <Link to="/register-gym?from=my-gyms"><Plus className="h-4 w-4" /> Create Your First Gym</Link>
           </Button>
         </div>
       )}

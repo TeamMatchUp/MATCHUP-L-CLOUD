@@ -35,7 +35,7 @@ export function DashboardOverview({
       : []),
     { label: "View Actions", icon: Inbox, section: "actions" },
     ...(isOrganiser || isCoachOrOwner
-      ? [{ label: "Create Event", icon: Calendar, to: "/organiser/create-event" }]
+      ? [{ label: "Create Event", icon: Calendar, to: "/organiser/create-event?from=overview" }]
       : []),
     { label: "Browse Events", icon: Search, to: "/explore?tab=events" },
   ];

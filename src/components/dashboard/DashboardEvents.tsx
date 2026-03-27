@@ -83,7 +83,7 @@ export function DashboardEvents({
             <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground mb-4">You haven't created any events yet.</p>
             <Button asChild>
-              <Link to="/organiser/create-event">Create Your First Event</Link>
+              <Link to="/organiser/create-event?from=my-events">Create Your First Event</Link>
             </Button>
           </div>
         ) : (
