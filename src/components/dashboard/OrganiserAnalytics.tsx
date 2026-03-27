@@ -77,6 +77,7 @@ interface OrganiserAnalyticsProps {
 
 export function OrganiserAnalyticsShared({ userId, embedded = false }: OrganiserAnalyticsProps) {
   const now = new Date();
+  const { toggle, isCollapsed } = useCollapsibleSections("organiser-analytics");
 
   // ── Data fetching ──
 
