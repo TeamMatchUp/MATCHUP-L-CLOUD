@@ -621,8 +621,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         </div>
       </div>
 
-      {/* ── SECTION 5: Ticket & Commercial Metrics ── */}
-      <SectionHeader title="Ticket & Commercial Metrics" />
+      </>}
+
+      <SectionHeader title="Ticket & Commercial Metrics" collapsed={isCollapsed("tickets")} onToggle={() => toggle("tickets")} />
+      {!isCollapsed("tickets") && <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <StatCard label="Total Tickets Available" value={totalTicketsAvailable} sub="Across all events" note={totalTicketsAvailable === 0 ? "Set ticket count on your event to populate this" : undefined} />
         <StatCard label="Sold Out Events" value={soldOutEvents} sub={`Of ${totalEvents} total`} note={soldOutEvents === 0 ? "Set ticket count on your event to populate this" : undefined} />
