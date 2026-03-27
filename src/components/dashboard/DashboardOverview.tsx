@@ -11,12 +11,14 @@ import {
 
 interface DashboardOverviewProps {
   calendarEvents: any[];
+  highlightedDates?: string[];
   effectiveRoles: string[];
   onNavigateSection: (section: string) => void;
 }
 
 export function DashboardOverview({
   calendarEvents,
+  highlightedDates = [],
   effectiveRoles,
   onNavigateSection,
 }: DashboardOverviewProps) {
