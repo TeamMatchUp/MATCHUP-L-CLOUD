@@ -611,8 +611,10 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
         )}
       </div>
 
-      {/* ── SECTION 4: Roster Performance ── */}
-      <SectionHeader title="Roster Performance" />
+      </>}
+
+      <SectionHeader title="Roster Performance" collapsed={isCollapsed("performance")} onToggle={() => toggle("performance")} />
+      {!isCollapsed("performance") && <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
         {/* W/L/D Chart */}
         <div className="bg-card border border-border rounded-lg p-4">
