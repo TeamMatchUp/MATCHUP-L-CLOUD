@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, FileText, Search, Pencil, Trash2, Upload } from "lucide-react";
 import { formatEnum } from "@/lib/format";
+import { Link } from "react-router-dom";
 
 interface DashboardRosterProps {
   allFighters: any[];
