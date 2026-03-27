@@ -336,7 +336,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
                   </span>
                 )}
                 <label className="absolute bottom-3 right-3 cursor-pointer">
-                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
+                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} disabled={uploadingPhoto} />
                   <div className="h-9 w-9 rounded-full bg-card/80 backdrop-blur flex items-center justify-center border border-border hover:bg-card transition-colors">
                     <Camera className="h-4 w-4 text-foreground" />
                   </div>

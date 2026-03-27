@@ -135,7 +135,7 @@ export function DashboardRoster({
             const gymName = getFighterGym(f.id);
             return (
               <div key={f.id} className="rounded-lg border border-border bg-card p-4">
-                <Link to={`/fighters/${f.id}`} className="flex items-center gap-3 mb-1 hover:opacity-80 transition-opacity cursor-pointer">
+                <Link to={`/fighters/${f.id}?from=roster`} className="flex items-center gap-3 mb-1 hover:opacity-80 transition-opacity cursor-pointer">
                   <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-heading text-sm text-primary overflow-hidden shrink-0">
                     {f.profile_image ? (
                       <img src={f.profile_image} alt={f.name} className="h-full w-full object-cover" />
