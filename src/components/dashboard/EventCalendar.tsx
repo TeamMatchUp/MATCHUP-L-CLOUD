@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 
 interface EventCalendarProps {
   events: { id: string; title: string; date: string; location: string; status?: string }[];
+  highlightedDates?: string[];
 }
 
 export function EventCalendar({ events }: EventCalendarProps) {
