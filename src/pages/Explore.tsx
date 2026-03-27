@@ -289,6 +289,16 @@ export default function Explore() {
                       <MapPin className="h-4 w-4" />
                     </Button>
                   )}
+                  {tab === "events" && (
+                    <Button
+                      variant={mapOpen ? "default" : "outline"}
+                      size="icon"
+                      onClick={() => { setMapOpen(!mapOpen); setPopupItem(null); setHighlightedGymId(null); }}
+                      className="shrink-0 h-10 w-10"
+                    >
+                      <MapPin className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
 
                 <AnimatePresence>
