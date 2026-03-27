@@ -47,6 +47,7 @@ export default function EventDetail() {
   const navigate = useNavigate();
   const BOUTS_PER_PAGE = 5;
 
+  // Load fighter profile for fighters AND coaches (coaches also have fighter profiles)
   const { data: fighterProfile } = useQuery({
     queryKey: ["my-fighter-profile", user?.id],
     queryFn: async () => {
@@ -55,7 +56,7 @@ export default function EventDetail() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && isFighter,
+    enabled: !!user && (isFighter || isCoach),
   });
 
   const { data: existingInterest } = useQuery({
@@ -405,7 +406,7 @@ export default function EventDetail() {
                   )}
 
                   <div className="flex flex-wrap gap-3">
-                    {user && isFighter && fighterProfile && (
+                    {user && (isFighter || isCoach) && fighterProfile && (
                       existingInterest ? (
                         <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
                           <Star className="h-4 w-4 fill-primary" /> Interested

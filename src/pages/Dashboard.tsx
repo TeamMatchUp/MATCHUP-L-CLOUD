@@ -62,6 +62,7 @@ export default function Dashboard() {
     confirmedProposals,
     events,
     calendarEvents,
+    highlightedDates,
     notifications,
     unreadNotifications,
     handleRefresh,
@@ -162,6 +163,7 @@ export default function Dashboard() {
             )}
             <DashboardOverview
               calendarEvents={calendarEvents}
+              highlightedDates={highlightedDates}
               effectiveRoles={effectiveRoles as string[]}
               onNavigateSection={navigateToSection}
             />
