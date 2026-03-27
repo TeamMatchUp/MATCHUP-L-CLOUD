@@ -60,7 +60,7 @@ export function DashboardEvents({
             </Link>
           </Button>
           <Button size="sm" className="gap-1" asChild>
-            <Link to="/organiser/create-event">
+            <Link to="/organiser/create-event?from=my-events">
               <Plus className="h-3 w-3" /> Create Event
             </Link>
           </Button>
