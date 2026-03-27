@@ -432,8 +432,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         </div>
       </div>
 
+      </>}
+
       {/* ── S6: Career history ── */}
-      <SectionHeader title="Career history" />
+      <SectionHeader title="Career history" collapsed={isCollapsed("history")} onToggle={() => toggle("history")} />
+      {!isCollapsed("history") && <>
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-3 mb-3">
         {/* Fight table */}
         <div className="bg-card border border-border rounded-lg p-5 overflow-x-auto">
