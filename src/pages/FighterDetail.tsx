@@ -23,7 +23,9 @@ import { STYLE_LABELS } from "@/lib/format";
 export default function FighterDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const fromParam = searchParams.get("from");
 
   const { data: fighter, isLoading } = useQuery({
     queryKey: ["fighter", id],
