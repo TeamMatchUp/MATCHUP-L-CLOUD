@@ -25,6 +25,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RecordAccuracyPolicy from "./pages/RecordAccuracyPolicy";
 import Contact from "./pages/Contact";
+import Feedback from "./pages/Feedback";
 import AdvertiseEnquiry from "./pages/AdvertiseEnquiry";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
