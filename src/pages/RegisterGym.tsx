@@ -29,7 +29,11 @@ const COUNTRIES = Constants.public.Enums.country_code;
 export default function RegisterGym() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+
+  const fromParam = searchParams.get("from");
+  const backRoute = fromParam === "overview" ? "/dashboard?section=overview" : "/dashboard?section=my-gyms";
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
