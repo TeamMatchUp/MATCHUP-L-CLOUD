@@ -289,6 +289,16 @@ export default function Explore() {
                       <MapPin className="h-4 w-4" />
                     </Button>
                   )}
+                  {tab === "events" && (
+                    <Button
+                      variant={mapOpen ? "default" : "outline"}
+                      size="icon"
+                      onClick={() => { setMapOpen(!mapOpen); setPopupItem(null); setHighlightedGymId(null); }}
+                      className="shrink-0 h-10 w-10"
+                    >
+                      <MapPin className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
 
                 <AnimatePresence>
@@ -367,26 +377,24 @@ export default function Explore() {
               </div>
             </div>
 
-            {/* Mobile map modal */}
-            {mapOpen && tab === "gyms" && isMobile && (
-              <div className="fixed inset-0 z-50 bg-background flex flex-col" style={{ maxHeight: "100vh" }}>
-                <div className="flex items-center justify-between p-3 border-b border-border">
-                  <span className="font-heading text-sm text-foreground">Gym Locations</span>
-                  <Button variant="ghost" size="icon" onClick={() => { setMapOpen(false); setPopupItem(null); }}>
+            {/* Mobile map modal — gyms and events */}
+            {mapOpen && (tab === "gyms" || tab === "events") && isMobile && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ padding: 16 }}>
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => { setMapOpen(false); setPopupItem(null); }} />
+                <div className="relative w-full h-full rounded-lg border border-border overflow-hidden bg-card z-10">
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 z-20 bg-card/80 backdrop-blur" onClick={() => { setMapOpen(false); setPopupItem(null); }}>
                     <X className="h-5 w-5" />
                   </Button>
-                </div>
-                <div className="flex-1">
-                  <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={window.innerHeight - 56}>
+                  <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={window.innerHeight - 32}>
                     {mapMarkers.map((m) => (
                       <Marker key={`${m.type}-${m.id}`} anchor={[m.lat, m.lng]} color="hsl(46, 93%, 61%)" width={32} onClick={() => setPopupItem(m)} />
                     ))}
                     {popupItem && (
                       <Overlay anchor={[popupItem.lat, popupItem.lng]} offset={[0, -20]}>
                         <div className="bg-card border border-border rounded-lg shadow-lg p-3 min-w-[180px]" onClick={(e) => e.stopPropagation()}>
-                          <p className="font-heading text-sm text-foreground mb-1">{popupItem.name}</p>
-                          <p className="text-xs text-muted-foreground mb-2">{popupItem.city}</p>
-                          <Link to={`/gyms/${popupItem.id}`} className="text-xs text-primary hover:underline">View Profile →</Link>
+                          <p className="font-heading text-sm text-foreground mb-1 truncate">{popupItem.name}</p>
+                          <p className="text-xs text-muted-foreground mb-2 truncate">{popupItem.city}</p>
+                          <Link to={tab === "gyms" ? `/gyms/${popupItem.id}` : `/events/${popupItem.id}`} className="text-xs text-primary hover:underline">View →</Link>
                           <button onClick={() => setPopupItem(null)} className="absolute top-1 right-1 text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>
                         </div>
                       </Overlay>
@@ -396,39 +404,46 @@ export default function Explore() {
               </div>
             )}
 
-            {/* Content area */}
-            {mapOpen && tab === "gyms" && !isMobile ? (
+            {/* Desktop map split layout — gyms and events */}
+            {mapOpen && (tab === "gyms" || tab === "events") && !isMobile ? (
               <div className="flex gap-4 flex-1">
-                {/* Scrollable gym list */}
+                {/* Scrollable list */}
                 <div className="flex-1 flex flex-col" style={{ minWidth: 0 }}>
                   <div className="overflow-y-auto" style={{ height: 520 }} id="gym-map-list">
                     <div className="space-y-2 pr-1">
-                      {paginatedItems.map((gym: any) => (
-                        <Link
-                          key={gym.id}
-                          id={`gym-card-${gym.id}`}
-                          to={`/gyms/${gym.id}`}
-                          className={`flex items-center gap-3 rounded-lg border bg-card p-3 hover:border-primary/30 transition-all ${highlightedGymId === gym.id ? "border-primary" : "border-border"}`}
-                        >
-                          <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center font-heading text-sm text-muted-foreground shrink-0 overflow-hidden">
-                            {gym.logo_url ? (
-                              <img src={gym.logo_url} alt={gym.name} className="h-full w-full object-cover" />
-                            ) : (
-                              gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-heading text-sm text-foreground truncate">{gym.name}</p>
-                            <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
-                              <MapPin className="h-3 w-3 shrink-0" />
-                              {gym.city ? `${gym.city}, ${gym.country}` : gym.location || gym.country}
-                            </p>
-                          </div>
-                        </Link>
-                      ))}
+                      {paginatedItems.map((item: any) => {
+                        const isEvent = tab === "events";
+                        const linkTo = isEvent ? `/events/${item.id}` : `/gyms/${item.id}`;
+                        const name = isEvent ? item.title : item.name;
+                        const location = isEvent
+                          ? (item.city ? `${item.city}, ${item.location || item.country}` : item.location || item.country)
+                          : (item.city ? `${item.city}, ${item.country}` : item.location || item.country);
+                        return (
+                          <Link
+                            key={item.id}
+                            id={`gym-card-${item.id}`}
+                            to={linkTo}
+                            className={`flex items-center gap-3 rounded-lg border bg-card p-3 hover:border-primary/30 transition-all ${highlightedGymId === item.id ? "border-primary" : "border-border"}`}
+                          >
+                            <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center font-heading text-sm text-muted-foreground shrink-0 overflow-hidden">
+                              {!isEvent && item.logo_url ? (
+                                <img src={item.logo_url} alt={name} className="h-full w-full object-cover" />
+                              ) : (
+                                name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-heading text-sm text-foreground truncate">{name}</p>
+                              <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                                <MapPin className="h-3 w-3 shrink-0" />
+                                {location}
+                              </p>
+                            </div>
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
-                  {/* Pagination below scrollable area */}
                   <PaginationControls />
                 </div>
                 {/* Map */}
@@ -451,11 +466,10 @@ export default function Explore() {
                     {popupItem && (
                       <Overlay anchor={[popupItem.lat, popupItem.lng]} offset={[0, -20]}>
                         <div className="bg-card border border-border rounded-lg shadow-lg p-3 min-w-[180px]" onClick={(e) => e.stopPropagation()}>
-                          <p className="font-heading text-sm text-foreground mb-1">{popupItem.name}</p>
-                          <p className="text-xs text-muted-foreground mb-2">{popupItem.city}</p>
-                          <Badge variant="outline" className="text-[10px] mb-2">Gym</Badge>
+                          <p className="font-heading text-sm text-foreground mb-1 truncate">{popupItem.name}</p>
+                          <p className="text-xs text-muted-foreground mb-2 truncate">{popupItem.city}</p>
                           <div>
-                            <Link to={`/gyms/${popupItem.id}`} className="text-xs text-primary hover:underline">View Profile →</Link>
+                            <Link to={tab === "gyms" ? `/gyms/${popupItem.id}` : `/events/${popupItem.id}`} className="text-xs text-primary hover:underline">View →</Link>
                           </div>
                           <button onClick={() => setPopupItem(null)} className="absolute top-1 right-1 text-muted-foreground hover:text-foreground">
                             <X className="h-3 w-3" />

@@ -96,10 +96,10 @@ function BoutBanner({ bout, onEdit, onTogglePublic, onMoveUp, onMoveDown, isFirs
                 )}
               </div>
 
-              <div className="flex flex-col items-center px-3 shrink-0">
+              <div className="flex flex-col items-center shrink-0" style={{ width: isMain ? 120 : 100 }}>
                 <span className={`font-heading text-primary ${isMain ? "text-xl" : "text-xs"}`}>VS</span>
                 {bout.weight_class && (
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>
                 )}
               </div>
 
@@ -332,9 +332,11 @@ export default function EventManager() {
       <main className="pt-16">
         <section className="py-16">
           <div className="container">
-            <Link to="/organiser/dashboard" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
-              <ArrowLeft className="h-4 w-4" /> Back to Dashboard
-            </Link>
+            <div className="flex items-center gap-4 mb-6">
+              <Link to={`/events/${id}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="h-4 w-4" /> Back to Event
+              </Link>
+            </div>
 
             <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
               <div>

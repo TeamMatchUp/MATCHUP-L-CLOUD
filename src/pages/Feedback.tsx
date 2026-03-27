@@ -96,9 +96,11 @@ const FIGHTER_QS = [
 ];
 
 const COACH_QS = [
-  { key: "used_matchmaking", label: "Have you used the matchmaking tool to propose a fight for a roster fighter?", options: [{ label: "Yes", value: "yes" }, { label: "No", value: "no" }] },
-  { key: "lead_pipeline", label: "How well does the lead pipeline help you manage gym enquiries?", options: [{ label: "Not well", value: "not_well" }, { label: "Somewhat", value: "somewhat" }, { label: "Very well", value: "very_well" }] },
-  { key: "saved_time", label: "Has Matchup saved you time compared to how you previously managed fighter bookings?", options: [{ label: "Yes", value: "yes" }, { label: "Somewhat", value: "somewhat" }, { label: "No", value: "no" }] },
+  { key: "used_matchmaking", label: "Have you used the matchmaking tool to find or propose fights for your roster fighters?", options: [{ label: "Yes", value: "yes" }, { label: "No", value: "no" }] },
+  { key: "roster_useful", label: "How useful is the fighter roster management for tracking your team?", options: [{ label: "Not useful", value: "not_useful" }, { label: "Somewhat useful", value: "somewhat" }, { label: "Very useful", value: "very_useful" }] },
+  { key: "lead_pipeline", label: "Has the lead pipeline helped you manage gym enquiries and trial requests?", options: [{ label: "Not at all", value: "not_at_all" }, { label: "Somewhat", value: "somewhat" }, { label: "Very much", value: "very_much" }] },
+  { key: "claimed_gym", label: "Have you claimed or created a gym listing on Matchup?", options: [{ label: "Yes", value: "yes" }, { label: "No", value: "no" }] },
+  { key: "saved_time", label: "Has Matchup saved you time compared to how you previously managed fighter bookings and event entries?", options: [{ label: "Yes", value: "yes" }, { label: "Somewhat", value: "somewhat" }, { label: "No", value: "no" }] },
 ];
 
 const ORGANISER_QS = [

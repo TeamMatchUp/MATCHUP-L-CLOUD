@@ -256,9 +256,11 @@ export default function GymDetail() {
       <main className="pt-16">
         <section className="py-16">
           <div className="container max-w-3xl">
-            <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />Back
-            </Button>
+            <div className="pt-6 md:pt-8 lg:pt-10">
+              <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
+                <ArrowLeft className="h-4 w-4 mr-2" />Back
+              </Button>
+            </div>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}

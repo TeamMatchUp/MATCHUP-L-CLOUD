@@ -39,6 +39,7 @@ export function ImageCropDialog({ open, onOpenChange, imageSrc, aspect, onCropCo
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [requestNewPhoto, setRequestNewPhoto] = useState(false);
 
   const onCropChange = useCallback((_: any, croppedPixels: any) => {
     setCroppedAreaPixels(croppedPixels);
@@ -58,13 +59,27 @@ export function ImageCropDialog({ open, onOpenChange, imageSrc, aspect, onCropCo
     }
   };
 
+  const handleChooseDifferent = () => {
+    setRequestNewPhoto(true);
+    onOpenChange(false);
+  };
+
+  // Trigger file picker when requestNewPhoto flag is set and dialog closes
+  if (requestNewPhoto) {
+    setRequestNewPhoto(false);
+    setTimeout(() => {
+      const input = document.querySelector<HTMLInputElement>('input[type="file"][accept="image/*"]');
+      if (input) input.click();
+    }, 100);
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-hidden p-0">
-        <DialogHeader className="p-4 pb-0">
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-hidden p-0 flex flex-col">
+        <DialogHeader className="p-4 pb-0 shrink-0">
           <DialogTitle className="font-heading">Crop Image</DialogTitle>
         </DialogHeader>
-        <div className="relative w-full" style={{ height: 400 }}>
+        <div className="relative w-full flex-1" style={{ height: 340, minHeight: 240 }}>
           <Cropper
             image={imageSrc}
             crop={crop}
@@ -75,11 +90,14 @@ export function ImageCropDialog({ open, onOpenChange, imageSrc, aspect, onCropCo
             onCropComplete={onCropChange}
           />
         </div>
-        <DialogFooter className="p-4 pt-2">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSave} disabled={saving}>
-            {saving ? "Cropping..." : "Crop & Save"}
-          </Button>
+        <DialogFooter className="p-4 pt-3 shrink-0 flex-wrap gap-2">
+          <Button variant="ghost" size="sm" onClick={handleChooseDifferent}>Choose Different Photo</Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Cropping..." : "Crop & Save"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
