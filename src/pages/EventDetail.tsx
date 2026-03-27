@@ -323,9 +323,11 @@ export default function EventDetail() {
       <main className="pt-16">
         <section className="py-16">
           <div className="container" style={{ paddingLeft: 35, paddingRight: 35 }}>
-            <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />Back
-            </Button>
+            <div className="pt-10 md:pt-8 lg:pt-10">
+              <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
+                <ArrowLeft className="h-4 w-4 mr-2" />Back
+              </Button>
+            </div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               {/* Two-panel layout — equal width, aligned with fight card below */}
