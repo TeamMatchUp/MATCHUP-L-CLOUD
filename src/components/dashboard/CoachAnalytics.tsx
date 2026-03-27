@@ -23,12 +23,13 @@ import { useNavigate } from "react-router-dom";
 
 /* ── Reusable sub-components ── */
 
-function SectionHeader({ title, large }: { title: string; large?: boolean }) {
+function SectionHeader({ title, large, collapsed, onToggle }: { title: string; large?: boolean; collapsed?: boolean; onToggle?: () => void }) {
   return (
-    <div className="flex items-center gap-3.5 mt-6 mb-3.5">
+    <button onClick={onToggle} className="flex items-center gap-3.5 mt-6 mb-3.5 w-full text-left group cursor-pointer">
       <span className={`font-heading font-bold tracking-[2.5px] uppercase text-muted-foreground whitespace-nowrap ${large ? "text-sm" : "text-xs"}`}>{title}</span>
       <div className="flex-1 h-px bg-border" />
-    </div>
+      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${collapsed ? "-rotate-180" : ""}`} />
+    </button>
   );
 }
 
