@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
   MapPin, Calendar, ArrowRight, ArrowLeft, Filter, Search, Ticket, Swords, X,
-  SlidersHorizontal, Users, ShieldCheck, Map as MapIcon, Building2,
+  SlidersHorizontal, Users, ShieldCheck, Building2,
 } from "lucide-react";
 import { usePostcodeSearch, haversineDistance } from "@/hooks/use-postcode-search";
 import { STYLE_LABELS } from "@/lib/format";
