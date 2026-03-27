@@ -93,6 +93,7 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
   const [activeMonths, setActiveMonths] = useState<"6m" | "12m">("6m");
   const [showActiveModal, setShowActiveModal] = useState(false);
   const [reachPeriod, setReachPeriod] = useState<"30d" | "all">("30d");
+  const { toggle, isCollapsed } = useCollapsibleSections("coach-analytics");
 
   const now = new Date();
   const hasOrganiserRole = effectiveRoles.includes("organiser");
