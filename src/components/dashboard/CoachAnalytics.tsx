@@ -817,7 +817,8 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
       </div>
 
       {/* ── SECTION 6: Lead Source & Pipeline ── */}
-      <SectionHeader title="Lead Source & Pipeline" />
+      <SectionHeader title="Lead Source & Pipeline" collapsed={isCollapsed("pipeline")} onToggle={() => toggle("pipeline")} />
+      {!isCollapsed("pipeline") && <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
         {/* Doughnut */}
         <div className="bg-card border border-border rounded-lg p-4">
