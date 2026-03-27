@@ -47,6 +47,7 @@ export default function EventDetail() {
   const navigate = useNavigate();
   const BOUTS_PER_PAGE = 5;
 
+  // Load fighter profile for fighters AND coaches (coaches also have fighter profiles)
   const { data: fighterProfile } = useQuery({
     queryKey: ["my-fighter-profile", user?.id],
     queryFn: async () => {
@@ -55,7 +56,7 @@ export default function EventDetail() {
       if (error) throw error;
       return data;
     },
-    enabled: !!user && isFighter,
+    enabled: !!user && (isFighter || isCoach),
   });
 
   const { data: existingInterest } = useQuery({
