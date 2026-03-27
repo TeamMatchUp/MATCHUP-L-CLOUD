@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { formatEnum } from "@/lib/format";
-import { X } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
+import { useCollapsibleSections } from "@/hooks/use-collapsible-sections";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
   Legend,
