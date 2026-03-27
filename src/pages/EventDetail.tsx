@@ -336,9 +336,7 @@ export default function EventDetail() {
                   {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
 
                   {event.description && (
-                    <div className="rounded-lg border border-border bg-card p-5 mb-6">
-                      <p className="text-muted-foreground">{event.description}</p>
-                    </div>
+                    <p className="text-muted-foreground mb-6">{event.description}</p>
                   )}
 
                   <div className="flex flex-wrap gap-6 text-sm text-muted-foreground mb-6">
