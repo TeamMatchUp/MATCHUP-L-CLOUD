@@ -279,6 +279,15 @@ export default function Explore() {
                   <Button variant={filtersOpen ? "default" : "outline"} size="icon" onClick={() => setFiltersOpen(!filtersOpen)} className="shrink-0 h-10 w-10">
                     <SlidersHorizontal className="h-4 w-4" />
                   </Button>
+                  {tab === "gyms" && (
+                    <Button
+                      variant={mapOpen ? "default" : "outline"}
+                      onClick={() => { setMapOpen(!mapOpen); setPopupItem(null); setHighlightedGymId(null); }}
+                      className="shrink-0 h-10 gap-2"
+                    >
+                      <MapPin className="h-4 w-4" /> Map
+                    </Button>
+                  )}
                 </div>
 
                 <AnimatePresence>
