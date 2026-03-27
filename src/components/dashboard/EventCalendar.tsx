@@ -13,6 +13,7 @@ interface EventCalendarProps {
 export function EventCalendar({ events, highlightedDates = [] }: EventCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const highlightedSet = useMemo(() => new Set(highlightedDates), [highlightedDates]);
 
   const eventCountByDate = useMemo(() => {
     const map: Record<string, number> = {};
