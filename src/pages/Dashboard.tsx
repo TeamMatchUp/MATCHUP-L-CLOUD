@@ -62,6 +62,7 @@ export default function Dashboard() {
     confirmedProposals,
     events,
     calendarEvents,
+    highlightedDates,
     notifications,
     unreadNotifications,
     handleRefresh,
