@@ -112,9 +112,9 @@ export function DashboardGyms({
         <Button
           size="sm"
           className="gap-1"
-          onClick={() => setShowCreateGym(!showCreateGym)}
+          asChild
         >
-          <Plus className="h-3 w-3" /> Create Gym
+          <Link to="/register-gym"><Plus className="h-3 w-3" /> Create Gym</Link>
         </Button>
       </div>
 
