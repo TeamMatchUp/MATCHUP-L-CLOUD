@@ -114,7 +114,7 @@ export function DashboardGyms({
           className="gap-1"
           asChild
         >
-          <Link to="/register-gym"><Plus className="h-3 w-3" /> Create Gym</Link>
+          <Link to="/register-gym?from=my-gyms"><Plus className="h-3 w-3" /> Create Gym</Link>
         </Button>
       </div>
 
