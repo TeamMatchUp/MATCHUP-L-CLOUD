@@ -180,12 +180,7 @@ export default function EventDetail() {
 
   const isOpen = (bout: any) => !bout.fighter_a_id && !bout.fighter_b_id && bout.status === "open";
   const getStatusIndicator = (bout: any) => {
-    const isConfirmedPublic = bout.status === "confirmed" && bout.is_public === true;
-    if (isConfirmedPublic) return null;
-    if (isOpen(bout)) {
-      return <Badge className="bg-primary/15 text-primary border-primary/30 text-xs">Slot Open</Badge>;
-    }
-    // No badge for proposed — just show TBA vs TBA
+    // No badges on banners — only "Open" text above VS for open slots
     return null;
   };
 
