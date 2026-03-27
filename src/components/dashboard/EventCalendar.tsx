@@ -63,6 +63,14 @@ export function EventCalendar({ events, highlightedDates = [] }: EventCalendarPr
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
+          <div className="flex flex-col ml-1">
+            <Button variant="ghost" size="sm" className="h-4 w-6 p-0" onClick={() => setCurrentMonth(setYear(currentMonth, getYear(currentMonth) + 1))}>
+              <ChevronUp className="h-3 w-3" />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-4 w-6 p-0" onClick={() => setCurrentMonth(setYear(currentMonth, getYear(currentMonth) - 1))}>
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </div>
 
