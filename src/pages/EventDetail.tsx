@@ -195,18 +195,18 @@ export default function EventDetail() {
     return (
       <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6 relative">
         {/* Three-column layout with fixed center: Fighter A | VS + Weight | Fighter B */}
-        <div className="grid grid-cols-[1fr_120px_1fr] items-center gap-4">
+      <div className="grid" style={{ gridTemplateColumns: "1fr 140px 1fr" }}>
           {/* Fighter A — left aligned */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 overflow-hidden">
             {isPublic && fA?.profile_image && (
               <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 shrink-0">
                 <img src={fA.profile_image} alt={fA.name} className="h-full w-full object-cover" />
               </div>
             )}
-            <div className="text-left">
+            <div className="text-left min-w-0">
               {isPublic && fA ? (
                 <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
-                  <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameA}</p>
+                  <p className="font-heading text-xl md:text-2xl text-foreground uppercase truncate">{nameA}</p>
                 </Link>
               ) : (
                 <p className="font-heading text-xl md:text-2xl text-muted-foreground uppercase">{nameA}</p>
@@ -215,17 +215,17 @@ export default function EventDetail() {
             </div>
           </div>
           {/* Centre — VS + weight class */}
-            <div className="flex flex-col items-center px-4">
+          <div className="flex flex-col items-center justify-center">
             {isOpen(bout) && <span className="text-primary text-xs font-semibold uppercase tracking-wide">Open</span>}
             <span className="font-heading text-primary text-2xl">VS</span>
-            {bout.weight_class && <p className="text-xs text-muted-foreground mt-1">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
+            {bout.weight_class && <p className="text-xs text-muted-foreground mt-1 whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
           {/* Fighter B — right aligned */}
-          <div className="flex items-center gap-3 justify-end">
-            <div className="text-right">
+          <div className="flex items-center gap-3 justify-end overflow-hidden">
+            <div className="text-right min-w-0">
               {isPublic && fB ? (
                 <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
-                  <p className="font-heading text-xl md:text-2xl text-foreground uppercase">{nameB}</p>
+                  <p className="font-heading text-xl md:text-2xl text-foreground uppercase truncate">{nameB}</p>
                 </Link>
               ) : (
                 <p className="font-heading text-xl md:text-2xl text-muted-foreground uppercase">{nameB}</p>
