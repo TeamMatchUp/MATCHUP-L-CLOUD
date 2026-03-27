@@ -175,3 +175,10 @@
     }
   }
 }
+
+/* Global text overflow protection for cards and tiles */
+@layer utilities {
+  .card, [class*="bg-card"], [class*="rounded-lg"][class*="border"] {
+    overflow: hidden;
+  }
+}
