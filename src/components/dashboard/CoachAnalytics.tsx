@@ -527,8 +527,8 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
         </div>
       </div>
 
-      {/* ── SECTION 1: Roster Overview ── */}
-      <SectionHeader title="Roster Overview" />
+      <SectionHeader title="Roster Overview" collapsed={isCollapsed("roster")} onToggle={() => toggle("roster")} />
+      {!isCollapsed("roster") && <>
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 mb-3">
         <StatCard label="Total Fighters" value={roster.length} sub={`Across ${myGyms.length} gym${myGyms.length !== 1 ? "s" : ""}`} />
         <StatCard
