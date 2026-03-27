@@ -92,8 +92,8 @@ export default function FighterDetail() {
       <main className="pt-16">
         <section className="py-16">
           <div className="container max-w-3xl">
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-6">
-              <ArrowLeft className="h-4 w-4 mr-2" />Back
+            <Button variant="ghost" size="sm" onClick={() => fromParam === "roster" ? navigate("/dashboard?section=roster") : navigate(-1)} className="mb-6">
+              <ArrowLeft className="h-4 w-4 mr-2" />{fromParam === "roster" ? "Back to Roster" : "Back"}
             </Button>
 
             <motion.div
