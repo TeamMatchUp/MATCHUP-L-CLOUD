@@ -146,10 +146,21 @@ export function FighterRosterPanel({
             const record = fighterRecords.get(f.id) || { wins: 0, losses: 0, draws: 0, eventVerified: 0, coachVerified: 0 };
             return (
             <div key={f.id} className="rounded-lg border border-border bg-card p-4">
-              <p className="font-medium text-foreground">{f.name}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {record.wins}W-{record.losses}L-{record.draws}D · {formatEnum(f.weight_class)}
-              </p>
+              <div className="flex items-center gap-3 mb-1">
+                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-heading text-sm text-primary overflow-hidden shrink-0">
+                  {f.profile_image ? (
+                    <img src={f.profile_image} alt={f.name} className="h-full w-full object-cover" />
+                  ) : (
+                    f.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground truncate">{f.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {record.wins}W-{record.losses}L-{record.draws}D · {formatEnum(f.weight_class)}
+                  </p>
+                </div>
+              </div>
               {(record.eventVerified > 0 || record.coachVerified > 0) && (
                 <div className="flex gap-2 mt-2 flex-wrap">
                   {record.eventVerified > 0 && (
