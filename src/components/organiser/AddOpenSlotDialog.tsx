@@ -34,7 +34,7 @@ export function AddOpenSlotDialog({ open, onOpenChange, eventId, sectionType, ne
       slot_number: nextSlotNumber,
       fighter_a_id: null,
       fighter_b_id: null,
-      weight_class: weightClass,
+      weight_class: weightClass || null,
       discipline: discipline || null,
       bout_type: sectionType,
       status: "open",

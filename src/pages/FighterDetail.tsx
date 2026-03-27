@@ -106,11 +106,11 @@ export default function FighterDetail() {
               )}
 
               <div className="flex items-start gap-6 mb-8">
-                <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center font-heading text-2xl text-muted-foreground shrink-0 overflow-hidden">
+                <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center font-heading text-2xl text-primary shrink-0 overflow-hidden">
                   {fighter._avatar ? (
                     <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" />
                   ) : (
-                    fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)
+                    fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2).toUpperCase()
                   )}
                 </div>
                 <div>
@@ -118,7 +118,7 @@ export default function FighterDetail() {
                     <h1 className="font-heading text-3xl md:text-4xl text-foreground">{fighter.name}</h1>
                     {fighter.verified && <ShieldCheck className="h-5 w-5 text-primary" />}
                   </div>
-                  <FightHistory fighterId={fighter.id} />
+                  <p className="text-primary font-bold text-xl mt-1">{fighter.record_wins}-{fighter.record_losses}-{fighter.record_draws}</p>
                   <span className={`inline-block mt-2 text-xs font-medium px-3 py-1 rounded-full ${fighter.available ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                     {fighter.available ? "Available for fights" : "Currently booked"}
                   </span>
