@@ -282,10 +282,11 @@ export default function Explore() {
                   {tab === "gyms" && (
                     <Button
                       variant={mapOpen ? "default" : "outline"}
+                      size="icon"
                       onClick={() => { setMapOpen(!mapOpen); setPopupItem(null); setHighlightedGymId(null); }}
-                      className="shrink-0 h-10 gap-2"
+                      className="shrink-0 h-10 w-10"
                     >
-                      <MapPin className="h-4 w-4" /> Map
+                      <MapPin className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
