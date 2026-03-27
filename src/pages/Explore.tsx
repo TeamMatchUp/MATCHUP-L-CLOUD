@@ -366,73 +366,34 @@ export default function Explore() {
               </div>
             </div>
 
-            {/* Content area: directory + map tile / split-screen */}
-            <div className={`flex-1 flex ${mapOpen ? "overflow-hidden" : ""}`}>
+            {/* Content area */}
+            <div className="flex-1 flex gap-4">
               {/* Directory cards */}
-              <div className={`${mapOpen && !mapExpanded ? "w-[420px] overflow-y-auto border-r border-border shrink-0 px-4 pb-4" : mapOpen && mapExpanded ? "hidden" : "flex-1"}`}>
+              <div className={`${mapOpen && tab === "gyms" ? "flex-1 overflow-y-auto" : "flex-1"}`}>
                 <div className={mapOpen ? "" : "container"}>
-                  <div className={`${mapOpen ? "" : "flex gap-6"}`}>
-                    <div className={`${mapOpen ? "w-full" : tab !== "fighters" ? "flex-1" : "w-full"}`}>
-                      {tab === "events" && <EventsDirectory events={paginatedItems} isLoading={eventsLoading} searchCoords={pc.coords} />}
-                      {tab === "gyms" && <GymsDirectory gyms={paginatedItems} isLoading={gymsLoading} searchCoords={pc.coords} />}
-                      {tab === "fighters" && <FightersDirectory fighters={paginatedItems as any} isLoading={fightersLoading} />}
-                      <PaginationControls />
-                    </div>
-
-                    {/* Map preview tile — top-right alongside directory */}
-                    {!mapOpen && tab !== "fighters" && !isMobile && (
-                      <div className="shrink-0">
-                        <button
-                          onClick={() => setMapOpen(true)}
-                          className="w-[280px] h-[360px] rounded-lg border border-border bg-muted/50 flex flex-col items-center justify-center hover:border-primary/30 transition-all group relative overflow-hidden sticky top-4"
-                        >
-                          <div className="absolute inset-0 opacity-30 pointer-events-none">
-                            <PigeonMap defaultCenter={[54.5, -2]} defaultZoom={5} height={360} attribution={false}>
-                              {mapMarkers.slice(0, 10).map((m) => (
-                                <Marker key={`preview-${m.id}`} anchor={[m.lat, m.lng]} color="hsl(46, 93%, 61%)" width={20} />
-                              ))}
-                            </PigeonMap>
-                          </div>
-                          <div className="relative z-10 flex flex-col items-center gap-3">
-                            <MapIcon className="h-12 w-12 text-foreground group-hover:text-primary transition-colors" />
-                            <span className="font-heading text-2xl text-foreground group-hover:text-primary transition-colors">SEE MAP</span>
-                            <span className="text-xs text-muted-foreground">View {tab} on an interactive map</span>
-                          </div>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Mobile map button */}
-                  {!mapOpen && tab !== "fighters" && isMobile && (
-                    <div className="flex justify-center py-4">
-                      <Button variant="outline" onClick={() => setMapOpen(true)} className="gap-2">
-                        <MapIcon className="h-4 w-4" /> See Map
-                      </Button>
-                    </div>
-                  )}
+                  {tab === "events" && <EventsDirectory events={paginatedItems} isLoading={eventsLoading} searchCoords={pc.coords} />}
+                  {tab === "gyms" && <GymsDirectory gyms={paginatedItems} isLoading={gymsLoading} searchCoords={pc.coords} mapOpen={mapOpen} highlightedGymId={highlightedGymId} />}
+                  {tab === "fighters" && <FightersDirectory fighters={paginatedItems as any} isLoading={fightersLoading} />}
+                  <PaginationControls />
                 </div>
               </div>
 
-              {/* Map panel - pigeon-maps */}
-              {mapOpen && tab !== "fighters" && (
-                <div className="flex-1 min-h-[500px] relative">
-                  <div className="absolute top-3 left-3 z-10 flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => { setMapOpen(false); setMapExpanded(false); setPopupItem(null); }}>
-                      <X className="h-4 w-4 mr-1" /> Close Map
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setMapExpanded(!mapExpanded)}>
-                      {mapExpanded ? "↙ Collapse" : "↗ Expand"}
-                    </Button>
-                  </div>
-                  <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={500}>
+              {/* Map panel for gyms only */}
+              {mapOpen && tab === "gyms" && !isMobile && (
+                <div className="shrink-0 rounded-lg border border-border overflow-hidden" style={{ width: "calc(75% - 1rem)", height: 520 }}>
+                  <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={520}>
                     {mapMarkers.map((m) => (
                       <Marker
                         key={`${m.type}-${m.id}`}
                         anchor={[m.lat, m.lng]}
                         color="hsl(46, 93%, 61%)"
                         width={32}
-                        onClick={() => setPopupItem(m)}
+                        onClick={() => {
+                          setPopupItem(m);
+                          setHighlightedGymId(m.id);
+                          const el = document.getElementById(`gym-card-${m.id}`);
+                          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }}
                       />
                     ))}
                     {popupItem && (
@@ -442,12 +403,7 @@ export default function Explore() {
                           <p className="text-xs text-muted-foreground mb-2">{popupItem.city}</p>
                           <Badge variant="outline" className="text-[10px] mb-2">{popupItem.type === "event" ? "Event" : "Gym"}</Badge>
                           <div>
-                            <Link
-                              to={popupItem.type === "event" ? `/events/${popupItem.id}` : `/gyms/${popupItem.id}`}
-                              className="text-xs text-primary hover:underline"
-                            >
-                              View Profile →
-                            </Link>
+                            <Link to={`/gyms/${popupItem.id}`} className="text-xs text-primary hover:underline">View Profile →</Link>
                           </div>
                           <button onClick={() => setPopupItem(null)} className="absolute top-1 right-1 text-muted-foreground hover:text-foreground">
                             <X className="h-3 w-3" />
