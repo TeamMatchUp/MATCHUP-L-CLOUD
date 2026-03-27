@@ -244,49 +244,47 @@ export default function EventDetail() {
   };
 
   const renderUndercardBout = (bout: any) => {
-    const isPublic = bout.status === "confirmed" && bout.is_public === true;
-    const fA = isPublic ? unwrap(bout.fighter_a) : null;
-    const fB = isPublic ? unwrap(bout.fighter_b) : null;
-    const nameA = isPublic ? (fA?.name ?? "TBA") : "TBA";
-    const nameB = isPublic ? (fB?.name ?? "TBA") : "TBA";
-    const statusBadge = getStatusIndicator(bout);
+    const showDetails = bout.is_public === true && bout.status === "confirmed";
+    const fA = showDetails ? unwrap(bout.fighter_a) : null;
+    const fB = showDetails ? unwrap(bout.fighter_b) : null;
+    const nameA = showDetails ? (fA?.name ?? "TBA") : "TBA";
+    const nameB = showDetails ? (fB?.name ?? "TBA") : "TBA";
     return (
       <div key={bout.id} className="rounded-lg border border-border bg-card p-4 relative">
-        {/* Three-column layout with fixed center */}
-        <div className="grid grid-cols-[1fr_80px_1fr] items-center gap-3">
+        <div className="grid items-center gap-3" style={{ gridTemplateColumns: "1fr 120px 1fr" }}>
           {/* Fighter A */}
-          <div className="flex items-center gap-2">
-            {isPublic && fA?.profile_image && (
+          <div className="flex items-center gap-2 overflow-hidden">
+            {showDetails && fA?.profile_image && (
               <div className="h-10 w-10 rounded-full overflow-hidden border border-primary/20 shrink-0">
                 <img src={fA.profile_image} alt={fA.name} className="h-full w-full object-cover" />
               </div>
             )}
-            <div className="text-left">
-              {isPublic && fA ? (
+            <div className="text-left min-w-0">
+              {showDetails && fA ? (
                 <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
-                  <p className="font-heading text-sm text-foreground uppercase">{nameA}</p>
+                  <p className="font-heading text-sm text-foreground uppercase truncate">{nameA}</p>
                 </Link>
               ) : <p className="font-heading text-sm text-muted-foreground uppercase">{nameA}</p>}
-              {isPublic && fA && <p className="text-xs text-muted-foreground">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
+              {showDetails && fA && <p className="text-xs text-muted-foreground">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
             </div>
           </div>
           {/* Centre */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center justify-center">
             {isOpen(bout) && <span className="text-primary text-[10px] font-semibold uppercase tracking-wide">Open</span>}
             <span className="font-heading text-primary text-xs">VS</span>
-            {bout.weight_class && <p className="text-[10px] text-muted-foreground mt-0.5">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
+            {bout.weight_class && <p className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
           {/* Fighter B */}
-          <div className="flex items-center gap-2 justify-end">
-            <div className="text-right">
-              {isPublic && fB ? (
+          <div className="flex items-center gap-2 justify-end overflow-hidden">
+            <div className="text-right min-w-0">
+              {showDetails && fB ? (
                 <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
-                  <p className="font-heading text-sm text-foreground uppercase">{nameB}</p>
+                  <p className="font-heading text-sm text-foreground uppercase truncate">{nameB}</p>
                 </Link>
               ) : <p className="font-heading text-sm text-muted-foreground uppercase">{nameB}</p>}
-              {isPublic && fB && <p className="text-xs text-muted-foreground">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
+              {showDetails && fB && <p className="text-xs text-muted-foreground">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
             </div>
-            {isPublic && fB?.profile_image && (
+            {showDetails && fB?.profile_image && (
               <div className="h-10 w-10 rounded-full overflow-hidden border border-primary/20 shrink-0">
                 <img src={fB.profile_image} alt={fB.name} className="h-full w-full object-cover" />
               </div>
