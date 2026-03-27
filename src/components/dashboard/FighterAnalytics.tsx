@@ -323,8 +323,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         <StatCardFA label="Elo rating" value={elo.toLocaleString()} sub={`${formatEnum(fighterProfile.weight_class)} · #${ranking.rank || "—"}`} />
       </div>
 
+      </>}
+
       {/* ── S3: Market demand ── */}
-      <SectionHeader title="Market demand & visibility" />
+      <SectionHeader title="Market demand & visibility" collapsed={isCollapsed("demand")} onToggle={() => toggle("demand")} />
+      {!isCollapsed("demand") && <>
       <div className="bg-card border border-border rounded-lg p-5 mb-3">
         <div className="font-heading text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground mb-3.5">
           How much interest your profile is generating from promoters and coaches on the platform
