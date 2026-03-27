@@ -14,6 +14,7 @@ import { FighterFightHistory } from "./FighterFightHistory";
 import { ProfileCompletionBar } from "./ProfileCompletionBar";
 import { Constants } from "@/integrations/supabase/types";
 import { useQuery } from "@tanstack/react-query";
+import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 
 interface EditableProfilePanelProps {
