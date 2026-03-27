@@ -186,12 +186,11 @@ export default function EventDetail() {
   };
 
   const renderMainBout = (bout: any) => {
-    const isPublic = bout.status === "confirmed" && bout.is_public === true;
-    const fA = isPublic ? unwrap(bout.fighter_a) : null;
-    const fB = isPublic ? unwrap(bout.fighter_b) : null;
-    const nameA = isPublic ? (fA?.name ?? "TBA") : "TBA";
-    const nameB = isPublic ? (fB?.name ?? "TBA") : "TBA";
-    const statusBadge = getStatusIndicator(bout);
+    const showDetails = bout.is_public === true && bout.status === "confirmed";
+    const fA = showDetails ? unwrap(bout.fighter_a) : null;
+    const fB = showDetails ? unwrap(bout.fighter_b) : null;
+    const nameA = showDetails ? (fA?.name ?? "TBA") : "TBA";
+    const nameB = showDetails ? (fB?.name ?? "TBA") : "TBA";
     return (
       <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6 relative">
         {/* Three-column layout with fixed center: Fighter A | VS + Weight | Fighter B */}
