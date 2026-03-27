@@ -544,8 +544,10 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
         <StatCard label="Upcoming Events" value={upcomingEventIds.length} sub="Fighters entered or proposed" />
       </div>
 
-      {/* ── SECTION 2: Matchmaking Activity ── */}
-      <SectionHeader title="Matchmaking Activity" />
+      </>}
+
+      <SectionHeader title="Matchmaking Activity" collapsed={isCollapsed("matchmaking")} onToggle={() => toggle("matchmaking")} />
+      {!isCollapsed("matchmaking") && <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <StatCard label="Proposal Acceptance Rate" value={`${acceptanceRate}%`} sub={`${confirmedSuggestions} accepted of ${totalSuggestions}`} />
         <StatCard label="Fights Booked – 30d" value={bookedInDays(30)} sub="Confirmed matchups" />
