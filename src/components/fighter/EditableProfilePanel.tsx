@@ -49,6 +49,8 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
   const [joiningGym, setJoiningGym] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [heroRecordFilter, setHeroRecordFilter] = useState<"pro" | "amateur" | "total">("pro");
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [showCrop, setShowCrop] = useState(false);
 
   const { register, handleSubmit, setValue, watch, reset } = useForm({
     defaultValues: {
