@@ -102,7 +102,8 @@ export function EventCalendar({ events, highlightedDates = [] }: EventCalendarPr
                 !inMonth && "opacity-30",
                 selected && "bg-primary/10 border border-primary/30",
                 !selected && "hover:bg-muted/50",
-                isNow && !selected && "border border-border"
+                isNow && !selected && "border border-border",
+                isHighlighted && !selected && "ring-2 ring-primary/50"
               )}
             >
               <span className={cn(
