@@ -569,6 +569,8 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         </div>
       </div>
 
+      </>}
+
       {/* ── Popup modals ── */}
       <PopupModal open={popup === "elo"} onClose={() => setPopup(null)} title="How your Elo rating is calculated" body={
         <div>
