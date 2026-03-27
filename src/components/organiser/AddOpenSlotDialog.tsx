@@ -64,9 +64,10 @@ export function AddOpenSlotDialog({ open, onOpenChange, eventId, sectionType, ne
         <div className="space-y-4">
           <div className="space-y-1">
             <Label className="text-xs">Weight Class</Label>
-            <Select value={weightClass} onValueChange={(v) => setWeightClass(v as WeightClass)}>
+            <Select value={weightClass || "any"} onValueChange={(v) => setWeightClass(v === "any" ? "" as any : v as WeightClass)}>
               <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[200px] overflow-y-auto">
+                <SelectItem value="any">Any</SelectItem>
                 {WEIGHT_CLASSES.map((wc) => (
                   <SelectItem key={wc} value={wc}>{formatEnum(wc)}</SelectItem>
                 ))}
