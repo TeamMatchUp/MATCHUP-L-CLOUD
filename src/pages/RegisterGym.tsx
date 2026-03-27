@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { geocodePostcode } from "@/hooks/use-postcode-search";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +29,11 @@ const COUNTRIES = Constants.public.Enums.country_code;
 export default function RegisterGym() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+
+  const fromParam = searchParams.get("from");
+  const backRoute = fromParam === "overview" ? "/dashboard?section=overview" : "/dashboard?section=my-gyms";
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
@@ -91,8 +95,8 @@ export default function RegisterGym() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
             >
-              <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate("/dashboard?section=my-gyms")}>
-                <Building2 className="h-4 w-4 mr-2" />Back to My Gyms
+              <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(backRoute)}>
+                <Building2 className="h-4 w-4 mr-2" />{fromParam === "overview" ? "Back to Dashboard" : "Back to My Gyms"}
               </Button>
               <div className="flex items-center gap-3 mb-2">
                 <Building2 className="h-8 w-8 text-primary" />

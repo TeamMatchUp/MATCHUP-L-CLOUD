@@ -16,7 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import {
   MapPin, Calendar, ArrowRight, ArrowLeft, Filter, Search, Ticket, Swords, X,
-  SlidersHorizontal, Users, ShieldCheck, Map as MapIcon, Building2,
+  SlidersHorizontal, Users, ShieldCheck, Building2,
 } from "lucide-react";
 import { usePostcodeSearch, haversineDistance } from "@/hooks/use-postcode-search";
 import { STYLE_LABELS } from "@/lib/format";
@@ -38,7 +38,7 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
   cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
 };
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 16;
 
 export default function Explore() {
   const isMobile = useIsMobile();
@@ -54,7 +54,7 @@ export default function Explore() {
 
   const [tab, setTab] = useState<TabType>(getInitialTab);
   const [mapOpen, setMapOpen] = useState(false);
-  const [mapExpanded, setMapExpanded] = useState(false);
+  const [highlightedGymId, setHighlightedGymId] = useState<string | null>(null);
   const [popupItem, setPopupItem] = useState<any>(null);
   const [page, setPage] = useState(0);
 
@@ -279,6 +279,15 @@ export default function Explore() {
                   <Button variant={filtersOpen ? "default" : "outline"} size="icon" onClick={() => setFiltersOpen(!filtersOpen)} className="shrink-0 h-10 w-10">
                     <SlidersHorizontal className="h-4 w-4" />
                   </Button>
+                  {tab === "gyms" && (
+                    <Button
+                      variant={mapOpen ? "default" : "outline"}
+                      onClick={() => { setMapOpen(!mapOpen); setPopupItem(null); setHighlightedGymId(null); }}
+                      className="shrink-0 h-10 gap-2"
+                    >
+                      <MapPin className="h-4 w-4" /> Map
+                    </Button>
+                  )}
                 </div>
 
                 <AnimatePresence>
@@ -357,73 +366,34 @@ export default function Explore() {
               </div>
             </div>
 
-            {/* Content area: directory + map tile / split-screen */}
-            <div className={`flex-1 flex ${mapOpen ? "overflow-hidden" : ""}`}>
+            {/* Content area */}
+            <div className="flex-1 flex gap-4">
               {/* Directory cards */}
-              <div className={`${mapOpen && !mapExpanded ? "w-[420px] overflow-y-auto border-r border-border shrink-0 px-4 pb-4" : mapOpen && mapExpanded ? "hidden" : "flex-1"}`}>
+              <div className={`${mapOpen && tab === "gyms" ? "flex-1 overflow-y-auto" : "flex-1"}`}>
                 <div className={mapOpen ? "" : "container"}>
-                  <div className={`${mapOpen ? "" : "flex gap-6"}`}>
-                    <div className={`${mapOpen ? "w-full" : tab !== "fighters" ? "flex-1" : "w-full"}`}>
-                      {tab === "events" && <EventsDirectory events={paginatedItems} isLoading={eventsLoading} searchCoords={pc.coords} />}
-                      {tab === "gyms" && <GymsDirectory gyms={paginatedItems} isLoading={gymsLoading} searchCoords={pc.coords} />}
-                      {tab === "fighters" && <FightersDirectory fighters={paginatedItems as any} isLoading={fightersLoading} />}
-                      <PaginationControls />
-                    </div>
-
-                    {/* Map preview tile — top-right alongside directory */}
-                    {!mapOpen && tab !== "fighters" && !isMobile && (
-                      <div className="shrink-0">
-                        <button
-                          onClick={() => setMapOpen(true)}
-                          className="w-[280px] h-[360px] rounded-lg border border-border bg-muted/50 flex flex-col items-center justify-center hover:border-primary/30 transition-all group relative overflow-hidden sticky top-4"
-                        >
-                          <div className="absolute inset-0 opacity-30 pointer-events-none">
-                            <PigeonMap defaultCenter={[54.5, -2]} defaultZoom={5} height={360} attribution={false}>
-                              {mapMarkers.slice(0, 10).map((m) => (
-                                <Marker key={`preview-${m.id}`} anchor={[m.lat, m.lng]} color="hsl(46, 93%, 61%)" width={20} />
-                              ))}
-                            </PigeonMap>
-                          </div>
-                          <div className="relative z-10 flex flex-col items-center gap-3">
-                            <MapIcon className="h-12 w-12 text-foreground group-hover:text-primary transition-colors" />
-                            <span className="font-heading text-2xl text-foreground group-hover:text-primary transition-colors">SEE MAP</span>
-                            <span className="text-xs text-muted-foreground">View {tab} on an interactive map</span>
-                          </div>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Mobile map button */}
-                  {!mapOpen && tab !== "fighters" && isMobile && (
-                    <div className="flex justify-center py-4">
-                      <Button variant="outline" onClick={() => setMapOpen(true)} className="gap-2">
-                        <MapIcon className="h-4 w-4" /> See Map
-                      </Button>
-                    </div>
-                  )}
+                  {tab === "events" && <EventsDirectory events={paginatedItems} isLoading={eventsLoading} searchCoords={pc.coords} />}
+                  {tab === "gyms" && <GymsDirectory gyms={paginatedItems} isLoading={gymsLoading} searchCoords={pc.coords} mapOpen={mapOpen} highlightedGymId={highlightedGymId} />}
+                  {tab === "fighters" && <FightersDirectory fighters={paginatedItems as any} isLoading={fightersLoading} />}
+                  <PaginationControls />
                 </div>
               </div>
 
-              {/* Map panel - pigeon-maps */}
-              {mapOpen && tab !== "fighters" && (
-                <div className="flex-1 min-h-[500px] relative">
-                  <div className="absolute top-3 left-3 z-10 flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => { setMapOpen(false); setMapExpanded(false); setPopupItem(null); }}>
-                      <X className="h-4 w-4 mr-1" /> Close Map
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setMapExpanded(!mapExpanded)}>
-                      {mapExpanded ? "↙ Collapse" : "↗ Expand"}
-                    </Button>
-                  </div>
-                  <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={500}>
+              {/* Map panel for gyms only */}
+              {mapOpen && tab === "gyms" && !isMobile && (
+                <div className="shrink-0 rounded-lg border border-border overflow-hidden" style={{ width: "calc(75% - 1rem)", height: 520 }}>
+                  <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={520}>
                     {mapMarkers.map((m) => (
                       <Marker
                         key={`${m.type}-${m.id}`}
                         anchor={[m.lat, m.lng]}
                         color="hsl(46, 93%, 61%)"
                         width={32}
-                        onClick={() => setPopupItem(m)}
+                        onClick={() => {
+                          setPopupItem(m);
+                          setHighlightedGymId(m.id);
+                          const el = document.getElementById(`gym-card-${m.id}`);
+                          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }}
                       />
                     ))}
                     {popupItem && (
@@ -433,12 +403,7 @@ export default function Explore() {
                           <p className="text-xs text-muted-foreground mb-2">{popupItem.city}</p>
                           <Badge variant="outline" className="text-[10px] mb-2">{popupItem.type === "event" ? "Event" : "Gym"}</Badge>
                           <div>
-                            <Link
-                              to={popupItem.type === "event" ? `/events/${popupItem.id}` : `/gyms/${popupItem.id}`}
-                              className="text-xs text-primary hover:underline"
-                            >
-                              View Profile →
-                            </Link>
+                            <Link to={`/gyms/${popupItem.id}`} className="text-xs text-primary hover:underline">View Profile →</Link>
                           </div>
                           <button onClick={() => setPopupItem(null)} className="absolute top-1 right-1 text-muted-foreground hover:text-foreground">
                             <X className="h-3 w-3" />
@@ -509,43 +474,40 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
   );
 }
 
-function GymsDirectory({ gyms, isLoading, searchCoords }: { gyms: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null }) {
-  if (isLoading) return <div className="grid grid-cols-1 md:grid-cols-3 gap-6">{[1,2,3].map(i => <div key={i} className="h-40 rounded-lg bg-card animate-pulse" />)}</div>;
+function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymId }: { gyms: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null; mapOpen?: boolean; highlightedGymId?: string | null }) {
+  const gridClass = mapOpen ? "grid grid-cols-1 gap-4" : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4";
+  if (isLoading) return <div className={gridClass}>{[1,2,3,4].map(i => <div key={i} className="h-[220px] rounded-lg bg-card animate-pulse" />)}</div>;
   if (gyms.length === 0) return <p className="text-muted-foreground text-center py-12">No gyms found matching your filters.</p>;
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className={gridClass}>
       {gyms.map((gym, i) => {
         const dist = searchCoords && gym.lat != null && gym.lng != null
           ? haversineDistance(searchCoords.latitude, searchCoords.longitude, gym.lat, gym.lng)
           : null;
         return (
-          <motion.div key={gym.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.05 }}>
-            <Link to={`/gyms/${gym.id}`} className="rounded-lg border border-border bg-card p-6 hover:border-primary/30 transition-all block h-full relative">
+          <motion.div key={gym.id} id={`gym-card-${gym.id}`} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.03 }}>
+            <Link to={`/gyms/${gym.id}`} className={`rounded-lg border bg-card p-5 hover:border-primary/30 transition-all block h-[220px] overflow-hidden relative ${highlightedGymId === gym.id ? "border-primary" : "border-border"}`}>
               {gym.claimed && (
                 <span className="absolute top-3 right-3 inline-flex items-center gap-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-[10px] font-semibold">
                   <ShieldCheck className="h-3 w-3" /> Verified
                 </span>
               )}
-              <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground mb-4">
+              <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center font-heading text-sm text-muted-foreground mb-3">
                 {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
               </div>
-              <h3 className="font-heading text-xl text-foreground mb-1">{gym.name}</h3>
+              <h3 className="font-heading text-lg text-foreground mb-1 truncate">{gym.name}</h3>
               {gym.discipline_tags && (
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {gym.discipline_tags.split(",").map((tag: string) => (
-                    <span key={tag.trim()} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary border border-primary/20">
-                      {tag.trim()}
-                    </span>
+                <div className="flex flex-wrap gap-1 mb-1 overflow-hidden max-h-5">
+                  {gym.discipline_tags.split(",").slice(0, 3).map((tag: string) => (
+                    <span key={tag.trim()} className="px-1.5 py-0.5 rounded-full text-[9px] font-medium bg-primary/10 text-primary border border-primary/20">{tag.trim()}</span>
                   ))}
                 </div>
               )}
               {(gym.city || gym.location) && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1"><MapPin className="h-3 w-3" />{gym.city ? `${gym.city}, ${gym.location || gym.country}` : gym.location}</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1 mb-1 truncate"><MapPin className="h-3 w-3 shrink-0" />{gym.city ? `${gym.city}, ${gym.location || gym.country}` : gym.location}</p>
               )}
-              {dist !== null && (
-                <p className="text-xs text-primary font-medium mb-2">{dist.toFixed(1)} miles</p>
-              )}
-              {gym.description && <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{gym.description}</p>}
+              {dist !== null && <p className="text-xs text-primary font-medium mb-1">{dist.toFixed(1)} miles</p>}
+              {gym.description && <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{gym.description}</p>}
               <div className="flex items-center gap-1 text-xs text-muted-foreground"><Users className="h-3.5 w-3.5" />{gym.fighter_gym_links?.length ?? 0} fighters</div>
             </Link>
           </motion.div>
@@ -556,15 +518,15 @@ function GymsDirectory({ gyms, isLoading, searchCoords }: { gyms: any[]; isLoadi
 }
 
 function FightersDirectory({ fighters, isLoading }: { fighters: any[]; isLoading: boolean }) {
-  if (isLoading) return <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">{[1,2,3,4].map(i => <div key={i} className="h-48 rounded-lg bg-card animate-pulse" />)}</div>;
+  if (isLoading) return <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{[1,2,3,4].map(i => <div key={i} className="h-[220px] rounded-lg bg-card animate-pulse" />)}</div>;
   if (fighters.length === 0) return <p className="text-muted-foreground text-center py-12">No fighters found.</p>;
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {fighters.map((fighter, i) => {
         const record = `${fighter._record.wins}-${fighter._record.losses}-${fighter._record.draws}`;
         return (
-          <motion.div key={fighter.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.04 }}>
-            <Link to={`/fighters/${fighter.id}`} className="rounded-lg border border-border bg-card p-6 hover:border-primary/30 transition-all block overflow-hidden">
+          <motion.div key={fighter.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.03 }}>
+            <Link to={`/fighters/${fighter.id}`} className="rounded-lg border border-border bg-card p-5 hover:border-primary/30 transition-all block h-[220px] overflow-hidden">
               <div className="flex items-center gap-3 mb-3">
                 <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground overflow-hidden shrink-0">
                   {fighter._avatar ? <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" /> : fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)}

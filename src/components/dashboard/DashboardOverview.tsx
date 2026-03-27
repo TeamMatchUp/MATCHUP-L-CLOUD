@@ -29,13 +29,13 @@ export function DashboardOverview({
   const quickActions = [
     ...(isCoachOrOwner
       ? [
-          { label: "Create Gym", icon: Building2, to: "/register-gym" },
+          { label: "Create Gym", icon: Building2, to: "/register-gym?from=overview" },
           { label: "Add Fighter", icon: Plus, section: "roster" },
         ]
       : []),
     { label: "View Actions", icon: Inbox, section: "actions" },
     ...(isOrganiser || isCoachOrOwner
-      ? [{ label: "Create Event", icon: Calendar, to: "/organiser/create-event" }]
+      ? [{ label: "Create Event", icon: Calendar, to: "/organiser/create-event?from=overview" }]
       : []),
     { label: "Browse Events", icon: Search, to: "/explore?tab=events" },
   ];

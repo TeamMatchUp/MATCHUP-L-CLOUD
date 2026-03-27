@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
@@ -64,7 +64,11 @@ function createSlot(cardPosition: string = "undercard"): SlotRow {
 export default function CreateEvent() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+
+  const fromParam = searchParams.get("from");
+  const backRoute = fromParam === "overview" ? "/dashboard?section=overview" : "/dashboard?section=my-events";
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState<Date>();
@@ -281,8 +285,8 @@ export default function CreateEvent() {
       <main className="pt-16">
         <section className="py-16">
           <div className="container max-w-2xl">
-            <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate("/dashboard?section=my-events")}>
-              <MapPin className="h-4 w-4 mr-2" />Back to My Events
+            <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(backRoute)}>
+              <MapPin className="h-4 w-4 mr-2" />{fromParam === "overview" ? "Back to Dashboard" : "Back to My Events"}
             </Button>
             <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">
               CREATE <span className="text-primary">EVENT</span>
