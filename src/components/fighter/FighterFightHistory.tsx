@@ -398,8 +398,9 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
                   </TableRow>
                 );
               })}
-            </TableBody>
-          </Table>
+              </TableBody>
+            </Table>
+          </div>
         </div>
       )}
     </div>

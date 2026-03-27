@@ -74,7 +74,7 @@ export function Footer() {
                 <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
                 <Link to="/record-accuracy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Record Accuracy Policy</Link>
                 <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
-                <Link to="/contact" className="text-sm text-primary hover:text-primary/80 transition-colors">Feedback</Link>
+                <Link to="/feedback" className="text-sm text-primary hover:text-primary/80 transition-colors">Feedback</Link>
               </div>
             </div>
           </div>

@@ -495,9 +495,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
 
           {/* === FIGHT HISTORY (at the very bottom) === */}
           <div>
-            <h3 className="font-heading text-lg text-foreground mb-4">
-              FIGHT <span className="text-primary">HISTORY</span>
-            </h3>
             <FighterFightHistory fighterId={fighterProfile.id} fighterUserId={userId} isOwner={true} />
           </div>
         </div>

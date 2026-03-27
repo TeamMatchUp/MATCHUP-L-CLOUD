@@ -322,7 +322,7 @@ export default function EventDetail() {
       <Header />
       <main className="pt-16">
         <section className="py-16">
-          <div className="container">
+          <div className="container" style={{ paddingLeft: 35, paddingRight: 35 }}>
             <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Button>

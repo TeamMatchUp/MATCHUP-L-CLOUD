@@ -367,6 +367,35 @@ export default function Explore() {
               </div>
             </div>
 
+            {/* Mobile map modal */}
+            {mapOpen && tab === "gyms" && isMobile && (
+              <div className="fixed inset-0 z-50 bg-background flex flex-col" style={{ maxHeight: "100vh" }}>
+                <div className="flex items-center justify-between p-3 border-b border-border">
+                  <span className="font-heading text-sm text-foreground">Gym Locations</span>
+                  <Button variant="ghost" size="icon" onClick={() => { setMapOpen(false); setPopupItem(null); }}>
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
+                <div className="flex-1">
+                  <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={window.innerHeight - 56}>
+                    {mapMarkers.map((m) => (
+                      <Marker key={`${m.type}-${m.id}`} anchor={[m.lat, m.lng]} color="hsl(46, 93%, 61%)" width={32} onClick={() => setPopupItem(m)} />
+                    ))}
+                    {popupItem && (
+                      <Overlay anchor={[popupItem.lat, popupItem.lng]} offset={[0, -20]}>
+                        <div className="bg-card border border-border rounded-lg shadow-lg p-3 min-w-[180px]" onClick={(e) => e.stopPropagation()}>
+                          <p className="font-heading text-sm text-foreground mb-1">{popupItem.name}</p>
+                          <p className="text-xs text-muted-foreground mb-2">{popupItem.city}</p>
+                          <Link to={`/gyms/${popupItem.id}`} className="text-xs text-primary hover:underline">View Profile →</Link>
+                          <button onClick={() => setPopupItem(null)} className="absolute top-1 right-1 text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>
+                        </div>
+                      </Overlay>
+                    )}
+                  </PigeonMap>
+                </div>
+              </div>
+            )}
+
             {/* Content area */}
             {mapOpen && tab === "gyms" && !isMobile ? (
               <div className="flex gap-4 flex-1">
