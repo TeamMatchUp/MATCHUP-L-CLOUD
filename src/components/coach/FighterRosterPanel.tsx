@@ -21,6 +21,7 @@ interface Fighter {
   height: number | null;
   reach: number | null;
   bio: string | null;
+  profile_image: string | null;
 }
 
 interface Gym {
