@@ -863,6 +863,8 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
         </div>
       </div>
 
+      </>}
+
       {/* ── Lead Pipeline Popup Modal ── */}
       <Dialog open={!!pipelineModalStatus} onOpenChange={(open) => { if (!open) setPipelineModalStatus(null); }}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
