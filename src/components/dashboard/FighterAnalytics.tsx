@@ -339,8 +339,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         </div>
       </div>
 
+      </>}
+
       {/* ── S4: Fight performance analytics ── */}
-      <SectionHeader title="Fight performance analytics" />
+      <SectionHeader title="Fight performance analytics" collapsed={isCollapsed("performance")} onToggle={() => toggle("performance")} />
+      {!isCollapsed("performance") && <>
 
       {/* Row 1: Activity timeline + Streak */}
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-3 mb-3">
