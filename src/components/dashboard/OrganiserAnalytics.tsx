@@ -651,8 +651,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         </div>
       )}
 
-      {/* ── SECTION 6: Listing Performance ── */}
-      <SectionHeader title="Listing Performance" />
+      </>}
+
+      <SectionHeader title="Listing Performance" collapsed={isCollapsed("listing")} onToggle={() => toggle("listing")} />
+      {!isCollapsed("listing") && <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
         {["Event Listing Views", "Click Through to Tickets", "Search Impressions"].map((label) => (
           <div key={label} className="bg-card border border-border rounded-lg p-4 relative overflow-hidden">
