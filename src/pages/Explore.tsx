@@ -518,15 +518,15 @@ function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymI
 }
 
 function FightersDirectory({ fighters, isLoading }: { fighters: any[]; isLoading: boolean }) {
-  if (isLoading) return <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">{[1,2,3,4].map(i => <div key={i} className="h-48 rounded-lg bg-card animate-pulse" />)}</div>;
+  if (isLoading) return <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{[1,2,3,4].map(i => <div key={i} className="h-[220px] rounded-lg bg-card animate-pulse" />)}</div>;
   if (fighters.length === 0) return <p className="text-muted-foreground text-center py-12">No fighters found.</p>;
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {fighters.map((fighter, i) => {
         const record = `${fighter._record.wins}-${fighter._record.losses}-${fighter._record.draws}`;
         return (
-          <motion.div key={fighter.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.04 }}>
-            <Link to={`/fighters/${fighter.id}`} className="rounded-lg border border-border bg-card p-6 hover:border-primary/30 transition-all block overflow-hidden">
+          <motion.div key={fighter.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.03 }}>
+            <Link to={`/fighters/${fighter.id}`} className="rounded-lg border border-border bg-card p-5 hover:border-primary/30 transition-all block h-[220px] overflow-hidden">
               <div className="flex items-center gap-3 mb-3">
                 <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground overflow-hidden shrink-0">
                   {fighter._avatar ? <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" /> : fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)}
