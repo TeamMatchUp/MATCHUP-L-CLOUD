@@ -358,6 +358,30 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback: {
+        Row: {
+          answers: Json
+          id: string
+          role: string
+          submitted_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          id?: string
+          role: string
+          submitted_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          id?: string
+          role?: string
+          submitted_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fight_results: {
         Row: {
           created_at: string

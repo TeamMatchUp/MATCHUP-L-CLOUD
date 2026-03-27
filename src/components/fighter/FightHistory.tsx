@@ -86,7 +86,7 @@ export function FightHistory({ fighterId }: FightHistoryProps) {
       {/* Fight History List */}
       {fights.length > 0 && (
         <div>
-          <h3 className="font-heading text-lg text-foreground mb-3">FIGHT HISTORY</h3>
+          
           <div className="space-y-2">
             {fights.map((fight) => {
               const isA = fight.fighter_a_id === fighterId;

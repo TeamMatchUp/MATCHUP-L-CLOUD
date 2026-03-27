@@ -25,6 +25,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RecordAccuracyPolicy from "./pages/RecordAccuracyPolicy";
 import Contact from "./pages/Contact";
+import Feedback from "./pages/Feedback";
 import AdvertiseEnquiry from "./pages/AdvertiseEnquiry";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
@@ -67,6 +68,7 @@ const App = () => (
             <Route path="/record-accuracy" element={<RecordAccuracyPolicy />} />
             <Route path="/advertise" element={<AdvertiseEnquiry />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
             <Route path="/admin" element={<Admin />} />
             <Route
               path="/onboarding"

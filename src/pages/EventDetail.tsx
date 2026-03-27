@@ -322,7 +322,7 @@ export default function EventDetail() {
       <Header />
       <main className="pt-16">
         <section className="py-16">
-          <div className="container">
+          <div className="container" style={{ paddingLeft: 35, paddingRight: 35 }}>
             <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4 mr-2" />Back
             </Button>
@@ -336,9 +336,7 @@ export default function EventDetail() {
                   {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
 
                   {event.description && (
-                    <div className="rounded-lg border border-border bg-card p-5 mb-6">
-                      <p className="text-muted-foreground">{event.description}</p>
-                    </div>
+                    <p className="text-muted-foreground mb-6">{event.description}</p>
                   )}
 
                   <div className="flex flex-wrap gap-6 text-sm text-muted-foreground mb-6">
