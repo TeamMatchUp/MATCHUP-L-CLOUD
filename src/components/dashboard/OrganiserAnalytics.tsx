@@ -666,8 +666,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         ))}
       </div>
 
-      {/* ── SECTION 7: Algorithm Preset Performance ── */}
-      <SectionHeader title="Algorithm Preset Performance" />
+      </>}
+
+      <SectionHeader title="Algorithm Preset Performance" collapsed={isCollapsed("presets")} onToggle={() => toggle("presets")} />
+      {!isCollapsed("presets") && <>
       <div className="bg-card border border-border rounded-lg p-4 mb-3">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
