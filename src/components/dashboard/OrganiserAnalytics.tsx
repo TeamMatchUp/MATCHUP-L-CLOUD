@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { formatEnum } from "@/lib/format";
+import { ChevronDown } from "lucide-react";
+import { useCollapsibleSections } from "@/hooks/use-collapsible-sections";
 import { format, subMonths } from "date-fns";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
