@@ -38,7 +38,7 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
   cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
 };
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 16;
 
 export default function Explore() {
   const isMobile = useIsMobile();
