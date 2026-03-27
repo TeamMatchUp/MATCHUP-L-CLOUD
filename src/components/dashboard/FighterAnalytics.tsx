@@ -155,6 +155,7 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
   const [wmFilter, setWmFilter] = useState("pro");
   const [lmFilter, setLmFilter] = useState("pro");
   const [popup, setPopup] = useState<"elo" | "opp" | null>(null);
+  const { toggle, isCollapsed } = useCollapsibleSections("fighter-analytics");
 
   // ── Queries ──
   const { data: fights = [] } = useQuery({
