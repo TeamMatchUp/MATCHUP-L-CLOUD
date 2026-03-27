@@ -175,14 +175,14 @@ export function DashboardGyms({
         </div>
       )}
 
-      {myGyms.length === 0 && !showCreateGym ? (
+      {myGyms.length === 0 && (
         <div className="rounded-lg border border-border bg-card p-8 text-center">
           <p className="text-muted-foreground mb-4">You haven't created any gyms yet.</p>
-          <Button onClick={() => setShowCreateGym(true)} className="gap-1">
-            <Plus className="h-4 w-4" /> Create Your First Gym
+          <Button asChild className="gap-1">
+            <Link to="/register-gym"><Plus className="h-4 w-4" /> Create Your First Gym</Link>
           </Button>
         </div>
-      ) : (
+      )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {myGyms.map((gym) => (
             <div
