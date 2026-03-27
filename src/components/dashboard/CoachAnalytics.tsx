@@ -816,6 +816,8 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
         </div>
       </div>
 
+      </>}
+
       {/* ── SECTION 6: Lead Source & Pipeline ── */}
       <SectionHeader title="Lead Source & Pipeline" collapsed={isCollapsed("pipeline")} onToggle={() => toggle("pipeline")} />
       {!isCollapsed("pipeline") && <>
