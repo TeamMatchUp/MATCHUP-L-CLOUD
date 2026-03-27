@@ -298,7 +298,8 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
       </div>
 
       {/* ── S1: Record overview ── */}
-      <SectionHeader title="Record overview" />
+      <SectionHeader title="Record overview" collapsed={isCollapsed("record")} onToggle={() => toggle("record")} />
+      {!isCollapsed("record") && <>
       <div className="flex gap-2.5 flex-wrap mb-3">
         <RecordPill label="Pro record" w={proRec.wins} l={proRec.losses} d={proRec.draws} />
         <RecordPill label="Amateur record" w={amRec.wins} l={amRec.losses} d={amRec.draws} />
