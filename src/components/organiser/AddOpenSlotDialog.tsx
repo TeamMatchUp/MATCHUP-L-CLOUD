@@ -79,7 +79,7 @@ export function AddOpenSlotDialog({ open, onOpenChange, eventId, sectionType, ne
             <Label className="text-xs">Discipline (optional)</Label>
             <Select value={discipline || "none"} onValueChange={(v) => setDiscipline(v === "none" ? "" : v)}>
               <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Any" /></SelectTrigger>
-              <SelectContent>
+              <SelectContent className="max-h-[200px] overflow-y-auto">
                 <SelectItem value="none">Any</SelectItem>
                 {Constants.public.Enums.fighting_style.map((s) => (
                   <SelectItem key={s} value={s}>{formatEnum(s)}</SelectItem>
