@@ -406,7 +406,7 @@ export default function EventDetail() {
                   )}
 
                   <div className="flex flex-wrap gap-3">
-                    {user && isFighter && fighterProfile && (
+                    {user && (isFighter || isCoach) && fighterProfile && (
                       existingInterest ? (
                         <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
                           <Star className="h-4 w-4 fill-primary" /> Interested
