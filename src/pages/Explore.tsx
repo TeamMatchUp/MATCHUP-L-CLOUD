@@ -236,7 +236,7 @@ export default function Explore() {
           <ArrowLeft className="h-4 w-4 mr-1" /> Previous
         </Button>
         <span className="text-xs text-muted-foreground">Page {page + 1} of {totalPages}</span>
-        <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => setPage(p => p + 1)}>
+        <Button variant="outline" size="sm" disabled={page >= totalPages - 1} onClick={() => { setPage(p => p + 1); document.getElementById("gym-map-list")?.scrollTo({ top: 0, behavior: "smooth" }); }}>
           Next <ArrowRight className="h-4 w-4 ml-1" />
         </Button>
       </div>
