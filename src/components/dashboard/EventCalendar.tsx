@@ -91,6 +91,7 @@ export function EventCalendar({ events, highlightedDates = [] }: EventCalendarPr
           const inMonth = isSameMonth(d, currentMonth);
           const selected = isSameDay(d, selectedDate);
           const isNow = isToday(d);
+          const isHighlighted = highlightedSet.has(dateStr);
 
           return (
             <button
