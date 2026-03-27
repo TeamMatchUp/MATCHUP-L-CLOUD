@@ -344,8 +344,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         <StatCard label="Fighters Booked" value={fightersBooked} sub="Unique fighters confirmed" />
       </div>
 
-      {/* ── SECTION 2: Matchmaking Analytics ── */}
-      <SectionHeader title="Matchmaking Analytics" />
+      </>}
+
+      <SectionHeader title="Matchmaking Analytics" collapsed={isCollapsed("matchmaking")} onToggle={() => toggle("matchmaking")} />
+      {!isCollapsed("matchmaking") && <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <StatCard label="Suggestions Generated" value={suggestionsGenerated} sub="Total match suggestions" />
         <StatCard label="Acceptance Rate" value={`${acceptanceRate}%`} sub={`${suggestionsConfirmed} of ${suggestionsGenerated} confirmed`} />
