@@ -748,9 +748,11 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
           )}
         </div>
       </div>
+      </>}
 
       {/* ── SECTION 5: Gym Growth & Lead Generation ── */}
-      <SectionHeader title="Gym Growth & Lead Generation" />
+      <SectionHeader title="Gym Growth & Lead Generation" collapsed={isCollapsed("growth")} onToggle={() => toggle("growth")} />
+      {!isCollapsed("growth") && <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <StatCard label="Trial Session Requests" value={trialThisMonth} sub="This month" />
         <StatCard label="Gym Affiliation Requests" value={pendingGymLinks.length} sub="Fighters requesting to join" />
