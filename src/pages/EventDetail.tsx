@@ -180,12 +180,7 @@ export default function EventDetail() {
 
   const isOpen = (bout: any) => !bout.fighter_a_id && !bout.fighter_b_id && bout.status === "open";
   const getStatusIndicator = (bout: any) => {
-    const isConfirmedPublic = bout.status === "confirmed" && bout.is_public === true;
-    if (isConfirmedPublic) return null;
-    if (isOpen(bout)) {
-      return <Badge className="bg-primary/15 text-primary border-primary/30 text-xs">Slot Open</Badge>;
-    }
-    // No badge for proposed — just show TBA vs TBA
+    // No badges on banners — only "Open" text above VS for open slots
     return null;
   };
 
@@ -198,9 +193,8 @@ export default function EventDetail() {
     const statusBadge = getStatusIndicator(bout);
     return (
       <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6 relative">
-        {statusBadge && <div className="absolute top-3 right-3">{statusBadge}</div>}
-        {/* Three-column layout: Fighter A | VS + Weight | Fighter B */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+        {/* Three-column layout with fixed center: Fighter A | VS + Weight | Fighter B */}
+        <div className="grid grid-cols-[1fr_120px_1fr] items-center gap-4">
           {/* Fighter A — left aligned */}
           <div className="flex items-center gap-3">
             {isPublic && fA?.profile_image && (
@@ -257,9 +251,8 @@ export default function EventDetail() {
     const statusBadge = getStatusIndicator(bout);
     return (
       <div key={bout.id} className="rounded-lg border border-border bg-card p-4 relative">
-        {statusBadge && <div className="absolute top-2 right-2">{statusBadge}</div>}
-        {/* Three-column layout */}
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        {/* Three-column layout with fixed center */}
+        <div className="grid grid-cols-[1fr_80px_1fr] items-center gap-3">
           {/* Fighter A */}
           <div className="flex items-center gap-2">
             {isPublic && fA?.profile_image && (

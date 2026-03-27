@@ -1,17 +1,19 @@
 import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameMonth, isSameDay, isToday } from "date-fns";
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, subMonths, isSameMonth, isSameDay, isToday, setYear, getYear } from "date-fns";
 import { Link } from "react-router-dom";
-import { MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface EventCalendarProps {
   events: { id: string; title: string; date: string; location: string; status?: string }[];
+  highlightedDates?: string[];
 }
 
-export function EventCalendar({ events }: EventCalendarProps) {
+export function EventCalendar({ events, highlightedDates = [] }: EventCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const highlightedSet = useMemo(() => new Set(highlightedDates), [highlightedDates]);
 
   const eventCountByDate = useMemo(() => {
     const map: Record<string, number> = {};
@@ -61,6 +63,14 @@ export function EventCalendar({ events }: EventCalendarProps) {
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
+          <div className="flex flex-col ml-1">
+            <Button variant="ghost" size="sm" className="h-4 w-6 p-0" onClick={() => setCurrentMonth(setYear(currentMonth, getYear(currentMonth) + 1))}>
+              <ChevronUp className="h-3 w-3" />
+            </Button>
+            <Button variant="ghost" size="sm" className="h-4 w-6 p-0" onClick={() => setCurrentMonth(setYear(currentMonth, getYear(currentMonth) - 1))}>
+              <ChevronDown className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -81,6 +91,7 @@ export function EventCalendar({ events }: EventCalendarProps) {
           const inMonth = isSameMonth(d, currentMonth);
           const selected = isSameDay(d, selectedDate);
           const isNow = isToday(d);
+          const isHighlighted = highlightedSet.has(dateStr);
 
           return (
             <button
@@ -91,7 +102,8 @@ export function EventCalendar({ events }: EventCalendarProps) {
                 !inMonth && "opacity-30",
                 selected && "bg-primary/10 border border-primary/30",
                 !selected && "hover:bg-muted/50",
-                isNow && !selected && "border border-border"
+                isNow && !selected && "border border-border",
+                isHighlighted && !selected && "ring-2 ring-primary/50"
               )}
             >
               <span className={cn(

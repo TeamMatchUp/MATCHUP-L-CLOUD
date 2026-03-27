@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
 import { formatEnum } from "@/lib/format";
+import { ChevronDown } from "lucide-react";
+import { useCollapsibleSections } from "@/hooks/use-collapsible-sections";
 import { format, subMonths } from "date-fns";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
@@ -10,12 +12,13 @@ import {
 
 /* ── Shared sub-components ── */
 
-function SectionHeader({ title }: { title: string }) {
+function SectionHeader({ title, collapsed, onToggle }: { title: string; collapsed?: boolean; onToggle?: () => void }) {
   return (
-    <div className="flex items-center gap-3.5 mt-6 mb-3.5">
+    <button onClick={onToggle} className="flex items-center gap-3.5 mt-6 mb-3.5 w-full text-left group cursor-pointer">
       <span className="font-heading text-sm font-bold tracking-[2.5px] uppercase text-muted-foreground whitespace-nowrap">{title}</span>
       <div className="flex-1 h-px bg-border" />
-    </div>
+      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${collapsed ? "-rotate-180" : ""}`} />
+    </button>
   );
 }
 
@@ -74,6 +77,7 @@ interface OrganiserAnalyticsProps {
 
 export function OrganiserAnalyticsShared({ userId, embedded = false }: OrganiserAnalyticsProps) {
   const now = new Date();
+  const { toggle, isCollapsed } = useCollapsibleSections("organiser-analytics");
 
   // ── Data fetching ──
 
@@ -329,8 +333,8 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         </h2>
       )}
 
-      {/* ── SECTION 1: Event Overview ── */}
-      <SectionHeader title="Event Overview" />
+      <SectionHeader title="Event Overview" collapsed={isCollapsed("overview")} onToggle={() => toggle("overview")} />
+      {!isCollapsed("overview") && <>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-3">
         <StatCard label="Total Events" value={totalEvents} sub="Lifetime events created" />
         <StatCard label="Upcoming Events" value={upcomingEvents} sub="Scheduled & published" />
@@ -340,8 +344,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         <StatCard label="Fighters Booked" value={fightersBooked} sub="Unique fighters confirmed" />
       </div>
 
-      {/* ── SECTION 2: Matchmaking Analytics ── */}
-      <SectionHeader title="Matchmaking Analytics" />
+      </>}
+
+      <SectionHeader title="Matchmaking Analytics" collapsed={isCollapsed("matchmaking")} onToggle={() => toggle("matchmaking")} />
+      {!isCollapsed("matchmaking") && <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <StatCard label="Suggestions Generated" value={suggestionsGenerated} sub="Total match suggestions" />
         <StatCard label="Acceptance Rate" value={`${acceptanceRate}%`} sub={`${suggestionsConfirmed} of ${suggestionsGenerated} confirmed`} />
@@ -440,8 +446,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         </div>
       </div>
 
-      {/* ── SECTION 3: Card Fill Management ── */}
-      <SectionHeader title="Card Fill Management" />
+      </>}
+
+      <SectionHeader title="Card Fill Management" collapsed={isCollapsed("fill")} onToggle={() => toggle("fill")} />
+      {!isCollapsed("fill") && <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
         {/* Fill rate bars + history */}
         <div className="bg-card border border-border rounded-lg p-4">
@@ -539,8 +547,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         </div>
       </div>
 
-      {/* ── SECTION 4: Talent Pool & Availability ── */}
-      <SectionHeader title="Talent Pool & Availability" />
+      </>}
+
+      <SectionHeader title="Talent Pool & Availability" collapsed={isCollapsed("talent")} onToggle={() => toggle("talent")} />
+      {!isCollapsed("talent") && <>
 
       {/* Weight class grid */}
       <div className="bg-card border border-border rounded-lg p-4 mb-3">
@@ -611,8 +621,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         </div>
       </div>
 
-      {/* ── SECTION 5: Ticket & Commercial Metrics ── */}
-      <SectionHeader title="Ticket & Commercial Metrics" />
+      </>}
+
+      <SectionHeader title="Ticket & Commercial Metrics" collapsed={isCollapsed("tickets")} onToggle={() => toggle("tickets")} />
+      {!isCollapsed("tickets") && <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <StatCard label="Total Tickets Available" value={totalTicketsAvailable} sub="Across all events" note={totalTicketsAvailable === 0 ? "Set ticket count on your event to populate this" : undefined} />
         <StatCard label="Sold Out Events" value={soldOutEvents} sub={`Of ${totalEvents} total`} note={soldOutEvents === 0 ? "Set ticket count on your event to populate this" : undefined} />
@@ -639,8 +651,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         </div>
       )}
 
-      {/* ── SECTION 6: Listing Performance ── */}
-      <SectionHeader title="Listing Performance" />
+      </>}
+
+      <SectionHeader title="Listing Performance" collapsed={isCollapsed("listing")} onToggle={() => toggle("listing")} />
+      {!isCollapsed("listing") && <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
         {["Event Listing Views", "Click Through to Tickets", "Search Impressions"].map((label) => (
           <div key={label} className="bg-card border border-border rounded-lg p-4 relative overflow-hidden">
@@ -652,8 +666,10 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
         ))}
       </div>
 
-      {/* ── SECTION 7: Algorithm Preset Performance ── */}
-      <SectionHeader title="Algorithm Preset Performance" />
+      </>}
+
+      <SectionHeader title="Algorithm Preset Performance" collapsed={isCollapsed("presets")} onToggle={() => toggle("presets")} />
+      {!isCollapsed("presets") && <>
       <div className="bg-card border border-border rounded-lg p-4 mb-3">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -681,6 +697,7 @@ export function OrganiserAnalyticsShared({ userId, embedded = false }: Organiser
           </table>
         </div>
       </div>
+      </>}
     </div>
   );
 }

@@ -81,6 +81,11 @@ export function DashboardOverview({
               )}
             </div>
           </div>
+
+          {/* Ad placeholder */}
+          <div className="rounded-lg border border-dashed border-muted-foreground/30 bg-card flex items-center justify-center" style={{ height: 250 }}>
+            <span className="text-xs text-muted-foreground uppercase tracking-widest font-heading">Advertisement</span>
+          </div>
         </div>
       </div>
     </div>

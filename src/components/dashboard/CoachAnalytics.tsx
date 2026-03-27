@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { formatEnum } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
-import { X, ChevronRight, ChevronLeft, Trash2 } from "lucide-react";
+import { X, ChevronRight, ChevronLeft, Trash2, ChevronDown } from "lucide-react";
+import { useCollapsibleSections } from "@/hooks/use-collapsible-sections";
 import { toast } from "sonner";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -22,12 +23,13 @@ import { useNavigate } from "react-router-dom";
 
 /* ── Reusable sub-components ── */
 
-function SectionHeader({ title, large }: { title: string; large?: boolean }) {
+function SectionHeader({ title, large, collapsed, onToggle }: { title: string; large?: boolean; collapsed?: boolean; onToggle?: () => void }) {
   return (
-    <div className="flex items-center gap-3.5 mt-6 mb-3.5">
+    <button onClick={onToggle} className="flex items-center gap-3.5 mt-6 mb-3.5 w-full text-left group cursor-pointer">
       <span className={`font-heading font-bold tracking-[2.5px] uppercase text-muted-foreground whitespace-nowrap ${large ? "text-sm" : "text-xs"}`}>{title}</span>
       <div className="flex-1 h-px bg-border" />
-    </div>
+      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${collapsed ? "-rotate-180" : ""}`} />
+    </button>
   );
 }
 
@@ -91,6 +93,7 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
   const [activeMonths, setActiveMonths] = useState<"6m" | "12m">("6m");
   const [showActiveModal, setShowActiveModal] = useState(false);
   const [reachPeriod, setReachPeriod] = useState<"30d" | "all">("30d");
+  const { toggle, isCollapsed } = useCollapsibleSections("coach-analytics");
 
   const now = new Date();
   const hasOrganiserRole = effectiveRoles.includes("organiser");
@@ -524,8 +527,8 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
         </div>
       </div>
 
-      {/* ── SECTION 1: Roster Overview ── */}
-      <SectionHeader title="Roster Overview" />
+      <SectionHeader title="Roster Overview" collapsed={isCollapsed("roster")} onToggle={() => toggle("roster")} />
+      {!isCollapsed("roster") && <>
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 mb-3">
         <StatCard label="Total Fighters" value={roster.length} sub={`Across ${myGyms.length} gym${myGyms.length !== 1 ? "s" : ""}`} />
         <StatCard
@@ -541,8 +544,10 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
         <StatCard label="Upcoming Events" value={upcomingEventIds.length} sub="Fighters entered or proposed" />
       </div>
 
-      {/* ── SECTION 2: Matchmaking Activity ── */}
-      <SectionHeader title="Matchmaking Activity" />
+      </>}
+
+      <SectionHeader title="Matchmaking Activity" collapsed={isCollapsed("matchmaking")} onToggle={() => toggle("matchmaking")} />
+      {!isCollapsed("matchmaking") && <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <StatCard label="Proposal Acceptance Rate" value={`${acceptanceRate}%`} sub={`${confirmedSuggestions} accepted of ${totalSuggestions}`} />
         <StatCard label="Fights Booked – 30d" value={bookedInDays(30)} sub="Confirmed matchups" />
@@ -550,8 +555,10 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
         <StatCard label="Fights Booked – 90d" value={bookedInDays(90)} sub="Confirmed matchups" />
       </div>
 
-      {/* ── SECTION 3: Upcoming Events ── */}
-      <SectionHeader title="Upcoming Events" />
+      </>}
+
+      <SectionHeader title="Upcoming Events" collapsed={isCollapsed("events")} onToggle={() => toggle("events")} />
+      {!isCollapsed("events") && <>
       <div className="bg-card border border-border rounded-lg p-4 mb-3">
         <h3 className="font-heading text-sm font-bold tracking-[1.5px] uppercase text-foreground mb-3">Events with Roster Participation</h3>
         {eventMap.length === 0 ? (
@@ -604,8 +611,10 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
         )}
       </div>
 
-      {/* ── SECTION 4: Roster Performance ── */}
-      <SectionHeader title="Roster Performance" />
+      </>}
+
+      <SectionHeader title="Roster Performance" collapsed={isCollapsed("performance")} onToggle={() => toggle("performance")} />
+      {!isCollapsed("performance") && <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
         {/* W/L/D Chart */}
         <div className="bg-card border border-border rounded-lg p-4">
@@ -739,9 +748,11 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
           )}
         </div>
       </div>
+      </>}
 
       {/* ── SECTION 5: Gym Growth & Lead Generation ── */}
-      <SectionHeader title="Gym Growth & Lead Generation" />
+      <SectionHeader title="Gym Growth & Lead Generation" collapsed={isCollapsed("growth")} onToggle={() => toggle("growth")} />
+      {!isCollapsed("growth") && <>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         <StatCard label="Trial Session Requests" value={trialThisMonth} sub="This month" />
         <StatCard label="Gym Affiliation Requests" value={pendingGymLinks.length} sub="Fighters requesting to join" />
@@ -805,8 +816,11 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
         </div>
       </div>
 
+      </>}
+
       {/* ── SECTION 6: Lead Source & Pipeline ── */}
-      <SectionHeader title="Lead Source & Pipeline" />
+      <SectionHeader title="Lead Source & Pipeline" collapsed={isCollapsed("pipeline")} onToggle={() => toggle("pipeline")} />
+      {!isCollapsed("pipeline") && <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-3">
         {/* Doughnut */}
         <div className="bg-card border border-border rounded-lg p-4">
@@ -850,6 +864,8 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
           </div>
         </div>
       </div>
+
+      </>}
 
       {/* ── Lead Pipeline Popup Modal ── */}
       <Dialog open={!!pipelineModalStatus} onOpenChange={(open) => { if (!open) setPipelineModalStatus(null); }}>

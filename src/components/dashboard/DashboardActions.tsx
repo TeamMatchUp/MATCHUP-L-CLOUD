@@ -770,16 +770,29 @@ export function DashboardActions({
       </div>
 
       {/* Multi-select bulk action bar */}
-      {multiSelectMode && selectedIds.size > 0 && (
+      {multiSelectMode && (
         <div className="flex items-center gap-2 p-3 rounded-lg border border-primary/30 bg-primary/5">
           <span className="text-sm text-foreground font-medium">{selectedIds.size} selected</span>
+          <Button size="sm" variant="outline" className="h-8 text-xs gap-1" onClick={() => {
+            const items = isBinView ? validDiscarded.map(d => d.item) : displayItems;
+            if (selectedIds.size === items.length) {
+              setSelectedIds(new Set());
+            } else {
+              setSelectedIds(new Set(items.map(i => isBinView ? i.id : i.id)));
+            }
+          }}>
+            {(() => {
+              const items = isBinView ? validDiscarded : displayItems;
+              return selectedIds.size === items.length ? "Deselect All" : "Select All";
+            })()}
+          </Button>
           <div className="flex-1" />
-          {statusFilter === "active" && (
+          {statusFilter === "active" && selectedIds.size > 0 && (
             <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-green-500/30 text-green-400" onClick={handleBulkComplete}>
               <Check className="h-3 w-3" /> Mark as Complete
             </Button>
           )}
-          {isBinView ? (
+          {selectedIds.size > 0 && (isBinView ? (
             <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-destructive/30 text-destructive" onClick={() => setConfirmBulkDelete(true)}>
               <Trash2 className="h-3 w-3" /> Delete Permanently
             </Button>
@@ -787,7 +800,7 @@ export function DashboardActions({
             <Button size="sm" variant="outline" className="h-8 text-xs gap-1 border-destructive/30 text-destructive" onClick={handleBulkDiscard}>
               <Trash2 className="h-3 w-3" /> Delete
             </Button>
-          )}
+          ))}
           <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={exitMultiSelect}>
             Cancel
           </Button>

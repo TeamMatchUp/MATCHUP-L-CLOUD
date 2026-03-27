@@ -33,7 +33,7 @@ export function FighterSearchDropdown({ label, selected, onSelect, onClear, excl
   const [coachNominated, setCoachNominated] = useState(false);
   const [page, setPage] = useState(0);
 
-  // Get nominated fighter IDs for this event (from coach_event_nominations and event_fight_slots)
+  // Get nominated fighter IDs for this event + coach-linked fighters
   const { data: nominatedFighterIds = [] } = useQuery({
     queryKey: ["nominated-fighter-ids", eventId],
     queryFn: async () => {
@@ -45,22 +45,19 @@ export function FighterSearchDropdown({ label, selected, onSelect, onClear, excl
         .eq("event_id", eventId!);
       (nominations ?? []).forEach((n: any) => ids.add(n.fighter_id));
 
-      // From event_fight_slots (fighters already proposed/confirmed for this event)
-      const { data: slots } = await supabase
-        .from("event_fight_slots")
-        .select("fighter_a_id, fighter_b_id")
-        .eq("event_id", eventId!);
-      (slots ?? []).forEach((s: any) => {
-        if (s.fighter_a_id) ids.add(s.fighter_a_id);
-        if (s.fighter_b_id) ids.add(s.fighter_b_id);
-      });
-
       // From fighter_event_interests
       const { data: interests } = await supabase
         .from("fighter_event_interests")
         .select("fighter_id")
         .eq("event_id", eventId!);
       (interests ?? []).forEach((i: any) => ids.add(i.fighter_id));
+
+      // Fighters linked to gyms via approved gym links (coach-managed fighters)
+      const { data: gymFighters } = await supabase
+        .from("fighter_gym_links")
+        .select("fighter_id")
+        .eq("status", "approved");
+      (gymFighters ?? []).forEach((f: any) => ids.add(f.fighter_id));
 
       return Array.from(ids);
     },
@@ -70,24 +67,29 @@ export function FighterSearchDropdown({ label, selected, onSelect, onClear, excl
   const { data: results = [], isLoading } = useQuery({
     queryKey: ["fighter-dropdown", name, weightClass, country, discipline, coachNominated, coachId, page, eventId, nominatedFighterIds],
     queryFn: async () => {
-      // If coach nominated filter is on but no nominated IDs, return empty
-      if (coachNominated && nominatedFighterIds.length === 0) return [];
-
       let q = supabase.from("fighter_profiles").select("*").eq("available", true).order("name").range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
       if (name.trim()) q = q.ilike("name", `%${name.trim()}%`);
       if (weightClass !== "all") q = q.eq("weight_class", weightClass as any);
       if (country !== "all") q = q.eq("country", country as any);
       if (discipline !== "all") q = q.eq("discipline", discipline);
       if (coachNominated) {
-        // Show fighters that were added by any coach (created_by_coach_id is not null)
-        // OR nominated for this event
-        if (nominatedFighterIds.length > 0) {
-          q = q.or(`created_by_coach_id.not.is.null,id.in.(${nominatedFighterIds.join(",")})`);
+        // Filter to fighters where:
+        // 1. created_by_coach_id is not null (added by a coach), OR
+        // 2. fighter exists in gym links with approved status (gym-managed), OR
+        // 3. fighter is explicitly nominated for this event
+        const coachFilterIds = new Set(nominatedFighterIds);
+        // Also get all fighters with created_by_coach_id set
+        if (coachFilterIds.size > 0) {
+          q = q.or(`created_by_coach_id.not.is.null,id.in.(${Array.from(coachFilterIds).join(",")})`);
         } else {
           q = q.not("created_by_coach_id", "is", null);
         }
+        console.log("[Coach Nominated filter] Active — filtering with", coachFilterIds.size, "nominated IDs");
       }
       const { data } = await q;
+      if (coachNominated) {
+        console.log("[Coach Nominated filter] Results:", (data ?? []).length, "fighters");
+      }
       return data ?? [];
     },
   });

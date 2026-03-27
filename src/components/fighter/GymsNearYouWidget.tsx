@@ -1,71 +1,83 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
-import { MapPin, Navigation, Star } from "lucide-react";
-import { geocodePostcode, haversineDistance } from "@/hooks/use-postcode-search";
+import { MapPin, Navigation, Star, LocateFixed } from "lucide-react";
+import { haversineDistance } from "@/hooks/use-postcode-search";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 interface GymsNearYouWidgetProps {
   fighterProfileId: string;
 }
 
 export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) {
-  // Get fighter's postcode directly from fighter_profiles
-  const { data: fighterPostcode } = useQuery({
-    queryKey: ["fighter-postcode", fighterProfileId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("fighter_profiles")
-        .select("postcode")
-        .eq("id", fighterProfileId)
-        .single();
-      return data?.postcode || null;
-    },
-    enabled: !!fighterProfileId,
-  });
+  const [locationEnabled, setLocationEnabled] = useState(false);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationError, setLocationError] = useState(false);
+
+  // Check sessionStorage for persisted toggle
+  useEffect(() => {
+    const stored = sessionStorage.getItem("gyms-near-you-location");
+    if (stored === "enabled") {
+      requestLocation();
+    }
+  }, []);
+
+  const requestLocation = () => {
+    if (!navigator.geolocation) { setLocationError(true); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationEnabled(true);
+        setLocationError(false);
+        sessionStorage.setItem("gyms-near-you-location", "enabled");
+      },
+      () => { setLocationError(true); setLocationEnabled(false); }
+    );
+  };
+
+  const disableLocation = () => {
+    setLocationEnabled(false);
+    setUserCoords(null);
+    sessionStorage.removeItem("gyms-near-you-location");
+  };
 
   const { data: nearbyGyms = [], isLoading } = useQuery({
-    queryKey: ["gyms-near-fighter", fighterProfileId, fighterPostcode],
+    queryKey: ["gyms-near-fighter", fighterProfileId, userCoords?.lat, userCoords?.lng],
     queryFn: async () => {
-      if (!fighterPostcode) return [];
-
-      const coords = await geocodePostcode(fighterPostcode);
-      if (!coords) return [];
-
+      if (!userCoords) return [];
       const { data: allGyms } = await supabase
         .from("gyms")
         .select("id, name, city, country, lat, lng, discipline_tags, listing_tier")
         .not("lat", "is", null)
         .not("lng", "is", null);
-
       if (!allGyms) return [];
-
       return allGyms
         .map((gym: any) => ({
           ...gym,
-          distance: haversineDistance(coords.latitude, coords.longitude, gym.lat, gym.lng),
+          distance: haversineDistance(userCoords.lat, userCoords.lng, gym.lat, gym.lng),
         }))
         .filter((gym) => gym.distance <= 20)
         .sort((a, b) => a.distance - b.distance)
         .slice(0, 5);
     },
-    enabled: !!fighterProfileId && !!fighterPostcode,
+    enabled: !!userCoords,
   });
 
-  // No postcode — show prompt only
-  if (!fighterPostcode) {
+  if (!locationEnabled || !userCoords) {
     return (
       <div className="rounded-lg border border-border bg-card p-4">
         <h3 className="font-heading text-sm text-foreground mb-3">
           GYMS <span className="text-primary">NEAR YOU</span>
         </h3>
         <div className="text-center py-4">
-          <Navigation className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-          <p className="text-xs text-muted-foreground">
-            Add your postcode to see nearby gyms
+          <LocateFixed className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-xs text-muted-foreground mb-2">
+            {locationError ? "Location access was denied. Please enable it in your browser settings." : "Enable location services to see nearby gyms"}
           </p>
-          <Link to="/dashboard?section=my-profile" className="text-xs text-primary hover:underline mt-1 inline-block">
-            Update profile →
-          </Link>
+          <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={requestLocation}>
+            <LocateFixed className="h-3 w-3" /> Enable Location
+          </Button>
         </div>
       </div>
     );

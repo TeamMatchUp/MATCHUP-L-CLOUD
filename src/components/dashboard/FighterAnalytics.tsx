@@ -2,19 +2,21 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useMemo } from "react";
 import { formatEnum } from "@/lib/format";
-import { X } from "lucide-react";
+import { X, ChevronDown } from "lucide-react";
+import { useCollapsibleSections } from "@/hooks/use-collapsible-sections";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell,
   Legend,
 } from "recharts";
 
 /* ── tiny reusable bits ── */
-function SectionHeader({ title }: { title: string }) {
+function SectionHeader({ title, collapsed, onToggle }: { title: string; collapsed?: boolean; onToggle?: () => void }) {
   return (
-    <div className="flex items-center gap-3.5 mt-6 mb-3.5">
+    <button onClick={onToggle} className="flex items-center gap-3.5 mt-6 mb-3.5 w-full text-left group cursor-pointer">
       <span className="font-heading text-sm font-bold tracking-[2.5px] uppercase text-muted-foreground whitespace-nowrap">{title}</span>
       <div className="flex-1 h-px bg-border" />
-    </div>
+      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${collapsed ? "-rotate-180" : ""}`} />
+    </button>
   );
 }
 
@@ -153,6 +155,7 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
   const [wmFilter, setWmFilter] = useState("pro");
   const [lmFilter, setLmFilter] = useState("pro");
   const [popup, setPopup] = useState<"elo" | "opp" | null>(null);
+  const { toggle, isCollapsed } = useCollapsibleSections("fighter-analytics");
 
   // ── Queries ──
   const { data: fights = [] } = useQuery({
@@ -295,7 +298,8 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
       </div>
 
       {/* ── S1: Record overview ── */}
-      <SectionHeader title="Record overview" />
+      <SectionHeader title="Record overview" collapsed={isCollapsed("record")} onToggle={() => toggle("record")} />
+      {!isCollapsed("record") && <>
       <div className="flex gap-2.5 flex-wrap mb-3">
         <RecordPill label="Pro record" w={proRec.wins} l={proRec.losses} d={proRec.draws} />
         <RecordPill label="Amateur record" w={amRec.wins} l={amRec.losses} d={amRec.draws} />
@@ -305,8 +309,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         <RecordPillText label="Years training" value={fighterProfile.years_training?.toString() || "—"} />
       </div>
 
+      </>}
+
       {/* ── S2: Career stats ── */}
-      <SectionHeader title="Career stats" />
+      <SectionHeader title="Career stats" collapsed={isCollapsed("career")} onToggle={() => toggle("career")} />
+      {!isCollapsed("career") && <>
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 mb-3">
         <StatCardFA label="Total fights" value={rec.total} sub={`${statsFilter === "pro" ? "Pro" : statsFilter === "am" ? "Amateur" : "All"} career fights`} toggle={<Toggle value={statsFilter} onChange={setStatsFilter} />} />
         <StatCardFA label="Win rate" value={`${rec.winPct}%`} sub={`${rec.wins}W of ${rec.total} fights`} toggle={<Toggle value={statsFilter} onChange={setStatsFilter} />} />
@@ -316,8 +323,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         <StatCardFA label="Elo rating" value={elo.toLocaleString()} sub={`${formatEnum(fighterProfile.weight_class)} · #${ranking.rank || "—"}`} />
       </div>
 
+      </>}
+
       {/* ── S3: Market demand ── */}
-      <SectionHeader title="Market demand & visibility" />
+      <SectionHeader title="Market demand & visibility" collapsed={isCollapsed("demand")} onToggle={() => toggle("demand")} />
+      {!isCollapsed("demand") && <>
       <div className="bg-card border border-border rounded-lg p-5 mb-3">
         <div className="font-heading text-[11px] font-bold tracking-[1.5px] uppercase text-muted-foreground mb-3.5">
           How much interest your profile is generating from promoters and coaches on the platform
@@ -329,8 +339,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         </div>
       </div>
 
+      </>}
+
       {/* ── S4: Fight performance analytics ── */}
-      <SectionHeader title="Fight performance analytics" />
+      <SectionHeader title="Fight performance analytics" collapsed={isCollapsed("performance")} onToggle={() => toggle("performance")} />
+      {!isCollapsed("performance") && <>
 
       {/* Row 1: Activity timeline + Streak */}
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-3 mb-3">
@@ -384,8 +397,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         <DoughnutCard title="Loss method breakdown" data={lossMethodData.map((d, i) => ({ ...d, color: lossMethodColors[i] || "hsl(var(--muted-foreground))" }))} filter={lmFilter} onFilter={setLmFilter} />
       </div>
 
+      </>}
+
       {/* ── S5: Rankings & Elo ── */}
-      <SectionHeader title="Rankings & Elo" />
+      <SectionHeader title="Rankings & Elo" collapsed={isCollapsed("rankings")} onToggle={() => toggle("rankings")} />
+      {!isCollapsed("rankings") && <>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_3fr] gap-3 mb-3">
         {/* Rank card */}
         <div className="bg-card border border-border rounded-lg p-5 flex flex-col items-center justify-center text-center">
@@ -416,8 +432,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         </div>
       </div>
 
+      </>}
+
       {/* ── S6: Career history ── */}
-      <SectionHeader title="Career history" />
+      <SectionHeader title="Career history" collapsed={isCollapsed("history")} onToggle={() => toggle("history")} />
+      {!isCollapsed("history") && <>
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-3 mb-3">
         {/* Fight table */}
         <div className="bg-card border border-border rounded-lg p-5 overflow-x-auto">
@@ -483,8 +502,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         </div>
       </div>
 
+      </>}
+
       {/* ── S7: Opponent record quality ── */}
-      <SectionHeader title="Opponent record quality" />
+      <SectionHeader title="Opponent record quality" collapsed={isCollapsed("opponents")} onToggle={() => toggle("opponents")} />
+      {!isCollapsed("opponents") && <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
         <div className="bg-card border border-border rounded-lg p-5">
           <div className="font-heading text-[13px] font-bold tracking-[1.5px] uppercase text-foreground mb-3.5 flex items-center justify-between">
@@ -508,8 +530,11 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
         </div>
       </div>
 
+      </>}
+
       {/* ── S8: Profile completeness ── */}
-      <SectionHeader title="Profile completeness" />
+      <SectionHeader title="Profile completeness" collapsed={isCollapsed("completeness")} onToggle={() => toggle("completeness")} />
+      {!isCollapsed("completeness") && <>
       <div className="bg-card border border-border rounded-lg p-5 mb-3">
         <div className="flex items-center gap-5 mb-4">
           {/* Ring */}
@@ -543,6 +568,8 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
           ))}
         </div>
       </div>
+
+      </>}
 
       {/* ── Popup modals ── */}
       <PopupModal open={popup === "elo"} onClose={() => setPopup(null)} title="How your Elo rating is calculated" body={
