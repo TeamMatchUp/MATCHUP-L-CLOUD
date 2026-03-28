@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BannerAd } from "@/components/BannerAd";
-import iconImg from "@/assets/icon-gold.webp";
+import { AppIcon } from "@/components/AppIcon";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Calendar, ArrowRight, Filter, Search, Ticket, Swords, X, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
