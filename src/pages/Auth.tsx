@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+// single-select role — no Checkbox needed
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { AppLogo } from "@/components/AppLogo";

@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import Cropper from "react-easy-crop";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
 interface ImageCropDialogProps {
@@ -9,6 +9,7 @@ interface ImageCropDialogProps {
   imageSrc: string;
   aspect: number;
   onCropComplete: (blob: Blob) => void;
+  fileInputRef?: React.RefObject<HTMLInputElement>;
 }
 
 async function getCroppedImg(imageSrc: string, pixelCrop: { x: number; y: number; width: number; height: number }): Promise<Blob> {
@@ -34,12 +35,11 @@ async function getCroppedImg(imageSrc: string, pixelCrop: { x: number; y: number
   });
 }
 
-export function ImageCropDialog({ open, onOpenChange, imageSrc, aspect, onCropComplete }: ImageCropDialogProps) {
+export function ImageCropDialog({ open, onOpenChange, imageSrc, aspect, onCropComplete, fileInputRef }: ImageCropDialogProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
   const [saving, setSaving] = useState(false);
-  const [requestNewPhoto, setRequestNewPhoto] = useState(false);
 
   const onCropChange = useCallback((_: any, croppedPixels: any) => {
     setCroppedAreaPixels(croppedPixels);
@@ -60,26 +60,29 @@ export function ImageCropDialog({ open, onOpenChange, imageSrc, aspect, onCropCo
   };
 
   const handleChooseDifferent = () => {
-    setRequestNewPhoto(true);
     onOpenChange(false);
-  };
-
-  // Trigger file picker when requestNewPhoto flag is set and dialog closes
-  if (requestNewPhoto) {
-    setRequestNewPhoto(false);
+    // Reopen file picker after modal closes
     setTimeout(() => {
-      const input = document.querySelector<HTMLInputElement>('input[type="file"][accept="image/*"]');
-      if (input) input.click();
-    }, 100);
-  }
+      if (fileInputRef?.current) {
+        fileInputRef.current.value = "";
+        fileInputRef.current.click();
+      } else {
+        const input = document.querySelector<HTMLInputElement>('input[type="file"][accept*="image"]');
+        if (input) {
+          input.value = "";
+          input.click();
+        }
+      }
+    }, 150);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-hidden p-0 flex flex-col">
-        <DialogHeader className="p-4 pb-0 shrink-0">
+      <DialogContent className="sm:max-w-[560px] max-h-[85vh] overflow-hidden p-0 flex flex-col">
+        <DialogHeader className="p-4 pb-2 shrink-0">
           <DialogTitle className="font-heading">Crop Image</DialogTitle>
         </DialogHeader>
-        <div className="relative w-full flex-1" style={{ height: 340, minHeight: 240 }}>
+        <div className="relative w-full flex-1" style={{ minHeight: 380, height: "60vh", maxHeight: "65vh" }}>
           <Cropper
             image={imageSrc}
             crop={crop}
@@ -90,15 +93,17 @@ export function ImageCropDialog({ open, onOpenChange, imageSrc, aspect, onCropCo
             onCropComplete={onCropChange}
           />
         </div>
-        <DialogFooter className="p-4 pt-3 shrink-0 flex-wrap gap-2">
-          <Button variant="ghost" size="sm" onClick={handleChooseDifferent}>Choose Different Photo</Button>
+        <div className="p-4 pt-3 shrink-0 flex items-center justify-between gap-3">
+          <Button variant="ghost" size="sm" onClick={handleChooseDifferent}>
+            Choose Different Photo
+          </Button>
           <div className="flex gap-2">
             <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button onClick={handleSave} disabled={saving}>
               {saving ? "Cropping..." : "Crop & Save"}
             </Button>
           </div>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
