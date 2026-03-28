@@ -179,11 +179,8 @@ export default function EventDetail() {
   const hasContact = event.contact_email || event.contact_phone || event.contact_website;
   const hasCoords = event.latitude != null && event.longitude != null;
 
+  // Helper for open slot check (used in render)
   const isOpen = (bout: any) => !bout.fighter_a_id && !bout.fighter_b_id && bout.status === "open";
-  const getStatusIndicator = (bout: any) => {
-    // No badges on banners — only "Open" text above VS for open slots
-    return null;
-  };
 
   const renderMainBout = (bout: any) => {
     const showDetails = bout.is_public === true && bout.status === "confirmed";
