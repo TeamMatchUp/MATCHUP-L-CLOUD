@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { BannerAd } from "@/components/BannerAd";
-import iconImg from "@/assets/icon-gold.webp";
+import { AppIcon } from "@/components/AppIcon";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Calendar, ArrowRight, Filter, Search, Ticket, Swords, X, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -277,7 +277,7 @@ const Events = () => {
                     to="/auth"
                     className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
                   >
-                    <img src={iconImg} alt="" className="h-5 w-5" />
+                    <AppIcon className="h-5 w-5" />
                     register your event
                   </Link>
                 </motion.div>
@@ -296,7 +296,7 @@ const Events = () => {
                   to="/auth"
                   className="inline-flex items-center gap-3 bg-muted hover:bg-muted/80 text-foreground font-medium text-sm px-8 py-3 rounded-full transition-colors duration-200"
                 >
-                  <img src={iconImg} alt="" className="h-5 w-5" />
+                  <AppIcon className="h-5 w-5" />
                   register your event
                 </Link>
               </motion.div>

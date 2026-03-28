@@ -1,6 +1,6 @@
 import { useTheme } from "next-themes";
-import logoLight from "@/assets/logo-full-dark.png";
-import logoDark from "@/assets/logo-full.webp";
+import logoLight from "@/assets/logo-full-black.svg";
+import logoDark from "@/assets/logo-full-white.svg";
 
 interface AppLogoProps {
   className?: string;
