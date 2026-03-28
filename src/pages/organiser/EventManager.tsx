@@ -384,14 +384,21 @@ export default function EventManager() {
                 </div>
               </div>
 
-              {showSuggestionsMain && slots.length > 0 && (
+              {showSuggestionsMain && (
                 <div className="mb-4">
-                  <MatchSuggestionsPanel
-                    slot={slots[0]}
-                    existingProposalFighterIds={existingFighterIds}
-                    onSelectPair={(a, b) => handleSuggestionConfirm(a, b, "main")}
-                    eventId={id}
-                  />
+                  {slots.length > 0 ? (
+                    <MatchSuggestionsPanel
+                      slot={slots[0]}
+                      existingProposalFighterIds={existingFighterIds}
+                      onSelectPair={(a, b) => handleSuggestionConfirm(a, b, "main")}
+                      eventId={id}
+                    />
+                  ) : (
+                    <div className="rounded-lg border border-border bg-card p-6 text-center">
+                      <p className="text-sm text-muted-foreground mb-3">Create at least one fight slot to enable match suggestions.</p>
+                      <p className="text-xs text-muted-foreground">Fight slots define the weight class and criteria used for matchmaking.</p>
+                    </div>
+                  )}
                   <Button variant="ghost" size="sm" onClick={() => setShowSuggestionsMain(false)} className="mt-2">Close</Button>
                 </div>
               )}
