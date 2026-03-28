@@ -166,10 +166,10 @@ export default function EventDetail() {
     );
   }
 
-  // All bouts in order
-  const allOrderedBouts = allBouts;
-  const mainEvents = allOrderedBouts.filter((b: any) => b.bout_type === "Main Event");
-  const undercards = allOrderedBouts.filter((b: any) => b.bout_type !== "Main Event");
+  // Filter to only confirmed + public bouts for the public page
+  const publicBouts = allBouts.filter((b: any) => b.is_public === true && b.status === "confirmed" && (b.fighter_a_id || b.fighter_b_id));
+  const mainEvents = publicBouts.filter((b: any) => b.bout_type === "Main Event");
+  const undercards = publicBouts.filter((b: any) => b.bout_type !== "Main Event");
 
   const mainTotal = Math.ceil(mainEvents.length / BOUTS_PER_PAGE) || 1;
   const underTotal = Math.ceil(undercards.length / BOUTS_PER_PAGE) || 1;
