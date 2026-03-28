@@ -90,9 +90,9 @@ export default function FighterDetail() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-16">
-        <section className="py-16">
+        <section style={{ padding: "10px 0" }}>
           <div className="container max-w-3xl">
-            <div className="pt-6 md:pt-8 lg:pt-10">
+            <div className="pt-2">
               <Button variant="ghost" size="sm" onClick={() => fromParam === "roster" ? navigate("/dashboard?section=roster") : navigate(-1)} className="mb-6">
                 <ArrowLeft className="h-4 w-4 mr-2" />{fromParam === "roster" ? "Back to Roster" : "Back"}
               </Button>

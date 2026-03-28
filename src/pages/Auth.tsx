@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+// single-select role — no Checkbox needed
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { AppLogo } from "@/components/AppLogo";
@@ -58,10 +58,8 @@ function AuthPage() {
     return primaryRole ? ROLE_DASHBOARDS[primaryRole] : "/";
   };
 
-  const toggleRole = (role: AppRole) => {
-    setSelectedRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    );
+  const selectRole = (role: AppRole) => {
+    setSelectedRoles([role]);
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
@@ -258,7 +256,7 @@ function AuthPage() {
 
             {isSignUp && (
               <div className="space-y-3">
-                <Label>I am a... <span className="text-muted-foreground text-xs">(select all that apply)</span></Label>
+                <Label>I am a...</Label>
                 <div className="space-y-2">
                   {ROLES.map((role) => (
                     <label
@@ -268,12 +266,15 @@ function AuthPage() {
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-muted-foreground/30"
                       }`}
+                      onClick={() => setSelectedRoles([role.value])}
                     >
-                      <Checkbox
-                        checked={selectedRoles.includes(role.value)}
-                        onCheckedChange={() => toggleRole(role.value)}
-                        className="mt-0.5"
-                      />
+                      <div className={`mt-1 h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        selectedRoles.includes(role.value) ? "border-primary" : "border-muted-foreground/50"
+                      }`}>
+                        {selectedRoles.includes(role.value) && (
+                          <div className="h-2 w-2 rounded-full bg-primary" />
+                        )}
+                      </div>
                       <div>
                         <span className="text-sm font-medium text-foreground">{role.label}</span>
                         <p className="text-xs text-muted-foreground">{role.description}</p>
