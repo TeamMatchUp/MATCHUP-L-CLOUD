@@ -541,19 +541,76 @@ export function DashboardActions({
   };
 
   const handleUndo = async (ra: RecentAction) => {
-    if (ra.previousStatus === "pending") {
+    try {
       const item = [...activeItems, ...completedItems].find((i) => i.id === ra.itemId);
-      if (item?.type === "gym_request") {
+      const itemTitle = item?.title ?? "An action";
+      const notifyIds = new Set<string>();
+
+      if (ra.previousStatus === "pending" && item?.type === "gym_request") {
         await supabase.from("fighter_gym_links").update({ status: "pending" }).eq("id", ra.itemId);
+        // Notify the fighter
+        if (item.meta?.fighterId) {
+          const { data: fp } = await supabase.from("fighter_profiles").select("user_id").eq("id", item.meta.fighterId).single();
+          if (fp?.user_id) notifyIds.add(fp.user_id);
+        }
+        // Notify the gym coach
+        if (item.meta?.gymId) {
+          const { data: gym } = await supabase.from("gyms").select("coach_id").eq("id", item.meta.gymId).single();
+          if (gym?.coach_id) notifyIds.add(gym.coach_id);
+        }
       }
+
+      if (ra.previousStatus === "proposed" && (item?.type === "bout_proposal")) {
+        await supabase.from("bout_acceptances").delete().eq("slot_id", ra.itemId).eq("user_id", userId);
+        await supabase.from("event_fight_slots").update({ status: "proposed" }).eq("id", ra.itemId);
+        // Notify all parties
+        const { data: slotData } = await supabase.from("event_fight_slots")
+          .select("fighter_a_id, fighter_b_id, event_id, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(user_id, name, created_by_coach_id), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(user_id, name, created_by_coach_id)")
+          .eq("id", ra.itemId).single();
+        if (slotData) {
+          const fA = Array.isArray(slotData.fighter_a) ? slotData.fighter_a[0] : slotData.fighter_a;
+          const fB = Array.isArray(slotData.fighter_b) ? slotData.fighter_b[0] : slotData.fighter_b;
+          if (fA?.user_id) notifyIds.add(fA.user_id);
+          if (fB?.user_id) notifyIds.add(fB.user_id);
+          if (fA?.created_by_coach_id) notifyIds.add(fA.created_by_coach_id);
+          if (fB?.created_by_coach_id) notifyIds.add(fB.created_by_coach_id);
+          const { data: gymLinks } = await supabase.from("fighter_gym_links")
+            .select("gym:gyms(coach_id)").in("fighter_id", [slotData.fighter_a_id, slotData.fighter_b_id].filter(Boolean)).eq("status", "approved");
+          (gymLinks ?? []).forEach((l: any) => { const g = Array.isArray(l.gym) ? l.gym[0] : l.gym; if (g?.coach_id) notifyIds.add(g.coach_id); });
+          const { data: evt } = await supabase.from("events").select("organiser_id, title").eq("id", slotData.event_id).single();
+          if (evt?.organiser_id) notifyIds.add(evt.organiser_id);
+        }
+      }
+
+      if (ra.previousStatus === "suggested" && (item?.type === "match_suggestion")) {
+        await supabase.from("match_suggestions").update({ status: "suggested" }).eq("id", ra.itemId);
+      }
+
+      // Remove self from notify list
+      notifyIds.delete(userId);
+
+      // Get user's name for notification message
+      const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", userId).single();
+      const userName = profile?.full_name || "A user";
+
+      // Send undo notifications
+      for (const nid of notifyIds) {
+        await supabase.rpc("create_notification", {
+          _user_id: nid,
+          _title: "Action Undone",
+          _message: `${userName} has undone their ${ra.action} of: ${itemTitle}. The item is now pending again.`,
+          _type: "system" as any,
+          _reference_id: ra.itemId,
+        });
+      }
+
+      setRecentActions((prev) => prev.filter((a) => a.itemId !== ra.itemId));
+      toast.success("Action undone — all parties notified");
+      invalidate();
+    } catch (err) {
+      console.error("Undo failed:", err);
+      toast.error("Failed to undo action");
     }
-    if (ra.previousStatus === "proposed") {
-      await supabase.from("bout_acceptances").delete().eq("slot_id", ra.itemId).eq("user_id", userId);
-      await supabase.from("event_fight_slots").update({ status: "proposed" }).eq("id", ra.itemId);
-    }
-    setRecentActions((prev) => prev.filter((a) => a.itemId !== ra.itemId));
-    toast.success("Action undone");
-    invalidate();
   };
 
   const invalidate = () => {
