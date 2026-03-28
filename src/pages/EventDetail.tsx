@@ -308,8 +308,7 @@ export default function EventDetail() {
     );
   };
 
-  // Always show fight card structure
-  const showFightCard = true;
+  // Fight card sections are conditionally rendered below based on whether public confirmed bouts exist
 
   return (
     <div className="min-h-screen bg-background">
