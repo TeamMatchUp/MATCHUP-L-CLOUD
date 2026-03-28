@@ -109,7 +109,7 @@ export function AddFightManuallyDialog({ open, onOpenChange, eventId, sectionTyp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-lg max-w-[calc(100vw-32px)] max-h-[85vh] overflow-y-auto mx-4">
         <DialogHeader>
           <DialogTitle className="font-heading text-xl">
             Add Fight — <span className="text-primary">{sectionType}</span>
