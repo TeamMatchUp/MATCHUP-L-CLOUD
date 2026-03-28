@@ -455,55 +455,31 @@ export default function EventDetail() {
               </div>
             </motion.div>
 
-            {/* FIGHT CARD — always rendered */}
-            {showFightCard && (
+            {/* FIGHT CARD — only show sections with confirmed public bouts */}
+            {mainEvents.length > 0 && (
               <>
                 <h2 className="font-heading text-2xl text-foreground mb-6">
                   MAIN <span className="text-primary">CARD</span>
                 </h2>
-                {paginatedMain.length > 0 ? (
-                  <div className="space-y-4 mb-4">{paginatedMain.map(renderMainBout)}</div>
-                ) : (
-                  <div className="rounded-lg border-2 border-dashed border-border bg-card/50 p-8 text-center mb-4">
-                    <p className="text-muted-foreground text-sm">No main card bouts announced yet.</p>
-                  </div>
-                )}
+                <div className="space-y-4 mb-4">{paginatedMain.map(renderMainBout)}</div>
                 <Pagination page={mainPage} total={Math.ceil(mainEvents.length / BOUTS_PER_PAGE) || 1} setPage={setMainPage} />
+              </>
+            )}
 
+            {undercards.length > 0 && (
+              <>
                 <h2 className="font-heading text-2xl text-foreground mb-6 mt-12">
                   UNDER<span className="text-primary">CARD</span>
                 </h2>
-                {paginatedUnder.length > 0 ? (
-                  <div className="space-y-2 mb-4">{paginatedUnder.map(renderUndercardBout)}</div>
-                ) : (
-                  <div className="rounded-lg border border-dashed border-border bg-card/50 p-6 text-center mb-4">
-                    <p className="text-muted-foreground text-sm">No undercard bouts announced yet.</p>
-                  </div>
-                )}
+                <div className="space-y-2 mb-4">{paginatedUnder.map(renderUndercardBout)}</div>
                 <Pagination page={underPage} total={Math.ceil(undercards.length / BOUTS_PER_PAGE) || 1} setPage={setUnderPage} />
               </>
             )}
 
-            {/* Fallback to fight_slots if no event_fight_slots */}
-            {allBouts.length === 0 && event.fight_slots && event.fight_slots.length > 0 && (
-              <>
-                <h2 className="font-heading text-2xl text-foreground mb-6 mt-12">
-                  FIGHT <span className="text-primary">CARD</span>
-                </h2>
-                <div className="space-y-3 mb-12">
-                  {event.fight_slots.sort((a: any, b: any) => a.slot_number - b.slot_number).map((slot: any) => (
-                    <div key={slot.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
-                      <div className="flex items-center gap-4">
-                        <span className="font-heading text-lg text-muted-foreground w-8">#{slot.slot_number}</span>
-                        <p className="text-sm font-medium text-foreground">{WEIGHT_CLASS_LABELS[slot.weight_class]}</p>
-                      </div>
-                      <Badge className={slot.status === "open" ? "bg-primary/10 text-primary" : slot.status === "confirmed" ? "bg-success/10 text-success" : ""} variant="outline">
-                        {slot.status.charAt(0).toUpperCase() + slot.status.slice(1)}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </>
+            {mainEvents.length === 0 && undercards.length === 0 && (
+              <div className="rounded-lg border border-dashed border-border bg-card/50 p-8 text-center mb-4">
+                <p className="text-muted-foreground text-sm">No bouts announced yet.</p>
+              </div>
             )}
           </div>
         </section>
