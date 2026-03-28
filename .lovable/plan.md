@@ -1,28 +1,47 @@
 
 
-## Fix: Safe access for `link.fighter` and `link.gym` (array vs object edge case)
+# Replace All Logos with New SVG Brand Assets
 
-### Problem
-Supabase joins can return the related record as either a single object or an array depending on the foreign key relationship type. If `link.fighter` is returned as an array, then `link.fighter?.user_id` is `undefined`, silently skipping the `profiles.gym_id` update.
+## Overview
+Copy the four uploaded SVG logos into the project and update every component that references the old logo files to use the new ones. The white versions display on dark backgrounds (dark theme, dark cards), the black versions on light backgrounds (light theme).
 
-### Solution
-Add a helper function that normalises `link.fighter` and `link.gym` — if it's an array, take the first element; if it's an object, use it directly. Apply this in both `handleAccept`, `handleDecline`, and the render logic.
+## Asset Mapping
 
-### Changes — single file: `src/components/coach/GymRequestsPanel.tsx`
+| Uploaded File | Purpose | Destination |
+|---|---|---|
+| MATCH_HARD_FI_3.svg | Full logo (icon + text), white | src/assets/logo-full-white.svg |
+| MATCH_HARD_FI_6.svg | Full logo (icon + text), black | src/assets/logo-full-black.svg |
+| MATCH_HARD_FI_1.svg | Icon only, white | src/assets/icon-white.svg |
+| MATCH_HARD_FI_5.svg | Icon only, black | src/assets/icon-black.svg |
 
-1. Add a helper at the top of the file:
-```typescript
-function unwrap<T>(val: T | T[] | null | undefined): T | null {
-  if (Array.isArray(val)) return val[0] ?? null;
-  return val ?? null;
-}
-```
+## Files to Edit
 
-2. In `handleAccept`: replace direct `link.fighter?.user_id` / `link.fighter?.name` / `link.gym?.name` accesses with `unwrap(link.fighter)?.user_id`, etc.
+### 1. Copy assets
+Copy all four SVGs from `user-uploads://` to `src/assets/`.
 
-3. In `handleDecline`: same unwrap for `link.fighter` and `link.gym`.
+### 2. Update `src/components/AppLogo.tsx`
+- Import `logo-full-white.svg` and `logo-full-black.svg` instead of the old `.png`/`.webp` files
+- Dark theme uses the white logo; light theme uses the black logo
+- Keep the same component API (className, alt props)
 
-4. In the JSX render: same unwrap for display fields (name, discipline, weight_class, stance, gym name).
+### 3. Create `src/components/AppIcon.tsx` (new)
+- A small component similar to AppLogo but renders the icon-only SVGs
+- Dark theme uses white icon; light theme uses black icon
+- Used wherever the standalone icon appears
 
-No database or migration changes needed.
+### 4. Update icon usage in pages
+- **`src/pages/Fighters.tsx`** and **`src/pages/Events.tsx`**: Replace `icon-gold.webp` import with the new `AppIcon` component or direct SVG import
+
+### 5. Update favicon
+- Copy the black icon SVG to `public/icon.svg` and update `index.html` to reference it (replacing the current `/icon.png`)
+
+### 6. No other files need changes
+The AppLogo component is already used consistently across Header, Footer, DashboardSidebar, Auth, Onboarding, Feedback, and AuthErrorBoundary — updating the component updates all of them automatically.
+
+### 7. Clean up old assets
+Remove the now-unused files from `src/assets/`: `logo-full-dark.png`, `logo-full.webp`, `icon-gold.webp`, `icon.png`, `logo.png`.
+
+## Technical Notes
+- SVGs imported via Vite are resolved as URL strings by default, so the `<img src={...}>` pattern in AppLogo continues to work
+- The theme detection via `useTheme()` from `next-themes` remains unchanged
 
