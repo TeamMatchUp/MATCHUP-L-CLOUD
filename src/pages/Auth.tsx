@@ -58,10 +58,8 @@ function AuthPage() {
     return primaryRole ? ROLE_DASHBOARDS[primaryRole] : "/";
   };
 
-  const toggleRole = (role: AppRole) => {
-    setSelectedRoles((prev) =>
-      prev.includes(role) ? prev.filter((r) => r !== role) : [...prev, role]
-    );
+  const selectRole = (role: AppRole) => {
+    setSelectedRoles([role]);
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
