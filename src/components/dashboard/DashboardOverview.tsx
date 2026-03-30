@@ -316,7 +316,112 @@ export function DashboardOverview({
   }
 
   // ═══════════════════════════════════════
-  // DEFAULT / ORGANISER FALLBACK
+  // ORGANISER OVERVIEW
+  // ═══════════════════════════════════════
+  if (isOrganiser) {
+    const orgActions = [
+      { label: "Create Event", icon: CalendarPlus, to: "/organiser/create-event?from=overview" },
+    ];
+
+    const [orgCardVis, setOrgCardVis] = useState({
+      stats: true,
+      pending: true,
+      calendar: true,
+    });
+
+    const toggleOrgVis = (card: keyof typeof orgCardVis) => {
+      setOrgCardVis((prev) => ({ ...prev, [card]: !prev[card] }));
+    };
+
+    const orgVisItems = [
+      { key: "stats" as const, label: "Overview Stats Card" },
+      { key: "pending" as const, label: "Pending Matches Card" },
+      { key: "calendar" as const, label: "Calendar Card" },
+    ];
+
+    return (
+      <div className="space-y-4">
+        {/* Top Nav Bar */}
+        <div className="flex items-center justify-between h-14 -mt-2 mb-2">
+          <div className="flex items-center gap-2">
+            <AppLogo className="h-6" />
+          </div>
+          <QuickActionsDropdown>
+            {orgActions.map((action) => (
+              <Link
+                key={action.label}
+                to={action.to}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
+                onClick={() => setShowQuickActions(false)}
+              >
+                <action.icon className="h-4 w-4" />
+                {action.label}
+              </Link>
+            ))}
+            <div className="border-t border-border my-1.5" />
+            <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              KPI Visibility
+            </p>
+            {orgVisItems.map((item) => (
+              <button
+                key={item.key}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
+                onClick={() => toggleOrgVis(item.key)}
+              >
+                {item.label}
+                {orgCardVis[item.key] ? (
+                  <Eye className="h-3.5 w-3.5 text-primary" />
+                ) : (
+                  <EyeOff className="h-3.5 w-3.5" />
+                )}
+              </button>
+            ))}
+          </QuickActionsDropdown>
+        </div>
+
+        {/* Hero Card */}
+        <div
+          className="transition-all duration-300 overflow-hidden"
+          style={{
+            opacity: orgCardVis.stats ? 1 : 0,
+            maxHeight: orgCardVis.stats ? "600px" : "0px",
+          }}
+        >
+          {orgCardVis.stats && <OrganiserOverviewHero />}
+        </div>
+
+        {/* Lower two-column */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          <div
+            className="lg:col-span-3 transition-all duration-300"
+            style={{
+              opacity: orgCardVis.pending ? 1 : 0,
+              maxHeight: orgCardVis.pending ? "2000px" : "0px",
+              overflow: "hidden",
+            }}
+          >
+            {orgCardVis.pending && <OrganiserPendingMatches />}
+          </div>
+
+          <div
+            className="lg:col-span-2 transition-all duration-300"
+            style={{
+              opacity: orgCardVis.calendar ? 1 : 0,
+              maxHeight: orgCardVis.calendar ? "2000px" : "0px",
+              overflow: "hidden",
+            }}
+          >
+            {orgCardVis.calendar && (
+              <EventCalendar events={calendarEvents} highlightedDates={highlightedDates} />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════
+  // DEFAULT FALLBACK
   // ═══════════════════════════════════════
   return (
     <div className="space-y-6">
