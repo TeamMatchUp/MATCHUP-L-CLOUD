@@ -20,6 +20,9 @@ import { CoachKpiStrip } from "./CoachKpiStrip";
 import { CoachUpcomingFights } from "./CoachUpcomingFights";
 import { FighterRecordHero } from "./FighterRecordHero";
 import { FighterNextFight } from "./FighterNextFight";
+import { OrganiserOverviewHero } from "./OrganiserOverviewHero";
+import { OrganiserPendingMatches } from "./OrganiserPendingMatches";
+import { CalendarPlus } from "lucide-react";
 
 interface DashboardOverviewProps {
   calendarEvents: any[];
