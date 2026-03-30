@@ -58,6 +58,13 @@ export function DashboardOverview({
     calendar: true,
   });
 
+  // Organiser card visibility
+  const [orgCardVis, setOrgCardVis] = useState({
+    stats: true,
+    pending: true,
+    calendar: true,
+  });
+
   const toggleFighterVis = (card: keyof typeof fighterCardVis) => {
     setFighterCardVis((prev) => ({ ...prev, [card]: !prev[card] }));
   };
