@@ -388,34 +388,40 @@ function DashboardInner({
   const { toggleSidebar } = useSidebar();
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
-      <DashboardSidebar
-        pendingCount={pendingCount}
-        unreadCount={unreadCount}
-        actionsCount={actionsCount}
-      />
+    <div className="min-h-screen md:p-3" style={{ background: 'hsl(var(--background))' }}>
+      <div className="flex w-full md:rounded-2xl md:border md:border-border overflow-hidden"
+        style={{ minHeight: isMobile ? '100vh' : 'calc(100vh - 24px)' }}
+      >
+        <DashboardSidebar
+          pendingCount={pendingCount}
+          unreadCount={unreadCount}
+          actionsCount={actionsCount}
+        />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile hamburger — icon only, no text */}
-        {isMobile && (
-          <div className="sticky top-0 z-30 flex items-center h-12 px-3 bg-background border-b border-border">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleSidebar}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            >
-              <PanelLeft className="h-5 w-5" />
-            </Button>
-          </div>
-        )}
+        <div className="flex-1 flex flex-col min-w-0 bg-background">
+          {/* Mobile hamburger */}
+          {isMobile && (
+            <div className="sticky top-0 z-30 flex items-center h-12 px-3 bg-background border-b border-border">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleSidebar}
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              >
+                <PanelLeft className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
-          <h1 className="font-heading text-2xl md:text-3xl text-foreground mb-6">
-            {sectionTitle}
-          </h1>
-          {renderContent()}
-        </main>
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            {sectionTitle !== "Dashboard" && (
+              <h1 className="font-heading text-2xl md:text-3xl text-foreground mb-6">
+                {sectionTitle}
+              </h1>
+            )}
+            {renderContent()}
+          </main>
+        </div>
       </div>
     </div>
   );

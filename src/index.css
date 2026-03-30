@@ -58,50 +58,65 @@
   }
 
   .dark {
-    --background: 213 33% 6%;
-    --foreground: 210 33% 93%;
+    --background: 220 20% 4%;
+    --foreground: 225 14% 93%;
 
-    --card: 210 27% 11%;
-    --card-foreground: 210 33% 93%;
+    --card: 216 22% 10%;
+    --card-foreground: 225 14% 93%;
 
-    --popover: 210 27% 11%;
-    --popover-foreground: 210 33% 93%;
+    --popover: 216 22% 10%;
+    --popover-foreground: 225 14% 93%;
 
-    --primary: 46 93% 61%;
-    --primary-foreground: 213 33% 6%;
+    --primary: 37 82% 52%;
+    --primary-foreground: 220 20% 4%;
 
     --secondary: 173 60% 54%;
-    --secondary-foreground: 213 33% 6%;
+    --secondary-foreground: 220 20% 4%;
 
-    --muted: 213 29% 8%;
-    --muted-foreground: 212 12% 47%;
+    --muted: 220 18% 8%;
+    --muted-foreground: 222 10% 55%;
 
-    --accent: 213 29% 8%;
-    --accent-foreground: 210 33% 93%;
+    --accent: 220 18% 8%;
+    --accent-foreground: 225 14% 93%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 33% 93%;
+    --destructive-foreground: 225 14% 93%;
 
     --success: 142 71% 45%;
-    --success-foreground: 210 33% 93%;
+    --success-foreground: 225 14% 93%;
 
-    --border: 210 18% 21%;
-    --input: 210 18% 21%;
-    --ring: 46 93% 61%;
+    --border: 220 10% 14%;
+    --input: 220 10% 14%;
+    --ring: 37 82% 52%;
 
-    --nav-background: 213 29% 8%;
+    --nav-background: 220 18% 8%;
 
-    --text-secondary: 210 12% 66%;
-    --text-muted: 212 12% 47%;
+    --text-secondary: 222 10% 64%;
+    --text-muted: 222 10% 42%;
 
-    --sidebar-background: 213 29% 8%;
-    --sidebar-foreground: 210 12% 66%;
-    --sidebar-primary: 46 93% 61%;
-    --sidebar-primary-foreground: 213 33% 6%;
-    --sidebar-accent: 210 27% 11%;
-    --sidebar-accent-foreground: 210 33% 93%;
-    --sidebar-border: 210 18% 21%;
-    --sidebar-ring: 46 93% 61%;
+    --sidebar-background: 220 20% 5%;
+    --sidebar-foreground: 222 10% 64%;
+    --sidebar-primary: 37 82% 52%;
+    --sidebar-primary-foreground: 220 20% 4%;
+    --sidebar-accent: 216 22% 10%;
+    --sidebar-accent-foreground: 225 14% 93%;
+    --sidebar-border: 220 10% 14%;
+    --sidebar-ring: 37 82% 52%;
+
+    /* Coach dashboard design tokens */
+    --bg-base: 240 14% 4%;
+    --bg-page: 216 18% 6%;
+    --bg-card: 220 17% 10%;
+    --bg-raised: 222 16% 13%;
+    --bg-overlay: 224 16% 15%;
+
+    --gold: 37 82% 52%;
+    --gold-dim: 33 86% 41%;
+
+    --coach-green: 142 71% 45%;
+    --coach-red: 0 84% 60%;
+    --coach-amber: 38 92% 50%;
+    --coach-purple: 263 83% 78%;
   }
 }
 
@@ -146,23 +161,47 @@
     box-shadow: 0 0 24px hsl(46 93% 61% / 0.25), 0 0 48px hsl(46 93% 61% / 0.08);
   }
 
-  /* (5) Glass pill sidebar nav items */
+  /* Glass pill sidebar nav items */
   .sidebar-pill {
-    @apply rounded-full px-3 py-1.5 backdrop-blur-sm transition-all duration-200;
-    background: hsl(var(--sidebar-accent) / 0.4);
-    box-shadow: 0 1px 4px hsl(0 0% 0% / 0.08);
+    @apply rounded-lg px-3 py-1.5 transition-all duration-150;
+    background: transparent;
   }
 
   .sidebar-pill:hover {
-    background: hsl(var(--sidebar-accent) / 0.6);
-    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.12);
+    background: hsl(0 0% 100% / 0.04);
+    color: hsl(var(--foreground));
   }
 
   .sidebar-pill-active {
-    @apply rounded-full px-3 py-1.5 backdrop-blur-sm;
-    background: hsl(var(--primary) / 0.15);
+    @apply rounded-lg px-3 py-1.5;
+    background: hsl(var(--primary) / 0.12);
     color: hsl(var(--primary));
-    box-shadow: 0 2px 8px hsl(var(--primary) / 0.15), 0 0 0 1px hsl(var(--primary) / 0.2);
+    font-weight: 600;
+  }
+
+  /* Coach dashboard card system */
+  .coach-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .coach-card:hover {
+    border-color: hsl(var(--primary) / 0.2);
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.1);
+  }
+
+  .coach-card-raised {
+    background: hsl(var(--accent));
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    border-radius: 8px;
+  }
+
+  .coach-card-inset {
+    background: hsl(var(--background));
+    border-radius: 8px;
   }
 
   @media (max-width: 639px) {

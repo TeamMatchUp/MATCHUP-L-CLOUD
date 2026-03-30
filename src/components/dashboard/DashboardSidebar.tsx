@@ -107,18 +107,18 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0 }
   };
 
   return (
-    <Sidebar collapsible="icon">
-      {/* Logo + collapse toggle in same row */}
-      <SidebarHeader className="p-2 border-b border-sidebar-border">
+    <Sidebar collapsible="icon" className="border-r border-border bg-background">
+      {/* Logo + collapse toggle */}
+      <SidebarHeader className="p-2 border-b border-border">
         <div className="flex items-center justify-between">
           {!collapsed && <AppLogo className="h-7" />}
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleSidebar}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+            className="h-7 w-7 rounded-full bg-accent border border-border text-muted-foreground hover:text-foreground shrink-0"
           >
-            {collapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            {collapsed ? <PanelLeft className="h-3.5 w-3.5" /> : <PanelLeftClose className="h-3.5 w-3.5" />}
           </Button>
         </div>
       </SidebarHeader>
