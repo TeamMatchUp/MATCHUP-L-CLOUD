@@ -174,7 +174,7 @@ export function OrganiserOverviewHero() {
           {/* Revenue */}
           <div className="rounded-lg border border-border bg-accent p-3.5 hover:border-primary/20 transition-colors">
             <p className="text-[11px] text-muted-foreground">Revenue</p>
-            <p className="font-heading text-3xl text-green-500">${revenue.toLocaleString()}</p>
+            <p className="font-heading text-3xl text-emerald-500">${revenue.toLocaleString()}</p>
           </div>
         </div>
       </div>
