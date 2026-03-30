@@ -330,12 +330,6 @@ export function DashboardOverview({
       { label: "Create Event", icon: CalendarPlus, to: "/organiser/create-event?from=overview" },
     ];
 
-    const [orgCardVis, setOrgCardVis] = useState({
-      stats: true,
-      pending: true,
-      calendar: true,
-    });
-
     const toggleOrgVis = (card: keyof typeof orgCardVis) => {
       setOrgCardVis((prev) => ({ ...prev, [card]: !prev[card] }));
     };
