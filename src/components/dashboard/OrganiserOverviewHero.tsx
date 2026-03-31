@@ -140,7 +140,7 @@ export function OrganiserOverviewHero() {
             <p className="font-heading text-3xl text-destructive">{pending}</p>
           </div>
           {/* Tickets Sold */}
-          <div className="rounded-lg border border-border bg-accent p-3.5 hover:border-primary/20 transition-colors">
+          <div className="rounded-lg border border-border bg-accent p-3.5 hover:border-primary/20 transition-colors" style={{ overflow: "visible", position: "relative" }}>
             <p className="text-[11px] text-muted-foreground">Tickets Sold</p>
             <p className="font-heading text-3xl text-foreground">{ticketsSold}</p>
             <div className="relative mt-1">
