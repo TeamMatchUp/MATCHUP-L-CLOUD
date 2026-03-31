@@ -84,7 +84,7 @@ export function OrganiserOverviewHero() {
   }
 
   return (
-    <div className="coach-card p-5">
+    <div className="coach-card p-5" style={{ overflow: "visible" }}>
       <div className="flex flex-col lg:flex-row gap-6">
         {/* LEFT: Event identity + progress */}
         <div className="flex-[1.5] space-y-4">

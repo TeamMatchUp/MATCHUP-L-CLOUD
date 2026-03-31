@@ -14,15 +14,16 @@ import {
   User,
   ToggleRight,
   Crosshair,
+  CalendarPlus,
 } from "lucide-react";
 import { AppLogo } from "@/components/AppLogo";
+import { AppIcon } from "@/components/AppIcon";
 import { CoachKpiStrip } from "./CoachKpiStrip";
 import { CoachUpcomingFights } from "./CoachUpcomingFights";
 import { FighterRecordHero } from "./FighterRecordHero";
 import { FighterNextFight } from "./FighterNextFight";
 import { OrganiserOverviewHero } from "./OrganiserOverviewHero";
 import { OrganiserPendingMatches } from "./OrganiserPendingMatches";
-import { CalendarPlus } from "lucide-react";
 
 interface DashboardOverviewProps {
   calendarEvents: any[];
@@ -31,67 +32,44 @@ interface DashboardOverviewProps {
   onNavigateSection: (section: string) => void;
 }
 
-export function DashboardOverview({
-  calendarEvents,
-  highlightedDates = [],
-  effectiveRoles,
-  onNavigateSection,
-}: DashboardOverviewProps) {
-  const isCoachOrOwner =
-    effectiveRoles.includes("gym_owner") || effectiveRoles.includes("coach");
-  const isOrganiser = effectiveRoles.includes("organiser");
-  const isFighter = effectiveRoles.includes("fighter");
-
-  const [showQuickActions, setShowQuickActions] = useState(false);
-
-  // Fighter card visibility
-  const [fighterCardVis, setFighterCardVis] = useState({
-    record: true,
-    nextFight: true,
-    calendar: true,
-  });
-
-  // Coach card visibility
-  const [coachCardVis, setCoachCardVis] = useState({
-    kpis: true,
-    fights: true,
-    calendar: true,
-  });
-
-  // Organiser card visibility
-  const [orgCardVis, setOrgCardVis] = useState({
-    stats: true,
-    pending: true,
-    calendar: true,
-  });
-
-  const toggleFighterVis = (card: keyof typeof fighterCardVis) => {
-    setFighterCardVis((prev) => ({ ...prev, [card]: !prev[card] }));
-  };
-
-  const toggleCoachVis = (card: keyof typeof coachCardVis) => {
-    setCoachCardVis((prev) => ({ ...prev, [card]: !prev[card] }));
-  };
-
-  // Quick Actions dropdown content
-  const QuickActionsDropdown = ({ children }: { children: React.ReactNode }) => (
+function QuickActionsButton({ showQuickActions, setShowQuickActions, children }: { showQuickActions: boolean; setShowQuickActions: (v: boolean) => void; children: React.ReactNode }) {
+  return (
     <div className="relative">
-      <Button
-        variant="outline"
-        className="border-primary text-primary hover:bg-primary/5 gap-2 text-[13px] font-semibold h-9 px-4"
+      <button
+        className="flex items-center gap-2 transition-all duration-150"
+        style={{
+          background: "transparent",
+          border: "1.5px solid #e8a020",
+          color: "#e8a020",
+          borderRadius: 8,
+          padding: "8px 18px",
+          fontSize: 13,
+          fontWeight: 600,
+          letterSpacing: "0.02em",
+          boxShadow: "0 0 12px rgba(232,160,32,0.15)",
+          cursor: "pointer",
+        }}
         onClick={() => setShowQuickActions(!showQuickActions)}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.08)"; e.currentTarget.style.boxShadow = "0 0 20px rgba(232,160,32,0.25)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.boxShadow = "0 0 12px rgba(232,160,32,0.15)"; }}
       >
-        <Plus className="h-4 w-4" />
+        <Plus style={{ width: 16, height: 16 }} />
         Quick Actions
-        <ChevronDown className="h-3 w-3" />
-      </Button>
-
+        <ChevronDown style={{ width: 14, height: 14 }} />
+      </button>
       {showQuickActions && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowQuickActions(false)} />
           <div
-            className="absolute right-0 top-11 z-50 min-w-[220px] rounded-xl border bg-accent/95 backdrop-blur-sm shadow-xl p-2"
-            style={{ borderColor: "hsl(var(--border))" }}
+            className="absolute right-0 top-11 z-50"
+            style={{
+              minWidth: 220,
+              background: "#1a1e28",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 12,
+              boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+              padding: 8,
+            }}
           >
             {children}
           </div>
@@ -99,113 +77,144 @@ export function DashboardOverview({
       )}
     </div>
   );
+}
+
+function TopNavBar({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="flex items-center justify-between -mt-2 mb-2"
+      style={{
+        height: 56,
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        padding: "0 4px",
+      }}
+    >
+      <div className="flex items-center gap-2">
+        <AppIcon className="h-7 w-7" />
+        <span style={{ fontFamily: "var(--font-heading)", fontSize: 18, color: "#e8eaf0", letterSpacing: "0.03em" }}>
+          MATCHUP
+        </span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function DropdownActionItem({ icon: Icon, label, onClick }: { icon: any; label: string; onClick?: () => void }) {
+  return (
+    <button
+      className="w-full flex items-center gap-2.5 rounded-md transition-colors"
+      style={{ padding: "10px 12px", fontSize: 13, color: "#8b909e" }}
+      onClick={onClick}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#e8eaf0"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8b909e"; }}
+    >
+      <Icon style={{ width: 16, height: 16 }} />
+      {label}
+    </button>
+  );
+}
+
+function DropdownActionLink({ icon: Icon, label, to, onClose }: { icon: any; label: string; to: string; onClose: () => void }) {
+  return (
+    <Link
+      to={to}
+      className="flex items-center gap-2.5 rounded-md transition-colors"
+      style={{ padding: "10px 12px", fontSize: 13, color: "#8b909e" }}
+      onClick={onClose}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#e8eaf0"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8b909e"; }}
+    >
+      <Icon style={{ width: 16, height: 16 }} />
+      {label}
+    </Link>
+  );
+}
+
+function VisibilityToggle({ label, visible, onToggle }: { label: string; visible: boolean; onToggle: () => void }) {
+  return (
+    <button
+      className="w-full flex items-center justify-between rounded-md transition-colors"
+      style={{ padding: "10px 12px", fontSize: 13, color: "#8b909e" }}
+      onClick={onToggle}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+    >
+      {label}
+      {visible ? (
+        <Eye style={{ width: 14, height: 14, color: "#e8a020" }} />
+      ) : (
+        <EyeOff style={{ width: 14, height: 14 }} />
+      )}
+    </button>
+  );
+}
+
+function CardWrapper({ visible, children, maxH = "600px" }: { visible: boolean; children: React.ReactNode; maxH?: string }) {
+  return (
+    <div
+      style={{
+        opacity: visible ? 1 : 0,
+        maxHeight: visible ? maxH : "0px",
+        overflow: "hidden",
+        transition: "opacity 0.3s ease, max-height 0.3s ease",
+        display: visible ? undefined : "none",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function DashboardOverview({
+  calendarEvents,
+  highlightedDates = [],
+  effectiveRoles,
+  onNavigateSection,
+}: DashboardOverviewProps) {
+  const isCoachOrOwner = effectiveRoles.includes("gym_owner") || effectiveRoles.includes("coach");
+  const isOrganiser = effectiveRoles.includes("organiser");
+  const isFighter = effectiveRoles.includes("fighter");
+
+  const [showQuickActions, setShowQuickActions] = useState(false);
+  const [fighterCardVis, setFighterCardVis] = useState({ record: true, nextFight: true, calendar: true });
+  const [coachCardVis, setCoachCardVis] = useState({ kpis: true, fights: true, calendar: true });
+  const [orgCardVis, setOrgCardVis] = useState({ stats: true, pending: true, calendar: true });
 
   // ═══════════════════════════════════════
   // FIGHTER OVERVIEW
   // ═══════════════════════════════════════
   if (isFighter && !isCoachOrOwner) {
-    const fighterActions = [
-      { label: "Edit Profile", icon: User, section: "my-profile" },
-      { label: "Set Availability", icon: ToggleRight, section: "my-profile" },
-      { label: "Find Opponents", icon: Crosshair, to: "/explore?tab=fighters" },
-    ];
-
-    const fighterVisItems = [
-      { key: "record" as const, label: "Fight Record Card" },
-      { key: "nextFight" as const, label: "Next Fight Card" },
-      { key: "calendar" as const, label: "Calendar Card" },
-    ];
-
     return (
       <div className="space-y-4">
-        {/* Top Nav Bar */}
-        <div className="flex items-center justify-between h-14 -mt-2 mb-2">
-          <div className="flex items-center gap-2">
-            <AppLogo className="h-6" />
-          </div>
-          <QuickActionsDropdown>
-            {fighterActions.map((action) =>
-              action.to ? (
-                <Link
-                  key={action.label}
-                  to={action.to}
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
-                  onClick={() => setShowQuickActions(false)}
-                >
-                  <action.icon className="h-4 w-4" />
-                  {action.label}
-                </Link>
-              ) : (
-                <button
-                  key={action.label}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
-                  onClick={() => {
-                    setShowQuickActions(false);
-                    action.section && onNavigateSection(action.section);
-                  }}
-                >
-                  <action.icon className="h-4 w-4" />
-                  {action.label}
-                </button>
-              )
-            )}
-            <div className="border-t border-border my-1.5" />
-            <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              KPI Visibility
-            </p>
-            {fighterVisItems.map((item) => (
-              <button
-                key={item.key}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
-                onClick={() => toggleFighterVis(item.key)}
-              >
-                {item.label}
-                {fighterCardVis[item.key] ? (
-                  <Eye className="h-3.5 w-3.5 text-primary" />
-                ) : (
-                  <EyeOff className="h-3.5 w-3.5" />
-                )}
-              </button>
-            ))}
-          </QuickActionsDropdown>
-        </div>
+        <TopNavBar>
+          <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
+            <DropdownActionItem icon={User} label="Edit Profile" onClick={() => { setShowQuickActions(false); onNavigateSection("my-profile"); }} />
+            <DropdownActionItem icon={ToggleRight} label="Set Availability" onClick={() => { setShowQuickActions(false); onNavigateSection("my-profile"); }} />
+            <DropdownActionLink icon={Crosshair} label="Find Opponents" to="/explore?tab=fighters" onClose={() => setShowQuickActions(false)} />
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "6px 0" }} />
+            <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "#555b6b" }}>KPI VISIBILITY</p>
+            <VisibilityToggle label="Fight Record Card" visible={fighterCardVis.record} onToggle={() => setFighterCardVis((p) => ({ ...p, record: !p.record }))} />
+            <VisibilityToggle label="Next Fight Card" visible={fighterCardVis.nextFight} onToggle={() => setFighterCardVis((p) => ({ ...p, nextFight: !p.nextFight }))} />
+            <VisibilityToggle label="Calendar Card" visible={fighterCardVis.calendar} onToggle={() => setFighterCardVis((p) => ({ ...p, calendar: !p.calendar }))} />
+          </QuickActionsButton>
+        </TopNavBar>
 
-        {/* Fight Record Hero */}
-        <div
-          className="transition-all duration-300 overflow-hidden"
-          style={{
-            opacity: fighterCardVis.record ? 1 : 0,
-            maxHeight: fighterCardVis.record ? "600px" : "0px",
-          }}
-        >
-          {fighterCardVis.record && <FighterRecordHero />}
-        </div>
+        <CardWrapper visible={fighterCardVis.record}>
+          <FighterRecordHero />
+        </CardWrapper>
 
-        {/* Lower two-column: Next Fight + Calendar */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-          <div
-            className="lg:col-span-3 transition-all duration-300"
-            style={{
-              opacity: fighterCardVis.nextFight ? 1 : 0,
-              maxHeight: fighterCardVis.nextFight ? "2000px" : "0px",
-              overflow: "hidden",
-            }}
-          >
-            {fighterCardVis.nextFight && <FighterNextFight />}
-          </div>
-
-          <div
-            className="lg:col-span-2 transition-all duration-300"
-            style={{
-              opacity: fighterCardVis.calendar ? 1 : 0,
-              maxHeight: fighterCardVis.calendar ? "2000px" : "0px",
-              overflow: "hidden",
-            }}
-          >
-            {fighterCardVis.calendar && (
+          {fighterCardVis.nextFight && (
+            <div className="lg:col-span-3">
+              <FighterNextFight />
+            </div>
+          )}
+          {fighterCardVis.calendar && (
+            <div className={fighterCardVis.nextFight ? "lg:col-span-2" : "lg:col-span-5"}>
               <EventCalendar events={calendarEvents} highlightedDates={highlightedDates} />
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -215,108 +224,36 @@ export function DashboardOverview({
   // COACH / GYM OWNER OVERVIEW
   // ═══════════════════════════════════════
   if (isCoachOrOwner) {
-    const coachActions = [
-      { label: "Create Gym", icon: Building2, to: "/register-gym?from=overview" },
-      { label: "Create Event", icon: Calendar, to: "/organiser/create-event?from=overview" },
-      { label: "Add Fighter", icon: Plus, section: "roster" },
-    ];
-
-    const coachVisItems = [
-      { key: "kpis" as const, label: "KPIs Card" },
-      { key: "fights" as const, label: "Fights Card" },
-      { key: "calendar" as const, label: "Calendar Card" },
-    ];
-
     return (
       <div className="space-y-4">
-        {/* Top Nav Bar */}
-        <div className="flex items-center justify-between h-14 -mt-2 mb-2">
-          <div className="flex items-center gap-2">
-            <AppLogo className="h-6" />
-          </div>
-          <QuickActionsDropdown>
-            {coachActions.map((action) =>
-              action.to ? (
-                <Link
-                  key={action.label}
-                  to={action.to}
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
-                  onClick={() => setShowQuickActions(false)}
-                >
-                  <action.icon className="h-4 w-4" />
-                  {action.label}
-                </Link>
-              ) : (
-                <button
-                  key={action.label}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
-                  onClick={() => {
-                    setShowQuickActions(false);
-                    action.section && onNavigateSection(action.section);
-                  }}
-                >
-                  <action.icon className="h-4 w-4" />
-                  {action.label}
-                </button>
-              )
-            )}
-            <div className="border-t border-border my-1.5" />
-            <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              KPI Visibility
-            </p>
-            {coachVisItems.map((item) => (
-              <button
-                key={item.key}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
-                onClick={() => toggleCoachVis(item.key)}
-              >
-                {item.label}
-                {coachCardVis[item.key] ? (
-                  <Eye className="h-3.5 w-3.5 text-primary" />
-                ) : (
-                  <EyeOff className="h-3.5 w-3.5" />
-                )}
-              </button>
-            ))}
-          </QuickActionsDropdown>
-        </div>
+        <TopNavBar>
+          <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
+            <DropdownActionLink icon={Building2} label="Create Gym" to="/register-gym?from=overview" onClose={() => setShowQuickActions(false)} />
+            <DropdownActionLink icon={Calendar} label="Create Event" to="/organiser/create-event?from=overview" onClose={() => setShowQuickActions(false)} />
+            <DropdownActionItem icon={Plus} label="Add Fighter" onClick={() => { setShowQuickActions(false); onNavigateSection("roster"); }} />
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "6px 0" }} />
+            <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "#555b6b" }}>KPI VISIBILITY</p>
+            <VisibilityToggle label="KPIs Card" visible={coachCardVis.kpis} onToggle={() => setCoachCardVis((p) => ({ ...p, kpis: !p.kpis }))} />
+            <VisibilityToggle label="Fights Card" visible={coachCardVis.fights} onToggle={() => setCoachCardVis((p) => ({ ...p, fights: !p.fights }))} />
+            <VisibilityToggle label="Calendar Card" visible={coachCardVis.calendar} onToggle={() => setCoachCardVis((p) => ({ ...p, calendar: !p.calendar }))} />
+          </QuickActionsButton>
+        </TopNavBar>
 
-        {/* KPI Hero Strip */}
-        <div
-          className="transition-all duration-300 overflow-hidden"
-          style={{
-            opacity: coachCardVis.kpis ? 1 : 0,
-            maxHeight: coachCardVis.kpis ? "400px" : "0px",
-          }}
-        >
-          {coachCardVis.kpis && <CoachKpiStrip />}
-        </div>
+        <CardWrapper visible={coachCardVis.kpis} maxH="400px">
+          <CoachKpiStrip />
+        </CardWrapper>
 
-        {/* Lower two-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-          <div
-            className="lg:col-span-3 transition-all duration-300"
-            style={{
-              opacity: coachCardVis.fights ? 1 : 0,
-              maxHeight: coachCardVis.fights ? "2000px" : "0px",
-              overflow: "hidden",
-            }}
-          >
-            {coachCardVis.fights && <CoachUpcomingFights />}
-          </div>
-
-          <div
-            className="lg:col-span-2 transition-all duration-300"
-            style={{
-              opacity: coachCardVis.calendar ? 1 : 0,
-              maxHeight: coachCardVis.calendar ? "2000px" : "0px",
-              overflow: "hidden",
-            }}
-          >
-            {coachCardVis.calendar && (
+          {coachCardVis.fights && (
+            <div className={coachCardVis.calendar ? "lg:col-span-3" : "lg:col-span-5"}>
+              <CoachUpcomingFights />
+            </div>
+          )}
+          {coachCardVis.calendar && (
+            <div className={coachCardVis.fights ? "lg:col-span-2" : "lg:col-span-5"}>
               <EventCalendar events={calendarEvents} highlightedDates={highlightedDates} />
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -326,96 +263,34 @@ export function DashboardOverview({
   // ORGANISER OVERVIEW
   // ═══════════════════════════════════════
   if (isOrganiser) {
-    const orgActions = [
-      { label: "Create Event", icon: CalendarPlus, to: "/organiser/create-event?from=overview" },
-    ];
-
-    const toggleOrgVis = (card: keyof typeof orgCardVis) => {
-      setOrgCardVis((prev) => ({ ...prev, [card]: !prev[card] }));
-    };
-
-    const orgVisItems = [
-      { key: "stats" as const, label: "Overview Stats Card" },
-      { key: "pending" as const, label: "Pending Matches Card" },
-      { key: "calendar" as const, label: "Calendar Card" },
-    ];
-
     return (
       <div className="space-y-4">
-        {/* Top Nav Bar */}
-        <div className="flex items-center justify-between h-14 -mt-2 mb-2">
-          <div className="flex items-center gap-2">
-            <AppLogo className="h-6" />
-          </div>
-          <QuickActionsDropdown>
-            {orgActions.map((action) => (
-              <Link
-                key={action.label}
-                to={action.to}
-                className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
-                onClick={() => setShowQuickActions(false)}
-              >
-                <action.icon className="h-4 w-4" />
-                {action.label}
-              </Link>
-            ))}
-            <div className="border-t border-border my-1.5" />
-            <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              KPI Visibility
-            </p>
-            {orgVisItems.map((item) => (
-              <button
-                key={item.key}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-background/50 transition-colors"
-                onClick={() => toggleOrgVis(item.key)}
-              >
-                {item.label}
-                {orgCardVis[item.key] ? (
-                  <Eye className="h-3.5 w-3.5 text-primary" />
-                ) : (
-                  <EyeOff className="h-3.5 w-3.5" />
-                )}
-              </button>
-            ))}
-          </QuickActionsDropdown>
-        </div>
+        <TopNavBar>
+          <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
+            <DropdownActionLink icon={CalendarPlus} label="Create Event" to="/organiser/create-event?from=overview" onClose={() => setShowQuickActions(false)} />
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "6px 0" }} />
+            <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "#555b6b" }}>KPI VISIBILITY</p>
+            <VisibilityToggle label="Overview Stats Card" visible={orgCardVis.stats} onToggle={() => setOrgCardVis((p) => ({ ...p, stats: !p.stats }))} />
+            <VisibilityToggle label="Pending Matches Card" visible={orgCardVis.pending} onToggle={() => setOrgCardVis((p) => ({ ...p, pending: !p.pending }))} />
+            <VisibilityToggle label="Calendar Card" visible={orgCardVis.calendar} onToggle={() => setOrgCardVis((p) => ({ ...p, calendar: !p.calendar }))} />
+          </QuickActionsButton>
+        </TopNavBar>
 
-        {/* Hero Card */}
-        <div
-          className="transition-all duration-300 overflow-hidden"
-          style={{
-            opacity: orgCardVis.stats ? 1 : 0,
-            maxHeight: orgCardVis.stats ? "600px" : "0px",
-          }}
-        >
-          {orgCardVis.stats && <OrganiserOverviewHero />}
-        </div>
+        <CardWrapper visible={orgCardVis.stats}>
+          <OrganiserOverviewHero />
+        </CardWrapper>
 
-        {/* Lower two-column */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-          <div
-            className="lg:col-span-3 transition-all duration-300"
-            style={{
-              opacity: orgCardVis.pending ? 1 : 0,
-              maxHeight: orgCardVis.pending ? "2000px" : "0px",
-              overflow: "hidden",
-            }}
-          >
-            {orgCardVis.pending && <OrganiserPendingMatches />}
-          </div>
-
-          <div
-            className="lg:col-span-2 transition-all duration-300"
-            style={{
-              opacity: orgCardVis.calendar ? 1 : 0,
-              maxHeight: orgCardVis.calendar ? "2000px" : "0px",
-              overflow: "hidden",
-            }}
-          >
-            {orgCardVis.calendar && (
+          {orgCardVis.pending && (
+            <div className={orgCardVis.calendar ? "lg:col-span-3" : "lg:col-span-5"}>
+              <OrganiserPendingMatches />
+            </div>
+          )}
+          {orgCardVis.calendar && (
+            <div className={orgCardVis.pending ? "lg:col-span-2" : "lg:col-span-5"}>
               <EventCalendar events={calendarEvents} highlightedDates={highlightedDates} />
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -431,9 +306,9 @@ export function DashboardOverview({
           <EventCalendar events={calendarEvents} highlightedDates={highlightedDates} />
         </div>
         <div className="space-y-4">
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="coach-card p-4">
             <h3 className="font-heading text-lg text-foreground mb-3">
-              QUICK <span className="text-primary">ACTIONS</span>
+              QUICK <span style={{ color: "#e8a020" }}>ACTIONS</span>
             </h3>
             <div className="grid grid-cols-1 gap-2">
               <Button variant="outline" className="justify-start gap-2 h-10" asChild>
@@ -442,11 +317,7 @@ export function DashboardOverview({
                   Browse Events
                 </Link>
               </Button>
-              <Button
-                variant="outline"
-                className="justify-start gap-2 h-10"
-                onClick={() => onNavigateSection("actions")}
-              >
+              <Button variant="outline" className="justify-start gap-2 h-10" onClick={() => onNavigateSection("actions")}>
                 <Inbox className="h-4 w-4 text-primary" />
                 View Actions
               </Button>
