@@ -205,7 +205,7 @@ export function CoachKpiStrip() {
       </div>
 
       {/* Panel 3: Lead Conversion */}
-      <div className="p-5">
+      <div className="p-5" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", minHeight: 140 }}>
         <p className="text-xs text-muted-foreground mb-2">Lead Conversion</p>
         <div className="h-[120px]">
           <ResponsiveContainer width="100%" height="100%">
