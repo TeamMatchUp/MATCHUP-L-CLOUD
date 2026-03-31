@@ -225,7 +225,7 @@ export function CoachKpiStrip() {
       </div>
 
       {/* Panel 4: Total Gym Views */}
-      <div className="p-5 flex flex-col justify-center">
+      <div className="p-5 flex flex-col justify-center" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", minHeight: 140 }}>
         {!showPerGymViews ? (
           <div className="text-center">
             <p className="text-xs text-muted-foreground mb-2">Total Gym Views</p>
