@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { PanelLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -45,6 +44,9 @@ export default function Dashboard() {
   const activeSection = searchParams.get("section") || "overview";
   const navigate = useNavigate();
   const { user, roles, activeRole, setActiveRole, signOut } = useAuth();
+  const isMobile = useIsMobile();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const data = useDashboardData();
   const {
@@ -100,9 +102,6 @@ export default function Dashboard() {
     enabled: !!user,
     staleTime: 60000,
   });
-
-  const initials = (profile?.full_name || user?.email || "U").slice(0, 2).toUpperCase();
-  const greeting = profile?.full_name ? `Welcome, ${profile.full_name}` : "Welcome";
 
   const handleSignOut = async () => {
     await signOut();
@@ -305,15 +304,63 @@ export default function Dashboard() {
     }
   };
 
+  const toggleSidebar = () => {
+    if (isMobile) {
+      setMobileSidebarOpen(!mobileSidebarOpen);
+    } else {
+      setSidebarCollapsed(!sidebarCollapsed);
+    }
+  };
+
   return (
-    <SidebarProvider defaultOpen={true}>
-      <DashboardInner
-        sectionTitle={sectionTitle}
-        pendingCount={pendingProposals.length}
-        unreadCount={unreadNotifications.length}
-        actionsCount={actionsCount}
-        renderContent={renderContent}
-      />
+    <div style={{ background: "#0a0a0c", width: "100vw", minHeight: "100vh", margin: 0 }}>
+      <div className="flex w-full overflow-hidden" style={{ minHeight: "100vh" }}>
+        {/* Mobile sidebar overlay */}
+        {isMobile && mobileSidebarOpen && (
+          <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setMobileSidebarOpen(false)} />
+        )}
+
+        {/* Sidebar */}
+        <div
+          className={isMobile ? "fixed top-0 left-0 bottom-0 z-50" : "relative"}
+          style={isMobile ? { transform: mobileSidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.2s ease" } : {}}
+        >
+          <DashboardSidebar
+            pendingCount={pendingProposals.length}
+            unreadCount={unreadNotifications.length}
+            actionsCount={actionsCount}
+            collapsed={isMobile ? false : sidebarCollapsed}
+            onToggleCollapse={toggleSidebar}
+          />
+        </div>
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col min-w-0" style={{ background: "#0d0f12" }}>
+          {/* Mobile hamburger */}
+          {isMobile && (
+            <div className="sticky top-0 z-30 flex items-center h-12 px-3" style={{ background: "#0d0f12", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileSidebarOpen(true)}
+                className="h-8 w-8"
+                style={{ color: "#8b909e" }}
+              >
+                <PanelLeft className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
+
+          <main className="flex-1 overflow-y-auto p-4 md:p-6" style={{ minHeight: "100vh" }}>
+            {sectionTitle !== "Dashboard" && (
+              <h1 className="font-heading text-2xl md:text-3xl mb-6" style={{ color: "#e8eaf0" }}>
+                {sectionTitle}
+              </h1>
+            )}
+            {renderContent()}
+          </main>
+        </div>
+      </div>
 
       {/* Dialogs */}
       {user && (addFighterGymId || primaryGym?.id) && (
@@ -366,63 +413,6 @@ export default function Dashboard() {
           onSuccess={handleRefresh}
         />
       )}
-    </SidebarProvider>
-  );
-}
-
-/** Inner component that can access useSidebar context */
-function DashboardInner({
-  sectionTitle,
-  pendingCount,
-  unreadCount,
-  actionsCount,
-  renderContent,
-}: {
-  sectionTitle: string;
-  pendingCount: number;
-  unreadCount: number;
-  actionsCount: number;
-  renderContent: () => React.ReactNode;
-}) {
-  const isMobile = useIsMobile();
-  const { toggleSidebar } = useSidebar();
-
-  return (
-    <div className="min-h-screen md:p-3" style={{ background: 'hsl(var(--background))' }}>
-      <div className="flex w-full md:rounded-2xl md:border md:border-border overflow-hidden"
-        style={{ minHeight: isMobile ? '100vh' : 'calc(100vh - 24px)' }}
-      >
-        <DashboardSidebar
-          pendingCount={pendingCount}
-          unreadCount={unreadCount}
-          actionsCount={actionsCount}
-        />
-
-        <div className="flex-1 flex flex-col min-w-0 bg-background">
-          {/* Mobile hamburger */}
-          {isMobile && (
-            <div className="sticky top-0 z-30 flex items-center h-12 px-3 bg-background border-b border-border">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleSidebar}
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              >
-                <PanelLeft className="h-5 w-5" />
-              </Button>
-            </div>
-          )}
-
-          <main className="flex-1 overflow-y-auto p-4 md:p-6">
-            {sectionTitle !== "Dashboard" && (
-              <h1 className="font-heading text-2xl md:text-3xl text-foreground mb-6">
-                {sectionTitle}
-              </h1>
-            )}
-            {renderContent()}
-          </main>
-        </div>
-      </div>
     </div>
   );
 }
