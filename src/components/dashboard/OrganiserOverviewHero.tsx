@@ -154,7 +154,7 @@ export function OrganiserOverviewHero() {
               {showTicketDrop && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowTicketDrop(false)} />
-                  <div className="absolute left-0 top-5 z-50 min-w-[120px] rounded-lg border border-border bg-accent shadow-xl p-1">
+                  <div className="absolute left-0 top-5 min-w-[120px] rounded-lg border border-border bg-accent shadow-xl p-1" style={{ zIndex: 9999 }}>
                     {ticketTypes.map((type) => (
                       <button
                         key={type}
