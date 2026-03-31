@@ -178,7 +178,7 @@ export function CoachKpiStrip() {
   return (
     <div className="coach-card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
       {/* Panel 1: Total Fighters */}
-      <div className="p-5">
+      <div className="p-5" style={{ minHeight: 140 }}>
         <p className="text-xs text-muted-foreground mb-2">Total Fighters</p>
         <div className="h-[120px]">
           <ResponsiveContainer width="100%" height="100%">
