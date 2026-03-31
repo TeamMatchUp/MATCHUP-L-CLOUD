@@ -310,28 +310,34 @@ export function FighterRecordHero() {
         <div className="border-t border-border my-5" />
 
         {/* Bottom stats */}
-        <div className="grid grid-cols-3 divide-x divide-border flex-1">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr auto 1fr", alignItems: "center", padding: "20px 0" }}>
           {[
             { label: "Total Fights", value: displayRecord.total, key: "total" },
             { label: "Win Rate", value: `${winRate}%`, key: "winrate" },
             { label: "Highest Win Streak", value: highestStreak, key: "streak" },
-          ].map((stat) => (
-            <div
-              key={stat.key}
-              className="flex flex-col items-center justify-center px-2 cursor-default"
-              onMouseEnter={() => setHoveredStat(stat.key)}
-              onMouseLeave={() => setHoveredStat(null)}
-            >
-              <p className="text-xs text-muted-foreground mb-1">{stat.label}</p>
-              <p
-                className="text-2xl md:text-[28px] font-bold transition-colors duration-150"
-                style={{
-                  color: hoveredStat === stat.key ? "hsl(var(--primary))" : "hsl(var(--foreground))",
-                }}
+          ].map((stat, i) => (
+            <>
+              {i > 0 && (
+                <div key={`div-${stat.key}`} style={{ width: 1, height: 40, background: "rgba(255,255,255,0.06)", alignSelf: "center" }} />
+              )}
+              <div
+                key={stat.key}
+                className="flex flex-col items-center justify-center cursor-default"
+                onMouseEnter={() => setHoveredStat(stat.key)}
+                onMouseLeave={() => setHoveredStat(null)}
               >
-                {stat.value}
-              </p>
-            </div>
+                <p style={{ fontSize: 12, color: "#8b909e", marginBottom: 4 }}>{stat.label}</p>
+                <p
+                  className="font-bold transition-colors duration-150"
+                  style={{
+                    fontSize: 28,
+                    color: hoveredStat === stat.key ? "#e8a020" : "#e8eaf0",
+                  }}
+                >
+                  {stat.value}
+                </p>
+              </div>
+            </>
           ))}
         </div>
       </div>
