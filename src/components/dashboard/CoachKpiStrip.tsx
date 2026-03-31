@@ -198,7 +198,7 @@ export function CoachKpiStrip() {
       </div>
 
       {/* Panel 2: Win Rate */}
-      <div className="p-5 flex flex-col items-center justify-center text-center">
+      <div className="p-5 flex flex-col items-center justify-center text-center" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", minHeight: 140 }}>
         <p className="text-xs text-muted-foreground mb-2">Win Rate</p>
         <p className="font-heading text-5xl" style={{ color: winColor }}>{winRate}%</p>
         <p className="text-[11px] text-muted-foreground mt-1">{winDelta} from last month</p>
