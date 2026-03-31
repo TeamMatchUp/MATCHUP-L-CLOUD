@@ -106,10 +106,10 @@ export function OrganiserOverviewHero() {
           <div>
             <p className="text-xs text-muted-foreground mb-2">Match Confirmation Progress</p>
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-2.5 rounded-full bg-border/50 overflow-hidden">
+              <div className="flex-1 rounded-full overflow-hidden" style={{ height: 14, background: "rgba(255,255,255,0.08)" }}>
                 <div
-                  className="h-full rounded-full bg-primary transition-all duration-400"
-                  style={{ width: `${progressPct}%` }}
+                  className="rounded-full transition-all"
+                  style={{ width: `${progressPct}%`, height: 14, background: "#e8a020", boxShadow: "0 0 10px rgba(232,160,32,0.3)", transition: "width 0.4s ease" }}
                 />
               </div>
               <span className="text-base font-bold text-primary">{progressPct}%</span>
