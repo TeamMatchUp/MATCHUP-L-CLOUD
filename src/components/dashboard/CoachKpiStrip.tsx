@@ -176,9 +176,9 @@ export function CoachKpiStrip() {
   const winColor = winRate >= 50 ? "hsl(var(--success))" : "hsl(var(--destructive))";
 
   return (
-    <div className="coach-card grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-border">
+    <div className="coach-card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
       {/* Panel 1: Total Fighters */}
-      <div className="p-5">
+      <div className="p-5" style={{ minHeight: 140 }}>
         <p className="text-xs text-muted-foreground mb-2">Total Fighters</p>
         <div className="h-[120px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -198,14 +198,14 @@ export function CoachKpiStrip() {
       </div>
 
       {/* Panel 2: Win Rate */}
-      <div className="p-5 flex flex-col items-center justify-center text-center">
+      <div className="p-5 flex flex-col items-center justify-center text-center" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", minHeight: 140 }}>
         <p className="text-xs text-muted-foreground mb-2">Win Rate</p>
         <p className="font-heading text-5xl" style={{ color: winColor }}>{winRate}%</p>
         <p className="text-[11px] text-muted-foreground mt-1">{winDelta} from last month</p>
       </div>
 
       {/* Panel 3: Lead Conversion */}
-      <div className="p-5">
+      <div className="p-5" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", minHeight: 140 }}>
         <p className="text-xs text-muted-foreground mb-2">Lead Conversion</p>
         <div className="h-[120px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -225,7 +225,7 @@ export function CoachKpiStrip() {
       </div>
 
       {/* Panel 4: Total Gym Views */}
-      <div className="p-5 flex flex-col justify-center">
+      <div className="p-5 flex flex-col justify-center" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)", minHeight: 140 }}>
         {!showPerGymViews ? (
           <div className="text-center">
             <p className="text-xs text-muted-foreground mb-2">Total Gym Views</p>
