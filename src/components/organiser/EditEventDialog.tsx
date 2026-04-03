@@ -78,6 +78,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
     setCity(event.city || "");
     setTicketEnabled(event.ticket_enabled ?? false);
     setStatus(event.status);
+    setBannerUrl(event.banner_image || null);
   }, [event]);
 
   const updateMutation = useMutation({
