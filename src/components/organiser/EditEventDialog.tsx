@@ -36,6 +36,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, Globe, EyeOff, MapPin } from "lucide-react";
 import { geocodePostcode } from "@/hooks/use-postcode-search";
+import { BannerImageUpload } from "@/components/BannerImageUpload";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type EventStatus = Database["public"]["Enums"]["event_status"];
