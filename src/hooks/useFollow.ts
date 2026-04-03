@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function useFollow(targetUserId: string | null | undefined) {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
