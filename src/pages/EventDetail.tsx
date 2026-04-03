@@ -146,7 +146,7 @@ export default function EventDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
         <Header />
         <main className="pt-16"><div className="container py-16"><div className="h-8 w-64 bg-card animate-pulse rounded mb-4" /><div className="h-4 w-48 bg-card animate-pulse rounded" /></div></main>
       </div>
@@ -155,7 +155,7 @@ export default function EventDetail() {
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
         <Header />
         <main className="pt-16"><div className="container py-16 text-center">
           <h1 className="font-heading text-3xl text-foreground mb-4">Event Not Found</h1>
@@ -311,7 +311,7 @@ export default function EventDetail() {
   // Fight card sections are conditionally rendered below based on whether public confirmed bouts exist
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: "#0d0f12" }}>
       <Header />
       <main className="pt-16">
         <section style={{ padding: "10px 0" }}>

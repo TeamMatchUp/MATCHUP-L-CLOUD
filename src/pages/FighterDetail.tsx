@@ -55,7 +55,7 @@ export default function FighterDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
         <Header />
         <main className="pt-16">
           <div className="container py-16">
@@ -68,7 +68,7 @@ export default function FighterDetail() {
 
   if (!fighter) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
         <Header />
         <main className="pt-16">
           <div className="container py-16 text-center">
@@ -87,7 +87,7 @@ export default function FighterDetail() {
   const isOwnerOrCoach = user && (fighter.user_id === user.id || fighter.created_by_coach_id === user.id);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: "#0d0f12" }}>
       <Header />
       <main className="pt-16">
         <section style={{ padding: "10px 0" }}>
