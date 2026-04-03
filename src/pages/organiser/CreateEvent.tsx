@@ -77,6 +77,7 @@ export default function CreateEvent() {
     const { data: event, error: eventError } = await supabase
       .from("events")
       .insert({
+        id: eventId,
         title,
         date: format(date, "yyyy-MM-dd"),
         location,
@@ -93,6 +94,7 @@ export default function CreateEvent() {
         tickets_url: ticketsUrl || null,
         ticket_count: ticketCount ? parseInt(ticketCount) : null,
         sold_out: soldOut,
+        banner_image: bannerUrl,
         organiser_id: user.id,
         status: "draft",
       } as any)
