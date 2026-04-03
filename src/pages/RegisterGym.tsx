@@ -63,6 +63,7 @@ export default function RegisterGym() {
         }
       }
       const { error } = await supabase.from("gyms").insert({
+        id: gymId,
         name,
         location: location || null,
         country,
@@ -75,6 +76,7 @@ export default function RegisterGym() {
         phone: phone || null,
         website: website || null,
         description: description || null,
+        banner_image: bannerUrl,
         coach_id: user!.id,
       } as any);
       if (error) throw error;
