@@ -105,6 +105,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
     setInstagramUrl(gym.instagram_url || "");
     setFacebookUrl(gym.facebook_url || "");
     setTwitterUrl(gym.twitter_url || "");
+    setBannerUrl(gym.banner_image || null);
   }, [gym]);
 
   const updateMutation = useMutation({
