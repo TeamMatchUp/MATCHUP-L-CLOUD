@@ -267,6 +267,7 @@ export type Database = {
       }
       events: {
         Row: {
+          banner_image: string | null
           city: string | null
           contact_email: string | null
           contact_phone: string | null
@@ -297,6 +298,7 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
+          banner_image?: string | null
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -327,6 +329,7 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
+          banner_image?: string | null
           city?: string | null
           contact_email?: string | null
           contact_phone?: string | null
@@ -955,6 +958,7 @@ export type Database = {
       gyms: {
         Row: {
           address: string | null
+          banner_image: string | null
           city: string | null
           claimed: boolean | null
           coach_id: string | null
@@ -985,6 +989,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          banner_image?: string | null
           city?: string | null
           claimed?: boolean | null
           coach_id?: string | null
@@ -1015,6 +1020,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          banner_image?: string | null
           city?: string | null
           claimed?: boolean | null
           coach_id?: string | null
