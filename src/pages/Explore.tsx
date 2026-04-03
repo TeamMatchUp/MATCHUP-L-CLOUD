@@ -24,6 +24,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import type { Database } from "@/integrations/supabase/types";
 import { Map as PigeonMap, Marker, Overlay } from "pigeon-maps";
 import React from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useFollow } from "@/hooks/useFollow";
+import logoWhite from "@/assets/logo-full-white.svg";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
