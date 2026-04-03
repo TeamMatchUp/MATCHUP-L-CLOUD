@@ -134,6 +134,17 @@ export default function CreateEvent() {
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
+                <Label>Banner Image</Label>
+                <BannerImageUpload
+                  bucket="event-images"
+                  entityId={eventId}
+                  currentUrl={bannerUrl}
+                  onUploaded={(url) => setBannerUrl(url)}
+                  onRemoved={() => setBannerUrl(null)}
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="title">Event Title</Label>
                 <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. London Fight Night" required />
               </div>
