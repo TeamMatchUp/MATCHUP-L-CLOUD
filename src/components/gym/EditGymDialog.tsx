@@ -181,6 +181,17 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
 
         <div className="space-y-4">
           <div className="space-y-1">
+            <Label>Banner Image</Label>
+            <BannerImageUpload
+              bucket="gym-images"
+              entityId={gym.id}
+              currentUrl={bannerUrl}
+              onUploaded={(url) => setBannerUrl(url)}
+              onRemoved={() => setBannerUrl(null)}
+            />
+          </div>
+
+          <div className="space-y-1">
             <Label>Gym Name</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
