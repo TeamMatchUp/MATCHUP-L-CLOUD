@@ -194,7 +194,7 @@ export default function GymDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
         <Header />
         <main className="pt-16">
           <div className="container py-16">
