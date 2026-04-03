@@ -35,6 +35,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { Trash2 } from "lucide-react";
+import { BannerImageUpload } from "@/components/BannerImageUpload";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 const COUNTRIES = Constants.public.Enums.country_code;
@@ -56,6 +57,7 @@ interface GymData {
   instagram_url: string | null;
   facebook_url: string | null;
   twitter_url: string | null;
+  banner_image?: string | null;
 }
 
 interface EditGymDialogProps {
@@ -85,6 +87,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
   const [instagramUrl, setInstagramUrl] = useState(gym.instagram_url || "");
   const [facebookUrl, setFacebookUrl] = useState(gym.facebook_url || "");
   const [twitterUrl, setTwitterUrl] = useState(gym.twitter_url || "");
+  const [bannerUrl, setBannerUrl] = useState<string | null>(gym.banner_image || null);
 
   useEffect(() => {
     setName(gym.name);
@@ -102,6 +105,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
     setInstagramUrl(gym.instagram_url || "");
     setFacebookUrl(gym.facebook_url || "");
     setTwitterUrl(gym.twitter_url || "");
+    setBannerUrl(gym.banner_image || null);
   }, [gym]);
 
   const updateMutation = useMutation({
@@ -135,6 +139,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
           instagram_url: instagramUrl || null,
           facebook_url: facebookUrl || null,
           twitter_url: twitterUrl || null,
+          banner_image: bannerUrl,
         } as any)
         .eq("id", gym.id);
       if (error) throw error;
@@ -175,6 +180,17 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
         </DialogHeader>
 
         <div className="space-y-4">
+          <div className="space-y-1">
+            <Label>Banner Image</Label>
+            <BannerImageUpload
+              bucket="gym-images"
+              entityId={gym.id}
+              currentUrl={bannerUrl}
+              onUploaded={(url) => setBannerUrl(url)}
+              onRemoved={() => setBannerUrl(null)}
+            />
+          </div>
+
           <div className="space-y-1">
             <Label>Gym Name</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} />

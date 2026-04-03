@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { BannerImageUpload } from "@/components/BannerImageUpload";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 const COUNTRIES = Constants.public.Enums.country_code;
@@ -36,6 +37,10 @@ export default function CreateEvent() {
 
   const fromParam = searchParams.get("from");
   const backRoute = fromParam === "overview" ? "/dashboard?section=overview" : "/dashboard?section=events";
+
+  // Generate a stable UUID for the event so we can upload the banner before insert
+  const [eventId] = useState(() => crypto.randomUUID());
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [date, setDate] = useState<Date>();
@@ -72,6 +77,7 @@ export default function CreateEvent() {
     const { data: event, error: eventError } = await supabase
       .from("events")
       .insert({
+        id: eventId,
         title,
         date: format(date, "yyyy-MM-dd"),
         location,
@@ -88,6 +94,7 @@ export default function CreateEvent() {
         tickets_url: ticketsUrl || null,
         ticket_count: ticketCount ? parseInt(ticketCount) : null,
         sold_out: soldOut,
+        banner_image: bannerUrl,
         organiser_id: user.id,
         status: "draft",
       } as any)
@@ -126,6 +133,17 @@ export default function CreateEvent() {
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label>Banner Image</Label>
+                <BannerImageUpload
+                  bucket="event-images"
+                  entityId={eventId}
+                  currentUrl={bannerUrl}
+                  onUploaded={(url) => setBannerUrl(url)}
+                  onRemoved={() => setBannerUrl(null)}
+                />
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="title">Event Title</Label>
                 <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. London Fight Night" required />

@@ -36,6 +36,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, Globe, EyeOff, MapPin } from "lucide-react";
 import { geocodePostcode } from "@/hooks/use-postcode-search";
+import { BannerImageUpload } from "@/components/BannerImageUpload";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type EventStatus = Database["public"]["Enums"]["event_status"];
@@ -64,6 +65,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
   const [city, setCity] = useState(event.city || "");
   const [ticketEnabled, setTicketEnabled] = useState(event.ticket_enabled ?? false);
   const [status, setStatus] = useState<EventStatus>(event.status);
+  const [bannerUrl, setBannerUrl] = useState<string | null>(event.banner_image || null);
 
   useEffect(() => {
     setTitle(event.title);
@@ -76,6 +78,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
     setCity(event.city || "");
     setTicketEnabled(event.ticket_enabled ?? false);
     setStatus(event.status);
+    setBannerUrl(event.banner_image || null);
   }, [event]);
 
   const updateMutation = useMutation({
@@ -104,6 +107,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
           city: city || null,
           ticket_enabled: ticketEnabled,
           status,
+          banner_image: bannerUrl,
         } as any)
         .eq("id", event.id);
       if (error) throw error;
@@ -144,6 +148,17 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
         </DialogHeader>
 
         <div className="space-y-4">
+          <div className="space-y-1">
+            <Label>Banner Image</Label>
+            <BannerImageUpload
+              bucket="event-images"
+              entityId={event.id}
+              currentUrl={bannerUrl}
+              onUploaded={(url) => setBannerUrl(url)}
+              onRemoved={() => setBannerUrl(null)}
+            />
+          </div>
+
           <div className="space-y-1">
             <Label>Event Title</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />

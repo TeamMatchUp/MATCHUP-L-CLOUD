@@ -22,6 +22,7 @@ import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { motion } from "framer-motion";
 import { Building2 } from "lucide-react";
+import { BannerImageUpload } from "@/components/BannerImageUpload";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 const COUNTRIES = Constants.public.Enums.country_code;
@@ -34,6 +35,9 @@ export default function RegisterGym() {
 
   const fromParam = searchParams.get("from");
   const backRoute = fromParam === "overview" ? "/dashboard?section=overview" : "/dashboard?section=gyms";
+
+  const [gymId] = useState(() => crypto.randomUUID());
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
@@ -59,6 +63,7 @@ export default function RegisterGym() {
         }
       }
       const { error } = await supabase.from("gyms").insert({
+        id: gymId,
         name,
         location: location || null,
         country,
@@ -71,6 +76,7 @@ export default function RegisterGym() {
         phone: phone || null,
         website: website || null,
         description: description || null,
+        banner_image: bannerUrl,
         coach_id: user!.id,
       } as any);
       if (error) throw error;
@@ -109,6 +115,17 @@ export default function RegisterGym() {
               </p>
 
               <div className="rounded-lg border border-border bg-card p-8">
+                <div className="space-y-2 mb-6">
+                  <Label>Banner Image</Label>
+                  <BannerImageUpload
+                    bucket="gym-images"
+                    entityId={gymId}
+                    currentUrl={bannerUrl}
+                    onUploaded={(url) => setBannerUrl(url)}
+                    onRemoved={() => setBannerUrl(null)}
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div className="space-y-2">
                     <Label>Gym Name *</Label>
