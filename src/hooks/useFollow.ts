@@ -62,7 +62,7 @@ export function useFollow(targetUserId: string | null | undefined) {
       setFollowerCount((c) => c + (was ? 1 : -1));
     }
     setLoading(false);
-  }, [user, targetUserId, isFollowing, loading, profile]);
+  }, [user, targetUserId, isFollowing, loading]);
 
   return { isFollowing, toggle, loading, followerCount };
 }
