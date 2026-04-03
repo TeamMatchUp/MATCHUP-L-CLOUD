@@ -107,6 +107,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
           city: city || null,
           ticket_enabled: ticketEnabled,
           status,
+          banner_image: bannerUrl,
         } as any)
         .eq("id", event.id);
       if (error) throw error;
