@@ -140,9 +140,9 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
         {
           key: "explore", label: "Explore", icon: Compass, isAccordion: true,
           children: [
-            { key: "explore-gyms", label: "Gyms", to: "/explore?tab=gyms" },
-            { key: "explore-events", label: "Events", to: "/explore?tab=events" },
-            { key: "explore-fighters", label: "Fighters", to: "/explore?tab=fighters" },
+            { key: "explore-gyms", label: "Gyms", to: "/explore/gyms" },
+            { key: "explore-events", label: "Events", to: "/explore/events" },
+            { key: "explore-fighters", label: "Fighters", to: "/explore/fighters" },
           ],
         },
       ];
