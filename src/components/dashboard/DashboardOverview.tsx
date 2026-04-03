@@ -24,6 +24,7 @@ import { FighterRecordHero } from "./FighterRecordHero";
 import { FighterNextFight } from "./FighterNextFight";
 import { OrganiserOverviewHero } from "./OrganiserOverviewHero";
 import { OrganiserPendingMatches } from "./OrganiserPendingMatches";
+import { DashboardNetwork } from "./DashboardNetwork";
 
 interface DashboardOverviewProps {
   calendarEvents: any[];
