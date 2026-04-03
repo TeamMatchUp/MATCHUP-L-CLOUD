@@ -51,7 +51,7 @@ export function useFollow(targetUserId: string | null | undefined) {
           await supabase.rpc("create_notification", {
             _user_id: targetUserId,
             _title: "New Follower",
-            _message: `${(profile as any)?.full_name ?? "Someone"} started following you`,
+            _message: `Someone started following you`,
             _type: "system",
             _reference_id: user.id,
           });
