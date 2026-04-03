@@ -87,6 +87,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
   const [instagramUrl, setInstagramUrl] = useState(gym.instagram_url || "");
   const [facebookUrl, setFacebookUrl] = useState(gym.facebook_url || "");
   const [twitterUrl, setTwitterUrl] = useState(gym.twitter_url || "");
+  const [bannerUrl, setBannerUrl] = useState<string | null>(gym.banner_image || null);
 
   useEffect(() => {
     setName(gym.name);
