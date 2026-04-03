@@ -217,6 +217,8 @@ export function DashboardOverview({
             </div>
           )}
         </div>
+
+        <DashboardNetwork />
       </div>
     );
   }
