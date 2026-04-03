@@ -22,6 +22,7 @@ import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { motion } from "framer-motion";
 import { Building2 } from "lucide-react";
+import { BannerImageUpload } from "@/components/BannerImageUpload";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 const COUNTRIES = Constants.public.Enums.country_code;
@@ -34,6 +35,9 @@ export default function RegisterGym() {
 
   const fromParam = searchParams.get("from");
   const backRoute = fromParam === "overview" ? "/dashboard?section=overview" : "/dashboard?section=gyms";
+
+  const [gymId] = useState(() => crypto.randomUUID());
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null);
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
