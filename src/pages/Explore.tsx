@@ -728,9 +728,19 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
                   <div className="flex items-center gap-2"><MapPin style={{ width: 14, height: 14, color: EX.muted }} /><span style={{ fontSize: 12, color: EX.muted }}>{event.city ? `${event.city}, ${event.location}` : event.location}</span></div>
                 </div>
               </div>
+              {/* Main Event preview */}
+              {(() => {
+                const publicSlots = event.event_fight_slots?.filter((s: any) => s.is_public === true && s.status === "confirmed" && (s.fighter_a_id || s.fighter_b_id));
+                if (!publicSlots || publicSlots.length === 0) return null;
+                return (
+                  <div style={{ padding: "0 16px 8px" }}>
+                    <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", letterSpacing: "0.05em" }}>MAIN EVENT</span>
+                  </div>
+                );
+              })()}
               {/* Footer */}
               <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                <span style={{ fontSize: 13, color: EX.gold }}>View Details</span>
+                <span style={{ fontSize: 13, color: EX.gold }}>View Event</span>
                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: EX.goldDim, border: `1px solid ${EX.goldBorder}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <ChevronRight style={{ width: 14, height: 14, color: EX.gold }} />
                 </div>
