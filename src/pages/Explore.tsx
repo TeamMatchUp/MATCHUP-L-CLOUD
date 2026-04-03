@@ -249,9 +249,10 @@ export default function Explore() {
   }, [fighters, searchQuery]);
 
   // Pagination
+  const pageSize = isMobile ? ITEMS_PER_PAGE_MOBILE : ITEMS_PER_PAGE_DESKTOP;
   const currentItems = tab === "events" ? filteredEvents : tab === "gyms" ? filteredGyms : filteredFighters;
-  const totalPages = Math.ceil(currentItems.length / ITEMS_PER_PAGE);
-  const paginatedItems = currentItems.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(currentItems.length / pageSize);
+  const paginatedItems = currentItems.slice(page * pageSize, (page + 1) * pageSize);
 
   // Map markers data
   const mapMarkers = useMemo(() => {
