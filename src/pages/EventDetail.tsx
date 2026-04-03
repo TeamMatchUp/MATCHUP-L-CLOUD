@@ -323,11 +323,20 @@ export default function EventDetail() {
             </div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              {/* Two-panel layout — equal width, aligned with fight card below */}
+              {/* Banner hero */}
+              {event.banner_image && (
+                <div className="mb-8 rounded-xl overflow-hidden relative" style={{ height: 280 }}>
+                  <img src={event.banner_image} alt={event.title} className="w-full h-full object-cover" />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(13,15,18,0.95) 100%)" }} />
+                  <h1 className="absolute bottom-6 left-6 font-heading text-4xl md:text-5xl text-foreground" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{event.title}</h1>
+                </div>
+              )}
+
+              {/* Two-panel layout */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
                 {/* Left panel */}
                 <div>
-                  <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>
+                  {!event.banner_image && <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>}
                   {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
 
                   {event.description && (
