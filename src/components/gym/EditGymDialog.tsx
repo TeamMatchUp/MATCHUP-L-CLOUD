@@ -139,6 +139,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
           instagram_url: instagramUrl || null,
           facebook_url: facebookUrl || null,
           twitter_url: twitterUrl || null,
+          banner_image: bannerUrl,
         } as any)
         .eq("id", gym.id);
       if (error) throw error;
