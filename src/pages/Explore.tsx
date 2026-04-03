@@ -694,10 +694,30 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
             >
               {/* Hero area */}
               <div style={{ height: 180, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Calendar style={{ width: 32, height: 32, color: "rgba(232,160,32,0.3)" }} />
-                {hasTickets && !isSoldOut && (
-                  <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(239,68,68,0.85)", backdropFilter: "blur(8px)", color: "white", borderRadius: 9999, padding: "4px 10px", fontSize: 11, fontWeight: 600 }}>Tickets Available</span>
+                {event.banner_image ? (
+                  <img src={event.banner_image} alt={event.title} className="w-full h-full object-cover" />
+                ) : (
+                  <Calendar style={{ width: 32, height: 32, color: "rgba(232,160,32,0.3)" }} />
                 )}
+                {hasTickets && !isSoldOut && (
+                  <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(239,68,68,0.85)", backdropFilter: "blur(8px)", color: "white", borderRadius: 9999, padding: "4px 10px", fontSize: 11, fontWeight: 600 }}>● Tickets Available</span>
+                )}
+                {isSoldOut && (
+                  <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", borderRadius: 9999, padding: "4px 10px", fontSize: 11, fontWeight: 600 }}>Sold Out</span>
+                )}
+                {(() => {
+                  const minPrice = event.tickets?.reduce((min: number | null, t: any) => {
+                    if (t.price == null) return min;
+                    return min === null ? t.price : Math.min(min, t.price);
+                  }, null as number | null);
+                  if (minPrice == null) return null;
+                  return (
+                    <span style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", borderRadius: 9999, padding: "6px 12px" }}>
+                      <span style={{ fontSize: 9, color: "white", display: "block" }}>From</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: EX.gold }}>£{minPrice}</span>
+                    </span>
+                  );
+                })()}
               </div>
               {/* Body */}
               <div style={{ padding: 16 }}>
