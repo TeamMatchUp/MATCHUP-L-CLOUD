@@ -115,6 +115,17 @@ export default function RegisterGym() {
               </p>
 
               <div className="rounded-lg border border-border bg-card p-8">
+                <div className="space-y-2 mb-6">
+                  <Label>Banner Image</Label>
+                  <BannerImageUpload
+                    bucket="gym-images"
+                    entityId={gymId}
+                    currentUrl={bannerUrl}
+                    onUploaded={(url) => setBannerUrl(url)}
+                    onRemoved={() => setBannerUrl(null)}
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div className="space-y-2">
                     <Label>Gym Name *</Label>
