@@ -796,9 +796,10 @@ function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymI
                 {gym.banner_image ? (
                   <img src={gym.banner_image} alt={gym.name} className="w-full h-full object-cover transition-transform duration-400" style={{ transition: "transform 0.4s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.03)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }} />
                 ) : (
-                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 48, color: "rgba(232,160,32,0.25)" }}>
-                    {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                  </span>
+                  <>
+                    <NetworkBackground />
+                    <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 80, opacity: 0.12, pointerEvents: "none" }} />
+                  </>
                 )}
                 {tags.length > 0 && (
                   <div className="absolute bottom-2.5 left-2.5 flex flex-wrap gap-1">
