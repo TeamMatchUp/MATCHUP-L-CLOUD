@@ -416,6 +416,7 @@ export function DashboardOverview({
   if (isOrganiser) {
     return (
       <div className="space-y-4">
+        <ProfileHero avatarUrl={profileData?.avatar_url} fullName={profileData?.full_name} roleLabel={roleLabel} followerCount={followerCount} followingCount={followingCount} roleStat={roleStat} roleStatLabel={roleStatLabel} />
         <TopNavBar>
           <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
             <DropdownActionLink icon={CalendarPlus} label="Create Event" to="/organiser/create-event?from=overview" onClose={() => setShowQuickActions(false)} />
