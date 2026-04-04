@@ -27,6 +27,8 @@ import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFollow } from "@/hooks/useFollow";
 import logoWhite from "@/assets/logo-full-white.svg";
+import iconWhite from "@/assets/icon-white.svg";
+import NetworkBackground from "@/components/NetworkBackground";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
@@ -697,7 +699,10 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
                 {event.banner_image ? (
                   <img src={event.banner_image} alt={event.title} className="w-full h-full object-cover" />
                 ) : (
-                  <Calendar style={{ width: 32, height: 32, color: "rgba(232,160,32,0.3)" }} />
+                  <>
+                    <NetworkBackground />
+                    <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 80, opacity: 0.12, pointerEvents: "none" }} />
+                  </>
                 )}
                 {(() => {
                   if (!event.ticket_enabled) return null;
@@ -791,9 +796,10 @@ function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymI
                 {gym.banner_image ? (
                   <img src={gym.banner_image} alt={gym.name} className="w-full h-full object-cover transition-transform duration-400" style={{ transition: "transform 0.4s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.03)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }} />
                 ) : (
-                  <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 48, color: "rgba(232,160,32,0.25)" }}>
-                    {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                  </span>
+                  <>
+                    <NetworkBackground />
+                    <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 80, opacity: 0.12, pointerEvents: "none" }} />
+                  </>
                 )}
                 {tags.length > 0 && (
                   <div className="absolute bottom-2.5 left-2.5 flex flex-wrap gap-1">
@@ -874,11 +880,11 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
       >
         {/* Top area */}
         <div style={{ height: 200, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {/* Watermark logo */}
-          <img src={logoWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 140, opacity: 0.05, pointerEvents: "none" }} />
+          <NetworkBackground />
+          <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 120, opacity: 0.10, pointerEvents: "none" }} />
           {/* Avatar */}
           <div style={{
-            width: 72, height: 72, borderRadius: "50%", border: "2px solid rgba(232,160,32,0.4)", overflow: "hidden",
+            width: 96, height: 96, borderRadius: "50%", border: "2px solid rgba(232,160,32,0.5)", overflow: "hidden", boxShadow: "0 0 20px rgba(232,160,32,0.2)",
             display: "flex", alignItems: "center", justifyContent: "center", position: "relative", zIndex: 1,
             background: fighter._avatar ? "transparent" : "linear-gradient(135deg, rgba(232,160,32,0.25), rgba(232,160,32,0.08))",
           }}>
