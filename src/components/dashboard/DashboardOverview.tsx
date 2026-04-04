@@ -87,19 +87,13 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children }:
 function TopNavBar({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="flex items-center justify-between -mt-2 mb-2"
+      className="flex items-center justify-end -mt-2 mb-2"
       style={{
         height: 56,
         borderBottom: "1px solid rgba(255,255,255,0.06)",
         padding: "0 4px",
       }}
     >
-      <div className="flex items-center gap-2">
-        <AppIcon className="h-7 w-7" />
-        <span style={{ fontFamily: "var(--font-heading)", fontSize: 18, color: "#e8eaf0", letterSpacing: "0.03em" }}>
-          MATCHUP
-        </span>
-      </div>
       {children}
     </div>
   );
