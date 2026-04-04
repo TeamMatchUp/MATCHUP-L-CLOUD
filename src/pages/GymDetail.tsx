@@ -267,14 +267,29 @@ export default function GymDetail() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
+              {/* Banner hero */}
+              {gym.banner_image && (
+                <div className="mb-8 rounded-xl overflow-hidden relative" style={{ height: 280 }}>
+                  <img src={gym.banner_image} alt={gym.name} className="w-full h-full object-cover" />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(13,15,18,0.95) 100%)" }} />
+                  <h1 className="absolute bottom-6 left-6" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, color: "#e8eaf0" }}>{gym.name}</h1>
+                </div>
+              )}
+
               <div className="flex items-start justify-between gap-6 mb-8">
                 <div className="flex items-start gap-6">
-                  <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center font-heading text-xl text-muted-foreground shrink-0">
-                    {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                  </div>
+                  {!gym.banner_image && gym.logo_url ? (
+                    <div className="h-16 w-16 rounded-lg overflow-hidden shrink-0">
+                      <img src={gym.logo_url} alt={gym.name} className="h-full w-full object-cover" />
+                    </div>
+                  ) : !gym.banner_image ? (
+                    <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center font-heading text-xl text-muted-foreground shrink-0">
+                      {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
+                    </div>
+                  ) : null}
                   <div>
                     <div className="flex items-center gap-2">
-                      <h1 className="font-heading text-3xl md:text-4xl text-foreground">{gym.name}</h1>
+                      {!gym.banner_image && <h1 className="font-heading text-3xl md:text-4xl text-foreground">{gym.name}</h1>}
                       {gym.verified && <ShieldCheck className="h-5 w-5 text-primary" />}
                       {gym.claimed ? (
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-xs font-semibold">
