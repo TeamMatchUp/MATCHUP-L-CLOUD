@@ -123,7 +123,7 @@ export default function EventDetail() {
     queryKey: ["event", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("events").select("*, fight_slots(*)").eq("id", id!).single();
+        .from("events").select("*, fight_slots(*), tickets(*)").eq("id", id!).single();
       if (error) throw error;
       return data;
     },
