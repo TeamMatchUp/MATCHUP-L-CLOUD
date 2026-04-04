@@ -338,27 +338,9 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
         )}
       </button>
 
-      {/* User Profile at TOP */}
-      <div style={{ padding: 16, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="flex items-center gap-2.5">
-          <Avatar className="h-9 w-9 shrink-0" style={{ border: "2px solid rgba(232,160,32,0.3)" }}>
-            {profile?.avatar_url && <AvatarImage src={profile.avatar_url} className="object-cover" />}
-            <AvatarFallback
-              className="text-sm font-medium"
-              style={{ background: "linear-gradient(135deg, #e8a020, #c47e10)", color: "white" }}
-            >
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="min-w-0 flex-1">
-            <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>
-              {profile?.full_name || "User"}
-            </p>
-            <p className="truncate" style={{ fontSize: 11, color: "#8b909e", marginTop: 1 }}>
-              {user?.email}
-            </p>
-          </div>
-        </div>
+      {/* Logo at TOP */}
+      <div style={{ padding: "16px 16px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <img src={iconWhite} alt="Matchup" style={{ height: 28, width: "auto" }} />
       </div>
 
       {/* Search Bar */}
