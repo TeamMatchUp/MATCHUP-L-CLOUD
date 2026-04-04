@@ -165,6 +165,94 @@ function CardWrapper({ visible, children, maxH = "600px" }: { visible: boolean; 
   );
 }
 
+function ProfileHero({
+  avatarUrl,
+  fullName,
+  roleLabel,
+  followerCount,
+  followingCount,
+  roleStat,
+  roleStatLabel,
+}: {
+  avatarUrl?: string | null;
+  fullName?: string | null;
+  roleLabel: string;
+  followerCount: number;
+  followingCount: number;
+  roleStat: number;
+  roleStatLabel: string;
+}) {
+  const initials = (fullName || "U").slice(0, 2).toUpperCase();
+  return (
+    <div
+      className="flex items-center gap-5"
+      style={{
+        padding: "0 0 24px 0",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        marginBottom: 24,
+      }}
+    >
+      {/* Avatar */}
+      <div
+        className="shrink-0"
+        style={{
+          width: 64,
+          height: 64,
+          borderRadius: "50%",
+          border: "2px solid rgba(232,160,32,0.4)",
+          boxShadow: "0 0 20px rgba(232,160,32,0.15)",
+          overflow: "hidden",
+          background: "linear-gradient(135deg, #e8a020, #c47e10)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={fullName || "User"} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <span style={{ color: "white", fontSize: 20, fontWeight: 700 }}>{initials}</span>
+        )}
+      </div>
+      {/* Info */}
+      <div>
+        <p style={{ fontSize: 18, fontWeight: 700, color: "#e8eaf0", lineHeight: 1.2 }}>
+          {fullName || "User"}
+        </p>
+        <span
+          style={{
+            display: "inline-block",
+            background: "rgba(232,160,32,0.12)",
+            border: "1px solid rgba(232,160,32,0.25)",
+            color: "#e8a020",
+            borderRadius: 20,
+            padding: "2px 10px",
+            fontSize: 11,
+            fontWeight: 600,
+            marginTop: 4,
+          }}
+        >
+          {roleLabel}
+        </span>
+        <div className="flex items-center gap-6" style={{ marginTop: 10 }}>
+          <div style={{ textAlign: "center" }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#e8eaf0", display: "block" }}>{followerCount}</span>
+            <span style={{ fontSize: 11, color: "#8b909e" }}>Followers</span>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#e8eaf0", display: "block" }}>{followingCount}</span>
+            <span style={{ fontSize: 11, color: "#8b909e" }}>Following</span>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#e8eaf0", display: "block" }}>{roleStat}</span>
+            <span style={{ fontSize: 11, color: "#8b909e" }}>{roleStatLabel}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function DashboardOverview({
   calendarEvents,
   highlightedDates = [],
@@ -233,8 +321,6 @@ export function DashboardOverview({
   const roleStatLabel = isCoachOrOwner ? "Fighters" : isFighter ? "Fights" : "Events";
   const initials = (profileData?.full_name || "U").slice(0, 2).toUpperCase();
 
-  const [networkSheet, setNetworkSheet] = useState<"followers" | "following" | null>(null);
-
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [fighterCardVis, setFighterCardVis] = useState({ record: true, nextFight: true, calendar: true });
   const [coachCardVis, setCoachCardVis] = useState({ kpis: true, fights: true, calendar: true });
@@ -246,6 +332,7 @@ export function DashboardOverview({
   if (isFighter && !isCoachOrOwner) {
     return (
       <div className="space-y-4">
+        <ProfileHero avatarUrl={profileData?.avatar_url} fullName={profileData?.full_name} roleLabel={roleLabel} followerCount={followerCount} followingCount={followingCount} roleStat={roleStat} roleStatLabel={roleStatLabel} />
         <TopNavBar>
           <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
             <DropdownActionItem icon={User} label="Edit Profile" onClick={() => { setShowQuickActions(false); onNavigateSection("my-profile"); }} />
@@ -287,6 +374,7 @@ export function DashboardOverview({
   if (isCoachOrOwner) {
     return (
       <div className="space-y-4">
+        <ProfileHero avatarUrl={profileData?.avatar_url} fullName={profileData?.full_name} roleLabel={roleLabel} followerCount={followerCount} followingCount={followingCount} roleStat={roleStat} roleStatLabel={roleStatLabel} />
         <TopNavBar>
           <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
             <DropdownActionLink icon={Building2} label="Create Gym" to="/register-gym?from=overview" onClose={() => setShowQuickActions(false)} />
@@ -328,6 +416,7 @@ export function DashboardOverview({
   if (isOrganiser) {
     return (
       <div className="space-y-4">
+        <ProfileHero avatarUrl={profileData?.avatar_url} fullName={profileData?.full_name} roleLabel={roleLabel} followerCount={followerCount} followingCount={followingCount} roleStat={roleStat} roleStatLabel={roleStatLabel} />
         <TopNavBar>
           <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
             <DropdownActionLink icon={CalendarPlus} label="Create Event" to="/organiser/create-event?from=overview" onClose={() => setShowQuickActions(false)} />
