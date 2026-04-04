@@ -699,7 +699,10 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
                 {event.banner_image ? (
                   <img src={event.banner_image} alt={event.title} className="w-full h-full object-cover" />
                 ) : (
-                  <Calendar style={{ width: 32, height: 32, color: "rgba(232,160,32,0.3)" }} />
+                  <>
+                    <NetworkBackground />
+                    <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 80, opacity: 0.12, pointerEvents: "none" }} />
+                  </>
                 )}
                 {(() => {
                   if (!event.ticket_enabled) return null;
