@@ -165,7 +165,17 @@ function CardWrapper({ visible, children, maxH = "600px" }: { visible: boolean; 
   );
 }
 
-  const { user, effectiveRoles: authRoles } = useAuth();
+export function DashboardOverview({
+  calendarEvents,
+  highlightedDates = [],
+  effectiveRoles,
+  onNavigateSection,
+}: DashboardOverviewProps) {
+  const { user } = useAuth();
+
+  const isCoachOrOwner = effectiveRoles.includes("gym_owner") || effectiveRoles.includes("coach");
+  const isOrganiser = effectiveRoles.includes("organiser");
+  const isFighter = effectiveRoles.includes("fighter");
 
   const { data: profileData } = useQuery({
     queryKey: ["overview-profile", user?.id],
@@ -223,9 +233,7 @@ function CardWrapper({ visible, children, maxH = "600px" }: { visible: boolean; 
   const roleStatLabel = isCoachOrOwner ? "Fighters" : isFighter ? "Fights" : "Events";
   const initials = (profileData?.full_name || "U").slice(0, 2).toUpperCase();
 
-  const isCoachOrOwner = effectiveRoles.includes("gym_owner") || effectiveRoles.includes("coach");
-  const isOrganiser = effectiveRoles.includes("organiser");
-  const isFighter = effectiveRoles.includes("fighter");
+  const [networkSheet, setNetworkSheet] = useState<"followers" | "following" | null>(null);
 
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [fighterCardVis, setFighterCardVis] = useState({ record: true, nextFight: true, calendar: true });
