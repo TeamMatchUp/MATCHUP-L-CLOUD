@@ -25,6 +25,10 @@ import { FighterNextFight } from "./FighterNextFight";
 import { OrganiserOverviewHero } from "./OrganiserOverviewHero";
 import { OrganiserPendingMatches } from "./OrganiserPendingMatches";
 import { DashboardNetwork } from "./DashboardNetwork";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface DashboardOverviewProps {
   calendarEvents: any[];
