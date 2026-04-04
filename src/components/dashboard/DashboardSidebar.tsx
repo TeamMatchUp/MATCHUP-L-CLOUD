@@ -465,6 +465,29 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           <span>Logout</span>
         </button>
       </div>
+
+      {/* User Profile at BOTTOM */}
+      <div style={{ position: "sticky", bottom: 0, background: "#0d0f12", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "12px 16px" }}>
+        <div className="flex items-center gap-2.5">
+          <Avatar className="h-8 w-8 shrink-0" style={{ border: "1px solid rgba(232,160,32,0.3)" }}>
+            {profile?.avatar_url && <AvatarImage src={profile.avatar_url} className="object-cover" />}
+            <AvatarFallback
+              className="text-xs font-medium"
+              style={{ background: "linear-gradient(135deg, #e8a020, #c47e10)", color: "white" }}
+            >
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <p className="truncate" style={{ fontSize: 12, fontWeight: 600, color: "#e8eaf0", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {profile?.full_name || "User"}
+            </p>
+            <p className="truncate" style={{ fontSize: 10, color: "#8b909e", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {user?.email}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
