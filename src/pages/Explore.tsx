@@ -880,11 +880,11 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
       >
         {/* Top area */}
         <div style={{ height: 200, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {/* Watermark logo */}
-          <img src={logoWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 140, opacity: 0.05, pointerEvents: "none" }} />
+          <NetworkBackground />
+          <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 120, opacity: 0.10, pointerEvents: "none" }} />
           {/* Avatar */}
           <div style={{
-            width: 72, height: 72, borderRadius: "50%", border: "2px solid rgba(232,160,32,0.4)", overflow: "hidden",
+            width: 96, height: 96, borderRadius: "50%", border: "2px solid rgba(232,160,32,0.5)", overflow: "hidden", boxShadow: "0 0 20px rgba(232,160,32,0.2)",
             display: "flex", alignItems: "center", justifyContent: "center", position: "relative", zIndex: 1,
             background: fighter._avatar ? "transparent" : "linear-gradient(135deg, rgba(232,160,32,0.25), rgba(232,160,32,0.08))",
           }}>
