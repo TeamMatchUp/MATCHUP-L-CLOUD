@@ -165,12 +165,64 @@ function CardWrapper({ visible, children, maxH = "600px" }: { visible: boolean; 
   );
 }
 
-export function DashboardOverview({
-  calendarEvents,
-  highlightedDates = [],
-  effectiveRoles,
-  onNavigateSection,
-}: DashboardOverviewProps) {
+  const { user, effectiveRoles: authRoles } = useAuth();
+
+  const { data: profileData } = useQuery({
+    queryKey: ["overview-profile", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("avatar_url, full_name").eq("id", user!.id).single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const { data: followerCount = 0 } = useQuery({
+    queryKey: ["overview-follower-count", user?.id],
+    queryFn: async () => {
+      const { count } = await supabase.from("user_follows").select("id", { count: "exact", head: true }).eq("following_id", user!.id);
+      return count ?? 0;
+    },
+    enabled: !!user,
+  });
+
+  const { data: followingCount = 0 } = useQuery({
+    queryKey: ["overview-following-count", user?.id],
+    queryFn: async () => {
+      const { count } = await supabase.from("user_follows").select("id", { count: "exact", head: true }).eq("follower_id", user!.id);
+      return count ?? 0;
+    },
+    enabled: !!user,
+  });
+
+  const { data: roleStat = 0 } = useQuery({
+    queryKey: ["overview-role-stat", user?.id, isCoachOrOwner, isFighter, isOrganiser],
+    queryFn: async () => {
+      if (isFighter && !isCoachOrOwner) {
+        const { data: fp } = await supabase.from("fighter_profiles").select("id").eq("user_id", user!.id).maybeSingle();
+        if (!fp) return 0;
+        const { data: rec } = await supabase.from("fighter_records").select("wins, losses, draws").eq("fighter_id", fp.id).maybeSingle();
+        return rec ? (rec.wins + rec.losses + rec.draws) : 0;
+      }
+      if (isCoachOrOwner) {
+        const { data: gyms } = await supabase.from("gyms").select("id").eq("coach_id", user!.id);
+        const gymIds = (gyms ?? []).map(g => g.id);
+        if (gymIds.length === 0) return 0;
+        const { count } = await supabase.from("fighter_gym_links").select("id", { count: "exact", head: true }).in("gym_id", gymIds).eq("status", "approved");
+        return count ?? 0;
+      }
+      if (isOrganiser) {
+        const { count } = await supabase.from("events").select("id", { count: "exact", head: true }).eq("organiser_id", user!.id);
+        return count ?? 0;
+      }
+      return 0;
+    },
+    enabled: !!user,
+  });
+
+  const roleLabel = isCoachOrOwner ? "Coach" : isFighter ? "Fighter" : isOrganiser ? "Organiser" : "User";
+  const roleStatLabel = isCoachOrOwner ? "Fighters" : isFighter ? "Fights" : "Events";
+  const initials = (profileData?.full_name || "U").slice(0, 2).toUpperCase();
+
   const isCoachOrOwner = effectiveRoles.includes("gym_owner") || effectiveRoles.includes("coach");
   const isOrganiser = effectiveRoles.includes("organiser");
   const isFighter = effectiveRoles.includes("fighter");
