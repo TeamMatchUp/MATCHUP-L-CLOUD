@@ -31,6 +31,25 @@ const EX = {
   text: "#e8eaf0", muted: "#8b909e", dimmed: "#555b6b",
 };
 
+// Method matching helpers
+const isKO = (method?: string | null) => {
+  if (!method) return false;
+  const upper = method.toUpperCase();
+  return upper === 'KO' || upper.startsWith('KO ');
+};
+const isTKO = (method?: string | null) => method?.toUpperCase().includes('TKO') ?? false;
+const isSub = (method?: string | null) => method?.toUpperCase().includes('SUB') ?? false;
+const isDecision = (method?: string | null) => {
+  if (!method) return false;
+  const upper = method.toUpperCase();
+  return upper.includes('DECISION') || upper.includes('DEC') || upper.includes('POINTS');
+};
+const isWinResult = (f: any, fighterId: string) =>
+  f.result?.toLowerCase() === 'win' || f.winner_id === fighterId;
+const isLossResult = (f: any) => f.result?.toLowerCase() === 'loss';
+const isDrawResult = (f: any) =>
+  f.result?.toLowerCase() === 'draw' || (f.winner_id == null && f.result != null);
+
 export default function FighterDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -60,16 +79,16 @@ export default function FighterDetail() {
     enabled: !!id,
   });
 
-  // Fight results for stats
-  const { data: fightResults = [] } = useQuery({
-    queryKey: ["fighter-results", id],
+  // Fight data from fights table (NOT fight_results)
+  const { data: fights = [] } = useQuery({
+    queryKey: ["fighter-fights", id],
     queryFn: async () => {
       if (!fighter?.id) return [];
       const { data } = await supabase
-        .from("fight_results")
-        .select("*")
+        .from("fights")
+        .select("id, method, result, winner_id, fighter_a_id, fighter_b_id, opponent_name, event_name, event_date, round")
         .or(`fighter_a_id.eq.${fighter.id},fighter_b_id.eq.${fighter.id}`)
-        .order("created_at", { ascending: false });
+        .order("event_date", { ascending: false });
       return data ?? [];
     },
     enabled: !!fighter?.id,
@@ -89,39 +108,6 @@ export default function FighterDetail() {
       return (data ?? []).filter((s: any) => s.events?.date >= today);
     },
     enabled: !!fighter?.id,
-  });
-
-  // Opponent names for fight history
-  const { data: opponentMap = {} } = useQuery({
-    queryKey: ["fighter-opponents", fightResults.map(r => r.id).join(",")],
-    queryFn: async () => {
-      if (!fighter?.id || fightResults.length === 0) return {};
-      const opIds = new Set<string>();
-      fightResults.forEach((r: any) => {
-        const opId = r.fighter_a_id === fighter.id ? r.fighter_b_id : r.fighter_a_id;
-        if (opId) opIds.add(opId);
-      });
-      if (opIds.size === 0) return {};
-      const { data } = await supabase.from("fighter_profiles").select("id, name").in("id", Array.from(opIds));
-      const map: Record<string, string> = {};
-      data?.forEach((f: any) => { map[f.id] = f.name; });
-      return map;
-    },
-    enabled: fightResults.length > 0 && !!fighter?.id,
-  });
-
-  // Event names for fight history
-  const { data: eventMap = {} } = useQuery({
-    queryKey: ["fighter-events", fightResults.map(r => r.event_id).filter(Boolean).join(",")],
-    queryFn: async () => {
-      const eventIds = [...new Set(fightResults.map((r: any) => r.event_id).filter(Boolean))];
-      if (eventIds.length === 0) return {};
-      const { data } = await supabase.from("events").select("id, title").in("id", eventIds as string[]);
-      const map: Record<string, string> = {};
-      data?.forEach((e: any) => { map[e.id] = e.title; });
-      return map;
-    },
-    enabled: fightResults.length > 0,
   });
 
   const { isFollowing, toggle: toggleFollow, loading: followLoading, followerCount } = useFollow(fighter?.user_id);
@@ -154,31 +140,29 @@ export default function FighterDetail() {
   const isOwnerOrCoach = user && (fighter.user_id === user.id || fighter.created_by_coach_id === user.id);
   const showFollow = user && fighter.user_id && fighter.user_id !== user.id;
 
-  // Compute stats from fight_results
-  const wins = fightResults.filter((r: any) => r.winner_id === fighter.id).length;
-  const losses = fightResults.filter((r: any) => r.winner_id && r.winner_id !== fighter.id).length;
-  const draws = fightResults.filter((r: any) => !r.winner_id).length;
-  const kos = fightResults.filter((r: any) => r.winner_id === fighter.id && r.method?.toLowerCase().includes("ko") && !r.method?.toLowerCase().includes("tko")).length;
-  const tkos = fightResults.filter((r: any) => r.winner_id === fighter.id && r.method?.toLowerCase().includes("tko")).length;
-  const subs = fightResults.filter((r: any) => r.winner_id === fighter.id && r.method?.toLowerCase().includes("sub")).length;
-  const decisions = fightResults.filter((r: any) => r.winner_id === fighter.id && r.method?.toLowerCase().includes("decision")).length;
+  // Compute stats from fights table
+  const wins = fights.filter((f: any) => isWinResult(f, fighter.id)).length;
+  const losses = fights.filter((f: any) => isLossResult(f)).length;
+  const draws = fights.filter((f: any) => isDrawResult(f)).length;
+  const kos = fights.filter((f: any) => isWinResult(f, fighter.id) && isKO(f.method)).length;
+  const tkos = fights.filter((f: any) => isWinResult(f, fighter.id) && isTKO(f.method)).length;
+  const subs = fights.filter((f: any) => isWinResult(f, fighter.id) && isSub(f.method)).length;
+  const decisions = fights.filter((f: any) => isWinResult(f, fighter.id) && isDecision(f.method)).length;
   const total = wins + losses + draws;
   const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
 
-  // Use profile record if no fight_results
-  const displayWins = fightResults.length > 0 ? wins : fighter.record_wins;
-  const displayLosses = fightResults.length > 0 ? losses : fighter.record_losses;
-  const displayDraws = fightResults.length > 0 ? draws : fighter.record_draws;
+  // Use profile record if no fights
+  const displayWins = fights.length > 0 ? wins : fighter.record_wins;
+  const displayLosses = fights.length > 0 ? losses : fighter.record_losses;
+  const displayDraws = fights.length > 0 ? draws : fighter.record_draws;
 
-  // Radar chart data
+  // Radar chart data — 4 axes only
   const maxFinish = Math.max(kos, tkos, subs, decisions, 1);
   const radarData = [
     { subject: "Knockouts", value: Math.round((kos / maxFinish) * 100) },
     { subject: "TKOs", value: Math.round((tkos / maxFinish) * 100) },
     { subject: "Submissions", value: Math.round((subs / maxFinish) * 100) },
     { subject: "Decisions", value: Math.round((decisions / maxFinish) * 100) },
-    { subject: "Strike Acc.", value: 0 },
-    { subject: "Takedown Acc.", value: 0 },
   ];
 
   const handleShare = () => {
@@ -304,13 +288,28 @@ export default function FighterDetail() {
                       </RadarChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="grid grid-cols-2 gap-2" style={{ marginTop: 8 }}>
-                    {[{ label: "Strike Accuracy", value: "N/A" }, { label: "Takedown Accuracy", value: "N/A" }].map((s) => (
-                      <div key={s.label} style={{ background: EX.raised, borderRadius: 6, padding: 12, border: `1px solid ${EX.border}` }}>
-                        <span style={{ fontSize: 10, color: EX.muted }}>{s.label}</span>
-                        <span style={{ fontSize: 20, fontWeight: 700, color: EX.text, display: "block" }}>{s.value}</span>
-                      </div>
-                    ))}
+                  {/* Finish Methods */}
+                  <div style={{ marginTop: 16 }}>
+                    <span style={{ fontSize: 15, fontWeight: 600, color: EX.text }}>Finish Methods</span>
+                    <div className="grid grid-cols-2 gap-2" style={{ marginTop: 8 }}>
+                      {[
+                        { label: "Knockouts", value: kos },
+                        { label: "TKOs", value: tkos },
+                        { label: "Submissions", value: subs },
+                        { label: "Decisions", value: decisions },
+                      ].map((m) => (
+                        <div key={m.label} style={{
+                          background: EX.raised, borderRadius: 8, padding: 14, border: `1px solid ${EX.border}`,
+                          transition: "border-color 0.2s", cursor: "default",
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(232,160,32,0.2)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = EX.border; }}
+                        >
+                          <span style={{ fontSize: 22, fontWeight: 700, color: EX.text }}>{m.value}</span>
+                          <span style={{ fontSize: 11, color: EX.muted, display: "block" }}>{m.label}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -337,53 +336,29 @@ export default function FighterDetail() {
                       </div>
                     ))}
                   </div>
-
-                  {/* Finish Methods */}
-                  <div style={{ marginTop: 16 }}>
-                    <span style={{ fontSize: 15, fontWeight: 600, color: EX.text }}>Finish Methods</span>
-                    <div className="grid grid-cols-2 gap-2" style={{ marginTop: 8 }}>
-                      {[
-                        { label: "Knockouts", value: kos },
-                        { label: "TKOs", value: tkos },
-                        { label: "Submissions", value: subs },
-                        { label: "Decisions", value: decisions },
-                      ].map((m) => (
-                        <div key={m.label} style={{
-                          background: EX.raised, borderRadius: 8, padding: 14, border: `1px solid ${EX.border}`,
-                          transition: "border-color 0.2s", cursor: "default",
-                        }}
-                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(232,160,32,0.2)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = EX.border; }}
-                        >
-                          <span style={{ fontSize: 22, fontWeight: 700, color: EX.text }}>{m.value}</span>
-                          <span style={{ fontSize: 11, color: EX.muted, display: "block" }}>{m.label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               </div>
 
-              {/* SECTION 3: Fight History */}
-              {fightResults.length > 0 && (
+              {/* SECTION 3: Fight History from fights table */}
+              {fights.length > 0 && (
                 <div style={{ marginBottom: 24 }}>
                   <div className="flex items-center gap-2 mb-4">
                     <Calendar style={{ width: 16, height: 16, color: EX.gold }} />
                     <span style={{ fontSize: 16, fontWeight: 600, color: EX.text }}>Fight History</span>
                   </div>
                   <div className="space-y-2">
-                    {fightResults.slice(0, 10).map((result: any) => {
-                      const isWin = result.winner_id === fighter.id;
-                      const isLoss = result.winner_id && result.winner_id !== fighter.id;
-                      const resultLabel = isWin ? "Win" : isLoss ? "Loss" : "Draw";
-                      const resultBg = isWin ? "#22c55e" : isLoss ? "#ef4444" : "#f59e0b";
-                      const opId = result.fighter_a_id === fighter.id ? result.fighter_b_id : result.fighter_a_id;
-                      const opName = opId ? (opponentMap as any)[opId] ?? "Unknown" : "Unknown";
-                      const eventName = result.event_id ? (eventMap as any)[result.event_id] ?? "" : "";
-                      const date = new Date(result.created_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+                    {fights.slice(0, 10).map((fight: any) => {
+                      const resultVal = fight.result?.toLowerCase();
+                      const resultLabel = resultVal === 'win' ? "Win" : resultVal === 'loss' ? "Loss" : "Draw";
+                      const resultBg = resultVal === 'win' ? "#22c55e" : resultVal === 'loss' ? "#ef4444" : "#f59e0b";
+                      const opName = fight.opponent_name ?? "Unknown";
+                      const eventName = fight.event_name ?? "";
+                      const date = fight.event_date
+                        ? new Date(fight.event_date).toLocaleDateString("en-GB", { month: "short", year: "numeric" })
+                        : "";
 
                       return (
-                        <div key={result.id} className="flex items-center" style={{
+                        <div key={fight.id} className="flex items-center" style={{
                           background: "rgba(255,255,255,0.02)", border: `1px solid ${EX.border}`,
                           borderRadius: 8, padding: "12px 16px", transition: "background 0.15s", cursor: "pointer",
                         }}
@@ -393,17 +368,17 @@ export default function FighterDetail() {
                           <span style={{ background: resultBg, color: "white", borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 700, minWidth: 40, textAlign: "center" }}>{resultLabel}</span>
                           <div style={{ marginLeft: 12 }}>
                             <span style={{ fontSize: 14, fontWeight: 600, color: EX.text }}>vs {opName}</span>
-                            {result.method && <span style={{ fontSize: 12, color: EX.muted, display: "block" }}>{result.method}{result.round ? ` - Round ${result.round}` : ""}</span>}
+                            {fight.method && <span style={{ fontSize: 12, color: EX.muted, display: "block" }}>{fight.method}{fight.round ? ` - Round ${fight.round}` : ""}</span>}
                           </div>
                           <div style={{ marginLeft: "auto", textAlign: "right" }}>
                             {eventName && <span style={{ fontSize: 13, fontWeight: 600, color: EX.text, display: "block" }}>{eventName}</span>}
-                            <span style={{ fontSize: 12, color: EX.muted }}>{date}</span>
+                            {date && <span style={{ fontSize: 12, color: EX.muted }}>{date}</span>}
                           </div>
                         </div>
                       );
                     })}
                   </div>
-                  {fightResults.length > 10 && (
+                  {fights.length > 10 && (
                     <p style={{ fontSize: 12, color: EX.gold, textAlign: "center", padding: "8px 0", cursor: "pointer" }}>View full record</p>
                   )}
                 </div>

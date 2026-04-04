@@ -377,35 +377,57 @@ export default function EventDetail() {
                     </div>
                   )}
 
-                  {(event as any).show_ticket_sales && (
-                    <div className="rounded-lg border border-border bg-card p-5 mb-6">
-                      <h3 className="font-heading text-sm text-muted-foreground uppercase tracking-wide mb-3">Tickets</h3>
-                      {event.sold_out ? (
-                        <Badge className="bg-destructive/15 text-destructive border-destructive/30 text-sm px-3 py-1">Sold Out</Badge>
-                      ) : (
-                        <div className="space-y-3">
-                          {event.ticket_count && (
-                            <p className="text-sm text-foreground font-medium">{event.ticket_count} tickets available</p>
-                          )}
-                          {event.tickets_url && (
-                            <Button asChild className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
-                              <a href={event.tickets_url} target="_blank" rel="noopener noreferrer">
-                                <Ticket className="h-4 w-4" /> Buy Tickets
-                              </a>
-                            </Button>
-                          )}
+                  {/* Ticket Section */}
+                  {(() => {
+                    const tickets = (event as any).tickets ?? [];
+                    if (!event.ticket_enabled || tickets.length === 0) return null;
+                    const now = new Date();
+                    const activeTickets = tickets.filter((t: any) =>
+                      (!t.sales_start || new Date(t.sales_start) <= now) &&
+                      (!t.sales_end || new Date(t.sales_end) >= now)
+                    );
+                    if (activeTickets.length === 0) return null;
+                    const purchaseUrl = (event as any).ticket_url || null;
+                    return (
+                      <div style={{ background: "#14171e", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: 20, marginBottom: 24 }}>
+                        <div className="flex items-center gap-2 mb-4">
+                          <Ticket style={{ width: 16, height: 16, color: "#e8a020" }} />
+                          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#e8eaf0" }}>Tickets</h3>
                         </div>
-                      )}
-                    </div>
-                  )}
-
-                  {!(event as any).show_ticket_sales && event.tickets_url && (
-                    <Button asChild className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 mb-6">
-                      <a href={event.tickets_url} target="_blank" rel="noopener noreferrer">
-                        <Ticket className="h-4 w-4" /> Buy Tickets
-                      </a>
-                    </Button>
-                  )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                          {activeTickets.map((ticket: any) => (
+                            <div key={ticket.id} style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: 16 }}>
+                              <div className="flex items-center justify-between mb-2">
+                                <span style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>{ticket.ticket_type}</span>
+                                {ticket.price != null && (
+                                  <span style={{ fontSize: 20, fontWeight: 700, color: "#e8a020" }}>£{Number(ticket.price).toFixed(2)}</span>
+                                )}
+                              </div>
+                              {ticket.quantity_available != null && ticket.quantity_available < 20 && (
+                                <span style={{ fontSize: 12, color: "#f59e0b" }}>Only {ticket.quantity_available} left</span>
+                              )}
+                              {ticket.quantity_available != null && ticket.quantity_available >= 20 && (
+                                <span style={{ fontSize: 12, color: "#8b909e" }}>{ticket.quantity_available} available</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        {event.sold_out ? (
+                          <div style={{ background: "rgba(239,68,68,0.15)", borderRadius: 8, padding: "12px 20px", textAlign: "center", cursor: "not-allowed" }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: "#ef4444" }}>Sold Out</span>
+                          </div>
+                        ) : purchaseUrl ? (
+                          <a href={purchaseUrl} target="_blank" rel="noopener noreferrer" style={{
+                            display: "block", width: "100%", textAlign: "center", padding: "12px 20px",
+                            background: "#e8a020", color: "#0d0f12", fontSize: 14, fontWeight: 700,
+                            borderRadius: 8, textDecoration: "none", transition: "opacity 0.2s",
+                          }}>
+                            Buy Tickets
+                          </a>
+                        ) : null}
+                      </div>
+                    );
+                  })()}
 
                   <div className="flex flex-wrap gap-3">
                     {user && (isFighter || isCoach) && fighterProfile && (

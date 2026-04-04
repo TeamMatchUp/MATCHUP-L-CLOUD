@@ -174,7 +174,7 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg" style={{ maxHeight: "90vh", overflowY: "auto", overflowX: "hidden", scrollbarWidth: "thin", scrollbarColor: "rgba(232,160,32,0.3) transparent" }}>
         <DialogHeader>
           <DialogTitle className="font-heading text-2xl">EDIT GYM</DialogTitle>
         </DialogHeader>
