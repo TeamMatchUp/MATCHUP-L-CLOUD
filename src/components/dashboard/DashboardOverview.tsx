@@ -374,6 +374,7 @@ export function DashboardOverview({
   if (isCoachOrOwner) {
     return (
       <div className="space-y-4">
+        <ProfileHero avatarUrl={profileData?.avatar_url} fullName={profileData?.full_name} roleLabel={roleLabel} followerCount={followerCount} followingCount={followingCount} roleStat={roleStat} roleStatLabel={roleStatLabel} />
         <TopNavBar>
           <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
             <DropdownActionLink icon={Building2} label="Create Gym" to="/register-gym?from=overview" onClose={() => setShowQuickActions(false)} />
