@@ -233,8 +233,6 @@ export function DashboardOverview({
   const roleStatLabel = isCoachOrOwner ? "Fighters" : isFighter ? "Fights" : "Events";
   const initials = (profileData?.full_name || "U").slice(0, 2).toUpperCase();
 
-  const [networkSheet, setNetworkSheet] = useState<"followers" | "following" | null>(null);
-
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [fighterCardVis, setFighterCardVis] = useState({ record: true, nextFight: true, calendar: true });
   const [coachCardVis, setCoachCardVis] = useState({ kpis: true, fights: true, calendar: true });
