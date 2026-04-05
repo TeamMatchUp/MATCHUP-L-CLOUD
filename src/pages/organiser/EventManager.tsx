@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,24 +8,22 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditEventDialog } from "@/components/organiser/EditEventDialog";
-import { AddFightManuallyDialog } from "@/components/organiser/AddFightManuallyDialog";
 import { EditBoutDialog } from "@/components/organiser/EditBoutDialog";
-import { MatchSuggestionsPanel } from "@/components/organiser/MatchSuggestionsPanel";
 import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
-import { AddFightSlotDialog } from "@/components/organiser/AddFightSlotDialog";
-import { AddOpenSlotDialog } from "@/components/organiser/AddOpenSlotDialog";
-import { ArrowLeft, Globe, Pencil, Plus, Sparkles, Eye, EyeOff, ChevronUp, ChevronDown } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { AddFightModal } from "@/components/organiser/AddFightModal";
+import { ArrowLeft, Globe, Pencil, Plus, Eye, EyeOff, GripVertical, Search, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
 
 type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
+
+const WEIGHT_LBS: Record<string, number> = {
+  strawweight: 115, flyweight: 125, bantamweight: 135, featherweight: 145,
+  lightweight: 155, super_lightweight: 160, welterweight: 170, super_welterweight: 175,
+  middleweight: 185, super_middleweight: 195, light_heavyweight: 205,
+  cruiserweight: 224, heavyweight: 265, super_heavyweight: 300,
+};
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -40,102 +38,165 @@ function unwrap<T>(val: T | T[] | null | undefined): T | null {
   return val ?? null;
 }
 
-const STATUS_PILL: Record<string, { label: string; className: string }> = {
-  proposed: { label: "Proposed", className: "bg-primary/15 text-primary border-primary/30" },
-  confirmed: { label: "Confirmed", className: "bg-green-500/15 text-green-400 border-green-500/30" },
-  declined: { label: "Declined", className: "bg-destructive/15 text-destructive border-destructive/30" },
-  empty: { label: "Empty", className: "bg-muted text-muted-foreground" },
-};
+function weightDisplay(wc: string | null) {
+  if (!wc) return "Open Weight";
+  const label = WEIGHT_CLASS_LABELS[wc] || formatEnum(wc);
+  const lbs = WEIGHT_LBS[wc];
+  if (!lbs) return label;
+  const kg = (lbs / 2.2046).toFixed(1);
+  return `${label} · ${lbs}lbs / ${kg}kg`;
+}
 
-interface BoutBannerProps {
+// ─── Slot Card ──────────────────────────────────────────────
+interface SlotCardProps {
   bout: any;
   onEdit: (b: any) => void;
   onTogglePublic: (id: string, val: boolean) => void;
-  onMoveUp: (id: string) => void;
-  onMoveDown: (id: string) => void;
-  isFirst: boolean;
-  isLast: boolean;
+  onFindMatches: (b: any) => void;
+  onDelete: (id: string) => void;
+  onDragStart: (e: React.DragEvent, id: string) => void;
+  onDragOver: (e: React.DragEvent) => void;
+  onDrop: (e: React.DragEvent, id: string) => void;
 }
 
-function BoutBanner({ bout, onEdit, onTogglePublic, onMoveUp, onMoveDown, isFirst, isLast }: BoutBannerProps) {
+function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDragStart, onDragOver, onDrop }: SlotCardProps) {
   const fA = unwrap(bout.fighter_a);
   const fB = unwrap(bout.fighter_b);
-  const isMain = bout.bout_type === "Main Event";
   const status = bout.status || "empty";
-  const pill = STATUS_PILL[status] || STATUS_PILL.empty;
+  const isEmpty = !fA && !fB;
+  const isConfirmed = status === "confirmed" && fA && fB;
+  const isDeclined = status === "declined";
+  const isPending = status === "proposed" || status === "pending";
+  const hasTBA = !fA || !fB;
+
+  let cardStyle: React.CSSProperties = {
+    background: "#1a1e28",
+    border: "1px solid rgba(255,255,255,0.06)",
+    borderRadius: 8,
+    padding: "14px 16px",
+    marginBottom: 8,
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    transition: "all 0.2s ease",
+  };
+  if (isConfirmed) {
+    cardStyle.background = "rgba(232,160,32,0.08)";
+    cardStyle.border = "1px solid rgba(232,160,32,0.3)";
+  } else if (isDeclined) {
+    cardStyle.border = "2px dashed rgba(239,68,68,0.5)";
+    cardStyle.background = "rgba(239,68,68,0.04)";
+  } else if (isPending) {
+    cardStyle.border = "1px solid rgba(245,158,11,0.3)";
+    cardStyle.background = "rgba(245,158,11,0.04)";
+  }
+
+  const statusBadge = (s: string) => {
+    if (s === "confirmed") return <span style={{ fontSize: 10, background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Confirmed</span>;
+    if (s === "proposed" || s === "pending") return <span style={{ fontSize: 10, background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Pending</span>;
+    if (s === "declined") return <span style={{ fontSize: 10, background: "rgba(239,68,68,0.15)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Declined</span>;
+    return null;
+  };
+
+  const fighterBlock = (fighter: FighterProfile | null, align: "left" | "right") => (
+    <div style={{ flex: 1, textAlign: align, minWidth: 0 }}>
+      <p style={{ fontWeight: 600, fontSize: 14, color: fighter ? "#e8eaf0" : "#555b6b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {fighter?.name ?? "TBA"}
+      </p>
+      {fighter && (
+        <p style={{ fontSize: 11, color: "#8b909e", marginTop: 1 }}>
+          {fighter.record_wins}-{fighter.record_losses}-{fighter.record_draws}
+        </p>
+      )}
+      {fighter && statusBadge(status)}
+      {!fighter && <span style={{ fontSize: 11, color: "#555b6b" }}>—</span>}
+    </div>
+  );
 
   return (
-    <div className={`rounded-lg border ${isMain ? "border-2 border-primary/30" : "border-border"} bg-card ${isMain ? "p-6" : "p-4"}`}>
-      <div className="flex items-center gap-3">
-        {/* Up/Down arrows */}
-        <div className="flex flex-col gap-0.5 shrink-0">
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={isFirst} onClick={() => onMoveUp(bout.id)}>
-            <ChevronUp className="h-3.5 w-3.5" />
-          </Button>
-          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" disabled={isLast} onClick={() => onMoveDown(bout.id)}>
-            <ChevronDown className="h-3.5 w-3.5" />
-          </Button>
+    <div
+      style={cardStyle}
+      draggable
+      onDragStart={(e) => onDragStart(e, bout.id)}
+      onDragOver={onDragOver}
+      onDrop={(e) => onDrop(e, bout.id)}
+    >
+      {/* Drag handle */}
+      <div style={{ cursor: "grab", flexShrink: 0 }}>
+        <GripVertical className="h-3.5 w-3.5" style={{ color: "#555b6b" }} />
+      </div>
+
+      {/* Centre content */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Weight + discipline row */}
+        <div style={{ fontSize: 12, color: "#8b909e", marginBottom: 4 }}>
+          {weightDisplay(bout.weight_class)}
+          {bout.discipline && <span style={{ marginLeft: 8, color: "#555b6b" }}>{formatEnum(bout.discipline)}</span>}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 justify-between">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              {fA?.profile_image && (
-                <div className={`${isMain ? "h-14 w-14" : "h-10 w-10"} rounded-full overflow-hidden border border-primary/20 shrink-0`}>
-                  <img src={fA.profile_image} alt={fA.name} className="h-full w-full object-cover" />
-                </div>
-              )}
-              <div className="flex-1 text-left min-w-0">
-                <p className={`font-heading ${isMain ? "text-xl" : "text-sm"} text-foreground uppercase truncate`}>
-                  {fA?.name ?? "TBA"}
-                </p>
-                {fA && (
-                  <p className={`${isMain ? "text-primary font-bold" : "text-xs text-muted-foreground"}`}>
-                    {fA.record_wins}-{fA.record_losses}-{fA.record_draws}
-                  </p>
-                )}
-              </div>
-
-              <div className="flex flex-col items-center shrink-0" style={{ width: isMain ? 120 : 100 }}>
-                <span className={`font-heading text-primary ${isMain ? "text-xl" : "text-xs"}`}>VS</span>
-                {bout.weight_class && (
-                  <p className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>
-                )}
-              </div>
-
-              <div className="flex-1 text-right min-w-0">
-                <p className={`font-heading ${isMain ? "text-xl" : "text-sm"} text-foreground uppercase truncate`}>
-                  {fB?.name ?? "TBA"}
-                </p>
-                {fB && (
-                  <p className={`${isMain ? "text-primary font-bold" : "text-xs text-muted-foreground"}`}>
-                    {fB.record_wins}-{fB.record_losses}-{fB.record_draws}
-                  </p>
-                )}
-              </div>
-              {fB?.profile_image && (
-                <div className={`${isMain ? "h-14 w-14" : "h-10 w-10"} rounded-full overflow-hidden border border-primary/20 shrink-0`}>
-                  <img src={fB.profile_image} alt={fB.name} className="h-full w-full object-cover" />
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-1.5 shrink-0 ml-2">
-              <Badge variant="outline" className={`text-[10px] ${pill.className}`}>{pill.label}</Badge>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onTogglePublic(bout.id, !bout.is_public)} title={bout.is_public !== false ? "Make unlisted" : "Make public"}>
-                {bout.is_public !== false ? <Eye className="h-3.5 w-3.5 text-muted-foreground" /> : <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />}
-              </Button>
-              <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onEdit(bout)}>
-                <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-              </Button>
-            </div>
+        {/* Rounds row */}
+        {bout.rounds && bout.round_duration_minutes && (
+          <div style={{ fontSize: 11, color: "#555b6b", marginBottom: 6 }}>
+            {bout.rounds} × {bout.round_duration_minutes} min rounds
           </div>
+        )}
+
+        {/* Fighters row */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {fighterBlock(fA, "left")}
+          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8a020", flexShrink: 0 }}>VS</span>
+          {fighterBlock(fB, "right")}
         </div>
+
+        {isEmpty && (
+          <p style={{ fontSize: 12, color: "#555b6b", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>EMPTY</p>
+        )}
+      </div>
+
+      {/* Action buttons */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0"
+          onClick={() => onTogglePublic(bout.id, !bout.is_public)}
+          title={bout.is_public !== false ? "Make unlisted" : "Make public"}
+        >
+          {bout.is_public !== false ? <Eye className="h-3.5 w-3.5" style={{ color: "#8b909e" }} /> : <EyeOff className="h-3.5 w-3.5" style={{ color: "#8b909e" }} />}
+        </Button>
+        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onEdit(bout)}>
+          <Pencil className="h-3.5 w-3.5" style={{ color: "#8b909e" }} />
+        </Button>
+        {hasTBA && (
+          <button
+            onClick={() => onFindMatches(bout)}
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              color: "#e8a020",
+              background: "transparent",
+              border: "1px solid rgba(232,160,32,0.3)",
+              borderRadius: 6,
+              padding: "3px 8px",
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.1)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+          >
+            Find
+          </button>
+        )}
+        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onDelete(bout.id)}>
+          <Trash2 className="h-3.5 w-3.5" style={{ color: "#555b6b" }} />
+        </Button>
       </div>
     </div>
   );
 }
 
+// ─── Main Page ──────────────────────────────────────────────
 export default function EventManager() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -144,17 +205,11 @@ export default function EventManager() {
   const queryClient = useQueryClient();
 
   const [showEditEvent, setShowEditEvent] = useState(false);
-  const [showAddMain, setShowAddMain] = useState(false);
-  const [showAddUnder, setShowAddUnder] = useState(false);
   const [editingBout, setEditingBout] = useState<any>(null);
-  const [showSuggestionsMain, setShowSuggestionsMain] = useState(false);
-  const [showSuggestionsUnder, setShowSuggestionsUnder] = useState(false);
-  const [showAddSlot, setShowAddSlot] = useState(false);
-  const [showOpenSlotMain, setShowOpenSlotMain] = useState(false);
-  const [showOpenSlotUnder, setShowOpenSlotUnder] = useState(false);
-  const [mainPage, setMainPage] = useState(0);
-  const [underPage, setUnderPage] = useState(0);
-  const BOUTS_PER_PAGE = 5;
+  const [addModal, setAddModal] = useState<{ open: boolean; section: "Main Event" | "Undercard"; mode: "add" | "find"; slot?: any }>({
+    open: false, section: "Main Event", mode: "add",
+  });
+  const [dragId, setDragId] = useState<string | null>(null);
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["organiser-event", id],
@@ -190,13 +245,8 @@ export default function EventManager() {
     enabled: !!id,
   });
 
-  const mainBouts = useMemo(() => bouts.filter((b: any) => b.bout_type === "Main Event"), [bouts]);
-  const underBouts = useMemo(() => bouts.filter((b: any) => b.bout_type !== "Main Event"), [bouts]);
-
-  const mainTotal = Math.ceil(mainBouts.length / BOUTS_PER_PAGE);
-  const underTotal = Math.ceil(underBouts.length / BOUTS_PER_PAGE);
-  const paginatedMain = mainBouts.slice(mainPage * BOUTS_PER_PAGE, (mainPage + 1) * BOUTS_PER_PAGE);
-  const paginatedUnder = underBouts.slice(underPage * BOUTS_PER_PAGE, (underPage + 1) * BOUTS_PER_PAGE);
+  const mainBouts = useMemo(() => bouts.filter((b: any) => b.bout_type === "Main Event" || b.slot_number === 1), [bouts]);
+  const underBouts = useMemo(() => bouts.filter((b: any) => b.bout_type !== "Main Event" && b.slot_number !== 1), [bouts]);
 
   const publishMutation = useMutation({
     mutationFn: async () => {
@@ -214,21 +264,10 @@ export default function EventManager() {
     refetchBouts();
   };
 
-  const handleMoveBout = async (boutId: string, direction: "up" | "down", section: "main" | "under") => {
-    const items = section === "main" ? [...mainBouts] : [...underBouts];
-    const idx = items.findIndex((b: any) => b.id === boutId);
-    if (idx === -1) return;
-    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= items.length) return;
-
-    // Swap slot_numbers
-    const slotA = items[idx].slot_number;
-    const slotB = items[swapIdx].slot_number;
-    await Promise.all([
-      supabase.from("event_fight_slots").update({ slot_number: slotB }).eq("id", items[idx].id),
-      supabase.from("event_fight_slots").update({ slot_number: slotA }).eq("id", items[swapIdx].id),
-    ]);
+  const handleDelete = async (boutId: string) => {
+    await supabase.from("event_fight_slots").delete().eq("id", boutId);
     refetchBouts();
+    toast({ title: "Slot removed" });
   };
 
   const handleBoutSuccess = () => {
@@ -236,69 +275,53 @@ export default function EventManager() {
     queryClient.invalidateQueries({ queryKey: ["event-confirmed-bouts", id] });
   };
 
-  const handleSuggestionConfirm = async (fighterA: FighterProfile, fighterB: FighterProfile, section: "main" | "under") => {
-    const nextSlot = bouts.length + 1;
-    const wc = fighterA.weight_class || fighterB.weight_class;
-    const { data: inserted } = await supabase.from("event_fight_slots").insert({
-      event_id: id!,
-      slot_number: nextSlot,
-      fighter_a_id: fighterA.id,
-      fighter_b_id: fighterB.id,
-      weight_class: wc,
-      bout_type: section === "main" ? "Main Event" : "Undercard",
-      status: "proposed",
-      is_public: false,
-    }).select("id").single();
-
-    if (inserted) {
-      const notifyIds = new Set<string>();
-      if (fighterA.user_id) notifyIds.add(fighterA.user_id);
-      if (fighterB.user_id) notifyIds.add(fighterB.user_id);
-      if (fighterA.created_by_coach_id) notifyIds.add(fighterA.created_by_coach_id);
-      if (fighterB.created_by_coach_id) notifyIds.add(fighterB.created_by_coach_id);
-      const { data: gymLinks } = await supabase
-        .from("fighter_gym_links").select("fighter_id, gym:gyms(coach_id)")
-        .in("fighter_id", [fighterA.id, fighterB.id]).eq("status", "approved");
-      (gymLinks ?? []).forEach((link: any) => {
-        const gym = Array.isArray(link.gym) ? link.gym[0] : link.gym;
-        if (gym?.coach_id) notifyIds.add(gym.coach_id);
-      });
-      const promises = Array.from(notifyIds).map((uid) =>
-        supabase.rpc("create_notification", {
-          _user_id: uid,
-          _title: "New Fight Proposal",
-          _message: `${fighterA.name} vs ${fighterB.name} has been proposed for ${event?.title ?? "an event"}.`,
-          _type: "match_proposed" as any,
-          _reference_id: inserted.id,
-        })
-      );
-      await Promise.all(promises);
-    }
-
-    toast({ title: "Fight proposed — awaiting acceptance from all parties" });
+  // Drag and drop
+  const handleDragStart = (e: React.DragEvent, boutId: string) => {
+    setDragId(boutId);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+  const handleDrop = async (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    if (!dragId || dragId === targetId) return;
+    const dragBout = bouts.find((b: any) => b.id === dragId);
+    const targetBout = bouts.find((b: any) => b.id === targetId);
+    if (!dragBout || !targetBout) return;
+    await Promise.all([
+      supabase.from("event_fight_slots").update({ slot_number: targetBout.slot_number }).eq("id", dragId),
+      supabase.from("event_fight_slots").update({ slot_number: dragBout.slot_number }).eq("id", targetId),
+    ]);
+    setDragId(null);
     refetchBouts();
   };
 
   if (eventLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
         <Header />
-        <main className="pt-16"><div className="container py-16"><div className="animate-pulse text-muted-foreground">Loading event...</div></div></main>
+        <main className="pt-16"><div className="container py-16"><div className="animate-pulse" style={{ color: "#8b909e" }}>Loading event...</div></div></main>
       </div>
     );
   }
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
         <Header />
         <main className="pt-16"><div className="container py-16 text-center">
-          <p className="text-muted-foreground">Event not found.</p>
+          <p style={{ color: "#8b909e" }}>Event not found.</p>
           <Button variant="outline" asChild className="mt-4"><Link to="/organiser/dashboard">Back to Dashboard</Link></Button>
         </div></main>
       </div>
     );
   }
+
+  const existingFighterIds = bouts.flatMap((b: any) => [b.fighter_a_id, b.fighter_b_id].filter(Boolean));
+  const confirmedCount = bouts.filter((b: any) => b.status === "confirmed" && b.fighter_a_id && b.fighter_b_id).length;
+  const openSlotCount = bouts.filter((b: any) => !b.fighter_a_id || !b.fighter_b_id || b.status !== "confirmed").length;
 
   const STATUS_COLORS: Record<string, string> = {
     draft: "bg-muted text-muted-foreground",
@@ -307,27 +330,58 @@ export default function EventManager() {
     cancelled: "bg-destructive/20 text-destructive",
   };
 
-  const PaginationBar = ({ page: p, total, setPage: sp }: { page: number; total: number; setPage: (n: number) => void }) => {
-    if (total <= 1) return null;
-    return (
-      <div className="flex items-center justify-center gap-2 mt-4">
-        <Button variant="outline" size="sm" disabled={p === 0} onClick={() => sp(p - 1)}>
-          <ArrowLeft className="h-3 w-3 mr-1" /> Prev
-        </Button>
-        {Array.from({ length: total }, (_, i) => (
-          <Button key={i} variant={i === p ? "default" : "outline"} size="sm" className="w-8 h-8 p-0" onClick={() => sp(i)}>{i + 1}</Button>
-        ))}
-        <Button variant="outline" size="sm" disabled={p >= total - 1} onClick={() => sp(p + 1)}>
-          Next <ArrowLeft className="h-3 w-3 ml-1 rotate-180" />
-        </Button>
+  const sectionContainer = (isMain: boolean, children: React.ReactNode, sectionBouts: any[]) => (
+    <div style={{
+      background: "#14171e",
+      border: isMain ? "1px solid rgba(232,160,32,0.2)" : "1px solid rgba(255,255,255,0.08)",
+      borderRadius: 12,
+      padding: 20,
+      marginBottom: 16,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <h2 style={{
+          fontFamily: "'Bebas Neue', sans-serif",
+          fontSize: 18,
+          color: isMain ? "#e8a020" : "#e8eaf0",
+          letterSpacing: "0.04em",
+        }}>
+          {isMain ? "MAIN CARD" : "UNDERCARD"}
+        </h2>
+        <button
+          onClick={() => setAddModal({ open: true, section: isMain ? "Main Event" : "Undercard", mode: "add" })}
+          style={{
+            padding: "8px 16px",
+            fontSize: 13,
+            fontWeight: 600,
+            borderRadius: 8,
+            cursor: "pointer",
+            transition: "all 0.2s",
+            ...(isMain
+              ? { background: "#e8a020", color: "#0d0f12", border: "none", boxShadow: "0 0 12px rgba(232,160,32,0.25)" }
+              : { background: "transparent", color: "#e8eaf0", border: "1px solid rgba(255,255,255,0.1)" }
+            ),
+          }}
+          onMouseEnter={(e) => {
+            if (isMain) e.currentTarget.style.background = "#c47e10";
+            else e.currentTarget.style.borderColor = "rgba(232,160,32,0.3)";
+          }}
+          onMouseLeave={(e) => {
+            if (isMain) e.currentTarget.style.background = "#e8a020";
+            else e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
+          }}
+        >
+          <Plus className="h-3.5 w-3.5 inline mr-1" style={{ verticalAlign: "middle" }} />
+          Add Fight
+        </button>
       </div>
-    );
-  };
 
-  const existingFighterIds = bouts.flatMap((b: any) => [b.fighter_a_id, b.fighter_b_id].filter(Boolean));
-
-  const confirmedCount = bouts.filter((b: any) => b.status === "confirmed" && b.fighter_a_id && b.fighter_b_id).length;
-  const openSlotCount = bouts.filter((b: any) => !b.fighter_a_id || !b.fighter_b_id || b.status !== "confirmed").length;
+      {sectionBouts.length === 0 ? (
+        <p style={{ fontSize: 13, color: "#555b6b", textAlign: "center", padding: "24px 0", borderTop: "1px dashed rgba(255,255,255,0.06)" }}>
+          No {isMain ? "main card" : "undercard"} bouts yet.
+        </p>
+      ) : children}
+    </div>
+  );
 
   return (
     <div className="min-h-screen" style={{ background: "#0d0f12" }}>
@@ -356,6 +410,7 @@ export default function EventManager() {
               ))}
             </div>
 
+            {/* Event header */}
             <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
               <div>
                 <div className="flex items-center gap-3 mb-1">
@@ -385,131 +440,45 @@ export default function EventManager() {
               </div>
             </div>
 
-            {event.description && <p className="text-muted-foreground mb-8 max-w-2xl">{event.description}</p>}
+            {event.description && <p style={{ color: "#8b909e", marginBottom: 32, maxWidth: 640 }}>{event.description}</p>}
 
             {/* MAIN CARD */}
-            <div className="mb-12">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-heading text-2xl text-foreground">MAIN <span className="text-primary">CARD</span></h2>
-                <div className="flex gap-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-1">
-                        <Plus className="h-3 w-3" /> Add Fight Slot
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setShowOpenSlotMain(true)}>Add Open Slot</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setShowAddMain(true)}>Add Fight Manually</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowSuggestionsMain(!showSuggestionsMain)}>
-                    <Sparkles className="h-3 w-3" /> Get Match Suggestions
-                  </Button>
-                </div>
+            {sectionContainer(true, (
+              <div>
+                {mainBouts.map((bout: any) => (
+                  <SlotCard
+                    key={bout.id}
+                    bout={bout}
+                    onEdit={setEditingBout}
+                    onTogglePublic={handleTogglePublic}
+                    onFindMatches={(b) => setAddModal({ open: true, section: "Main Event", mode: "find", slot: b })}
+                    onDelete={handleDelete}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                  />
+                ))}
               </div>
-
-              {showSuggestionsMain && (
-                <div className="mb-4">
-                  {slots.length > 0 ? (
-                    <MatchSuggestionsPanel
-                      slot={slots[0]}
-                      existingProposalFighterIds={existingFighterIds}
-                      onSelectPair={(a, b) => handleSuggestionConfirm(a, b, "main")}
-                      eventId={id}
-                    />
-                  ) : (
-                    <div className="rounded-lg border border-border bg-card p-6 text-center">
-                      <p className="text-sm text-muted-foreground mb-3">Create at least one fight slot to enable match suggestions.</p>
-                      <p className="text-xs text-muted-foreground">Fight slots define the weight class and criteria used for matchmaking.</p>
-                    </div>
-                  )}
-                  <Button variant="ghost" size="sm" onClick={() => setShowSuggestionsMain(false)} className="mt-2">Close</Button>
-                </div>
-              )}
-
-              {mainBouts.length === 0 ? (
-                <p className="text-sm text-muted-foreground p-4 border border-dashed border-border rounded-md text-center">No main card bouts yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  {paginatedMain.map((bout: any, idx: number) => (
-                    <BoutBanner
-                      key={bout.id}
-                      bout={bout}
-                      onEdit={setEditingBout}
-                      onTogglePublic={handleTogglePublic}
-                      onMoveUp={(id) => handleMoveBout(id, "up", "main")}
-                      onMoveDown={(id) => handleMoveBout(id, "down", "main")}
-                      isFirst={mainPage * BOUTS_PER_PAGE + idx === 0}
-                      isLast={mainPage * BOUTS_PER_PAGE + idx === mainBouts.length - 1}
-                    />
-                  ))}
-                </div>
-              )}
-              <PaginationBar page={mainPage} total={mainTotal} setPage={setMainPage} />
-            </div>
+            ), mainBouts)}
 
             {/* UNDERCARD */}
-            <div className="mb-12">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-heading text-2xl text-foreground">UNDER<span className="text-primary">CARD</span></h2>
-                <div className="flex gap-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-1">
-                        <Plus className="h-3 w-3" /> Add Fight Slot
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setShowOpenSlotUnder(true)}>Add Open Slot</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setShowAddUnder(true)}>Add Fight Manually</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowSuggestionsUnder(!showSuggestionsUnder)}>
-                    <Sparkles className="h-3 w-3" /> Get Match Suggestions
-                  </Button>
-                </div>
+            {sectionContainer(false, (
+              <div>
+                {underBouts.map((bout: any) => (
+                  <SlotCard
+                    key={bout.id}
+                    bout={bout}
+                    onEdit={setEditingBout}
+                    onTogglePublic={handleTogglePublic}
+                    onFindMatches={(b) => setAddModal({ open: true, section: "Undercard", mode: "find", slot: b })}
+                    onDelete={handleDelete}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                  />
+                ))}
               </div>
-
-              {showSuggestionsUnder && (
-                <div className="mb-4">
-                  {slots.length > 0 ? (
-                    <MatchSuggestionsPanel
-                      slot={slots[0]}
-                      existingProposalFighterIds={existingFighterIds}
-                      onSelectPair={(a, b) => handleSuggestionConfirm(a, b, "under")}
-                      eventId={id}
-                    />
-                  ) : (
-                    <div className="rounded-lg border border-border bg-card p-6 text-center">
-                      <p className="text-sm text-muted-foreground mb-3">Create at least one fight slot to enable match suggestions.</p>
-                      <p className="text-xs text-muted-foreground">Fight slots define the weight class and criteria used for matchmaking.</p>
-                    </div>
-                  )}
-                  <Button variant="ghost" size="sm" onClick={() => setShowSuggestionsUnder(false)} className="mt-2">Close</Button>
-                </div>
-              )}
-
-              {underBouts.length === 0 ? (
-                <p className="text-sm text-muted-foreground p-4 border border-dashed border-border rounded-md text-center">No undercard bouts yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {paginatedUnder.map((bout: any, idx: number) => (
-                    <BoutBanner
-                      key={bout.id}
-                      bout={bout}
-                      onEdit={setEditingBout}
-                      onTogglePublic={handleTogglePublic}
-                      onMoveUp={(id) => handleMoveBout(id, "up", "under")}
-                      onMoveDown={(id) => handleMoveBout(id, "down", "under")}
-                      isFirst={underPage * BOUTS_PER_PAGE + idx === 0}
-                      isLast={underPage * BOUTS_PER_PAGE + idx === underBouts.length - 1}
-                    />
-                  ))}
-                </div>
-              )}
-              <PaginationBar page={underPage} total={underTotal} setPage={setUnderPage} />
-            </div>
+            ), underBouts)}
 
             {/* Tickets Panel */}
             <div className="mb-10">
@@ -517,25 +486,17 @@ export default function EventManager() {
             </div>
 
             {/* Dialogs */}
-            <AddFightManuallyDialog
-              open={showAddMain}
-              onOpenChange={setShowAddMain}
+            <AddFightModal
+              open={addModal.open}
+              onOpenChange={(v) => setAddModal((prev) => ({ ...prev, open: v }))}
               eventId={id!}
-              sectionType="Main Event"
+              sectionType={addModal.section}
               nextSlotNumber={bouts.length + 1}
               onSuccess={handleBoutSuccess}
-              existingProposalFighterIds={existingFighterIds}
+              existingFighterIds={existingFighterIds}
               fightSlot={slots.length > 0 ? slots[0] : null}
-            />
-            <AddFightManuallyDialog
-              open={showAddUnder}
-              onOpenChange={setShowAddUnder}
-              eventId={id!}
-              sectionType="Undercard"
-              nextSlotNumber={bouts.length + 1}
-              onSuccess={handleBoutSuccess}
-              existingProposalFighterIds={existingFighterIds}
-              fightSlot={slots.length > 0 ? slots[0] : null}
+              prefillSlot={addModal.slot}
+              mode={addModal.mode}
             />
             {editingBout && (
               <EditBoutDialog
@@ -554,29 +515,6 @@ export default function EventManager() {
                 onDelete={() => navigate("/organiser/dashboard")}
               />
             )}
-            <AddFightSlotDialog
-              open={showAddSlot}
-              onOpenChange={setShowAddSlot}
-              eventId={id!}
-              nextSlotNumber={slots.length + 1}
-              onSuccess={() => queryClient.invalidateQueries({ queryKey: ["event-slots", id] })}
-            />
-            <AddOpenSlotDialog
-              open={showOpenSlotMain}
-              onOpenChange={setShowOpenSlotMain}
-              eventId={id!}
-              sectionType="Main Event"
-              nextSlotNumber={bouts.length + 1}
-              onSuccess={handleBoutSuccess}
-            />
-            <AddOpenSlotDialog
-              open={showOpenSlotUnder}
-              onOpenChange={setShowOpenSlotUnder}
-              eventId={id!}
-              sectionType="Undercard"
-              nextSlotNumber={bouts.length + 1}
-              onSuccess={handleBoutSuccess}
-            />
           </div>
         </section>
       </main>
