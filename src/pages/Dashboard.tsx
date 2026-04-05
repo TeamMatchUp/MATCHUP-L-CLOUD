@@ -312,54 +312,64 @@ export default function Dashboard() {
     }
   };
 
+  const sidebarW = isMobile ? 0 : (sidebarCollapsed ? 56 : 220);
+
   return (
-    <div style={{ background: "#0a0a0c", width: "100vw", minHeight: "100vh", margin: 0 }}>
-      <div className="flex w-full overflow-hidden" style={{ minHeight: "100vh" }}>
-        {/* Mobile sidebar overlay */}
-        {isMobile && mobileSidebarOpen && (
-          <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setMobileSidebarOpen(false)} />
+    <div style={{ background: "#080a0d", width: "100vw", minHeight: "100vh", margin: 0 }}>
+      {/* Mobile sidebar overlay */}
+      {isMobile && mobileSidebarOpen && (
+        <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setMobileSidebarOpen(false)} />
+      )}
+
+      {/* Sidebar — fixed */}
+      <div
+        className={isMobile ? "fixed top-0 left-0 bottom-0 z-50" : ""}
+        style={isMobile ? { transform: mobileSidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.2s ease" } : {}}
+      >
+        <DashboardSidebar
+          pendingCount={pendingProposals.length}
+          unreadCount={unreadNotifications.length}
+          actionsCount={actionsCount}
+          collapsed={isMobile ? false : sidebarCollapsed}
+          onToggleCollapse={toggleSidebar}
+        />
+      </div>
+
+      {/* Main content — margin-left for fixed sidebar */}
+      <div
+        className="flex flex-col min-w-0"
+        style={{
+          marginLeft: sidebarW,
+          transition: "margin-left 0.2s ease",
+          minHeight: "100vh",
+          background: "#0d0f12",
+        }}
+      >
+        {/* Mobile hamburger */}
+        {isMobile && (
+          <div className="sticky top-0 z-30 flex items-center h-12 px-3" style={{ background: "#080a0d" }}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileSidebarOpen(true)}
+              className="h-8 w-8"
+              style={{ color: "#8b909e" }}
+            >
+              <PanelLeft className="h-5 w-5" />
+            </Button>
+          </div>
         )}
 
-        {/* Sidebar */}
-        <div
-          className={isMobile ? "fixed top-0 left-0 bottom-0 z-50" : "relative"}
-          style={isMobile ? { transform: mobileSidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.2s ease" } : {}}
-        >
-          <DashboardSidebar
-            pendingCount={pendingProposals.length}
-            unreadCount={unreadNotifications.length}
-            actionsCount={actionsCount}
-            collapsed={isMobile ? false : sidebarCollapsed}
-            onToggleCollapse={toggleSidebar}
-          />
-        </div>
-
-        {/* Main content */}
-        <div className="flex-1 flex flex-col min-w-0" style={{ background: "#0d0f12" }}>
-          {/* Mobile hamburger */}
-          {isMobile && (
-            <div className="sticky top-0 z-30 flex items-center h-12 px-3" style={{ background: "#0d0f12", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setMobileSidebarOpen(true)}
-                className="h-8 w-8"
-                style={{ color: "#8b909e" }}
-              >
-                <PanelLeft className="h-5 w-5" />
-              </Button>
-            </div>
+        <main className="flex-1 overflow-y-auto" style={{ paddingTop: activeSection === "overview" ? 0 : 24, minHeight: "100vh" }}>
+          {sectionTitle !== "Dashboard" && activeSection !== "overview" && (
+            <h1 className="font-heading text-2xl md:text-3xl mb-6 px-4 md:px-6" style={{ color: "#e8eaf0" }}>
+              {sectionTitle}
+            </h1>
           )}
-
-          <main className="flex-1 overflow-y-auto p-4 md:p-6" style={{ minHeight: "100vh" }}>
-            {sectionTitle !== "Dashboard" && (
-              <h1 className="font-heading text-2xl md:text-3xl mb-6" style={{ color: "#e8eaf0" }}>
-                {sectionTitle}
-              </h1>
-            )}
+          <div className={activeSection === "overview" ? "" : "px-4 md:px-6 pb-6"}>
             {renderContent()}
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
 
       {/* Dialogs */}
