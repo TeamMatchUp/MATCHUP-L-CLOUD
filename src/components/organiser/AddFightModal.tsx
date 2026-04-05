@@ -214,30 +214,53 @@ export function AddFightModal({
   const handleSuggestionSelect = async (a: FighterProfile, b: FighterProfile) => {
     setLoading(true);
     const wc = a.weight_class || b.weight_class;
-    const { data: inserted, error } = await supabase
-      .from("event_fight_slots")
-      .insert({
-        event_id: eventId,
-        slot_number: nextSlotNumber,
-        fighter_a_id: a.id,
-        fighter_b_id: b.id,
-        weight_class: wc,
-        bout_type: sectionType,
-        status: "proposed",
-        is_public: false,
-      })
-      .select("id")
-      .single();
 
-    if (!error && inserted) {
-      await notifyBoutParties(a, b, eventId, inserted.id);
+    if (prefillSlot && mode === "find") {
+      // Scenario B/C — update existing TBA slot
+      const update: any = {};
+      if (!prefillSlot.fighter_a_id) update.fighter_a_id = a.id;
+      else update.fighter_b_id = b.id;
+      if (!prefillSlot.fighter_b_id && prefillSlot.fighter_a_id) update.fighter_b_id = b.id;
+      else if (!prefillSlot.fighter_a_id) { update.fighter_a_id = a.id; update.fighter_b_id = b.id; }
+      update.status = "proposed";
+      if (wc) update.weight_class = wc;
+
+      const { error } = await supabase.from("event_fight_slots").update(update).eq("id", prefillSlot.id);
+      if (!error) {
+        await notifyBoutParties(a, b, eventId, prefillSlot.id);
+        toast({ title: "Fight proposed — awaiting acceptance" });
+        onSuccess();
+        handleClose(false);
+      } else {
+        toast({ title: "Error updating slot", description: error.message, variant: "destructive" });
+      }
+    } else {
+      // Scenario A — create new slot with suggested fighters
+      const { data: inserted, error } = await supabase
+        .from("event_fight_slots")
+        .insert({
+          event_id: eventId,
+          slot_number: nextSlotNumber,
+          fighter_a_id: a.id,
+          fighter_b_id: b.id,
+          weight_class: wc,
+          bout_type: sectionType,
+          status: "proposed",
+          is_public: false,
+        })
+        .select("id")
+        .single();
+
+      if (!error && inserted) {
+        await notifyBoutParties(a, b, eventId, inserted.id);
+      }
+      toast({ title: error ? "Error" : "Fight proposed — awaiting acceptance", variant: error ? "destructive" : undefined });
+      if (!error) {
+        onSuccess();
+        handleClose(false);
+      }
     }
     setLoading(false);
-    toast({ title: error ? "Error" : "Fight proposed — awaiting acceptance", variant: error ? "destructive" : undefined });
-    if (!error) {
-      onSuccess();
-      handleClose(false);
-    }
   };
 
   const title = mode === "find" ? "Find Matches" : "Add Fight";
