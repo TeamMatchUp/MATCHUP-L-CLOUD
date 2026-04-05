@@ -203,61 +203,74 @@ export function Header() {
         </div>
       </div>
 
+      {/* Mobile dropdown menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-border/50 bg-background/95 backdrop-blur-xl">
-          <div className="container py-4 flex flex-col gap-3">
-            {!isLanding && (
-              <Link
-                to="/"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide"
-                onClick={() => setMobileOpen(false)}
-              >
-                HOME
-              </Link>
-            )}
+        <div className="md:hidden" style={{ background: "#0d0f12", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <div className="flex flex-col">
+            {/* Nav items */}
             {user && (
               <a
                 href="/dashboard"
                 onClick={(e) => { handleDashboardClick(e); setMobileOpen(false); }}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide cursor-pointer"
+                className="cursor-pointer"
+                style={{ padding: "16px 20px", fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
               >
                 DASHBOARD
               </a>
             )}
-            <Link to="/explore" className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide" onClick={() => setMobileOpen(false)}>Explore</Link>
+            <Link
+              to="/explore"
+              onClick={() => setMobileOpen(false)}
+              style={{ padding: "16px 20px", fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+            >
+              EXPLORE
+            </Link>
+
             {user && (
               <>
-                <div className="border-t border-border/50 my-1" />
+                <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
                 <Link
                   to="/account/settings"
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground py-2 uppercase tracking-wide flex items-center gap-2"
                   onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2"
+                  style={{ padding: "16px 20px", fontSize: 14, color: "#8b909e", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
-                  <Settings className="h-4 w-4" />
-                  Account Settings
+                  <Settings style={{ width: 16, height: 16 }} />
+                  ACCOUNT SETTINGS
+                </Link>
+                <button
+                  onClick={() => { handleSignOut(); setMobileOpen(false); }}
+                  className="flex items-center gap-2 w-full text-left"
+                  style={{ padding: "16px 20px", fontSize: 14, color: "#ef4444", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                >
+                  <LogOut style={{ width: 16, height: 16 }} />
+                  SIGN OUT
+                </button>
+              </>
+            )}
+
+            {!user && (
+              <>
+                <Link
+                  to="/auth"
+                  onClick={() => setMobileOpen(false)}
+                  style={{ padding: "16px 20px", fontSize: 14, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                >
+                  LOG IN
+                </Link>
+                <Link
+                  to="/auth?mode=signup"
+                  onClick={() => setMobileOpen(false)}
+                  style={{ padding: "16px 20px", fontSize: 14, color: "#e8a020", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                >
+                  CREATE ACCOUNT
                 </Link>
               </>
             )}
-            <div className="flex gap-3 pt-2">
-              {user ? (
-                <Button variant="ghost" size="sm" className="gap-2 uppercase tracking-wide" onClick={() => { handleSignOut(); setMobileOpen(false); }}>
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
-                </Button>
-              ) : (
-                <>
-                  <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
-                    <Link to="/auth" onClick={() => setMobileOpen(false)}>Log In</Link>
-                  </Button>
-                  <Link
-                    to="/auth?mode=signup"
-                    className="text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-[0_0_12px_hsl(var(--foreground)/0.15)] transition-all duration-200 px-4 py-1.5 rounded-full"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    CREATE ACCOUNT
-                  </Link>
-                </>
-              )}
+
+            {/* Footer tagline */}
+            <div style={{ padding: 20, textAlign: "center" }}>
+              <p style={{ fontSize: 13, color: "#555b6b" }}>PROMOTE, MATCHUP, DONE. IT'S THAT SIMPLE...</p>
             </div>
           </div>
         </div>

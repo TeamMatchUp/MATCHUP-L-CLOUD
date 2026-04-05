@@ -1,4 +1,5 @@
 import { useState } from "react";
+import logoDark from "@/assets/logo-full-white.svg";
 import iconWhite from "@/assets/icon-white.svg";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -147,7 +148,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
                   <item.icon style={{ width: 16, height: 16 }} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-[#1a1e28] text-[#e8eaf0] border-[rgba(255,255,255,0.1)]">
+              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "#e8eaf0", zIndex: 9999 }}>
                 {item.label}
               </TooltipContent>
             </Tooltip>
@@ -205,14 +206,14 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
                 onClick={() => handleNav(item.key)}
               >
                 <item.icon style={{ width: 16, height: 16 }} />
-                {item.badgeCount && item.badgeCount > 0 && (
+                {item.badgeCount != null && item.badgeCount > 0 && (
                   <span style={{ position: "absolute", top: 2, right: 8, background: "#ef4444", color: "white", fontSize: 8, fontWeight: 700, minWidth: 14, height: 14, borderRadius: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>
                     {item.badgeCount}
                   </span>
                 )}
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right" className="bg-[#1a1e28] text-[#e8eaf0] border-[rgba(255,255,255,0.1)]">
+            <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "#e8eaf0", zIndex: 9999 }}>
               {item.label}
             </TooltipContent>
           </Tooltip>
@@ -229,7 +230,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
       >
         <item.icon style={{ width: 16, height: 16 }} />
         <span className="flex-1 text-left">{item.label}</span>
-        {item.badgeCount && item.badgeCount > 0 ? (
+        {item.badgeCount != null && item.badgeCount > 0 ? (
           <span style={{ background: "#ef4444", color: "white", fontSize: 10, fontWeight: 700, minWidth: 18, height: 18, borderRadius: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>
             {item.badgeCount}
           </span>
@@ -246,41 +247,34 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
         transition: "width 0.2s ease",
         overflow: "hidden",
         borderRight: "1px solid rgba(255,255,255,0.06)",
-        background: "#0d0f12",
+        background: collapsed ? "rgba(13,15,18,0.95)" : "#0d0f12",
+        backdropFilter: collapsed ? "blur(8px)" : "none",
         position: "sticky",
         top: 0,
         height: "100vh",
+        zIndex: 30,
+        flexShrink: 0,
       }}
     >
       {/* Logo + collapse at TOP */}
       <div style={{ padding: collapsed ? "16px 8px 12px" : "16px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
         {collapsed ? (
           <div className="flex flex-col items-center gap-2">
-            <img src={iconWhite} alt="Matchup" style={{ height: 28, width: "auto" }} />
-            <button
-              onClick={onToggleCollapse}
-              className="flex items-center justify-center transition-colors"
-              style={{ width: 28, height: 28, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: "pointer" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-            >
-              <PanelLeft style={{ width: 14, height: 14, color: "#8b909e" }} />
+            <button onClick={onToggleCollapse} style={{ cursor: "pointer", background: "none", border: "none", padding: 0 }}>
+              <img src={iconWhite} alt="Matchup" style={{ height: 28, width: "auto" }} />
             </button>
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <img src={iconWhite} alt="Matchup" style={{ height: 28, width: "auto" }} />
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#e8eaf0", letterSpacing: "0.08em", marginLeft: 8 }}>MATCHUP</span>
-            </div>
+            <img src={logoDark} alt="Matchup" style={{ height: 28, width: "auto" }} />
             <button
               onClick={onToggleCollapse}
               className="flex items-center justify-center transition-colors"
               style={{ width: 28, height: 28, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: "pointer" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; const icon = e.currentTarget.querySelector('svg'); if (icon) (icon as any).style.color = "#e8a020"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; const icon = e.currentTarget.querySelector('svg'); if (icon) (icon as any).style.color = "#8b909e"; }}
             >
-              <PanelLeftClose style={{ width: 14, height: 14, color: "#8b909e" }} />
+              <PanelLeftClose style={{ width: 14, height: 14, color: "#8b909e", transition: "color 0.15s" }} />
             </button>
           </div>
         )}
@@ -317,7 +311,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
                   <Home style={{ width: 16, height: 16 }} />
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-[#1a1e28] text-[#e8eaf0] border-[rgba(255,255,255,0.1)]">Homepage</TooltipContent>
+              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "#e8eaf0", zIndex: 9999 }}>Homepage</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : (
@@ -340,7 +334,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
                   <Settings style={{ width: 16, height: 16 }} />
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-[#1a1e28] text-[#e8eaf0] border-[rgba(255,255,255,0.1)]">Settings</TooltipContent>
+              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "#e8eaf0", zIndex: 9999 }}>Settings</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : (
@@ -384,7 +378,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
                   <LogOut style={{ width: 16, height: 16 }} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-[#1a1e28] text-[#e8eaf0] border-[rgba(255,255,255,0.1)]">Logout</TooltipContent>
+              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "#e8eaf0", zIndex: 9999 }}>Logout</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : (
@@ -400,7 +394,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
       </div>
 
       {/* User Profile at BOTTOM */}
-      <div style={{ position: "sticky", bottom: 0, background: "#0d0f12", borderTop: "1px solid rgba(255,255,255,0.06)", padding: collapsed ? "12px 8px" : "12px 16px", flexShrink: 0 }}>
+      <div style={{ position: "sticky", bottom: 0, background: "inherit", borderTop: "1px solid rgba(255,255,255,0.06)", padding: collapsed ? "12px 8px" : "12px 16px", flexShrink: 0 }}>
         <div className="flex items-center" style={{ gap: collapsed ? 0 : 10, justifyContent: collapsed ? "center" : "flex-start" }}>
           <Avatar className="h-8 w-8 shrink-0" style={{ border: "1px solid rgba(232,160,32,0.3)" }}>
             {profile?.avatar_url && <AvatarImage src={profile.avatar_url} className="object-cover" />}
