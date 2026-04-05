@@ -37,10 +37,14 @@ function getExpTier(totalPro: number): string {
 }
 
 interface MatchSuggestionsPanelProps {
-  slot: FightSlot;
+  slot?: FightSlot | null;
   existingProposalFighterIds: string[];
   onSelectPair: (fighterA: FighterProfile, fighterB: FighterProfile) => void;
   eventId?: string;
+  /** Override weight class filter (used when no slot exists) */
+  weightClassOverride?: string | null;
+  /** Override discipline filter */
+  disciplineOverride?: string | null;
 }
 
 function matchesKeyword(fighter: FighterProfile, keyword: string, fights: any[]): boolean {
@@ -77,7 +81,7 @@ function getFighterFinishRate(fighterId: string, fights: any[]): number {
   return finishes.length / wins.length;
 }
 
-export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSelectPair, eventId }: MatchSuggestionsPanelProps) {
+export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSelectPair, eventId, weightClassOverride, disciplineOverride }: MatchSuggestionsPanelProps) {
   const { user } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
   const [keyword, setKeyword] = useState("");
@@ -137,10 +141,15 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
     });
   };
 
+  const effectiveWeightClass = weightClassOverride ?? slot?.weight_class ?? null;
+
   const { data: fighters = [] } = useQuery({
-    queryKey: ["match-suggestion-fighters", slot.id, slot.weight_class, refreshKey],
+    queryKey: ["match-suggestion-fighters", slot?.id ?? "no-slot", effectiveWeightClass, refreshKey],
     queryFn: async () => {
-      let query = supabase.from("fighter_profiles").select("*").eq("weight_class", slot.weight_class).order("name");
+      let query = supabase.from("fighter_profiles").select("*").order("name");
+      if (effectiveWeightClass) {
+        query = query.eq("weight_class", effectiveWeightClass as any);
+      }
       const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
@@ -282,7 +291,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
       </div>
 
       <p className="text-xs text-muted-foreground">
-        AI-ranked pairings for {formatEnum(slot.weight_class)} based on competitive balance, experience, and style diversity.
+        AI-ranked pairings{effectiveWeightClass ? ` for ${formatEnum(effectiveWeightClass)}` : ""} based on competitive balance, experience, and style diversity.
       </p>
 
       {/* Preset selector */}

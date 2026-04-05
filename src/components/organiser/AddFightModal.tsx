@@ -214,30 +214,53 @@ export function AddFightModal({
   const handleSuggestionSelect = async (a: FighterProfile, b: FighterProfile) => {
     setLoading(true);
     const wc = a.weight_class || b.weight_class;
-    const { data: inserted, error } = await supabase
-      .from("event_fight_slots")
-      .insert({
-        event_id: eventId,
-        slot_number: nextSlotNumber,
-        fighter_a_id: a.id,
-        fighter_b_id: b.id,
-        weight_class: wc,
-        bout_type: sectionType,
-        status: "proposed",
-        is_public: false,
-      })
-      .select("id")
-      .single();
 
-    if (!error && inserted) {
-      await notifyBoutParties(a, b, eventId, inserted.id);
+    if (prefillSlot && mode === "find") {
+      // Scenario B/C — update existing TBA slot
+      const update: any = {};
+      if (!prefillSlot.fighter_a_id) update.fighter_a_id = a.id;
+      else update.fighter_b_id = b.id;
+      if (!prefillSlot.fighter_b_id && prefillSlot.fighter_a_id) update.fighter_b_id = b.id;
+      else if (!prefillSlot.fighter_a_id) { update.fighter_a_id = a.id; update.fighter_b_id = b.id; }
+      update.status = "proposed";
+      if (wc) update.weight_class = wc;
+
+      const { error } = await supabase.from("event_fight_slots").update(update).eq("id", prefillSlot.id);
+      if (!error) {
+        await notifyBoutParties(a, b, eventId, prefillSlot.id);
+        toast({ title: "Fight proposed — awaiting acceptance" });
+        onSuccess();
+        handleClose(false);
+      } else {
+        toast({ title: "Error updating slot", description: error.message, variant: "destructive" });
+      }
+    } else {
+      // Scenario A — create new slot with suggested fighters
+      const { data: inserted, error } = await supabase
+        .from("event_fight_slots")
+        .insert({
+          event_id: eventId,
+          slot_number: nextSlotNumber,
+          fighter_a_id: a.id,
+          fighter_b_id: b.id,
+          weight_class: wc,
+          bout_type: sectionType,
+          status: "proposed",
+          is_public: false,
+        })
+        .select("id")
+        .single();
+
+      if (!error && inserted) {
+        await notifyBoutParties(a, b, eventId, inserted.id);
+      }
+      toast({ title: error ? "Error" : "Fight proposed — awaiting acceptance", variant: error ? "destructive" : undefined });
+      if (!error) {
+        onSuccess();
+        handleClose(false);
+      }
     }
     setLoading(false);
-    toast({ title: error ? "Error" : "Fight proposed — awaiting acceptance", variant: error ? "destructive" : undefined });
-    if (!error) {
-      onSuccess();
-      handleClose(false);
-    }
   };
 
   const title = mode === "find" ? "Find Matches" : "Add Fight";
@@ -456,18 +479,29 @@ export function AddFightModal({
               </DialogTitle>
             </DialogHeader>
             <div className="mt-3">
-              {fightSlot ? (
-                <MatchSuggestionsPanel
-                  slot={fightSlot}
-                  existingProposalFighterIds={existingFighterIds}
-                  onSelectPair={handleSuggestionSelect}
-                  eventId={eventId}
-                />
-              ) : (
-                <div className="rounded-lg p-6 text-center" style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <p style={{ fontSize: 13, color: "#8b909e" }}>Create at least one fight slot to enable match suggestions.</p>
+              {!fightSlot && !prefillSlot && (
+                <div
+                  style={{
+                    background: "rgba(245,158,11,0.08)",
+                    border: "1px solid rgba(245,158,11,0.2)",
+                    borderRadius: 8,
+                    padding: "10px 14px",
+                    marginBottom: 12,
+                    fontSize: 12,
+                    color: "#f59e0b",
+                  }}
+                >
+                  No open slots found — a new slot will be created when you confirm a match
                 </div>
               )}
+              <MatchSuggestionsPanel
+                slot={fightSlot ?? undefined}
+                existingProposalFighterIds={existingFighterIds}
+                onSelectPair={handleSuggestionSelect}
+                eventId={eventId}
+                weightClassOverride={prefillSlot?.weight_class ?? null}
+                disciplineOverride={prefillSlot?.discipline ?? null}
+              />
             </div>
           </>
         )}
