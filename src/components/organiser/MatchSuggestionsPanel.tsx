@@ -141,10 +141,15 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
     });
   };
 
+  const effectiveWeightClass = weightClassOverride ?? slot?.weight_class ?? null;
+
   const { data: fighters = [] } = useQuery({
-    queryKey: ["match-suggestion-fighters", slot.id, slot.weight_class, refreshKey],
+    queryKey: ["match-suggestion-fighters", slot?.id ?? "no-slot", effectiveWeightClass, refreshKey],
     queryFn: async () => {
-      let query = supabase.from("fighter_profiles").select("*").eq("weight_class", slot.weight_class).order("name");
+      let query = supabase.from("fighter_profiles").select("*").order("name");
+      if (effectiveWeightClass) {
+        query = query.eq("weight_class", effectiveWeightClass);
+      }
       const { data, error } = await query;
       if (error) throw error;
       return data ?? [];
