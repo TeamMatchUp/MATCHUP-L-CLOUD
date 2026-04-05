@@ -241,27 +241,32 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
 
   return (
     <div
-      className="relative shrink-0 flex flex-col"
+      className="flex flex-col"
       style={{
         width: sidebarWidth,
         transition: "width 0.2s ease",
         overflow: "hidden",
-        borderRight: "1px solid rgba(255,255,255,0.06)",
-        background: collapsed ? "rgba(13,15,18,0.95)" : "#0d0f12",
-        backdropFilter: collapsed ? "blur(8px)" : "none",
-        position: "sticky",
+        background: "#080a0d",
+        position: "fixed",
         top: 0,
+        left: 0,
         height: "100vh",
         zIndex: 30,
-        flexShrink: 0,
       }}
     >
       {/* Logo + collapse at TOP */}
-      <div style={{ padding: collapsed ? "16px 8px 12px" : "16px", borderBottom: "1px solid rgba(255,255,255,0.06)", flexShrink: 0 }}>
+      <div style={{ padding: collapsed ? "16px 8px 12px" : "16px", flexShrink: 0 }}>
         {collapsed ? (
-          <div className="flex flex-col items-center gap-2">
-            <button onClick={onToggleCollapse} style={{ cursor: "pointer", background: "none", border: "none", padding: 0 }}>
-              <img src={iconWhite} alt="Matchup" style={{ height: 28, width: "auto" }} />
+          <div className="flex flex-col items-center gap-3">
+            <img src={iconWhite} alt="Matchup" style={{ height: 28, width: "auto" }} />
+            <button
+              onClick={onToggleCollapse}
+              className="flex items-center justify-center transition-colors"
+              style={{ width: 28, height: 28, background: "rgba(255,255,255,0.06)", borderRadius: 6, cursor: "pointer" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+            >
+              <PanelLeft style={{ width: 14, height: 14, color: "#8b909e" }} />
             </button>
           </div>
         ) : (
@@ -270,9 +275,9 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
             <button
               onClick={onToggleCollapse}
               className="flex items-center justify-center transition-colors"
-              style={{ width: 28, height: 28, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, cursor: "pointer" }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; const icon = e.currentTarget.querySelector('svg'); if (icon) (icon as any).style.color = "#e8a020"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; const icon = e.currentTarget.querySelector('svg'); if (icon) (icon as any).style.color = "#8b909e"; }}
+              style={{ width: 28, height: 28, background: "rgba(255,255,255,0.06)", borderRadius: 6, cursor: "pointer" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
             >
               <PanelLeftClose style={{ width: 14, height: 14, color: "#8b909e", transition: "color 0.15s" }} />
             </button>

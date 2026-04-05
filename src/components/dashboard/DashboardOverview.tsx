@@ -386,60 +386,54 @@ export function DashboardOverview({
 
   const StickyHeader = ({ quickActionsContent }: { quickActionsContent: React.ReactNode }) => (
     <div style={{
-      position: "sticky", top: 0, zIndex: 40,
-      background: scrolled ? "rgba(13,15,18,0.85)" : "#0d0f12",
-      backdropFilter: scrolled ? "blur(16px) saturate(180%)" : "none",
-      borderBottom: `1px solid rgba(255,255,255,${scrolled ? 0.08 : 0.06})`,
-      boxShadow: scrolled ? "0 4px 24px rgba(0,0,0,0.3)" : "none",
-      padding: "12px 24px",
+      position: "fixed", top: 0, right: 0, zIndex: 29, height: 60,
+      left: "var(--sidebar-width, 220px)",
+      background: scrolled ? "rgba(8,10,13,0.88)" : "#080a0d",
+      backdropFilter: scrolled ? "blur(20px) saturate(160%)" : "none",
+      boxShadow: scrolled ? "0 4px 24px rgba(0,0,0,0.5)" : "none",
+      padding: "0 24px",
       transition: "all 0.3s ease",
+      display: "flex", alignItems: "center", justifyContent: "space-between",
     }}>
-      {/* Row 1: Search + Quick Actions */}
-      <div className="flex items-center justify-end gap-3">
+      {/* LEFT: avatar + username + followers */}
+      <div className="flex items-center gap-3">
+        <div style={{
+          width: 36, height: 36, borderRadius: "50%",
+          border: "2px solid rgba(232,160,32,0.4)",
+          overflow: "hidden", background: "linear-gradient(135deg, #e8a020, #c47e10)",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          {profileData?.avatar_url ? (
+            <img src={profileData.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          ) : (
+            <span style={{ color: "white", fontSize: 12, fontWeight: 700 }}>{initials}</span>
+          )}
+        </div>
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", lineHeight: 1.2 }}>{profileData?.full_name || "User"}</p>
+          <div className="flex items-center gap-1" style={{ fontSize: 12, color: "#8b909e" }}>
+            <button onClick={() => setNetworkModal("followers")} style={{ cursor: "pointer" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#e8a020"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#8b909e"; }}
+            >
+              <span style={{ fontWeight: 700, color: "#e8eaf0" }}>{followerCount}</span> Followers
+            </button>
+            <span style={{ color: "#555b6b" }}>·</span>
+            <button onClick={() => setNetworkModal("following")} style={{ cursor: "pointer" }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#e8a020"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#8b909e"; }}
+            >
+              <span style={{ fontWeight: 700, color: "#e8eaf0" }}>{followingCount}</span> Following
+            </button>
+          </div>
+        </div>
+      </div>
+      {/* RIGHT: search + quick actions */}
+      <div className="flex items-center gap-3">
         <GlobalSearch />
         <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
           {quickActionsContent}
         </QuickActionsButton>
-      </div>
-    </div>
-  );
-
-  const ProfileSection = () => (
-    <div className="flex items-center gap-4" style={{ padding: "16px 24px 20px" }}>
-      <div className="shrink-0" style={{
-        width: 64, height: 64, borderRadius: "50%",
-        border: "2px solid rgba(232,160,32,0.4)", boxShadow: "0 0 20px rgba(232,160,32,0.15)",
-        overflow: "hidden", background: "linear-gradient(135deg, #e8a020, #c47e10)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-      }}>
-        {profileData?.avatar_url ? (
-          <img src={profileData.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        ) : (
-          <span style={{ color: "white", fontSize: 20, fontWeight: 700 }}>{initials}</span>
-        )}
-      </div>
-      <div>
-        <p style={{ fontSize: 20, fontWeight: 700, color: "#e8eaf0", lineHeight: 1.2 }}>{profileData?.full_name || "User"}</p>
-        <div className="flex items-center gap-5" style={{ marginTop: 4 }}>
-          <button onClick={() => setNetworkModal("followers")} className="transition-colors" style={{ cursor: "pointer" }}
-            onMouseEnter={(e) => { (e.currentTarget.querySelector('.stat-val') as any).style.color = "#e8a020"; }}
-            onMouseLeave={(e) => { (e.currentTarget.querySelector('.stat-val') as any).style.color = "#e8eaf0"; }}
-          >
-            <span className="stat-val" style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0", transition: "color 0.2s" }}>{followerCount}</span>
-            <span style={{ fontSize: 12, color: "#8b909e", marginLeft: 4 }}>Followers</span>
-          </button>
-          <button onClick={() => setNetworkModal("following")} className="transition-colors" style={{ cursor: "pointer" }}
-            onMouseEnter={(e) => { (e.currentTarget.querySelector('.stat-val') as any).style.color = "#e8a020"; }}
-            onMouseLeave={(e) => { (e.currentTarget.querySelector('.stat-val') as any).style.color = "#e8eaf0"; }}
-          >
-            <span className="stat-val" style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0", transition: "color 0.2s" }}>{followingCount}</span>
-            <span style={{ fontSize: 12, color: "#8b909e", marginLeft: 4 }}>Following</span>
-          </button>
-          <div>
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{roleStat}</span>
-            <span style={{ fontSize: 12, color: "#8b909e", marginLeft: 4 }}>{roleStatLabel}</span>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -486,8 +480,7 @@ export function DashboardOverview({
     return (
       <div>
         <StickyHeader quickActionsContent={quickActionsFighter} />
-        <ProfileSection />
-        <div className="space-y-4" style={{ padding: "0 24px" }}>
+        <div className="space-y-4" style={{ padding: "72px 24px 24px" }}>
           <CardWrapper visible={fighterCardVis.record}><FighterRecordHero /></CardWrapper>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
             {fighterCardVis.nextFight && <div className="lg:col-span-3"><FighterNextFight /></div>}
@@ -504,8 +497,7 @@ export function DashboardOverview({
     return (
       <div>
         <StickyHeader quickActionsContent={quickActionsCoach} />
-        <ProfileSection />
-        <div className="space-y-4" style={{ padding: "0 24px" }}>
+        <div className="space-y-4" style={{ padding: "72px 24px 24px" }}>
           <CardWrapper visible={coachCardVis.kpis} maxH="400px"><CoachKpiStrip /></CardWrapper>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
             {coachCardVis.fights && <div className={coachCardVis.calendar ? "lg:col-span-3" : "lg:col-span-5"}><CoachUpcomingFights /></div>}
@@ -522,8 +514,7 @@ export function DashboardOverview({
     return (
       <div>
         <StickyHeader quickActionsContent={quickActionsOrg} />
-        <ProfileSection />
-        <div className="space-y-4" style={{ padding: "0 24px" }}>
+        <div className="space-y-4" style={{ padding: "72px 24px 24px" }}>
           <CardWrapper visible={orgCardVis.stats}><OrganiserOverviewHero /></CardWrapper>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
             {orgCardVis.pending && <div className={orgCardVis.calendar ? "lg:col-span-3" : "lg:col-span-5"}><OrganiserPendingMatches /></div>}
