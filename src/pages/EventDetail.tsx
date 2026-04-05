@@ -389,42 +389,44 @@ export default function EventDetail() {
                     if (activeTickets.length === 0) return null;
                     const purchaseUrl = (event as any).ticket_url || null;
                     return (
-                      <div style={{ background: "#14171e", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: 20, marginBottom: 24 }}>
-                        <div className="flex items-center gap-2 mb-4">
-                          <Ticket style={{ width: 16, height: 16, color: "#e8a020" }} />
-                          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#e8eaf0" }}>Tickets</h3>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                          {activeTickets.map((ticket: any) => (
-                            <div key={ticket.id} style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: 16 }}>
-                              <div className="flex items-center justify-between mb-2">
-                                <span style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>{ticket.ticket_type}</span>
+                      <div style={{ marginBottom: 24 }}>
+                        <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#e8eaf0", marginBottom: 12 }}>TICKETS</h3>
+                        <div className="space-y-2">
+                          {activeTickets.map((ticket: any) => {
+                            const ticketUrl = purchaseUrl || ticket.external_link || null;
+                            return (
+                              <div key={ticket.id} className="flex items-center justify-between" style={{
+                                background: "#1a1e28", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "16px 20px",
+                              }}>
+                                <div>
+                                  <span style={{ fontSize: 15, fontWeight: 600, color: "#e8eaf0", display: "block" }}>{ticket.ticket_type}</span>
+                                  {ticket.quantity_available != null && ticket.quantity_available < 20 ? (
+                                    <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} remaining</span>
+                                  ) : (
+                                    <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
+                                  )}
+                                </div>
                                 {ticket.price != null && (
-                                  <span style={{ fontSize: 20, fontWeight: 700, color: "#e8a020" }}>£{Number(ticket.price).toFixed(2)}</span>
+                                  <span style={{ fontSize: 24, fontWeight: 700, color: "#e8a020" }}>£{Number(ticket.price).toFixed(2)}</span>
                                 )}
+                                <div>
+                                  {event.sold_out ? (
+                                    <button disabled style={{
+                                      padding: "10px 20px", fontSize: 13, fontWeight: 600, borderRadius: 8,
+                                      background: "rgba(239,68,68,0.12)", color: "#ef4444", cursor: "not-allowed", border: "none",
+                                    }}>Sold Out</button>
+                                  ) : ticketUrl ? (
+                                    <a href={ticketUrl} target="_blank" rel="noopener noreferrer" style={{
+                                      display: "inline-block", padding: "10px 20px", fontSize: 13, fontWeight: 600,
+                                      background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none",
+                                      transition: "background 0.2s",
+                                    }}>Buy Tickets</a>
+                                  ) : null}
+                                </div>
                               </div>
-                              {ticket.quantity_available != null && ticket.quantity_available < 20 && (
-                                <span style={{ fontSize: 12, color: "#f59e0b" }}>Only {ticket.quantity_available} left</span>
-                              )}
-                              {ticket.quantity_available != null && ticket.quantity_available >= 20 && (
-                                <span style={{ fontSize: 12, color: "#8b909e" }}>{ticket.quantity_available} available</span>
-                              )}
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
-                        {event.sold_out ? (
-                          <div style={{ background: "rgba(239,68,68,0.15)", borderRadius: 8, padding: "12px 20px", textAlign: "center", cursor: "not-allowed" }}>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: "#ef4444" }}>Sold Out</span>
-                          </div>
-                        ) : purchaseUrl ? (
-                          <a href={purchaseUrl} target="_blank" rel="noopener noreferrer" style={{
-                            display: "block", width: "100%", textAlign: "center", padding: "12px 20px",
-                            background: "#e8a020", color: "#0d0f12", fontSize: 14, fontWeight: 700,
-                            borderRadius: 8, textDecoration: "none", transition: "opacity 0.2s",
-                          }}>
-                            Buy Tickets
-                          </a>
-                        ) : null}
                       </div>
                     );
                   })()}

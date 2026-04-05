@@ -326,32 +326,57 @@ export default function EventManager() {
 
   const existingFighterIds = bouts.flatMap((b: any) => [b.fighter_a_id, b.fighter_b_id].filter(Boolean));
 
+  const confirmedCount = bouts.filter((b: any) => b.status === "confirmed" && b.fighter_a_id && b.fighter_b_id).length;
+  const openSlotCount = bouts.filter((b: any) => !b.fighter_a_id || !b.fighter_b_id || b.status !== "confirmed").length;
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: "#0d0f12" }}>
       <Header />
       <main className="pt-16">
-        <section className="py-16">
-          <div className="container">
+        <section style={{ padding: "24px 0 64px" }}>
+          <div className="container" style={{ paddingLeft: 35, paddingRight: 35 }}>
             <div className="flex items-center gap-4 mb-6">
-              <Link to={`/events/${id}`} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+              <Link to={`/events/${id}`} className="inline-flex items-center gap-2 text-sm hover:text-foreground" style={{ color: "#8b909e" }}>
                 <ArrowLeft className="h-4 w-4" /> Back to Event
               </Link>
+            </div>
+
+            {/* KPI Strip */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              {[
+                { label: "Tickets Available", value: "—", color: "#e8a020" },
+                { label: "Est. Revenue", value: "—", color: "#22c55e" },
+                { label: "Matched Fights", value: String(confirmedCount), color: "#e8eaf0" },
+                { label: "Open Slots", value: String(openSlotCount), color: "#e8eaf0" },
+              ].map((kpi) => (
+                <div key={kpi.label} style={{ background: "#14171e", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "20px 16px", boxShadow: "0 4px 24px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
+                  <p style={{ fontSize: 11, color: "#8b909e", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>{kpi.label}</p>
+                  <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, color: kpi.color, lineHeight: 1 }}>{kpi.value}</p>
+                </div>
+              ))}
             </div>
 
             <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <h1 className="font-heading text-4xl text-foreground">{event.title}</h1>
+                  <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, color: "#e8eaf0", textTransform: "uppercase" }}>{event.title}</h1>
                   <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>{event.status}</Badge>
                 </div>
-                <p className="text-muted-foreground">
+                <p style={{ fontSize: 13, color: "#8b909e" }}>
                   {new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} · {event.location} · {event.country}
                 </p>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowEditEvent(true)}>
-                  <Pencil className="h-3 w-3" /> Edit Event
-                </Button>
+                <button onClick={() => setShowEditEvent(true)} style={{
+                  padding: "8px 16px", fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: "pointer",
+                  background: "transparent", border: "1px solid rgba(232,160,32,0.4)", color: "#e8a020",
+                  transition: "all 0.2s",
+                }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.1)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+                >
+                  <Pencil className="h-3 w-3 inline mr-1" /> Edit Event Details
+                </button>
                 {event.status === "draft" && (
                   <Button onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending} className="gap-2">
                     <Globe className="h-4 w-4" />{publishMutation.isPending ? "Publishing..." : "Publish Event"}

@@ -211,6 +211,8 @@ export type Database = {
           fighter_b_id: string | null
           id: string
           is_public: boolean | null
+          round_duration_minutes: number | null
+          rounds: number | null
           slot_number: number | null
           status: string
           weight_class: string | null
@@ -224,6 +226,8 @@ export type Database = {
           fighter_b_id?: string | null
           id?: string
           is_public?: boolean | null
+          round_duration_minutes?: number | null
+          rounds?: number | null
           slot_number?: number | null
           status?: string
           weight_class?: string | null
@@ -237,6 +241,8 @@ export type Database = {
           fighter_b_id?: string | null
           id?: string
           is_public?: boolean | null
+          round_duration_minutes?: number | null
+          rounds?: number | null
           slot_number?: number | null
           status?: string
           weight_class?: string | null
