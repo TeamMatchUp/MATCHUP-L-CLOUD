@@ -37,10 +37,14 @@ function getExpTier(totalPro: number): string {
 }
 
 interface MatchSuggestionsPanelProps {
-  slot: FightSlot;
+  slot?: FightSlot | null;
   existingProposalFighterIds: string[];
   onSelectPair: (fighterA: FighterProfile, fighterB: FighterProfile) => void;
   eventId?: string;
+  /** Override weight class filter (used when no slot exists) */
+  weightClassOverride?: string | null;
+  /** Override discipline filter */
+  disciplineOverride?: string | null;
 }
 
 function matchesKeyword(fighter: FighterProfile, keyword: string, fights: any[]): boolean {
@@ -77,7 +81,7 @@ function getFighterFinishRate(fighterId: string, fights: any[]): number {
   return finishes.length / wins.length;
 }
 
-export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSelectPair, eventId }: MatchSuggestionsPanelProps) {
+export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSelectPair, eventId, weightClassOverride, disciplineOverride }: MatchSuggestionsPanelProps) {
   const { user } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
   const [keyword, setKeyword] = useState("");
