@@ -205,15 +205,14 @@ export function Header() {
 
       {/* Mobile dropdown menu */}
       {mobileOpen && (
-        <div className="md:hidden" style={{ background: "#0d0f12", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="md:hidden" style={{ background: "#0d0f12" }}>
           <div className="flex flex-col">
-            {/* Nav items */}
             {user && (
               <a
                 href="/dashboard"
                 onClick={(e) => { handleDashboardClick(e); setMobileOpen(false); }}
-                className="cursor-pointer"
-                style={{ padding: "16px 20px", fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                className="cursor-pointer flex items-center"
+                style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
               >
                 DASHBOARD
               </a>
@@ -221,7 +220,7 @@ export function Header() {
             <Link
               to="/explore"
               onClick={() => setMobileOpen(false)}
-              style={{ padding: "16px 20px", fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+              style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
             >
               EXPLORE
             </Link>
@@ -233,7 +232,7 @@ export function Header() {
                   to="/account/settings"
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2"
-                  style={{ padding: "16px 20px", fontSize: 14, color: "#8b909e", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#8b909e", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   <Settings style={{ width: 16, height: 16 }} />
                   ACCOUNT SETTINGS
@@ -241,7 +240,7 @@ export function Header() {
                 <button
                   onClick={() => { handleSignOut(); setMobileOpen(false); }}
                   className="flex items-center gap-2 w-full text-left"
-                  style={{ padding: "16px 20px", fontSize: 14, color: "#ef4444", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#ef4444", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   <LogOut style={{ width: 16, height: 16 }} />
                   SIGN OUT
@@ -254,23 +253,22 @@ export function Header() {
                 <Link
                   to="/auth"
                   onClick={() => setMobileOpen(false)}
-                  style={{ padding: "16px 20px", fontSize: 14, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   LOG IN
                 </Link>
                 <Link
                   to="/auth?mode=signup"
                   onClick={() => setMobileOpen(false)}
-                  style={{ padding: "16px 20px", fontSize: 14, color: "#e8a020", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#e8a020", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   CREATE ACCOUNT
                 </Link>
               </>
             )}
 
-            {/* Footer tagline */}
             <div style={{ padding: 20, textAlign: "center" }}>
-              <p style={{ fontSize: 13, color: "#555b6b" }}>PROMOTE, MATCHUP, DONE. IT'S THAT SIMPLE...</p>
+              <p style={{ fontSize: 13, color: "#555b6b", fontFamily: "Inter, sans-serif" }}>PROMOTE, MATCHUP, DONE. IT'S THAT SIMPLE...</p>
             </div>
           </div>
         </div>
