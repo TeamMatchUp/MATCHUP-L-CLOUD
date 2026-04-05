@@ -291,7 +291,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
       </div>
 
       <p className="text-xs text-muted-foreground">
-        AI-ranked pairings for {formatEnum(slot.weight_class)} based on competitive balance, experience, and style diversity.
+        AI-ranked pairings{effectiveWeightClass ? ` for ${formatEnum(effectiveWeightClass)}` : ""} based on competitive balance, experience, and style diversity.
       </p>
 
       {/* Preset selector */}
