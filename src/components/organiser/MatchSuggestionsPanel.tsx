@@ -148,7 +148,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
     queryFn: async () => {
       let query = supabase.from("fighter_profiles").select("*").order("name");
       if (effectiveWeightClass) {
-        query = query.eq("weight_class", effectiveWeightClass);
+        query = query.eq("weight_class", effectiveWeightClass as any);
       }
       const { data, error } = await query;
       if (error) throw error;
