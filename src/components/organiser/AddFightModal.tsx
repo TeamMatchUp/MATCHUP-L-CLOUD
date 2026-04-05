@@ -456,18 +456,29 @@ export function AddFightModal({
               </DialogTitle>
             </DialogHeader>
             <div className="mt-3">
-              {fightSlot ? (
-                <MatchSuggestionsPanel
-                  slot={fightSlot}
-                  existingProposalFighterIds={existingFighterIds}
-                  onSelectPair={handleSuggestionSelect}
-                  eventId={eventId}
-                />
-              ) : (
-                <div className="rounded-lg p-6 text-center" style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.06)" }}>
-                  <p style={{ fontSize: 13, color: "#8b909e" }}>Create at least one fight slot to enable match suggestions.</p>
+              {!fightSlot && !prefillSlot && (
+                <div
+                  style={{
+                    background: "rgba(245,158,11,0.08)",
+                    border: "1px solid rgba(245,158,11,0.2)",
+                    borderRadius: 8,
+                    padding: "10px 14px",
+                    marginBottom: 12,
+                    fontSize: 12,
+                    color: "#f59e0b",
+                  }}
+                >
+                  No open slots found — a new slot will be created when you confirm a match
                 </div>
               )}
+              <MatchSuggestionsPanel
+                slot={fightSlot ?? undefined}
+                existingProposalFighterIds={existingFighterIds}
+                onSelectPair={handleSuggestionSelect}
+                eventId={eventId}
+                weightClassOverride={prefillSlot?.weight_class ?? null}
+                disciplineOverride={prefillSlot?.discipline ?? null}
+              />
             </div>
           </>
         )}
