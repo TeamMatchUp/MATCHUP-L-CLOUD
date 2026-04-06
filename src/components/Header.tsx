@@ -42,6 +42,8 @@ const navLinks: { label: string; to: string }[] = [];
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, roles, activeRole, setActiveRole, signOut } = useAuth();
+  const basket = useBasket();
+  const basketCount = basket.reduce((sum, i) => sum + i.quantity, 0);
   const navigate = useNavigate();
   const location = useLocation();
   const isLanding = location.pathname === "/";
