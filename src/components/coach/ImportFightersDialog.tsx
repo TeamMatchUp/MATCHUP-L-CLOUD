@@ -263,7 +263,7 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
 
           const { data: fighter, error: createErr } = await supabase
             .from("fighter_profiles")
-            .insert(insertData)
+            .insert(insertData as any)
             .select("id")
             .single();
           if (createErr) throw createErr;
