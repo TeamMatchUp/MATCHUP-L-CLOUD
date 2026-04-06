@@ -873,6 +873,14 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
   const [followHover, setFollowHover] = useState(false);
   const showFollow = currentUserId && fighter.user_id && fighter.user_id !== currentUserId;
 
+  const { data: titles = [] } = useQuery({
+    queryKey: ["fighter-titles-card", fighter.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("fighter_titles").select("id, title").eq("fighter_id", fighter.id).eq("is_current", true).order("created_at", { ascending: false }).limit(3);
+      return data ?? [];
+    },
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -890,7 +898,6 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
         <div style={{ height: 200, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <NetworkBackground />
           <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 120, opacity: 0.10, pointerEvents: "none" }} />
-          {/* Avatar */}
           <div style={{
             width: 96, height: 96, borderRadius: "50%", border: "2px solid rgba(232,160,32,0.5)", overflow: "hidden", boxShadow: "0 0 20px rgba(232,160,32,0.2)",
             display: "flex", alignItems: "center", justifyContent: "center", position: "relative", zIndex: 1,
@@ -902,7 +909,6 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
               <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 26, color: EX.gold }}>{initials}</span>
             )}
           </div>
-          {/* Follow button */}
           {showFollow && (
             <button
               className="absolute top-3 left-3"
@@ -924,28 +930,37 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
         </div>
         {/* Body */}
         <div style={{ padding: 16 }}>
-          <p style={{ fontSize: 9, color: EX.muted, textTransform: "uppercase", letterSpacing: "0.1em" }}>FIGHTER</p>
           <p style={{ fontSize: 16, fontWeight: 700, color: EX.text }}>{fighter.name}</p>
+          {fighter.country && (
+            <div className="flex items-center gap-1.5" style={{ marginTop: 4 }}>
+              <FlagIcon countryCode={fighter.country} size={16} />
+              <span style={{ fontSize: 12, color: EX.muted }}>{getCountryDisplayName(fighter.country)}</span>
+            </div>
+          )}
           <p style={{ fontSize: 12, color: EX.muted, marginTop: 2 }}>{WEIGHT_CLASS_LABELS[fighter.weight_class] || fighter.weight_class}</p>
           <div className="flex items-baseline gap-4" style={{ marginTop: 10 }}>
             <div>
               <span style={{ fontSize: 20, fontWeight: 700, color: EX.text }}>{record.wins}-{record.losses}-{record.draws}</span>
               <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>W-L-D</span>
             </div>
-            <div style={{ width: 1, height: 28, background: EX.border, alignSelf: "center" }} />
-            <div>
-              <span style={{ fontSize: 20, fontWeight: 700, color: EX.gold }}>0</span>
-              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>KOs</span>
-            </div>
-            <div style={{ width: 1, height: 28, background: EX.border, alignSelf: "center" }} />
+            <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.06)", alignSelf: "center" }} />
             <div>
               <span style={{ fontSize: 16, fontWeight: 700, color: EX.gold }}>{winRate}%</span>
               <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>WIN RATE</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5" style={{ marginTop: 8 }}>
-            <span style={{ fontSize: 12, color: EX.muted }}>🏆 {gymName}</span>
+            <span style={{ fontSize: 12, color: EX.muted }}>{gymName}</span>
           </div>
+          {titles.length > 0 && (
+            <div className="flex items-center gap-1.5" style={{ marginTop: 6 }}>
+              <Award style={{ width: 14, height: 14, color: EX.gold, flexShrink: 0 }} />
+              <span style={{ fontSize: 11, fontWeight: 600, color: EX.gold, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {titles[0].title}
+              </span>
+              {titles.length > 1 && <span style={{ fontSize: 11, color: EX.muted, flexShrink: 0 }}>+{titles.length - 1} more</span>}
+            </div>
+          )}
         </div>
         {/* Footer */}
         <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
