@@ -100,31 +100,8 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
   const [undefeatedOnly, setUndefeatedOnly] = useState(false);
   const [localOnly, setLocalOnly] = useState(false);
 
-  const adjustSliders = useCallback((changed: "comp" | "ent" | "style" | "narr", newVal: number) => {
-    const others = { comp, ent, style, narr };
-    others[changed] = newVal;
-    const remaining = 100 - newVal;
-    const otherKeys = (["comp", "ent", "style", "narr"] as const).filter((k) => k !== changed);
-    const otherSum = otherKeys.reduce((s, k) => s + others[k], 0);
-    if (otherSum === 0) {
-      const each = Math.floor(remaining / 3);
-      otherKeys.forEach((k, i) => { others[k] = i < remaining % 3 ? each + 1 : each; });
-    } else {
-      let distributed = 0;
-      otherKeys.forEach((k, i) => {
-        if (i === otherKeys.length - 1) {
-          others[k] = remaining - distributed;
-        } else {
-          others[k] = Math.round((others[k] / otherSum) * remaining);
-          distributed += others[k];
-        }
-      });
-    }
-    setComp(others.comp);
-    setEnt(others.ent);
-    setStyle(others.style);
-    setNarr(others.narr);
-  }, [comp, ent, style, narr]);
+  const sliderTotal = comp + ent + style + narr;
+  const slidersValid = sliderTotal === 100;
 
   const applyPreset = (key: string) => {
     const p = PRESETS[key];

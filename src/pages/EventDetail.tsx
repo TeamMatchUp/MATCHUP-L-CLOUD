@@ -9,6 +9,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { addToBasket, getBasketCount } from "@/pages/Checkout";
 import { toast } from "sonner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -389,45 +390,7 @@ export default function EventDetail() {
                     if (activeTickets.length === 0) return null;
                     const purchaseUrl = (event as any).ticket_url || null;
                     return (
-                      <div style={{ marginBottom: 24 }}>
-                        <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#e8eaf0", marginBottom: 12 }}>TICKETS</h3>
-                        <div className="space-y-2">
-                          {activeTickets.map((ticket: any) => {
-                            const ticketUrl = purchaseUrl || ticket.external_link || null;
-                            return (
-                              <div key={ticket.id} className="flex items-center justify-between" style={{
-                                background: "#1a1e28", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "16px 20px",
-                              }}>
-                                <div>
-                                  <span style={{ fontSize: 15, fontWeight: 600, color: "#e8eaf0", display: "block" }}>{ticket.ticket_type}</span>
-                                  {ticket.quantity_available != null && ticket.quantity_available < 20 ? (
-                                    <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} remaining</span>
-                                  ) : (
-                                    <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
-                                  )}
-                                </div>
-                                {ticket.price != null && (
-                                  <span style={{ fontSize: 24, fontWeight: 700, color: "#e8a020" }}>£{Number(ticket.price).toFixed(2)}</span>
-                                )}
-                                <div>
-                                  {event.sold_out ? (
-                                    <button disabled style={{
-                                      padding: "10px 20px", fontSize: 13, fontWeight: 600, borderRadius: 8,
-                                      background: "rgba(239,68,68,0.12)", color: "#ef4444", cursor: "not-allowed", border: "none",
-                                    }}>Sold Out</button>
-                                  ) : ticketUrl ? (
-                                    <a href={ticketUrl} target="_blank" rel="noopener noreferrer" style={{
-                                      display: "inline-block", padding: "10px 20px", fontSize: 13, fontWeight: 600,
-                                      background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none",
-                                      transition: "background 0.2s",
-                                    }}>Buy Tickets</a>
-                                  ) : null}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
                     );
                   })()}
 
