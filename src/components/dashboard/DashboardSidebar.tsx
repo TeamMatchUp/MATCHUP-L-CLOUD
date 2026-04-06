@@ -288,7 +288,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
       {/* Search Bar - hidden when collapsed */}
       {!collapsed && (
         <div style={{ margin: "8px 12px", flexShrink: 0 }}>
-          <div className="flex items-center gap-2" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "8px 12px" }}>
+          <div className="flex items-center gap-2" style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "8px 12px", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)" }}>
             <Search style={{ width: 14, height: 14, color: "#555b6b", flexShrink: 0 }} />
             <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-transparent outline-none border-none" style={{ fontSize: 13, color: "#e8eaf0" }} />
@@ -399,9 +399,9 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
       </div>
 
       {/* User Profile at BOTTOM */}
-      <div style={{ position: "sticky", bottom: 0, background: "inherit", borderTop: "1px solid rgba(255,255,255,0.06)", padding: collapsed ? "12px 8px" : "12px 16px", flexShrink: 0 }}>
+      <div style={{ position: "sticky", bottom: 0, background: "inherit", padding: collapsed ? "12px 8px" : "12px 16px", flexShrink: 0, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)" }}>
         <div className="flex items-center" style={{ gap: collapsed ? 0 : 10, justifyContent: collapsed ? "center" : "flex-start" }}>
-          <Avatar className="h-8 w-8 shrink-0" style={{ border: "1px solid rgba(232,160,32,0.3)" }}>
+          <Avatar className="h-8 w-8 shrink-0" style={{ boxShadow: "0 0 0 1px rgba(232,160,32,0.3)" }}>
             {profile?.avatar_url && <AvatarImage src={profile.avatar_url} className="object-cover" />}
             <AvatarFallback className="text-xs font-medium" style={{ background: "linear-gradient(135deg, #e8a020, #c47e10)", color: "white" }}>
               {initials}

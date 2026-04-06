@@ -46,7 +46,7 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children }:
       {showQuickActions && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowQuickActions(false)} />
-          <div className="absolute right-0 top-11 z-50" style={{ minWidth: 220, background: "#1a1e28", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.5)", padding: 8 }}>
+          <div className="absolute right-0 top-11 z-50" style={{ minWidth: 220, background: "#1a1e28", borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.5)", padding: 8 }}>
             {children}
           </div>
         </>
@@ -156,7 +156,8 @@ function GlobalSearch() {
   return (
     <div ref={containerRef} className="relative" style={{ width: 280 }}>
       <div className="flex items-center gap-2" style={{
-        background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "8px 14px",
+        background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: "8px 14px",
+        boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)",
       }}>
         <Search style={{ width: 14, height: 14, color: "#8b909e", flexShrink: 0 }} />
         <input type="text" placeholder="Search..." value={term}
@@ -167,7 +168,7 @@ function GlobalSearch() {
       </div>
       {open && term.length >= 2 && (
         <div className="absolute top-full left-0 right-0 z-50 mt-1" style={{
-          background: "#1a1e28", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8,
+          background: "#1a1e28", borderRadius: 8,
           boxShadow: "0 8px 24px rgba(0,0,0,0.4)", maxHeight: 360, overflowY: "auto",
         }}>
           {!hasResults && (
@@ -269,7 +270,7 @@ function NetworkModal({ type, userId, onClose }: { type: "followers" | "followin
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.7)" }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: "#14171e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, width: "min(480px, 95vw)", maxHeight: "70vh", overflowY: "auto", padding: 20 }}>
+      <div style={{ background: "#14171e", borderRadius: 12, width: "min(480px, 95vw)", maxHeight: "70vh", overflowY: "auto", padding: 20, boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
         <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
           <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>{type === "followers" ? "Followers" : "Following"}</h3>
           <button onClick={onClose} style={{ color: "#8b909e", cursor: "pointer" }}><X style={{ width: 20, height: 20 }} /></button>
@@ -282,7 +283,7 @@ function NetworkModal({ type, userId, onClose }: { type: "followers" | "followin
         )}
         <div className="space-y-2">
           {items.map((item: any) => (
-            <div key={item.userId} className="flex items-center gap-3 p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
+            <div key={item.userId} className="flex items-center gap-3 p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.02)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)" }}
               onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
             >
@@ -443,7 +444,7 @@ export function DashboardOverview({
       <DropdownActionItem icon={User} label="Edit Profile" onClick={() => { setShowQuickActions(false); onNavigateSection("my-profile"); }} />
       <DropdownActionItem icon={ToggleRight} label="Set Availability" onClick={() => { setShowQuickActions(false); onNavigateSection("my-profile"); }} />
       <DropdownActionLink icon={Crosshair} label="Find Opponents" to="/explore?tab=fighters" onClose={() => setShowQuickActions(false)} />
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "6px 0" }} />
+      <div style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)", margin: "6px 0", height: 1 }} />
       <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "#555b6b" }}>KPI VISIBILITY</p>
       <VisibilityToggle label="Fight Record Card" visible={fighterCardVis.record} onToggle={() => setFighterCardVis(p => ({ ...p, record: !p.record }))} />
       <VisibilityToggle label="Next Fight Card" visible={fighterCardVis.nextFight} onToggle={() => setFighterCardVis(p => ({ ...p, nextFight: !p.nextFight }))} />
@@ -456,7 +457,7 @@ export function DashboardOverview({
       <DropdownActionLink icon={Building2} label="Create Gym" to="/register-gym?from=overview" onClose={() => setShowQuickActions(false)} />
       <DropdownActionLink icon={Calendar} label="Create Event" to="/organiser/create-event?from=overview" onClose={() => setShowQuickActions(false)} />
       <DropdownActionItem icon={Plus} label="Add Fighter" onClick={() => { setShowQuickActions(false); onNavigateSection("roster"); }} />
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "6px 0" }} />
+      <div style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)", margin: "6px 0", height: 1 }} />
       <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "#555b6b" }}>KPI VISIBILITY</p>
       <VisibilityToggle label="KPIs Card" visible={coachCardVis.kpis} onToggle={() => setCoachCardVis(p => ({ ...p, kpis: !p.kpis }))} />
       <VisibilityToggle label="Fights Card" visible={coachCardVis.fights} onToggle={() => setCoachCardVis(p => ({ ...p, fights: !p.fights }))} />
@@ -467,7 +468,7 @@ export function DashboardOverview({
   const quickActionsOrg = (
     <>
       <DropdownActionLink icon={CalendarPlus} label="Create Event" to="/organiser/create-event?from=overview" onClose={() => setShowQuickActions(false)} />
-      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", margin: "6px 0" }} />
+      <div style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)", margin: "6px 0", height: 1 }} />
       <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "#555b6b" }}>KPI VISIBILITY</p>
       <VisibilityToggle label="Overview Stats Card" visible={orgCardVis.stats} onToggle={() => setOrgCardVis(p => ({ ...p, stats: !p.stats }))} />
       <VisibilityToggle label="Pending Matches Card" visible={orgCardVis.pending} onToggle={() => setOrgCardVis(p => ({ ...p, pending: !p.pending }))} />
