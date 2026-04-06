@@ -19,7 +19,25 @@ type CountryCode = Database["public"]["Enums"]["country_code"];
 
 const WEIGHT_CLASSES = Constants.public.Enums.weight_class;
 const STYLES = Constants.public.Enums.fighting_style;
-const COUNTRIES = Constants.public.Enums.country_code;
+
+const ALL_COUNTRIES = [
+  { code: "UK", label: "United Kingdom" }, { code: "USA", label: "United States" }, { code: "AUS", label: "Australia" },
+  { code: "IE", label: "Ireland" }, { code: "FR", label: "France" }, { code: "DE", label: "Germany" },
+  { code: "ES", label: "Spain" }, { code: "IT", label: "Italy" }, { code: "NL", label: "Netherlands" },
+  { code: "PT", label: "Portugal" }, { code: "BE", label: "Belgium" }, { code: "SE", label: "Sweden" },
+  { code: "NO", label: "Norway" }, { code: "DK", label: "Denmark" }, { code: "FI", label: "Finland" },
+  { code: "PL", label: "Poland" }, { code: "RU", label: "Russia" }, { code: "CA", label: "Canada" },
+  { code: "BR", label: "Brazil" }, { code: "MX", label: "Mexico" }, { code: "AR", label: "Argentina" },
+  { code: "CO", label: "Colombia" }, { code: "JP", label: "Japan" }, { code: "TH", label: "Thailand" },
+  { code: "PH", label: "Philippines" }, { code: "CN", label: "China" }, { code: "KR", label: "South Korea" },
+  { code: "IN", label: "India" }, { code: "PK", label: "Pakistan" }, { code: "NG", label: "Nigeria" },
+  { code: "ZA", label: "South Africa" }, { code: "GH", label: "Ghana" }, { code: "KE", label: "Kenya" },
+  { code: "EG", label: "Egypt" }, { code: "NZ", label: "New Zealand" }, { code: "AT", label: "Austria" },
+  { code: "CH", label: "Switzerland" }, { code: "CZ", label: "Czech Republic" }, { code: "HU", label: "Hungary" },
+  { code: "RO", label: "Romania" }, { code: "HR", label: "Croatia" }, { code: "RS", label: "Serbia" },
+  { code: "BG", label: "Bulgaria" }, { code: "GR", label: "Greece" }, { code: "TR", label: "Turkey" },
+  { code: "UA", label: "Ukraine" }, { code: "JM", label: "Jamaica" }, { code: "TT", label: "Trinidad and Tobago" },
+];
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -40,7 +58,8 @@ export function CreateFighterProfileForm({ userId, userEmail, onSuccess }: Props
   const [name, setName] = useState("");
   const [weightClass, setWeightClass] = useState<WeightClass>("lightweight");
   const [style, setStyle] = useState<FightingStyle | "">("");
-  const [country, setCountry] = useState<CountryCode>("UK");
+  const [country, setCountry] = useState<string>("UK");
+  const [countrySearch, setCountrySearch] = useState("");
   const [height, setHeight] = useState("");
   const [reach, setReach] = useState("");
   const [bio, setBio] = useState("");
@@ -53,7 +72,7 @@ export function CreateFighterProfileForm({ userId, userEmail, onSuccess }: Props
         name,
         weight_class: weightClass,
         style: style || null,
-        country,
+        country: country as CountryCode,
         height: height ? parseInt(height) : null,
         reach: reach ? parseInt(reach) : null,
         bio: bio || null,
@@ -106,13 +125,25 @@ export function CreateFighterProfileForm({ userId, userEmail, onSuccess }: Props
           </Select>
         </div>
         <div className="space-y-1">
-          <Label>Country</Label>
-          <Select value={country} onValueChange={(v) => setCountry(v as CountryCode)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+          <Label>Nationality</Label>
+          <Select value={country} onValueChange={(v) => setCountry(v)}>
+            <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
             <SelectContent>
-              {COUNTRIES.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
-              ))}
+              <div className="px-2 pb-2 pt-1">
+                <Input
+                  placeholder="Search countries..."
+                  value={countrySearch}
+                  onChange={(e) => setCountrySearch(e.target.value)}
+                  className="h-8 text-sm"
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                />
+              </div>
+              {ALL_COUNTRIES
+                .filter(c => !countrySearch || c.label.toLowerCase().includes(countrySearch.toLowerCase()) || c.code.toLowerCase().includes(countrySearch.toLowerCase()))
+                .map((c) => (
+                  <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>

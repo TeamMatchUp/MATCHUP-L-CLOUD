@@ -282,27 +282,10 @@ export default function Explore() {
   const searchPlaceholder = tab === "events" ? "Search events, promotions, venues..." : tab === "gyms" ? "Search gyms by name, location..." : "Search fighters...";
 
   // Live counts for category cards
-  const { data: gymLiveCount = 0 } = useQuery({
-    queryKey: ["explore-gym-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("gyms").select("id", { count: "exact", head: true }).or("verified.eq.true,claimed.eq.true");
-      return count ?? 0;
-    },
-  });
-  const { data: eventLiveCount = 0 } = useQuery({
-    queryKey: ["explore-event-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("events").select("id", { count: "exact", head: true }).gte("date", new Date().toISOString().split("T")[0]).neq("status", "cancelled");
-      return count ?? 0;
-    },
-  });
-  const { data: fighterLiveCount = 0 } = useQuery({
-    queryKey: ["explore-fighter-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("fighter_profiles").select("id", { count: "exact", head: true }).eq("available", true);
-      return count ?? 0;
-    },
-  });
+  // Live counts — match what explore queries actually return (all published events, all gyms, all fighters)
+  const gymLiveCount = gyms?.length ?? 0;
+  const eventLiveCount = events?.length ?? 0;
+  const fighterLiveCount = fighters?.length ?? 0;
 
   // Stats counts
   const gymCount = useAnimatedCount(gyms?.length ?? 0);

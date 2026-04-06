@@ -240,33 +240,56 @@ function GlobalSearch() {
 /* ── Network Modal ── */
 function NetworkModal({ type, userId, onClose }: { type: "followers" | "following"; userId: string; onClose: () => void }) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: items = [] } = useQuery({
-    queryKey: [type === "followers" ? "followers-list" : "following-list", userId],
+    queryKey: [type === "followers" ? "overview-followers-list" : "overview-following-list", userId],
     queryFn: async () => {
       if (type === "followers") {
         const { data } = await supabase.from("user_follows").select("follower_id").eq("following_id", userId).order("created_at", { ascending: false });
         if (!data || data.length === 0) return [];
         const ids = data.map(d => d.follower_id);
-        const { data: profiles } = await supabase.from("profiles").select("id, full_name, avatar_url").in("id", ids);
-        return (profiles ?? []).map(p => ({ userId: p.id, name: p.full_name, avatar: p.avatar_url }));
+        const [{ data: profiles }, { data: roles }] = await Promise.all([
+          supabase.from("profiles").select("id, full_name, avatar_url, gym_id").in("id", ids),
+          supabase.from("user_roles").select("user_id, role").in("user_id", ids),
+        ]);
+        const roleMap = new Map((roles ?? []).map(r => [r.user_id, r.role]));
+        return (profiles ?? []).map(p => ({ userId: p.id, name: p.full_name, avatar: p.avatar_url, gym_id: p.gym_id, role: roleMap.get(p.id) }));
       } else {
         const { data } = await supabase.from("user_follows").select("following_id").eq("follower_id", userId).order("created_at", { ascending: false });
         if (!data || data.length === 0) return [];
         const ids = data.map(d => d.following_id);
-        const { data: profiles } = await supabase.from("profiles").select("id, full_name, avatar_url").in("id", ids);
-        return (profiles ?? []).map(p => ({ userId: p.id, name: p.full_name, avatar: p.avatar_url }));
+        const [{ data: profiles }, { data: roles }] = await Promise.all([
+          supabase.from("profiles").select("id, full_name, avatar_url, gym_id").in("id", ids),
+          supabase.from("user_roles").select("user_id, role").in("user_id", ids),
+        ]);
+        const roleMap = new Map((roles ?? []).map(r => [r.user_id, r.role]));
+        return (profiles ?? []).map(p => ({ userId: p.id, name: p.full_name, avatar: p.avatar_url, gym_id: p.gym_id, role: roleMap.get(p.id) }));
       }
     },
   });
 
   const handleUnfollow = async (targetId: string) => {
     await supabase.from("user_follows").delete().eq("follower_id", userId).eq("following_id", targetId);
-    queryClient.invalidateQueries({ queryKey: ["following-list"] });
+    queryClient.invalidateQueries({ queryKey: ["overview-following-list"] });
     queryClient.invalidateQueries({ queryKey: ["following-count"] });
     queryClient.invalidateQueries({ queryKey: ["overview-following-count"] });
     queryClient.invalidateQueries({ queryKey: ["overview-follower-count"] });
   };
+
+  const getProfileUrl = (item: any) => {
+    if (item.role === "fighter") return `/fighters/${item.userId}`;
+    if ((item.role === "coach" || item.role === "gym_owner") && item.gym_id) return `/gyms/${item.gym_id}`;
+    if (item.role === "organiser") return `/explore?tab=events`;
+    return `/fighters/${item.userId}`;
+  };
+
+  const handleRowClick = (item: any) => {
+    onClose();
+    navigate(getProfileUrl(item));
+  };
+
+  const ROLE_LABELS: Record<string, string> = { fighter: "Fighter", coach: "Coach", gym_owner: "Coach", organiser: "Organiser", admin: "Admin" };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.7)" }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
@@ -283,16 +306,25 @@ function NetworkModal({ type, userId, onClose }: { type: "followers" | "followin
         )}
         <div className="space-y-2">
           {items.map((item: any) => (
-            <div key={item.userId} className="flex items-center gap-3 p-3 rounded-lg" style={{ background: "rgba(255,255,255,0.02)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03)" }}
+            <div key={item.userId} className="flex items-center gap-3 p-3 rounded-lg transition-all duration-150"
+              style={{ background: "rgba(255,255,255,0.02)", cursor: "pointer" }}
+              onClick={() => handleRowClick(item)}
               onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
             >
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #e8a020, #c47e10)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600, color: "white", overflow: "hidden", flexShrink: 0 }}>
                 {item.avatar ? <img src={item.avatar} alt="" className="h-full w-full object-cover" /> : (item.name || "?").slice(0, 2).toUpperCase()}
               </div>
-              <span className="flex-1 truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{item.name || "Unknown"}</span>
+              <div className="flex-1 min-w-0">
+                <span className="block truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{item.name || "Unknown"}</span>
+                {item.role && (
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "#e8a020", background: "rgba(232,160,32,0.1)", borderRadius: 4, padding: "1px 6px" }}>
+                    {ROLE_LABELS[item.role] || item.role}
+                  </span>
+                )}
+              </div>
               {type === "following" && (
-                <button onClick={() => handleUnfollow(item.userId)} style={{ fontSize: 11, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>
+                <button onClick={(e) => { e.stopPropagation(); handleUnfollow(item.userId); }} style={{ fontSize: 11, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>
                   Unfollow
                 </button>
               )}
