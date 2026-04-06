@@ -556,11 +556,19 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
       <div className="flex-1 flex flex-col" style={{ background: "#0d1018", overflowY: "auto", padding: "28px 24px" }}>
         {/* Header row */}
         <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
-          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>MATCHES</h3>
+          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>
+            {anchorFighter ? "OPPONENTS" : "MATCHES"}
+          </h3>
           <span style={{ background: "#181c24", borderRadius: 6, padding: "3px 10px", fontSize: 12, color: "#8b909e" }}>
             {suggestions.length} results
           </span>
         </div>
+
+        {anchorFighter && (
+          <p style={{ fontSize: 12, color: "#8b909e", marginBottom: 12 }}>
+            Suggested opponents for <span style={{ color: "#e8a020", fontWeight: 600 }}>{anchorFighter.name}</span>
+          </p>
+        )}
 
         {/* Settings changed notice */}
         {settingsChanged && (
@@ -605,9 +613,83 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
             <p style={{ fontSize: 14, fontWeight: 500 }}>No matches found</p>
             <p style={{ fontSize: 12, marginTop: 4 }}>Try adjusting filters or weights</p>
           </div>
-        ) : (
+        ) : anchorFighter ? (
+          /* ─── Anchor mode: individual opponent cards ─── */
           <div className="space-y-2.5">
-            {suggestions.map((pair, idx) => {
+            {(suggestions as any[]).map((item: any) => {
+              const f = item.fighter as FighterProfile;
+              const anchorElo = 1200 + (anchorFighter.record_wins * 30) - (anchorFighter.record_losses * 20);
+              const opponentElo = 1200 + (f.record_wins * 30) - (f.record_losses * 20);
+              const eloDelta = Math.abs(anchorElo - opponentElo);
+              const compositeScore = Math.max(0, Math.min(100, 100 - eloDelta / 5));
+
+              return (
+                <div
+                  key={f.id}
+                  style={{
+                    background: "#181c24", borderRadius: 10, padding: 16,
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
+                    transition: "all 0.2s ease", cursor: "default",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2330"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3), 0 0 0 1px rgba(232,160,32,0.08)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "#181c24"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)"; }}
+                >
+                  {/* Fighter name */}
+                  <div className="flex items-center justify-between">
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{f.name}</span>
+                  </div>
+
+                  {/* Score bar */}
+                  <div style={{ marginTop: 10 }}>
+                    <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
+                      <span style={{ fontSize: 9, color: "#555b6b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Match Score vs {anchorFighter.name}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#e8a020" }}>{compositeScore.toFixed(0)}</span>
+                    </div>
+                    <div style={{ height: 3, borderRadius: 2, background: "#1e2330" }}>
+                      <div style={{ width: `${compositeScore}%`, height: "100%", borderRadius: 2, background: "#e8a020", transition: "width 0.3s" }} />
+                    </div>
+                  </div>
+
+                  {/* Stats row */}
+                  <div className="flex items-center gap-1" style={{ marginTop: 8, fontSize: 10, color: "#8b909e" }}>
+                    <span>{formatEnum(f.weight_class)}</span>
+                    <span>·</span>
+                    <span>{f.record_wins}W-{f.record_losses}L-{f.record_draws}D</span>
+                    <span>·</span>
+                    <span>Elo {opponentElo}</span>
+                    {f.style && <><span>·</span><span>{formatEnum(f.style)}</span></>}
+                    <span>·</span>
+                    <span>{item.reason}</span>
+                  </div>
+
+                  {/* Bottom: elo delta + select */}
+                  <div className="flex items-center justify-between" style={{ marginTop: 10 }}>
+                    <span style={{ fontSize: 10, color: "#555b6b" }}>
+                      Elo Δ{eloDelta} · {f.available ? "Available" : "Unavailable"}
+                    </span>
+                    <button
+                      onClick={() => handleSelect(f, anchorFighter)}
+                      disabled={allZero}
+                      style={{
+                        background: "rgba(232,160,32,0.12)", color: "#e8a020", borderRadius: 6,
+                        padding: "5px 14px", fontSize: 12, fontWeight: 600, border: "none",
+                        cursor: allZero ? "not-allowed" : "pointer", transition: "all 0.15s",
+                        display: "flex", alignItems: "center", gap: 4,
+                      }}
+                      onMouseEnter={(e) => { if (!allZero) e.currentTarget.style.background = "rgba(232,160,32,0.2)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.12)"; }}
+                    >
+                      <Check style={{ width: 12, height: 12 }} /> Select as opponent
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* ─── Pair mode: existing pair cards ─── */
+          <div className="space-y-2.5">
+            {(suggestions as any[]).map((pair: any) => {
               const eloA = 1200 + (pair.fighterA.record_wins * 30) - (pair.fighterA.record_losses * 20);
               const eloB = 1200 + (pair.fighterB.record_wins * 30) - (pair.fighterB.record_losses * 20);
               const eloDelta = Math.abs(eloA - eloB);
