@@ -356,23 +356,12 @@ export default function GymOwnerDashboard() {
                       </div>
                       <div className="space-y-1">
                         <Label>Country</Label>
-                        <Select
+                        <SearchableCountrySelect
                           value={newGymCountry}
                           onValueChange={(v) =>
                             setNewGymCountry(v as CountryCode)
                           }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {COUNTRIES.map((c) => (
-                              <SelectItem key={c} value={c}>
-                                {c}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        />
                       </div>
                     </div>
                     <div className="space-y-1 mb-4">

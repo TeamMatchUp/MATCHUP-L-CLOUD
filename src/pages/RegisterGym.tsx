@@ -26,7 +26,6 @@ import { Building2 } from "lucide-react";
 import { BannerImageUpload } from "@/components/BannerImageUpload";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
-type CountryCode = Database["public"]["Enums"]["country_code"];
 
 export default function RegisterGym() {
   const { user } = useAuth();

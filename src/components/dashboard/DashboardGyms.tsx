@@ -140,16 +140,7 @@ export function DashboardGyms({
             </div>
             <div className="space-y-1">
               <Label>Country</Label>
-              <Select value={newGymCountry} onValueChange={(v) => setNewGymCountry(v as CountryCode)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableCountrySelect value={newGymCountry} onValueChange={(v) => setNewGymCountry(v as CountryCode)} />
             </div>
           </div>
           <div className="space-y-1 mb-4">
