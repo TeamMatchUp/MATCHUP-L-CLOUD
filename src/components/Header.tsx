@@ -128,6 +128,17 @@ export function Header() {
         <div className="hidden md:flex items-center gap-2">
           {user ? (
             <>
+            {basketCount > 0 && (
+              <Link to="/checkout" className="relative" style={{ color: "#e8eaf0" }}>
+                <ShoppingCart style={{ width: 20, height: 20 }} />
+                <span style={{
+                  position: "absolute", top: -6, right: -8,
+                  background: "#e8a020", color: "#0d0f12",
+                  fontSize: 10, fontWeight: 700, borderRadius: 9999,
+                  width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
+                }}>{basketCount}</span>
+              </Link>
+            )}
             <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -193,6 +204,17 @@ export function Header() {
 
         {/* Mobile: notification bell + hamburger */}
         <div className="md:hidden flex items-center gap-2">
+          {basketCount > 0 && (
+            <Link to="/checkout" className="relative" style={{ color: "#e8eaf0" }}>
+              <ShoppingCart style={{ width: 20, height: 20 }} />
+              <span style={{
+                position: "absolute", top: -6, right: -8,
+                background: "#e8a020", color: "#0d0f12",
+                fontSize: 10, fontWeight: 700, borderRadius: 9999,
+                width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
+              }}>{basketCount}</span>
+            </Link>
+          )}
           {user && <NotificationBell />}
           <button
             className="flex flex-col justify-center items-center gap-[5px] w-8 h-8 group"
