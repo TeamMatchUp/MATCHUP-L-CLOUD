@@ -1620,7 +1620,55 @@ export type Database = {
     Enums: {
       app_role: "organiser" | "coach" | "fighter" | "gym_owner" | "admin"
       confirmation_decision: "accepted" | "declined"
-      country_code: "UK" | "USA" | "AUS"
+      country_code:
+        | "UK"
+        | "USA"
+        | "AUS"
+        | "IE"
+        | "FR"
+        | "DE"
+        | "ES"
+        | "IT"
+        | "NL"
+        | "PT"
+        | "BE"
+        | "SE"
+        | "NO"
+        | "DK"
+        | "FI"
+        | "PL"
+        | "RU"
+        | "CA"
+        | "BR"
+        | "MX"
+        | "AR"
+        | "CO"
+        | "JP"
+        | "TH"
+        | "PH"
+        | "CN"
+        | "KR"
+        | "IN"
+        | "PK"
+        | "NG"
+        | "ZA"
+        | "GH"
+        | "KE"
+        | "EG"
+        | "NZ"
+        | "AT"
+        | "CH"
+        | "CZ"
+        | "HU"
+        | "RO"
+        | "HR"
+        | "RS"
+        | "BG"
+        | "GR"
+        | "TR"
+        | "UA"
+        | "JM"
+        | "TT"
       event_status: "draft" | "published" | "completed" | "cancelled"
       fight_slot_status: "open" | "proposed" | "confirmed" | "cancelled"
       fight_verification_status:
@@ -1790,7 +1838,56 @@ export const Constants = {
     Enums: {
       app_role: ["organiser", "coach", "fighter", "gym_owner", "admin"],
       confirmation_decision: ["accepted", "declined"],
-      country_code: ["UK", "USA", "AUS"],
+      country_code: [
+        "UK",
+        "USA",
+        "AUS",
+        "IE",
+        "FR",
+        "DE",
+        "ES",
+        "IT",
+        "NL",
+        "PT",
+        "BE",
+        "SE",
+        "NO",
+        "DK",
+        "FI",
+        "PL",
+        "RU",
+        "CA",
+        "BR",
+        "MX",
+        "AR",
+        "CO",
+        "JP",
+        "TH",
+        "PH",
+        "CN",
+        "KR",
+        "IN",
+        "PK",
+        "NG",
+        "ZA",
+        "GH",
+        "KE",
+        "EG",
+        "NZ",
+        "AT",
+        "CH",
+        "CZ",
+        "HU",
+        "RO",
+        "HR",
+        "RS",
+        "BG",
+        "GR",
+        "TR",
+        "UA",
+        "JM",
+        "TT",
+      ],
       event_status: ["draft", "published", "completed", "cancelled"],
       fight_slot_status: ["open", "proposed", "confirmed", "cancelled"],
       fight_verification_status: [
