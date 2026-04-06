@@ -351,34 +351,12 @@ export default function Explore() {
       <Header />
       <main className="flex-1 flex flex-col" style={{ paddingTop: 56 }}>
         <section className="flex-1 flex flex-col" style={{ padding: "24px 32px" }}>
-          {/* Stats Bar */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            {[
-              { value: gymCount, label: "Elite Gyms" },
-              { value: eventCount, label: "Upcoming Events" },
-              { value: fighterCount, label: "Active Fighters" },
-            ].map((s) => (
-              <div
-                key={s.label}
-                style={{
-                  background: EX.card, border: `1px solid ${EX.border}`,
-                  borderRadius: 12, padding: 20, textAlign: "center",
-                }}
-              >
-                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 36, color: EX.gold, textShadow: "0 0 20px rgba(232,160,32,0.25)" }}>
-                  {s.value}
-                </span>
-                <p style={{ fontSize: 12, color: EX.muted, marginTop: 4 }}>{s.label}</p>
-              </div>
-            ))}
-          </div>
-
           {/* Category Selector Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               {([
-              { key: "gyms" as TabType, icon: Building2, title: "GYMS", sub: "Find elite training facilities", count: gymLiveCount },
-              { key: "events" as TabType, icon: Calendar, title: "EVENTS", sub: "Discover upcoming fight cards", count: eventLiveCount },
-              { key: "fighters" as TabType, icon: Users, title: "FIGHTERS", sub: "Explore fighter profiles", count: fighterLiveCount },
+              { key: "gyms" as TabType, icon: Building2, title: "GYMS", sub: `Explore ${gymLiveCount} training facilities and gyms` },
+              { key: "events" as TabType, icon: Calendar, title: "EVENTS", sub: `Discover ${eventLiveCount} upcoming events` },
+              { key: "fighters" as TabType, icon: Users, title: "FIGHTERS", sub: `Explore ${fighterLiveCount} detailed fighter profiles` },
             ] as const).map((cat) => {
               const isActive = tab === cat.key;
               return (
@@ -399,13 +377,6 @@ export default function Explore() {
                     <div style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(232,160,32,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <cat.icon style={{ width: 24, height: 24, color: EX.gold }} />
                     </div>
-                    <span style={{
-                      background: "rgba(232,160,32,0.15)", color: EX.gold, borderRadius: 9999,
-                      padding: "2px 8px", fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 11,
-                      minWidth: 28, textAlign: "center",
-                    }}>
-                      {cat.count}
-                    </span>
                   </div>
                   <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: EX.text, marginTop: 16 }}>{cat.title}</p>
                   <p style={{ fontSize: 13, color: EX.muted, marginTop: 4 }}>{cat.sub}</p>
