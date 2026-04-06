@@ -174,7 +174,9 @@ export function AddFightModal({
           is_public: false,
           rounds: manualRounds ? parseInt(manualRounds) : null,
           round_duration_minutes: manualRoundTime ? parseInt(manualRoundTime) : null,
-        })
+          specific_weight_kg: manualWeightKg ? parseFloat(manualWeightKg) : null,
+          specific_weight_lbs: manualWeightLbs ? parseFloat(manualWeightLbs) : null,
+        } as any)
         .select("id")
         .single();
 
