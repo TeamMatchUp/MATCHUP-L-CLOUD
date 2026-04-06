@@ -17,6 +17,7 @@ import { Plus, Pencil, ArrowUp, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 import { GymInvitesPanel } from "@/components/fighter/GymInvitesPanel";
 import { MyGymsPanel } from "@/components/fighter/MyGymsPanel";
 import { GymTierBadge } from "@/components/gym/GymTierBadge";
@@ -26,7 +27,6 @@ import { EditGymDialog } from "@/components/gym/EditGymDialog";
 import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
-const COUNTRIES = Constants.public.Enums.country_code;
 
 interface DashboardGymsProps {
   isCoachOrOwner: boolean;

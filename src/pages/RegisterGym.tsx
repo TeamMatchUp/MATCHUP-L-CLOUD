@@ -20,12 +20,13 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 import { motion } from "framer-motion";
 import { Building2 } from "lucide-react";
 import { BannerImageUpload } from "@/components/BannerImageUpload";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
-const COUNTRIES = Constants.public.Enums.country_code;
+type CountryCode = Database["public"]["Enums"]["country_code"];
 
 export default function RegisterGym() {
   const { user } = useAuth();
@@ -137,16 +138,7 @@ export default function RegisterGym() {
                   </div>
                   <div className="space-y-2">
                     <Label>Country *</Label>
-                    <Select value={country} onValueChange={(v) => setCountry(v as CountryCode)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {COUNTRIES.map((c) => (
-                          <SelectItem key={c} value={c}>{c}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <SearchableCountrySelect value={country} onValueChange={(v) => setCountry(v as CountryCode)} />
                   </div>
                   <div className="space-y-2">
                     <Label>City</Label>

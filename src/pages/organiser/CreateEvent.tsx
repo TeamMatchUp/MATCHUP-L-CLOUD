@@ -24,10 +24,10 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
-import { BannerImageUpload } from "@/components/BannerImageUpload";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 
+import { BannerImageUpload } from "@/components/BannerImageUpload";
 type CountryCode = Database["public"]["Enums"]["country_code"];
-const COUNTRIES = Constants.public.Enums.country_code;
 
 export default function CreateEvent() {
   const { user } = useAuth();
