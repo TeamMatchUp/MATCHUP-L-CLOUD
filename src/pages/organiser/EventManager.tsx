@@ -11,6 +11,7 @@ import { EditEventDialog } from "@/components/organiser/EditEventDialog";
 import { EditBoutDialog } from "@/components/organiser/EditBoutDialog";
 import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
 import { AddFightModal } from "@/components/organiser/AddFightModal";
+import { EventKpiStrip } from "@/components/organiser/EventKpiStrip";
 import { ArrowLeft, Globe, Pencil, Plus, Eye, EyeOff, GripVertical, Search, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
