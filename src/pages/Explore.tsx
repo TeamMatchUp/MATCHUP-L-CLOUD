@@ -29,6 +29,7 @@ import { useFollow } from "@/hooks/useFollow";
 import logoWhite from "@/assets/logo-full-white.svg";
 import iconWhite from "@/assets/icon-white.svg";
 import NetworkBackground from "@/components/NetworkBackground";
+import { ExploreBanner } from "@/components/ExploreBanner";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
