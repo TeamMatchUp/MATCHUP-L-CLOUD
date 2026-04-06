@@ -210,7 +210,9 @@ export function AddFightModal({
       is_public: true,
       rounds: openRounds ? parseInt(openRounds) : null,
       round_duration_minutes: openRoundTime ? parseInt(openRoundTime) : null,
-    });
+      specific_weight_kg: openWeightKg ? parseFloat(openWeightKg) : null,
+      specific_weight_lbs: openWeightLbs ? parseFloat(openWeightLbs) : null,
+    } as any);
     setLoading(false);
     if (error) {
       toast({ title: "Error adding open slot", description: error.message, variant: "destructive" });
