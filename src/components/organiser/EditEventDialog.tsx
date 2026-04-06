@@ -186,14 +186,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
             </div>
             <div className="space-y-1">
               <Label>Country</Label>
-              <Select value={country} onValueChange={(v) => setCountry(v as CountryCode)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableCountrySelect value={country} onValueChange={(v) => setCountry(v as CountryCode)} />
             </div>
           </div>
 

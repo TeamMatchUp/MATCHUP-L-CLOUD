@@ -133,17 +133,7 @@ export function FighterSearchPanel({
           </SelectContent>
         </Select>
 
-        <Select value={country} onValueChange={(v) => setCountry(v as CountryCode | "all")}>
-          <SelectTrigger>
-            <SelectValue placeholder="Country" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Countries</SelectItem>
-            {COUNTRIES.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <SearchableCountrySelect value={country} onValueChange={(v) => setCountry(v as CountryCode | "all")} includeAll />
 
         <Select value={style} onValueChange={(v) => setStyle(v as FightingStyle | "all")}>
           <SelectTrigger>
