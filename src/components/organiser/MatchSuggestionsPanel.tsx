@@ -291,22 +291,40 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
         </div>
       </div>
 
-      {/* Sliders */}
+      {/* Sliders — independent */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-3">
         {([
-          { key: "comp" as const, label: "Competitiveness", val: comp, set: (v: number) => adjustSliders("comp", v) },
-          { key: "ent" as const, label: "Entertainment", val: ent, set: (v: number) => adjustSliders("ent", v) },
-          { key: "style" as const, label: "Style Contrast", val: style, set: (v: number) => adjustSliders("style", v) },
-          { key: "narr" as const, label: "Narrative", val: narr, set: (v: number) => adjustSliders("narr", v) },
+          { key: "comp" as const, label: "Competitiveness", val: comp, set: setComp },
+          { key: "ent" as const, label: "Entertainment", val: ent, set: setEnt },
+          { key: "style" as const, label: "Style Contrast", val: style, set: setStyle },
+          { key: "narr" as const, label: "Narrative", val: narr, set: setNarr },
         ]).map((s) => (
           <div key={s.key}>
             <div className="flex justify-between text-xs mb-1">
               <span className="text-muted-foreground">{s.label}</span>
               <span className="text-primary font-medium">{s.val}%</span>
             </div>
-            <Slider value={[s.val]} min={0} max={100} step={5} onValueChange={([v]) => { s.set(v); setSelectedPreset(null); }} />
+            <div className="flex items-center gap-2">
+              <Slider className="flex-1" value={[s.val]} min={0} max={100} step={5} onValueChange={([v]) => { s.set(v); setSelectedPreset(null); }} />
+              <div className="flex items-center gap-0.5">
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={s.val}
+                  onChange={(e) => { s.set(Math.min(100, Math.max(0, parseInt(e.target.value) || 0))); setSelectedPreset(null); }}
+                  className="h-7 text-xs text-center p-0"
+                  style={{ width: 52, background: "#181c24" }}
+                />
+                <span className="text-[10px] text-muted-foreground">%</span>
+              </div>
+            </div>
           </div>
         ))}
+      </div>
+      {/* Running total */}
+      <div className="text-xs font-medium" style={{ color: sliderTotal === 100 ? "#22c55e" : sliderTotal > 100 ? "#ef4444" : "#f59e0b" }}>
+        {sliderTotal === 100 ? "Total: 100% ✓" : sliderTotal > 100 ? `Total: ${sliderTotal}% — must equal 100%` : `Total: ${sliderTotal}% — ${100 - sliderTotal}% remaining`}
       </div>
 
       {/* Additional Filters */}
