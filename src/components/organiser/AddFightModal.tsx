@@ -472,7 +472,7 @@ export function AddFightModal({
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-3">
-              {paramFields(manualWc, setManualWc, manualDisc, setManualDisc, manualRounds, setManualRounds, manualRoundTime, setManualRoundTime)}
+              {paramFields(manualWc, setManualWc, manualDisc, setManualDisc, manualRounds, setManualRounds, manualRoundTime, setManualRoundTime, manualWeightKg, setManualWeightKg, manualWeightLbs, setManualWeightLbs)}
 
               <FighterSearchDropdown
                 label="Fighter A"
@@ -569,7 +569,7 @@ export function AddFightModal({
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-3">
-              {paramFields(openWc, setOpenWc, openDisc, setOpenDisc, openRounds, setOpenRounds, openRoundTime, setOpenRoundTime)}
+              {paramFields(openWc, setOpenWc, openDisc, setOpenDisc, openRounds, setOpenRounds, openRoundTime, setOpenRoundTime, openWeightKg, setOpenWeightKg, openWeightLbs, setOpenWeightLbs)}
               <div className="flex gap-2 justify-end pt-2">
                 <Button variant="ghost" onClick={() => handleClose(false)} style={{ color: "#8b909e" }}>Cancel</Button>
                 <Button
