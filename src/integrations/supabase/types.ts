@@ -214,6 +214,8 @@ export type Database = {
           round_duration_minutes: number | null
           rounds: number | null
           slot_number: number | null
+          specific_weight_kg: number | null
+          specific_weight_lbs: number | null
           status: string
           weight_class: string | null
         }
@@ -229,6 +231,8 @@ export type Database = {
           round_duration_minutes?: number | null
           rounds?: number | null
           slot_number?: number | null
+          specific_weight_kg?: number | null
+          specific_weight_lbs?: number | null
           status?: string
           weight_class?: string | null
         }
@@ -244,6 +248,8 @@ export type Database = {
           round_duration_minutes?: number | null
           rounds?: number | null
           slot_number?: number | null
+          specific_weight_kg?: number | null
+          specific_weight_lbs?: number | null
           status?: string
           weight_class?: string | null
         }
