@@ -424,15 +424,7 @@ export default function Explore() {
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                   <div style={{ borderRadius: 12, border: `1px solid ${EX.border}`, background: EX.card, padding: "12px 16px" }} className="space-y-4">
                     <div className="flex flex-wrap gap-3 items-center">
-                      <Select value={countryFilter} onValueChange={setCountryFilter}>
-                        <SelectTrigger className="w-[140px] sm:w-[160px]" style={{ background: "rgba(255,255,255,0.04)", borderColor: EX.border, color: EX.text }}><Filter className="h-4 w-4 mr-2" /><SelectValue placeholder="Country" /></SelectTrigger>
-                        <SelectContent position="popper" side="bottom" style={{ background: EX.raised, borderColor: EX.borderMid }}>
-                          <SelectItem value="all">All Countries</SelectItem>
-                          <SelectItem value="UK">UK</SelectItem>
-                          <SelectItem value="USA">USA</SelectItem>
-                          <SelectItem value="AUS">Australia</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <SearchableCountrySelect value={countryFilter} onValueChange={setCountryFilter} placeholder="Country" includeAll />
 
                       {tab === "events" && (
                         <>
