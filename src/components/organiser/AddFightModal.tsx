@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Sparkles, PlusCircle, ArrowLeft, ArrowRight } from "lucide-react";
+import { UserPlus, Sparkles, PlusCircle, ArrowLeft, ArrowRight, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,7 +31,7 @@ interface AddFightModalProps {
   onSuccess: () => void;
   existingFighterIds: string[];
   fightSlot?: FightSlot | null;
-  /** Pre-fill for Find Matches mode */
+  /** Pre-fill for Find Matches/Fights mode */
   prefillSlot?: any;
   mode?: "add" | "find";
 }
@@ -67,6 +67,30 @@ async function notifyBoutParties(fighterA: FighterProfile, fighterB: FighterProf
 }
 
 type Step = "menu" | "manual" | "suggested" | "open";
+
+/**
+ * Detect scenario from a prefill slot:
+ * - "oneTBA": one fighter assigned, one NULL
+ * - "bothTBA": both fighters NULL
+ * - null: not a find mode
+ */
+function detectScenario(slot: any): "oneTBA" | "bothTBA" | null {
+  if (!slot) return null;
+  const hasA = !!slot.fighter_a_id;
+  const hasB = !!slot.fighter_b_id;
+  if (hasA && !hasB) return "oneTBA";
+  if (!hasA && hasB) return "oneTBA";
+  if (!hasA && !hasB) return "bothTBA";
+  return null;
+}
+
+function getAnchorFighter(slot: any): FighterProfile | null {
+  if (!slot) return null;
+  const unwrap = (v: any) => Array.isArray(v) ? v[0] : v;
+  if (slot.fighter_a_id && !slot.fighter_b_id) return unwrap(slot.fighter_a) ?? null;
+  if (!slot.fighter_a_id && slot.fighter_b_id) return unwrap(slot.fighter_b) ?? null;
+  return null;
+}
 
 export function AddFightModal({
   open,
@@ -104,6 +128,9 @@ export function AddFightModal({
   const [openWeightKg, setOpenWeightKg] = useState<string>("");
   const [openWeightLbs, setOpenWeightLbs] = useState<string>("");
 
+  const scenario = mode === "find" ? detectScenario(prefillSlot) : null;
+  const anchorFighter = scenario === "oneTBA" ? getAnchorFighter(prefillSlot) : null;
+
   const reset = () => {
     setStep("menu");
     setFighterA(null);
@@ -127,8 +154,16 @@ export function AddFightModal({
     onOpenChange(v);
   };
 
+  // ─── Manual Save ───
   const handleManualSave = async () => {
-    if (!fighterA && !fighterB) {
+    if (scenario === "oneTBA") {
+      // Only need one fighter for the TBA side
+      const selected = fighterA || fighterB;
+      if (!selected) {
+        toast({ title: "Select a fighter", variant: "destructive" });
+        return;
+      }
+    } else if (!fighterA && !fighterB) {
       toast({ title: "Select at least one fighter", variant: "destructive" });
       return;
     }
@@ -136,11 +171,21 @@ export function AddFightModal({
     const wc = manualWc || fighterA?.weight_class || fighterB?.weight_class || null;
 
     if (prefillSlot && mode === "find") {
-      // Update existing slot
+      // Entry Point 2/3: UPDATE existing slot
       const update: any = {};
-      if (fighterA && !prefillSlot.fighter_a_id) update.fighter_a_id = fighterA.id;
-      if (fighterB && !prefillSlot.fighter_b_id) update.fighter_b_id = fighterB.id;
-      if (fighterA && fighterB) update.status = "proposed";
+      if (scenario === "oneTBA") {
+        const selected = fighterA || fighterB;
+        if (!prefillSlot.fighter_a_id) update.fighter_a_id = selected!.id;
+        else if (!prefillSlot.fighter_b_id) update.fighter_b_id = selected!.id;
+        // Check if both sides now have fighters
+        const bothFilled = (prefillSlot.fighter_a_id || update.fighter_a_id) && (prefillSlot.fighter_b_id || update.fighter_b_id);
+        if (bothFilled) update.status = "proposed";
+      } else {
+        // bothTBA — need both
+        if (fighterA) update.fighter_a_id = fighterA.id;
+        if (fighterB) update.fighter_b_id = fighterB.id;
+        if (fighterA && fighterB) update.status = "proposed";
+      }
       if (wc) update.weight_class = wc;
       if (manualRounds) update.rounds = parseInt(manualRounds);
       if (manualRoundTime) update.round_duration_minutes = parseInt(manualRoundTime);
@@ -149,7 +194,7 @@ export function AddFightModal({
       if (error) {
         toast({ title: "Error updating slot", description: error.message, variant: "destructive" });
       } else {
-        if (fighterA && fighterB) {
+        if (update.status === "proposed" && fighterA && fighterB) {
           await notifyBoutParties(fighterA, fighterB, eventId, prefillSlot.id);
           toast({ title: "Fight proposed — awaiting acceptance" });
         } else {
@@ -159,7 +204,7 @@ export function AddFightModal({
         handleClose(false);
       }
     } else {
-      // Create new slot
+      // Entry Point 1: INSERT new slot
       const { data: inserted, error } = await supabase
         .from("event_fight_slots")
         .insert({
@@ -223,23 +268,34 @@ export function AddFightModal({
     }
   };
 
+  // ─── Suggestion select handler ───
   const handleSuggestionSelect = async (a: FighterProfile, b: FighterProfile) => {
     setLoading(true);
     const wc = a.weight_class || b.weight_class;
 
     if (prefillSlot && mode === "find") {
-      // Scenario B/C — update existing TBA slot
-      const update: any = {};
-      if (!prefillSlot.fighter_a_id) update.fighter_a_id = a.id;
-      else update.fighter_b_id = b.id;
-      if (!prefillSlot.fighter_b_id && prefillSlot.fighter_a_id) update.fighter_b_id = b.id;
-      else if (!prefillSlot.fighter_a_id) { update.fighter_a_id = a.id; update.fighter_b_id = b.id; }
-      update.status = "proposed";
+      // Entry Point 2/3: UPDATE existing slot
+      const update: any = { status: "proposed" };
+      if (scenario === "oneTBA") {
+        // Only fill the NULL side
+        if (!prefillSlot.fighter_a_id) update.fighter_a_id = a.id;
+        else if (!prefillSlot.fighter_b_id) update.fighter_b_id = a.id; // 'a' is the selected opponent
+      } else {
+        // bothTBA — fill both
+        update.fighter_a_id = a.id;
+        update.fighter_b_id = b.id;
+      }
       if (wc) update.weight_class = wc;
 
       const { error } = await supabase.from("event_fight_slots").update(update).eq("id", prefillSlot.id);
       if (!error) {
-        await notifyBoutParties(a, b, eventId, prefillSlot.id);
+        // For oneTBA, we need to construct the full pair for notifications
+        if (scenario === "oneTBA" && anchorFighter) {
+          const opponent = a;
+          await notifyBoutParties(anchorFighter, opponent, eventId, prefillSlot.id);
+        } else {
+          await notifyBoutParties(a, b, eventId, prefillSlot.id);
+        }
         toast({ title: "Fight proposed — awaiting acceptance" });
         onSuccess();
         handleClose(false);
@@ -247,7 +303,7 @@ export function AddFightModal({
         toast({ title: "Error updating slot", description: error.message, variant: "destructive" });
       }
     } else {
-      // Scenario A — create new slot with suggested fighters
+      // Entry Point 1: INSERT new slot
       const { data: inserted, error } = await supabase
         .from("event_fight_slots")
         .insert({
@@ -275,7 +331,40 @@ export function AddFightModal({
     setLoading(false);
   };
 
-  const title = mode === "find" ? "Find Matches" : "Add Fight";
+  // ─── Dynamic labels ───
+  const getTitle = () => {
+    if (mode === "add") return "Add Fight";
+    return scenario === "oneTBA" ? "Find Matches" : "Find Fights";
+  };
+
+  const getSubtitle = () => {
+    if (mode === "add") return null;
+    if (scenario === "oneTBA" && anchorFighter) {
+      return `Finding an opponent for ${anchorFighter.name}`;
+    }
+    return "Finding a complete pairing for this slot";
+  };
+
+  const getManualLabel = () => {
+    if (mode === "add") return "Add Fight Manually";
+    return scenario === "oneTBA" ? "Find Matches Manually" : "Find Fights Manually";
+  };
+
+  const getManualDesc = () => {
+    if (mode === "add") return "Choose fighters and parameters yourself";
+    return scenario === "oneTBA" ? "Browse and select an opponent yourself" : "Browse and select two fighters yourself";
+  };
+
+  const getSuggestedLabel = () => {
+    if (mode === "add") return "Add Suggested Fight";
+    return scenario === "oneTBA" ? "Suggested Matches" : "Suggested Fights";
+  };
+
+  const getSuggestedDesc = () => {
+    if (mode === "add") return "Get AI-matched suggestions based on your event goals";
+    if (scenario === "oneTBA" && anchorFighter) return `Get AI suggestions suited to ${anchorFighter.name}`;
+    return "Get AI-ranked fighter pair suggestions";
+  };
 
   const optionCard = (icon: React.ReactNode, label: string, desc: string, onClick: () => void) => (
     <button
@@ -431,9 +520,14 @@ export function AddFightModal({
           <>
             <DialogHeader>
               <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#e8eaf0" }}>
-                {title}
+                {getTitle()}
               </DialogTitle>
-              {mode === "find" && prefillSlot && (
+              {getSubtitle() && (
+                <p style={{ fontSize: 13, color: "#8b909e", marginTop: 4 }}>
+                  {getSubtitle()}
+                </p>
+              )}
+              {mode === "find" && prefillSlot && !getSubtitle() && (
                 <p style={{ fontSize: 12, color: "#8b909e", marginTop: 4 }}>
                   {prefillSlot.weight_class ? formatEnum(prefillSlot.weight_class) : "Open Weight"}
                   {prefillSlot.discipline ? ` · ${formatEnum(prefillSlot.discipline)}` : ""}
@@ -442,15 +536,15 @@ export function AddFightModal({
             </DialogHeader>
             <div className="space-y-2 mt-4">
               {optionCard(
-                <UserPlus className="h-5 w-5" />,
-                "Add Fight Manually",
-                "Choose fighters and parameters yourself",
+                <Search className="h-5 w-5" />,
+                getManualLabel(),
+                getManualDesc(),
                 () => setStep("manual")
               )}
               {optionCard(
                 <Sparkles className="h-5 w-5" />,
-                "Add Suggested Fight",
-                "Get AI-matched suggestions based on your event goals",
+                getSuggestedLabel(),
+                getSuggestedDesc(),
                 () => setStep("suggested")
               )}
               {mode === "add" && optionCard(
@@ -474,36 +568,71 @@ export function AddFightModal({
             </button>
             <DialogHeader>
               <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>
-                Manual Fighter Selection
+                {scenario === "oneTBA" ? "Manual Fighter Selection" : "Manual Fighter Selection"}
               </DialogTitle>
             </DialogHeader>
+
+            {/* Anchor fighter context for Scenario A */}
+            {scenario === "oneTBA" && anchorFighter && (
+              <div style={{
+                background: "rgba(232,160,32,0.06)", borderRadius: 8, padding: "12px 16px", marginTop: 8, marginBottom: 4,
+              }}>
+                <p style={{ fontSize: 9, color: "#e8a020", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
+                  Anchor fighter
+                </p>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>
+                  {anchorFighter.name}
+                  <span style={{ fontSize: 12, color: "#8b909e", marginLeft: 8 }}>
+                    {anchorFighter.record_wins}-{anchorFighter.record_losses}-{anchorFighter.record_draws} · {formatEnum(anchorFighter.weight_class)}
+                  </span>
+                </p>
+                <p style={{ fontSize: 12, color: "#8b909e", marginTop: 2 }}>Select an opponent below</p>
+              </div>
+            )}
+
             <div className="space-y-4 mt-3">
               {paramFields(manualWc, setManualWc, manualDisc, setManualDisc, manualRounds, setManualRounds, manualRoundTime, setManualRoundTime, manualWeightKg, setManualWeightKg, manualWeightLbs, setManualWeightLbs)}
 
-              <FighterSearchDropdown
-                label="Fighter A"
-                selected={fighterA}
-                onSelect={setFighterA}
-                onClear={() => setFighterA(null)}
-                excludeId={fighterB?.id}
-                coachId={isCoach ? user?.id : null}
-                eventId={eventId}
-              />
-              <FighterSearchDropdown
-                label="Fighter B"
-                selected={fighterB}
-                onSelect={setFighterB}
-                onClear={() => setFighterB(null)}
-                excludeId={fighterA?.id}
-                coachId={isCoach ? user?.id : null}
-                eventId={eventId}
-              />
+              {scenario === "oneTBA" ? (
+                /* Only one fighter search for the TBA side */
+                <FighterSearchDropdown
+                  label="Opponent"
+                  selected={fighterA}
+                  onSelect={setFighterA}
+                  onClear={() => setFighterA(null)}
+                  excludeId={anchorFighter?.id}
+                  coachId={isCoach ? user?.id : null}
+                  eventId={eventId}
+                />
+              ) : (
+                /* Both fighters for bothTBA or add mode */
+                <>
+                  <FighterSearchDropdown
+                    label="Fighter A"
+                    selected={fighterA}
+                    onSelect={setFighterA}
+                    onClear={() => setFighterA(null)}
+                    excludeId={fighterB?.id}
+                    coachId={isCoach ? user?.id : null}
+                    eventId={eventId}
+                  />
+                  <FighterSearchDropdown
+                    label="Fighter B"
+                    selected={fighterB}
+                    onSelect={setFighterB}
+                    onClear={() => setFighterB(null)}
+                    excludeId={fighterA?.id}
+                    coachId={isCoach ? user?.id : null}
+                    eventId={eventId}
+                  />
+                </>
+              )}
 
               <div className="flex gap-2 justify-end pt-2">
                 <Button variant="ghost" onClick={() => handleClose(false)} style={{ color: "#8b909e" }}>Cancel</Button>
                 <Button
                   onClick={handleManualSave}
-                  disabled={loading || (!fighterA && !fighterB)}
+                  disabled={loading || (scenario === "oneTBA" ? !fighterA : (!fighterA && !fighterB))}
                   style={{
                     background: "#e8a020",
                     color: "#0d0f12",
@@ -511,7 +640,7 @@ export function AddFightModal({
                     borderRadius: 8,
                   }}
                 >
-                  {loading ? "Saving..." : fighterA && fighterB ? "Create Proposal" : "Add Fighter"}
+                  {loading ? "Saving..." : mode === "find" ? "Create Proposal" : fighterA && fighterB ? "Create Proposal" : "Add Fighter"}
                 </Button>
               </div>
             </div>
@@ -526,6 +655,7 @@ export function AddFightModal({
             eventId={eventId}
             weightClassOverride={prefillSlot?.weight_class ?? null}
             disciplineOverride={prefillSlot?.discipline ?? null}
+            anchorFighter={anchorFighter ?? undefined}
           />
         )}
 
