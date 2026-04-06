@@ -330,8 +330,30 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
       }}>
         {/* Header */}
         <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, color: "#e8eaf0", letterSpacing: "0.04em" }}>
-          SUGGESTED <span style={{ color: "#e8a020" }}>MATCHES</span>
+          {anchorFighter ? (
+            <>SUGGESTED <span style={{ color: "#e8a020" }}>MATCHES</span></>
+          ) : (
+            <>SUGGESTED <span style={{ color: "#e8a020" }}>FIGHTS</span></>
+          )}
         </h2>
+
+        {/* Anchor fighter summary card */}
+        {anchorFighter && (
+          <div style={{
+            background: "rgba(232,160,32,0.06)", borderRadius: 8, padding: "12px 16px",
+          }}>
+            <p style={{ fontSize: 9, color: "#e8a020", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
+              Anchor fighter
+            </p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>
+              {anchorFighter.name}
+            </p>
+            <p style={{ fontSize: 12, color: "#8b909e", marginTop: 2 }}>
+              {anchorFighter.record_wins}-{anchorFighter.record_losses}-{anchorFighter.record_draws} · {formatEnum(anchorFighter.weight_class)}
+              {anchorFighter.style && ` · ${formatEnum(anchorFighter.style)}`}
+            </p>
+          </div>
+        )}
 
         {effectiveWeightClass && (
           <p style={{ fontSize: 12, color: "#8b909e" }}>
