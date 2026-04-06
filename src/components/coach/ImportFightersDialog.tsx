@@ -7,9 +7,11 @@ import { Upload, FileText, AlertCircle, CheckCircle2, UserPlus, Link2, X } from 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { formatEnum } from "@/lib/format";
+import { ALL_COUNTRIES } from "@/lib/countries";
 import type { Database } from "@/integrations/supabase/types";
 
 type WeightClass = Database["public"]["Enums"]["weight_class"];
+type FightingStyle = Database["public"]["Enums"]["fighting_style"];
 
 const VALID_WEIGHT_CLASSES: WeightClass[] = [
   "strawweight", "flyweight", "bantamweight", "featherweight", "lightweight",
@@ -17,8 +19,17 @@ const VALID_WEIGHT_CLASSES: WeightClass[] = [
   "super_middleweight", "light_heavyweight", "cruiserweight", "heavyweight", "super_heavyweight",
 ];
 
+const VALID_STYLES: FightingStyle[] = ["boxing", "muay_thai", "mma", "kickboxing", "bjj"];
+const VALID_STANCES = ["orthodox", "southpaw", "switch"];
+const VALID_COUNTRY_CODES = ALL_COUNTRIES.map((c) => c.code);
+
 const REQUIRED_HEADERS = ["first_name", "last_name"];
-const ALL_HEADERS = ["first_name", "last_name", "email", "weight_class", "wins", "losses", "draws"];
+const ALL_HEADERS = [
+  "first_name", "last_name", "email", "weight_class", "wins", "losses", "draws",
+  "country", "discipline", "style", "stance", "date_of_birth",
+  "height_cm", "reach_cm", "walk_around_weight_kg",
+  "amateur_wins", "amateur_losses", "amateur_draws",
+];
 
 interface ImportRow {
   first_name: string;
@@ -28,6 +39,17 @@ interface ImportRow {
   wins: string;
   losses: string;
   draws: string;
+  country: string;
+  discipline: string;
+  style: string;
+  stance: string;
+  date_of_birth: string;
+  height_cm: string;
+  reach_cm: string;
+  walk_around_weight_kg: string;
+  amateur_wins: string;
+  amateur_losses: string;
+  amateur_draws: string;
   _raw: Record<string, string>;
 }
 
@@ -77,7 +99,6 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
     onOpenChange(v);
   };
 
-  // Parse CSV text into rows
   const parseCSV = (text: string): Record<string, string>[] => {
     const lines = text.split(/\r?\n/).filter((l) => l.trim());
     if (lines.length < 2) return [];
@@ -103,7 +124,6 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
       return;
     }
 
-    // Check headers
     const headers = Object.keys(rawRows[0]);
     const missingHeaders = REQUIRED_HEADERS.filter((h) => !headers.includes(h));
     if (missingHeaders.length > 0) {
@@ -111,7 +131,6 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
       return;
     }
 
-    // Map to ImportRow
     const rows: ImportRow[] = rawRows.map((r) => ({
       first_name: r.first_name || "",
       last_name: r.last_name || "",
@@ -120,10 +139,21 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
       wins: r.wins || "0",
       losses: r.losses || "0",
       draws: r.draws || "0",
+      country: (r.country || "").toUpperCase().trim(),
+      discipline: r.discipline || "",
+      style: (r.style || "").toLowerCase().replace(/\s+/g, "_"),
+      stance: (r.stance || "").toLowerCase().trim(),
+      date_of_birth: r.date_of_birth || "",
+      height_cm: r.height_cm || "",
+      reach_cm: r.reach_cm || "",
+      walk_around_weight_kg: r.walk_around_weight_kg || "",
+      amateur_wins: r.amateur_wins || "0",
+      amateur_losses: r.amateur_losses || "0",
+      amateur_draws: r.amateur_draws || "0",
       _raw: r,
     }));
 
-    // Validate & check existing fighters
+    // Check existing fighters by email
     const emails = rows.filter((r) => r.email).map((r) => r.email);
     let existingByEmail = new Map<string, string>();
 
@@ -153,8 +183,23 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
       if (!row.first_name || !row.last_name) {
         return { row, action: "error", reason: "Missing first_name or last_name" };
       }
-      if (row.weight_class && !VALID_WEIGHT_CLASSES.includes(row.weight_class as WeightClass)) {
+      if (!row.weight_class) {
+        return { row, action: "error", reason: "Missing weight_class (required)" };
+      }
+      if (!VALID_WEIGHT_CLASSES.includes(row.weight_class as WeightClass)) {
         return { row, action: "error", reason: `Invalid weight_class: ${row.weight_class}` };
+      }
+      if (row.country && !VALID_COUNTRY_CODES.includes(row.country)) {
+        return { row, action: "error", reason: `Invalid country code: ${row.country}` };
+      }
+      if (row.style && !VALID_STYLES.includes(row.style as FightingStyle)) {
+        return { row, action: "error", reason: `Invalid style: ${row.style}` };
+      }
+      if (row.stance && !VALID_STANCES.includes(row.stance)) {
+        return { row, action: "error", reason: `Invalid stance: ${row.stance}` };
+      }
+      if (row.date_of_birth && !/^\d{4}-\d{2}-\d{2}$/.test(row.date_of_birth)) {
+        return { row, action: "error", reason: `Invalid date_of_birth format (use YYYY-MM-DD)` };
       }
       if (row.email && existingByEmail.has(row.email)) {
         const fid = existingByEmail.get(row.email)!;
@@ -168,7 +213,6 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
 
     setPreviewRows(preview);
     setStep("preview");
-    // Reset file input
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -193,19 +237,33 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
           if (error) throw error;
           result.linked++;
         } else if (pr.action === "create") {
-          const wc = (pr.row.weight_class || "lightweight") as WeightClass;
+          const wc = pr.row.weight_class as WeightClass;
+          const insertData: Record<string, any> = {
+            name: `${pr.row.first_name} ${pr.row.last_name}`,
+            email: pr.row.email || null,
+            weight_class: wc,
+            record_wins: parseInt(pr.row.wins) || 0,
+            record_losses: parseInt(pr.row.losses) || 0,
+            record_draws: parseInt(pr.row.draws) || 0,
+            amateur_wins: parseInt(pr.row.amateur_wins) || 0,
+            amateur_losses: parseInt(pr.row.amateur_losses) || 0,
+            amateur_draws: parseInt(pr.row.amateur_draws) || 0,
+            created_by_coach_id: coachId,
+          };
+
+          // Only set optional fields if provided
+          if (pr.row.country) insertData.country = pr.row.country;
+          if (pr.row.discipline) insertData.discipline = pr.row.discipline;
+          if (pr.row.style) insertData.style = pr.row.style as FightingStyle;
+          if (pr.row.stance) insertData.stance = pr.row.stance;
+          if (pr.row.date_of_birth) insertData.date_of_birth = pr.row.date_of_birth;
+          if (pr.row.height_cm) insertData.height = parseInt(pr.row.height_cm) || null;
+          if (pr.row.reach_cm) insertData.reach = parseInt(pr.row.reach_cm) || null;
+          if (pr.row.walk_around_weight_kg) insertData.walk_around_weight_kg = parseFloat(pr.row.walk_around_weight_kg) || null;
+
           const { data: fighter, error: createErr } = await supabase
             .from("fighter_profiles")
-            .insert({
-              name: `${pr.row.first_name} ${pr.row.last_name}`,
-              email: pr.row.email || null,
-              weight_class: VALID_WEIGHT_CLASSES.includes(wc) ? wc : "lightweight",
-              record_wins: parseInt(pr.row.wins) || 0,
-              record_losses: parseInt(pr.row.losses) || 0,
-              record_draws: parseInt(pr.row.draws) || 0,
-              created_by_coach_id: coachId,
-              country: "UK",
-            })
+            .insert(insertData)
             .select("id")
             .single();
           if (createErr) throw createErr;
@@ -252,8 +310,11 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
           <div className="space-y-4">
             <div className="rounded-lg border-2 border-dashed border-border p-8 text-center">
               <Upload className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-              <p className="text-sm text-muted-foreground mb-4">
-                Upload a CSV with columns: <span className="font-medium text-foreground">first_name, last_name</span> (required), email, weight_class, wins, losses, draws
+              <p className="text-sm text-muted-foreground mb-1">
+                Upload a CSV with columns: <span className="font-medium text-foreground">first_name, last_name, weight_class</span> (required)
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                Optional: email, country, discipline, style, stance, date_of_birth, height_cm, reach_cm, walk_around_weight_kg, wins, losses, draws, amateur_wins, amateur_losses, amateur_draws
               </p>
               <Button variant="outline" onClick={() => fileRef.current?.click()} className="gap-2">
                 <FileText className="h-4 w-4" /> Choose CSV File
@@ -262,11 +323,17 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
             </div>
             <div className="rounded-lg bg-muted/50 p-4 text-xs text-muted-foreground space-y-1">
               <p className="font-medium text-foreground text-sm mb-2">CSV Template</p>
-              <code className="block bg-background p-2 rounded text-[11px]">
-                first_name,last_name,email,weight_class,wins,losses,draws<br />
-                John,Smith,john@email.com,lightweight,5,2,0<br />
-                Jane,Doe,jane@email.com,bantamweight,3,1,1
+              <code className="block bg-background p-2 rounded text-[11px] overflow-x-auto">
+                first_name,last_name,weight_class,email,country,discipline,style,stance,wins,losses,draws<br />
+                John,Smith,lightweight,john@email.com,UK,Boxing,boxing,orthodox,5,2,0<br />
+                Jane,Doe,bantamweight,jane@email.com,IE,MMA,mma,southpaw,3,1,1
               </code>
+              <p className="mt-2 text-[11px]">
+                <strong>Country codes:</strong> UK, USA, IE, FR, DE, ES, IT, NL, AUS, NZ, JP, TH, etc. (48 supported)<br />
+                <strong>Styles:</strong> boxing, muay_thai, mma, kickboxing, bjj<br />
+                <strong>Stances:</strong> orthodox, southpaw, switch<br />
+                <strong>Date of birth:</strong> YYYY-MM-DD format
+              </p>
             </div>
           </div>
         )}
@@ -295,6 +362,7 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Weight</TableHead>
+                    <TableHead>Country</TableHead>
                     <TableHead>Record</TableHead>
                     <TableHead>Action</TableHead>
                   </TableRow>
@@ -305,6 +373,7 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
                       <TableCell className="font-medium">{pr.row.first_name} {pr.row.last_name}</TableCell>
                       <TableCell className="text-xs text-muted-foreground">{pr.row.email || "—"}</TableCell>
                       <TableCell className="text-xs">{pr.row.weight_class ? formatEnum(pr.row.weight_class) : "—"}</TableCell>
+                      <TableCell className="text-xs">{pr.row.country || "—"}</TableCell>
                       <TableCell className="text-xs">{pr.row.wins}W-{pr.row.losses}L-{pr.row.draws}D</TableCell>
                       <TableCell>
                         {pr.action === "create" && (
