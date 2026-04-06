@@ -21,8 +21,6 @@ type CountryCode = Database["public"]["Enums"]["country_code"];
 const WEIGHT_CLASSES = Constants.public.Enums.weight_class;
 const STYLES = Constants.public.Enums.fighting_style;
 
-const STYLES = Constants.public.Enums.fighting_style;
-
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
   featherweight: "Featherweight", lightweight: "Lightweight", super_lightweight: "Super Lightweight",
