@@ -121,7 +121,8 @@ export function DashboardNetwork() {
   const getProfileUrl = (item: { userId: string; profile?: any; role?: string }) => {
     if (item.role === "fighter") return `/fighters/${item.userId}`;
     if ((item.role === "coach" || item.role === "gym_owner") && item.profile?.gym_id) return `/gyms/${item.profile.gym_id}`;
-    return null;
+    if (item.role === "organiser") return `/explore?tab=events`;
+    return `/fighters/${item.userId}`;
   };
 
   const renderList = (
@@ -179,9 +180,6 @@ export function DashboardNetwork() {
                     >
                       {ROLE_LABELS[item.role] || item.role}
                     </span>
-                  )}
-                  {profileUrl && (
-                    <span style={{ fontSize: 12, color: "#e8a020", fontWeight: 500 }}>View Profile</span>
                   )}
                 </div>
               </div>
