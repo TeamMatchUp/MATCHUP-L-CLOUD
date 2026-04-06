@@ -186,6 +186,38 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: {
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
           </div>
 
+          {/* Linked weight inputs */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Specific Weight (kg)</Label>
+              <Input
+                type="number" min={40} max={120} step={0.1}
+                placeholder="e.g. 70.0" value={weightKg}
+                onChange={(e) => {
+                  const kg = e.target.value;
+                  setWeightKg(kg);
+                  if (kg) setWeightLbs((parseFloat(kg) * 2.2046).toFixed(1));
+                  else setWeightLbs("");
+                }}
+                className="h-9 text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Specific Weight (lbs)</Label>
+              <Input
+                type="number" min={88} max={265} step={0.1}
+                placeholder="e.g. 154.3" value={weightLbs}
+                onChange={(e) => {
+                  const lbs = e.target.value;
+                  setWeightLbs(lbs);
+                  if (lbs) setWeightKg((parseFloat(lbs) / 2.2046).toFixed(1));
+                  else setWeightKg("");
+                }}
+                className="h-9 text-sm"
+              />
+            </div>
+          </div>
+
           <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">
             <AlertDialog>
               <AlertDialogTrigger asChild>
