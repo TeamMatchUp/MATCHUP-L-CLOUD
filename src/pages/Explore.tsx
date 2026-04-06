@@ -714,85 +714,87 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
         const hasTickets = event.tickets && event.tickets.length > 0;
         const isSoldOut = event.sold_out === true;
         return (
-          <motion.div
-            key={event.id}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: Math.min(i * 0.05, 0.3) }}
-          >
-            <Link
-              to={`/events/${event.id}`}
-              className="block transition-all duration-200"
-              style={{ background: EX.card, border: `1px solid ${EX.border}`, borderRadius: 12, overflow: "hidden", cursor: "pointer" }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = EX.goldBorder; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = EX.border; e.currentTarget.style.boxShadow = "none"; }}
+          <React.Fragment key={event.id}>
+            {i === 15 && <ExploreBanner />}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: Math.min(i * 0.05, 0.3) }}
             >
-              {/* Hero area */}
-              <div style={{ height: 180, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {event.banner_image ? (
-                  <img src={event.banner_image} alt={event.title} className="w-full h-full object-cover" />
-                ) : (
-                  <>
-                    <NetworkBackground />
-                    <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 80, opacity: 0.12, pointerEvents: "none" }} />
-                  </>
-                )}
-                {(() => {
-                  if (!event.ticket_enabled) return null;
-                  const now = new Date();
-                  const activeTickets = (event.tickets ?? []).filter((t: any) =>
-                    (!t.sales_start || new Date(t.sales_start) <= now) &&
-                    (!t.sales_end || new Date(t.sales_end) >= now)
-                  );
-                  const isSoldOut = event.sold_out === true;
-                  if (isSoldOut) return (
-                    <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", borderRadius: 9999, padding: "4px 10px", fontSize: 11, fontWeight: 600 }}>Sold Out</span>
-                  );
-                  if (activeTickets.length > 0) {
-                    const minPrice = Math.min(...activeTickets.map((t: any) => Number(t.price)).filter((p: number) => p > 0));
-                    return (
-                      <>
-                        <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(239,68,68,0.85)", backdropFilter: "blur(8px)", color: "white", borderRadius: 9999, padding: "4px 10px", fontSize: 11, fontWeight: 600 }}>● Tickets Available</span>
-                        {isFinite(minPrice) && minPrice > 0 && (
-                          <span style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", borderRadius: 9999, padding: "6px 12px" }}>
-                            <span style={{ fontSize: 9, color: "white", display: "block" }}>From</span>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: EX.gold }}>£{minPrice}</span>
-                          </span>
-                        )}
-                      </>
+              <Link
+                to={`/events/${event.id}`}
+                className="block transition-all duration-200"
+                style={{ background: EX.card, border: `1px solid ${EX.border}`, borderRadius: 12, overflow: "hidden", cursor: "pointer" }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = EX.goldBorder; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = EX.border; e.currentTarget.style.boxShadow = "none"; }}
+              >
+                {/* Hero area */}
+                <div style={{ height: 180, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {event.banner_image ? (
+                    <img src={event.banner_image} alt={event.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <>
+                      <NetworkBackground />
+                      <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 80, opacity: 0.12, pointerEvents: "none" }} />
+                    </>
+                  )}
+                  {(() => {
+                    if (!event.ticket_enabled) return null;
+                    const now = new Date();
+                    const activeTickets = (event.tickets ?? []).filter((t: any) =>
+                      (!t.sales_start || new Date(t.sales_start) <= now) &&
+                      (!t.sales_end || new Date(t.sales_end) >= now)
                     );
-                  }
-                  return null;
-                })()}
-              </div>
-              {/* Body */}
-              <div style={{ padding: 16 }}>
-                <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: EX.text, textTransform: "uppercase" }}>{event.title}</p>
-                {event.description && <p style={{ fontSize: 13, color: EX.muted, marginTop: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{event.description}</p>}
-                <div className="space-y-1" style={{ marginTop: 12 }}>
-                  <div className="flex items-center gap-2"><Calendar style={{ width: 14, height: 14, color: EX.muted }} /><span style={{ fontSize: 12, color: EX.muted }}>{new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span></div>
-                  <div className="flex items-center gap-2"><MapPin style={{ width: 14, height: 14, color: EX.muted }} /><span style={{ fontSize: 12, color: EX.muted }}>{event.city ? `${event.city}, ${event.location}` : event.location}</span></div>
+                    const isSoldOut = event.sold_out === true;
+                    if (isSoldOut) return (
+                      <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", borderRadius: 9999, padding: "4px 10px", fontSize: 11, fontWeight: 600 }}>Sold Out</span>
+                    );
+                    if (activeTickets.length > 0) {
+                      const minPrice = Math.min(...activeTickets.map((t: any) => Number(t.price)).filter((p: number) => p > 0));
+                      return (
+                        <>
+                          <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(239,68,68,0.85)", backdropFilter: "blur(8px)", color: "white", borderRadius: 9999, padding: "4px 10px", fontSize: 11, fontWeight: 600 }}>● Tickets Available</span>
+                          {isFinite(minPrice) && minPrice > 0 && (
+                            <span style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", borderRadius: 9999, padding: "6px 12px" }}>
+                              <span style={{ fontSize: 9, color: "white", display: "block" }}>From</span>
+                              <span style={{ fontSize: 14, fontWeight: 700, color: EX.gold }}>£{minPrice}</span>
+                            </span>
+                          )}
+                        </>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
-              </div>
-              {/* Main Event preview */}
-              {(() => {
-                const publicSlots = event.event_fight_slots?.filter((s: any) => s.is_public === true && s.status === "confirmed" && (s.fighter_a_id || s.fighter_b_id));
-                if (!publicSlots || publicSlots.length === 0) return null;
-                return (
-                  <div style={{ padding: "0 16px 8px" }}>
-                    <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", letterSpacing: "0.05em" }}>MAIN EVENT</span>
+                {/* Body */}
+                <div style={{ padding: 16 }}>
+                  <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: EX.text, textTransform: "uppercase" }}>{event.title}</p>
+                  {event.description && <p style={{ fontSize: 13, color: EX.muted, marginTop: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{event.description}</p>}
+                  <div className="space-y-1" style={{ marginTop: 12 }}>
+                    <div className="flex items-center gap-2"><Calendar style={{ width: 14, height: 14, color: EX.muted }} /><span style={{ fontSize: 12, color: EX.muted }}>{new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span></div>
+                    <div className="flex items-center gap-2"><MapPin style={{ width: 14, height: 14, color: EX.muted }} /><span style={{ fontSize: 12, color: EX.muted }}>{event.city ? `${event.city}, ${event.location}` : event.location}</span></div>
                   </div>
-                );
-              })()}
-              {/* Footer */}
-              <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-                <span style={{ fontSize: 13, color: EX.gold }}>View Event</span>
-                <div style={{ width: 32, height: 32, borderRadius: "50%", background: EX.goldDim, border: `1px solid ${EX.goldBorder}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <ChevronRight style={{ width: 14, height: 14, color: EX.gold }} />
                 </div>
-              </div>
-            </Link>
-          </motion.div>
+                {/* Main Event preview */}
+                {(() => {
+                  const publicSlots = event.event_fight_slots?.filter((s: any) => s.is_public === true && s.status === "confirmed" && (s.fighter_a_id || s.fighter_b_id));
+                  if (!publicSlots || publicSlots.length === 0) return null;
+                  return (
+                    <div style={{ padding: "0 16px 8px" }}>
+                      <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", letterSpacing: "0.05em" }}>MAIN EVENT</span>
+                    </div>
+                  );
+                })()}
+                {/* Footer */}
+                <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                  <span style={{ fontSize: 13, color: EX.gold }}>View Event</span>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: EX.goldDim, border: `1px solid ${EX.goldBorder}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <ChevronRight style={{ width: 14, height: 14, color: EX.gold }} />
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          </React.Fragment>
         );
       })}
     </div>
