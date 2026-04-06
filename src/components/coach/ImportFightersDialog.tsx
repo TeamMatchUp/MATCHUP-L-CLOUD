@@ -189,10 +189,10 @@ export function ImportFightersDialog({ open, onOpenChange, coachId, gymId, gymNa
       if (!VALID_WEIGHT_CLASSES.includes(row.weight_class as WeightClass)) {
         return { row, action: "error", reason: `Invalid weight_class: ${row.weight_class}` };
       }
-      if (row.country && !VALID_COUNTRY_CODES.includes(row.country)) {
+      if (row.country && !VALID_COUNTRY_CODES.includes(row.country as any)) {
         return { row, action: "error", reason: `Invalid country code: ${row.country}` };
       }
-      if (row.style && !VALID_STYLES.includes(row.style as FightingStyle)) {
+      if (row.style && !VALID_STYLES.includes(row.style as any)) {
         return { row, action: "error", reason: `Invalid style: ${row.style}` };
       }
       if (row.stance && !VALID_STANCES.includes(row.stance)) {
