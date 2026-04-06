@@ -77,6 +77,26 @@ function getFighterFinishRate(fighterId: string, fights: any[]): number {
   return finishes.length / wins.length;
 }
 
+/** Score a single opponent against an anchor fighter. Reuses the same logic as pair scoring. */
+function scorePairForAnchor(anchor: FighterProfile, opponent: FighterProfile): { score: number; reason: string } {
+  const totalA = anchor.record_wins + anchor.record_losses + anchor.record_draws;
+  const totalB = opponent.record_wins + opponent.record_losses + opponent.record_draws;
+  const winRateA = totalA > 0 ? anchor.record_wins / totalA : 0.5;
+  const winRateB = totalB > 0 ? opponent.record_wins / totalB : 0.5;
+  const winRateDiff = Math.abs(winRateA - winRateB);
+  const expDiff = Math.abs(totalA - totalB);
+  const expPenalty = Math.min(expDiff / 10, 1);
+  const styleDiversity = anchor.style && opponent.style && anchor.style !== opponent.style ? -0.1 : 0;
+  const countryBonus = anchor.country !== opponent.country ? -0.05 : 0;
+  const score = winRateDiff * 3 + expPenalty + styleDiversity + countryBonus;
+  const reasons: string[] = [];
+  if (winRateDiff < 0.1) reasons.push("Similar win rates");
+  if (expDiff <= 3) reasons.push("Similar experience");
+  if (anchor.style && opponent.style && anchor.style !== opponent.style) reasons.push("Style clash");
+  if (anchor.country !== opponent.country) reasons.push("International");
+  return { score: Math.round(score * 100) / 100, reason: reasons.length > 0 ? reasons.join(" · ") : "Viable matchup" };
+}
+
 const SLIDER_COLORS = {
   comp: "#e8a020",
   ent: "#22c55e",
