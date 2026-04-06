@@ -375,10 +375,10 @@ export default function Explore() {
 
           {/* Category Selector Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            {([
-              { key: "gyms" as TabType, icon: Building2, title: "GYMS", sub: "Find elite training facilities" },
-              { key: "events" as TabType, icon: Calendar, title: "EVENTS", sub: "Discover upcoming fight cards" },
-              { key: "fighters" as TabType, icon: Users, title: "FIGHTERS", sub: "Explore fighter profiles" },
+              {([
+              { key: "gyms" as TabType, icon: Building2, title: "GYMS", sub: "Find elite training facilities", count: gymLiveCount },
+              { key: "events" as TabType, icon: Calendar, title: "EVENTS", sub: "Discover upcoming fight cards", count: eventLiveCount },
+              { key: "fighters" as TabType, icon: Users, title: "FIGHTERS", sub: "Explore fighter profiles", count: fighterLiveCount },
             ] as const).map((cat) => {
               const isActive = tab === cat.key;
               return (
@@ -388,15 +388,24 @@ export default function Explore() {
                   className="text-left transition-all duration-200"
                   style={{
                     background: isActive ? "rgba(232,160,32,0.06)" : EX.card,
-                    border: `1px solid ${isActive ? EX.goldBorder : EX.border}`,
                     borderRadius: 12, padding: "28px 24px", cursor: "pointer",
                     overflow: "hidden", transform: isActive ? "translateY(-2px)" : "none",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
                   }}
-                  onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "rgba(232,160,32,0.06)"; e.currentTarget.style.borderColor = EX.goldBorder; e.currentTarget.style.transform = "translateY(-2px)"; } }}
-                  onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = EX.card; e.currentTarget.style.borderColor = EX.border; e.currentTarget.style.transform = "none"; } }}
+                  onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "rgba(232,160,32,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
+                  onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = EX.card; e.currentTarget.style.transform = "none"; } }}
                 >
-                  <div style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(232,160,32,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <cat.icon style={{ width: 24, height: 24, color: EX.gold }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(232,160,32,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <cat.icon style={{ width: 24, height: 24, color: EX.gold }} />
+                    </div>
+                    <span style={{
+                      background: "rgba(232,160,32,0.15)", color: EX.gold, borderRadius: 9999,
+                      padding: "2px 8px", fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: 11,
+                      minWidth: 28, textAlign: "center",
+                    }}>
+                      {cat.count}
+                    </span>
                   </div>
                   <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: EX.text, marginTop: 16 }}>{cat.title}</p>
                   <p style={{ fontSize: 13, color: EX.muted, marginTop: 4 }}>{cat.sub}</p>
