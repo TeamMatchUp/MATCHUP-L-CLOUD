@@ -315,7 +315,8 @@ export default function Dashboard() {
   const sidebarW = isMobile ? 0 : (sidebarCollapsed ? 56 : 220);
 
   return (
-    <div style={{ background: "hsl(var(--background))", width: "100vw", minHeight: "100vh", margin: 0 }}>
+    <div style={{ background: "hsl(var(--background))", width: "100%", minHeight: "100vh", margin: 0, overflow: "hidden" } as React.CSSProperties}>
+      <style>{`:root { --sidebar-width: ${sidebarW}px; }`}</style>
       {/* Mobile sidebar overlay */}
       {isMobile && mobileSidebarOpen && (
         <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setMobileSidebarOpen(false)} />
