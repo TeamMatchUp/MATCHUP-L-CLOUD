@@ -67,7 +67,10 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
   const isConfirmed = status === "confirmed" && fA && fB;
   const isDeclined = status === "declined";
   const isPending = status === "proposed" || status === "pending";
-  const hasTBA = !fA || !fB;
+  // Scenario detection based on ASSIGNMENT (not proposal status)
+  const oneTBA = (bout.fighter_a_id && !bout.fighter_b_id) || (!bout.fighter_a_id && bout.fighter_b_id);
+  const bothTBA = !bout.fighter_a_id && !bout.fighter_b_id;
+  const hasTBA = oneTBA || bothTBA;
 
   let cardStyle: React.CSSProperties = {
     background: "#1a1e28",
@@ -98,20 +101,26 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
     return null;
   };
 
-  const fighterBlock = (fighter: FighterProfile | null, align: "left" | "right") => (
-    <div style={{ flex: 1, textAlign: align, minWidth: 0 }}>
-      <p style={{ fontWeight: 600, fontSize: 14, color: fighter ? "#e8eaf0" : "#555b6b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {fighter?.name ?? "TBA"}
-      </p>
-      {fighter && (
-        <p style={{ fontSize: 11, color: "#8b909e", marginTop: 1 }}>
-          {fighter.record_wins}-{fighter.record_losses}-{fighter.record_draws}
+  const fighterBlock = (fighter: FighterProfile | null, side: "a" | "b", align: "left" | "right") => {
+    const isAssigned = side === "a" ? !!bout.fighter_a_id : !!bout.fighter_b_id;
+    return (
+      <div style={{ flex: 1, textAlign: align, minWidth: 0 }}>
+        <p style={{ fontWeight: 600, fontSize: 14, color: isAssigned ? "#e8eaf0" : "#555b6b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {fighter?.name ?? "TBA"}
         </p>
-      )}
-      {fighter && statusBadge(status)}
-      {!fighter && <span style={{ fontSize: 11, color: "#555b6b" }}>—</span>}
-    </div>
-  );
+        {fighter && (
+          <p style={{ fontSize: 11, color: "#8b909e", marginTop: 1 }}>
+            {fighter.record_wins}-{fighter.record_losses}-{fighter.record_draws}
+          </p>
+        )}
+        {isAssigned && statusBadge(status)}
+        {!isAssigned && <span style={{ fontSize: 11, color: "#555b6b" }}>—</span>}
+      </div>
+    );
+  };
+
+  // Button label based on scenario
+  const findLabel = oneTBA ? "Find Matches" : "Find Fights";
 
   return (
     <div
@@ -143,9 +152,9 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
 
         {/* Fighters row */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {fighterBlock(fA, "left")}
+          {fighterBlock(fA, "a", "left")}
           <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8a020", flexShrink: 0 }}>VS</span>
-          {fighterBlock(fB, "right")}
+          {fighterBlock(fB, "b", "right")}
         </div>
 
         {isEmpty && (
@@ -185,7 +194,7 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
             onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.1)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
           >
-            Find
+            {findLabel}
           </button>
         )}
         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onDelete(bout.id)}>
