@@ -894,11 +894,6 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
               <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 26, color: EX.gold }}>{initials}</span>
             )}
           </div>
-          {/* Win Rate badge */}
-          <div className="absolute top-3 right-3" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", borderRadius: 9999, padding: "5px 12px" }}>
-            <span style={{ fontSize: 9, color: EX.muted, display: "block" }}>Win Rate</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: EX.gold }}>{winRate}%</span>
-          </div>
           {/* Follow button */}
           {showFollow && (
             <button
@@ -927,12 +922,17 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
           <div className="flex items-baseline gap-4" style={{ marginTop: 10 }}>
             <div>
               <span style={{ fontSize: 20, fontWeight: 700, color: EX.text }}>{record.wins}-{record.losses}-{record.draws}</span>
-              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>WIN-LOSS-DRAW</span>
+              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>W-L-D</span>
             </div>
             <div style={{ width: 1, height: 28, background: EX.border, alignSelf: "center" }} />
             <div>
               <span style={{ fontSize: 20, fontWeight: 700, color: EX.gold }}>0</span>
-              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>KNOCKOUTS</span>
+              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>KOs</span>
+            </div>
+            <div style={{ width: 1, height: 28, background: EX.border, alignSelf: "center" }} />
+            <div>
+              <span style={{ fontSize: 16, fontWeight: 700, color: EX.gold }}>{winRate}%</span>
+              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>WIN RATE</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5" style={{ marginTop: 8 }}>
