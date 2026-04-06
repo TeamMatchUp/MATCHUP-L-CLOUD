@@ -1,9 +1,8 @@
+import { useState, useMemo } from "react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { ArrowLeft, MapPin, ShieldCheck, Target, Calendar, Share2, Trophy, BarChart3 } from "lucide-react";
-import { FighterFightHistory } from "@/components/fighter/FighterFightHistory";
-import { ProfileCompletionBar } from "@/components/fighter/ProfileCompletionBar";
+import { ArrowLeft, Share2, ChevronDown, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +11,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useFollow } from "@/hooks/useFollow";
 import { toast } from "sonner";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from "recharts";
-import logoWhite from "@/assets/logo-full-white.svg";
+import { FlagIcon, getCountryDisplayName } from "@/components/FlagIcon";
+import { ProfileCompletionBar } from "@/components/fighter/ProfileCompletionBar";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -22,33 +22,13 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
   cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
 };
 
-import { STYLE_LABELS } from "@/lib/format";
-
-const EX = {
-  bg: "#0d0f12", card: "#14171e", raised: "#1a1e28",
-  border: "rgba(255,255,255,0.06)", borderMid: "rgba(255,255,255,0.1)",
-  gold: "#e8a020", goldDim: "rgba(232,160,32,0.12)", goldBorder: "rgba(232,160,32,0.25)",
-  text: "#e8eaf0", muted: "#8b909e", dimmed: "#555b6b",
-};
-
-// Method matching helpers
-const isKO = (method?: string | null) => {
-  if (!method) return false;
-  const upper = method.toUpperCase();
-  return upper === 'KO' || upper.startsWith('KO ');
-};
-const isTKO = (method?: string | null) => method?.toUpperCase().includes('TKO') ?? false;
-const isSub = (method?: string | null) => method?.toUpperCase().includes('SUB') ?? false;
-const isDecision = (method?: string | null) => {
-  if (!method) return false;
-  const upper = method.toUpperCase();
-  return upper.includes('DECISION') || upper.includes('DEC') || upper.includes('POINTS');
-};
-const isWinResult = (f: any, fighterId: string) =>
-  f.result?.toLowerCase() === 'win' || f.winner_id === fighterId;
-const isLossResult = (f: any) => f.result?.toLowerCase() === 'loss';
-const isDrawResult = (f: any) =>
-  f.result?.toLowerCase() === 'draw' || (f.winner_id == null && f.result != null);
+const isKO = (m?: string | null) => { if (!m) return false; const u = m.toUpperCase(); return u === 'KO' || u.startsWith('KO '); };
+const isTKO = (m?: string | null) => m?.toUpperCase().includes('TKO') ?? false;
+const isSub = (m?: string | null) => m?.toUpperCase().includes('SUB') ?? false;
+const isDec = (m?: string | null) => { if (!m) return false; const u = m.toUpperCase(); return u.includes('DECISION') || u.includes('DEC') || u.includes('POINTS'); };
+const isWin = (f: any, id: string) => f.result?.toLowerCase() === 'win' || f.winner_id === id;
+const isLoss = (f: any) => f.result?.toLowerCase() === 'loss';
+const isDraw = (f: any) => f.result?.toLowerCase() === 'draw';
 
 export default function FighterDetail() {
   const { id } = useParams<{ id: string }>();
@@ -56,6 +36,9 @@ export default function FighterDetail() {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const fromParam = searchParams.get("from");
+  const [activeTab, setActiveTab] = useState<"record" | "stats">("record");
+  const [fightFilter, setFightFilter] = useState<"all" | "kos" | "subs" | "decs">("all");
+  const [expandedFight, setExpandedFight] = useState<string | null>(null);
 
   const { data: fighter, isLoading } = useQuery({
     queryKey: ["fighter", id],
@@ -66,27 +49,23 @@ export default function FighterDetail() {
         .eq("id", id!)
         .single();
       if (error) throw error;
-
       let avatarUrl: string | null = null;
       if (data.user_id) {
-        const { data: profile } = await supabase
-          .from("profiles").select("avatar_url").eq("id", data.user_id).single();
+        const { data: profile } = await supabase.from("profiles").select("avatar_url").eq("id", data.user_id).single();
         avatarUrl = profile?.avatar_url || null;
       }
-
       return { ...data, _avatar: data.profile_image || avatarUrl || null };
     },
     enabled: !!id,
   });
 
-  // Fight data from fights table (NOT fight_results)
   const { data: fights = [] } = useQuery({
     queryKey: ["fighter-fights", id],
     queryFn: async () => {
       if (!fighter?.id) return [];
       const { data } = await supabase
         .from("fights")
-        .select("id, method, result, winner_id, fighter_a_id, fighter_b_id, opponent_name, event_name, event_date, round")
+        .select("id, method, result, winner_id, fighter_a_id, fighter_b_id, opponent_name, event_name, event_date, round, total_rounds")
         .or(`fighter_a_id.eq.${fighter.id},fighter_b_id.eq.${fighter.id}`)
         .order("event_date", { ascending: false });
       return data ?? [];
@@ -94,387 +73,425 @@ export default function FighterDetail() {
     enabled: !!fighter?.id,
   });
 
-  // Upcoming events
-  const { data: upcomingEvents = [] } = useQuery({
-    queryKey: ["fighter-upcoming", id],
+  const { data: titles = [] } = useQuery({
+    queryKey: ["fighter-titles", id],
     queryFn: async () => {
-      if (!fighter?.id) return [];
-      const today = new Date().toISOString().split("T")[0];
-      const { data } = await supabase
-        .from("event_fight_slots")
-        .select("*, events!event_fight_slots_event_id_fkey(id, title, date)")
-        .or(`fighter_a_id.eq.${fighter.id},fighter_b_id.eq.${fighter.id}`)
-        .eq("status", "confirmed");
-      return (data ?? []).filter((s: any) => s.events?.date >= today);
+      const { data } = await supabase.from("fighter_titles").select("*").eq("fighter_id", id!).eq("is_current", true).order("created_at", { ascending: false });
+      return data ?? [];
     },
-    enabled: !!fighter?.id,
+    enabled: !!id,
   });
 
   const { isFollowing, toggle: toggleFollow, loading: followLoading, followerCount } = useFollow(fighter?.user_id);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen" style={{ background: EX.bg }}>
-        <Header />
-        <main className="pt-16"><div className="container py-16"><div className="h-8 w-64 animate-pulse rounded mb-4" style={{ background: EX.card }} /></div></main>
-      </div>
-    );
-  }
+  // Stats
+  const stats = useMemo(() => {
+    if (!fighter) return { wins: 0, losses: 0, draws: 0, kos: 0, tkos: 0, subs: 0, decs: 0, lossKos: 0, lossDecs: 0, lossSubs: 0 };
+    const w = fights.filter((f: any) => isWin(f, fighter.id));
+    const l = fights.filter((f: any) => isLoss(f));
+    const d = fights.filter((f: any) => isDraw(f));
+    return {
+      wins: w.length, losses: l.length, draws: d.length,
+      kos: w.filter((f: any) => isKO(f.method)).length,
+      tkos: w.filter((f: any) => isTKO(f.method)).length,
+      subs: w.filter((f: any) => isSub(f.method)).length,
+      decs: w.filter((f: any) => isDec(f.method)).length,
+      lossKos: l.filter((f: any) => isKO(f.method) || isTKO(f.method)).length,
+      lossDecs: l.filter((f: any) => isDec(f.method)).length,
+      lossSubs: l.filter((f: any) => isSub(f.method)).length,
+    };
+  }, [fights, fighter]);
 
-  if (!fighter) {
-    return (
-      <div className="min-h-screen" style={{ background: EX.bg }}>
-        <Header />
-        <main className="pt-16"><div className="container py-16 text-center">
-          <h1 className="font-heading text-3xl mb-4" style={{ color: EX.text }}>Fighter Not Found</h1>
-          <Button variant="ghost" onClick={() => navigate(-1)}><ArrowLeft className="h-4 w-4 mr-2" />Back</Button>
-        </div></main>
-        <Footer />
-      </div>
-    );
-  }
+  const total = stats.wins + stats.losses + stats.draws;
+  const finishRate = stats.wins > 0 ? Math.round(((stats.kos + stats.tkos + stats.subs) / stats.wins) * 100) : 0;
+
+  // Filtered fights for history
+  const filteredFights = useMemo(() => {
+    if (!fighter) return [];
+    return fights.filter((f: any) => {
+      if (fightFilter === "all") return true;
+      if (!isWin(f, fighter.id)) return false;
+      if (fightFilter === "kos") return isKO(f.method) || isTKO(f.method);
+      if (fightFilter === "subs") return isSub(f.method);
+      if (fightFilter === "decs") return isDec(f.method);
+      return true;
+    });
+  }, [fights, fightFilter, fighter]);
+
+  // Group by year
+  const grouped = useMemo(() => {
+    const map = new Map<string, any[]>();
+    filteredFights.forEach((f: any) => {
+      const year = f.event_date ? new Date(f.event_date).getFullYear().toString() : "Unknown";
+      if (!map.has(year)) map.set(year, []);
+      map.get(year)!.push(f);
+    });
+    return Array.from(map.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+  }, [filteredFights]);
+
+  // Running record computation
+  const runningRecords = useMemo(() => {
+    if (!fighter) return new Map<string, string>();
+    const sorted = [...fights].sort((a: any, b: any) => new Date(a.event_date || 0).getTime() - new Date(b.event_date || 0).getTime());
+    const map = new Map<string, string>();
+    let rw = 0, rl = 0, rd = 0;
+    sorted.forEach((f: any) => {
+      if (isWin(f, fighter.id)) rw++;
+      else if (isLoss(f)) rl++;
+      else rd++;
+      map.set(f.id, `${rw}-${rl}${rd > 0 ? `-${rd}` : ""}`);
+    });
+    return map;
+  }, [fights, fighter]);
+
+  // Radar data
+  const radarData = useMemo(() => {
+    const max = Math.max(stats.kos, stats.tkos, stats.subs, stats.decs, 1);
+    return [
+      { subject: "Knockouts", value: Math.round((stats.kos / max) * 100) },
+      { subject: "TKOs", value: Math.round((stats.tkos / max) * 100) },
+      { subject: "Submissions", value: Math.round((stats.subs / max) * 100) },
+      { subject: "Decisions", value: Math.round((stats.decs / max) * 100) },
+    ];
+  }, [stats]);
+
+  if (isLoading) return (
+    <div className="min-h-screen" style={{ background: "#080a0d" }}><Header /><main className="pt-16"><div className="container py-16"><div className="h-8 w-64 animate-pulse rounded mb-4" style={{ background: "#111318" }} /></div></main></div>
+  );
+
+  if (!fighter) return (
+    <div className="min-h-screen" style={{ background: "#080a0d" }}><Header /><main className="pt-16"><div className="container py-16 text-center"><h1 className="font-heading text-3xl mb-4" style={{ color: "#e8eaf0" }}>Fighter Not Found</h1><Button variant="ghost" onClick={() => navigate(-1)}><ArrowLeft className="h-4 w-4 mr-2" />Back</Button></div></main><Footer /></div>
+  );
 
   const gyms = (fighter.fighter_gym_links ?? []).filter((l: any) => l.status === "approved");
   const primaryGym = gyms.find((l: any) => l.is_primary);
   const gymName = primaryGym?.gyms?.name ?? (gyms[0]?.gyms?.name ?? "Independent");
   const isOwnerOrCoach = user && (fighter.user_id === user.id || fighter.created_by_coach_id === user.id);
   const showFollow = user && fighter.user_id && fighter.user_id !== user.id;
+  const initials = fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
 
-  // Compute stats from fights table
-  const wins = fights.filter((f: any) => isWinResult(f, fighter.id)).length;
-  const losses = fights.filter((f: any) => isLossResult(f)).length;
-  const draws = fights.filter((f: any) => isDrawResult(f)).length;
-  const kos = fights.filter((f: any) => isWinResult(f, fighter.id) && isKO(f.method)).length;
-  const tkos = fights.filter((f: any) => isWinResult(f, fighter.id) && isTKO(f.method)).length;
-  const subs = fights.filter((f: any) => isWinResult(f, fighter.id) && isSub(f.method)).length;
-  const decisions = fights.filter((f: any) => isWinResult(f, fighter.id) && isDecision(f.method)).length;
-  const total = wins + losses + draws;
-  const winRate = total > 0 ? Math.round((wins / total) * 100) : 0;
+  const handleShare = () => { navigator.clipboard.writeText(window.location.href); toast.success("Profile link copied!"); };
 
-  // Use profile record if no fights
-  const displayWins = fights.length > 0 ? wins : fighter.record_wins;
-  const displayLosses = fights.length > 0 ? losses : fighter.record_losses;
-  const displayDraws = fights.length > 0 ? draws : fighter.record_draws;
+  const displayWins = fights.length > 0 ? stats.wins : fighter.record_wins;
+  const displayLosses = fights.length > 0 ? stats.losses : fighter.record_losses;
+  const displayDraws = fights.length > 0 ? stats.draws : fighter.record_draws;
 
-  // Radar chart data — 4 axes only
-  const maxFinish = Math.max(kos, tkos, subs, decisions, 1);
-  const radarData = [
-    { subject: "Knockouts", value: Math.round((kos / maxFinish) * 100) },
-    { subject: "TKOs", value: Math.round((tkos / maxFinish) * 100) },
-    { subject: "Submissions", value: Math.round((subs / maxFinish) * 100) },
-    { subject: "Decisions", value: Math.round((decisions / maxFinish) * 100) },
-  ];
+  // Method row component
+  const MethodRow = ({ label, count, total: t, color }: { label: string; count: number; total: number; color: string }) => {
+    const pct = t > 0 ? Math.round((count / t) * 100) : 0;
+    return (
+      <div className="flex items-center justify-between" style={{ padding: "6px 0" }}>
+        <div className="flex items-center gap-2">
+          <span style={{ fontSize: 14, fontWeight: 700, color }}>{count}</span>
+          <span style={{ fontSize: 12, color: "#8b909e" }}>{label}</span>
+        </div>
+        <span style={{ fontSize: 12, color: "#8b909e" }}>{pct}%</span>
+      </div>
+    );
+  };
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success("Profile link copied!");
+  // Year record
+  const yearRecord = (yearFights: any[]) => {
+    let w = 0, l = 0;
+    yearFights.forEach((f: any) => { if (isWin(f, fighter.id)) w++; else if (isLoss(f)) l++; });
+    return `${w}-${l}`;
   };
 
   return (
-    <div className="min-h-screen" style={{ background: EX.bg }}>
+    <div className="min-h-screen" style={{ background: "#080a0d" }}>
       <Header />
       <main className="pt-14">
-        <section style={{ padding: "10px 0" }}>
-          <div className="container max-w-4xl" style={{ paddingLeft: 24, paddingRight: 24 }}>
-            <div className="pt-2">
-              <button onClick={() => fromParam === "roster" ? navigate("/dashboard?section=roster") : navigate(-1)} className="flex items-center gap-1.5 mb-6" style={{ color: EX.muted, fontSize: 13, cursor: "pointer", background: "none", border: "none" }}>
-                <ArrowLeft style={{ width: 16, height: 16 }} />{fromParam === "roster" ? "Back to Roster" : "Back"}
+        <div className="container max-w-2xl" style={{ paddingLeft: 0, paddingRight: 0 }}>
+          {isOwnerOrCoach && <div style={{ padding: "0 16px" }}><ProfileCompletionBar fighterId={fighter.id} fighterProfile={fighter} /></div>}
+
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            {/* HERO */}
+            <div style={{
+              position: "relative", height: 200,
+              background: "linear-gradient(180deg, rgba(180,30,30,0.35) 0%, rgba(8,10,13,0) 65%)",
+            }}>
+              {/* Back button */}
+              <button onClick={() => fromParam === "roster" ? navigate("/dashboard?section=roster") : navigate(-1)} style={{
+                position: "absolute", top: 16, left: 16, zIndex: 5, width: 32, height: 32, borderRadius: "50%",
+                background: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", border: "none", color: "#e8eaf0",
+              }}>
+                <ArrowLeft style={{ width: 16, height: 16 }} />
               </button>
-            </div>
-
-            {isOwnerOrCoach && <ProfileCompletionBar fighterId={fighter.id} fighterProfile={fighter} />}
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-
-              {/* HERO SECTION */}
-              <div style={{ position: "relative", minHeight: 200, borderRadius: 12, overflow: "hidden", marginBottom: 24 }}>
-                <div className="flex" style={{ minHeight: 200 }}>
-                  {/* Left content */}
-                  <div style={{ flex: "0 0 60%", background: EX.bg, padding: 24, position: "relative", zIndex: 2, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-                    {/* Win rate badge */}
-                    <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", borderRadius: 8, padding: "8px 12px" }}>
-                      <span style={{ fontSize: 9, color: EX.muted, display: "block" }}>Win Rate</span>
-                      <span style={{ fontSize: 18, fontWeight: 700, color: EX.gold }}>{winRate}%</span>
-                    </div>
-
-                    {fighter.discipline && (
-                      <span style={{ fontSize: 9, color: EX.muted, textTransform: "uppercase", letterSpacing: "0.1em" }}>{fighter.discipline.toUpperCase()}</span>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <h1 style={{ fontSize: 24, fontWeight: 700, color: EX.text }}>{fighter.name}</h1>
-                      {fighter.verified && <ShieldCheck style={{ width: 18, height: 18, color: EX.gold }} />}
-                    </div>
-                    <p style={{ fontSize: 12, color: EX.muted, marginTop: 2 }}>{followerCount} Followers</p>
-
-                    {/* Stats row */}
-                    <div className="flex" style={{ marginTop: 16, border: `1px solid ${EX.border}`, borderRadius: 8, overflow: "hidden" }}>
-                      {[
-                        { label: "Wins", value: displayWins, highlight: false },
-                        { label: "Losses", value: displayLosses, highlight: false },
-                        { label: "Draws", value: displayDraws, highlight: false },
-                        { label: "Knockouts", value: kos + tkos, highlight: true },
-                      ].map((s, i) => (
-                        <div key={s.label} style={{
-                          flex: 1, textAlign: "center", padding: "16px 0",
-                          borderRight: i < 3 ? `1px solid ${EX.border}` : "none",
-                          background: s.highlight ? "rgba(232,160,32,0.1)" : "transparent",
-                          ...(s.highlight ? { border: `1px solid rgba(232,160,32,0.2)`, borderRadius: 8 } : {}),
-                        }}>
-                          <span style={{ fontSize: 28, fontWeight: 700, color: s.highlight ? EX.gold : EX.text }}>{s.value}</span>
-                          <span style={{ fontSize: 11, color: EX.muted, display: "block" }}>{s.label}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Follow + Share */}
-                    <div className="flex gap-3" style={{ marginTop: 16 }}>
-                      {showFollow && (
-                        <button
-                          onClick={toggleFollow}
-                          disabled={followLoading}
-                          style={{
-                            flex: 1, padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s",
-                            background: isFollowing ? EX.goldDim : EX.gold,
-                            color: isFollowing ? EX.gold : EX.bg,
-                            border: isFollowing ? `1px solid ${EX.gold}` : "none",
-                          }}
-                        >
-                          {isFollowing ? "✓ Following" : "Follow Fighter"}
-                        </button>
-                      )}
-                      <button
-                        onClick={handleShare}
-                        style={{
-                          flex: showFollow ? undefined : 1, padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-                          background: "transparent", border: `1px solid ${EX.border}`, color: EX.muted, cursor: "pointer",
-                          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                        }}
-                      >
-                        <Share2 style={{ width: 14, height: 14 }} /> Share Profile
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Right photo */}
-                  <div style={{ flex: "0 0 40%", position: "relative", background: EX.raised }}>
-                    {fighter._avatar ? (
-                      <>
-                        <img src={fighter._avatar} alt={fighter.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top" }} />
-                        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #0d0f12 0%, transparent 60%)" }} />
-                      </>
-                    ) : (
-                      <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <img src={logoWhite} alt="" style={{ width: 120, opacity: 0.06 }} />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION 2: Performance Analytics + Fighter Info */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" style={{ marginBottom: 24 }}>
-                {/* Left — Radar */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Target style={{ width: 16, height: 16, color: EX.gold }} />
-                    <span style={{ fontSize: 16, fontWeight: 600, color: EX.text }}>Performance Analytics</span>
-                  </div>
-                  <div style={{ background: EX.raised, borderRadius: 8, padding: 16, border: `1px solid ${EX.border}` }}>
-                    <ResponsiveContainer width="100%" height={280}>
-                      <RadarChart data={radarData}>
-                        <PolarGrid stroke="rgba(255,255,255,0.06)" />
-                        <PolarAngleAxis dataKey="subject" tick={{ fill: EX.muted, fontSize: 11 }} />
-                        <Radar name="fighter" dataKey="value" stroke={EX.gold} fill="rgba(232,160,32,0.3)" fillOpacity={1} dot={{ fill: EX.gold, r: 4 } as any} />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
-                  {/* Finish Methods */}
-                  <div style={{ marginTop: 16 }}>
-                    <span style={{ fontSize: 15, fontWeight: 600, color: EX.text }}>Finish Methods</span>
-                    <div className="grid grid-cols-2 gap-2" style={{ marginTop: 8 }}>
-                      {[
-                        { label: "Knockouts", value: kos },
-                        { label: "TKOs", value: tkos },
-                        { label: "Submissions", value: subs },
-                        { label: "Decisions", value: decisions },
-                      ].map((m) => (
-                        <div key={m.label} style={{
-                          background: EX.raised, borderRadius: 8, padding: 14, border: `1px solid ${EX.border}`,
-                          transition: "border-color 0.2s", cursor: "default",
-                        }}
-                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(232,160,32,0.2)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = EX.border; }}
-                        >
-                          <span style={{ fontSize: 22, fontWeight: 700, color: EX.text }}>{m.value}</span>
-                          <span style={{ fontSize: 11, color: EX.muted, display: "block" }}>{m.label}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right — Fighter Info */}
-                <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <span style={{ fontSize: 16, fontWeight: 600, color: EX.text }}>Fighter Information</span>
-                  </div>
-                  <div style={{ background: EX.raised, borderRadius: 8, padding: 16, border: `1px solid ${EX.border}` }}>
-                    {[
-                      { icon: Trophy, label: "Weight Class", value: WEIGHT_CLASS_LABELS[fighter.weight_class] || fighter.weight_class },
-                      { icon: MapPin, label: "Training Gym", value: gymName },
-                      { icon: BarChart3, label: "Professional Record", value: `${displayWins}-${displayLosses}-${displayDraws}` },
-                    ].map((row, i) => (
-                      <div key={row.label}>
-                        <div className="flex items-center gap-3 py-3">
-                          <row.icon style={{ width: 16, height: 16, color: EX.gold, flexShrink: 0 }} />
-                          <div>
-                            <span style={{ fontSize: 11, color: EX.muted }}>{row.label}</span>
-                            <span style={{ fontSize: 14, fontWeight: 600, color: EX.text, display: "block" }}>{row.value}</span>
-                          </div>
-                        </div>
-                        {i < 2 && <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION 3: Fight History from fights table */}
-              {fights.length > 0 && (
-                <div style={{ marginBottom: 24 }}>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Calendar style={{ width: 16, height: 16, color: EX.gold }} />
-                    <span style={{ fontSize: 16, fontWeight: 600, color: EX.text }}>Fight History</span>
-                  </div>
-                  <div className="space-y-2">
-                    {fights.slice(0, 10).map((fight: any) => {
-                      const resultVal = fight.result?.toLowerCase();
-                      const resultLabel = resultVal === 'win' ? "Win" : resultVal === 'loss' ? "Loss" : "Draw";
-                      const resultBg = resultVal === 'win' ? "#22c55e" : resultVal === 'loss' ? "#ef4444" : "#f59e0b";
-                      const opName = fight.opponent_name ?? "Unknown";
-                      const eventName = fight.event_name ?? "";
-                      const date = fight.event_date
-                        ? new Date(fight.event_date).toLocaleDateString("en-GB", { month: "short", year: "numeric" })
-                        : "";
-
-                      return (
-                        <div key={fight.id} className="flex items-center" style={{
-                          background: "rgba(255,255,255,0.02)", border: `1px solid ${EX.border}`,
-                          borderRadius: 8, padding: "12px 16px", transition: "background 0.15s", cursor: "pointer",
-                        }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
-                        >
-                          <span style={{ background: resultBg, color: "white", borderRadius: 6, padding: "4px 12px", fontSize: 12, fontWeight: 700, minWidth: 40, textAlign: "center" }}>{resultLabel}</span>
-                          <div style={{ marginLeft: 12 }}>
-                            <span style={{ fontSize: 14, fontWeight: 600, color: EX.text }}>vs {opName}</span>
-                            {fight.method && <span style={{ fontSize: 12, color: EX.muted, display: "block" }}>{fight.method}{fight.round ? ` - Round ${fight.round}` : ""}</span>}
-                          </div>
-                          <div style={{ marginLeft: "auto", textAlign: "right" }}>
-                            {eventName && <span style={{ fontSize: 13, fontWeight: 600, color: EX.text, display: "block" }}>{eventName}</span>}
-                            {date && <span style={{ fontSize: 12, color: EX.muted }}>{date}</span>}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {fights.length > 10 && (
-                    <p style={{ fontSize: 12, color: EX.gold, textAlign: "center", padding: "8px 0", cursor: "pointer" }}>View full record</p>
+              {/* Share */}
+              <button onClick={handleShare} style={{
+                position: "absolute", top: 16, right: 16, zIndex: 5, width: 32, height: 32, borderRadius: "50%",
+                background: "rgba(0,0,0,0.4)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", border: "none", color: "#e8eaf0",
+              }}>
+                <Share2 style={{ width: 16, height: 16 }} />
+              </button>
+              {/* Follow */}
+              {showFollow && (
+                <button onClick={toggleFollow} disabled={followLoading} style={{
+                  position: "absolute", top: 16, right: 56, zIndex: 5, borderRadius: 20, padding: "6px 16px", fontSize: 12, fontWeight: 600,
+                  background: isFollowing ? "rgba(232,160,32,0.15)" : "#e8a020", color: isFollowing ? "#e8a020" : "#080a0d",
+                  border: isFollowing ? "1px solid #e8a020" : "none", cursor: "pointer", backdropFilter: "blur(8px)",
+                }}>
+                  {isFollowing ? "Following" : "Follow"}
+                </button>
+              )}
+              {/* Fighter identity */}
+              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 20px 20px", display: "flex", alignItems: "flex-end", gap: 14 }}>
+                <div style={{
+                  width: 72, height: 72, borderRadius: "50%", border: "2px solid rgba(232,160,32,0.5)",
+                  boxShadow: "0 0 20px rgba(232,160,32,0.2)", overflow: "hidden", flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: fighter._avatar ? "transparent" : "linear-gradient(135deg, rgba(232,160,32,0.25), rgba(232,160,32,0.08))",
+                }}>
+                  {fighter._avatar ? (
+                    <img src={fighter._avatar} alt={fighter.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#e8a020" }}>{initials}</span>
                   )}
                 </div>
-              )}
-
-              {/* Existing fight history component for fights table */}
-              <FighterFightHistory fighterId={fighter.id} fighterUserId={fighter.user_id ?? undefined} isOwner={false} />
-
-              {/* SECTION 4: Upcoming Events */}
-              {upcomingEvents.length > 0 && (
-                <div style={{ marginBottom: 24 }}>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Calendar style={{ width: 16, height: 16, color: EX.gold }} />
-                    <span style={{ fontSize: 16, fontWeight: 600, color: EX.text }}>Upcoming Events</span>
+                <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <span style={{ fontSize: 24, fontWeight: 700, color: "#e8eaf0" }}>{fighter.name}</span>
+                  <div className="flex items-center gap-1.5" style={{ fontSize: 13, color: "#8b909e" }}>
+                    <FlagIcon countryCode={fighter.country} size={16} />
+                    <span>{WEIGHT_CLASS_LABELS[fighter.weight_class] || fighter.weight_class}</span>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {upcomingEvents.map((slot: any) => (
-                      <Link key={slot.id} to={`/events/${slot.events?.id}`} style={{
-                        background: "rgba(232,160,32,0.06)", border: "1px solid rgba(232,160,32,0.2)",
-                        borderRadius: 8, padding: "14px 16px", transition: "all 0.2s", display: "block",
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.1)"; e.currentTarget.style.borderColor = "rgba(232,160,32,0.35)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.06)"; e.currentTarget.style.borderColor = "rgba(232,160,32,0.2)"; }}
-                      >
-                        <p style={{ fontSize: 14, fontWeight: 700, color: EX.text, textTransform: "uppercase" }}>{slot.events?.title}</p>
-                        <p style={{ fontSize: 12, color: EX.muted }}>{slot.events?.date ? new Date(slot.events.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : ""}</p>
-                        <p style={{ fontSize: 12, color: EX.muted }}>Scheduled to compete</p>
-                      </Link>
-                    ))}
-                  </div>
+                  {titles.length > 0 && (
+                    <div className="flex gap-2 flex-wrap" style={{ marginTop: 4 }}>
+                      {titles.slice(0, 3).map((t: any) => (
+                        <span key={t.id} className="flex items-center gap-1" style={{
+                          background: "rgba(232,160,32,0.1)", borderRadius: 9999, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#e8a020",
+                        }}>
+                          <Award style={{ width: 10, height: 10 }} />
+                          {t.title}{t.organisation ? ` · ${t.organisation}` : ""}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )}
-
-              {/* Bio */}
-              {fighter.bio && (
-                <div style={{ marginBottom: 24 }}>
-                  <h2 style={{ fontSize: 18, fontWeight: 700, color: EX.text, marginBottom: 12, fontFamily: "'Bebas Neue', sans-serif" }}>ABOUT</h2>
-                  <p style={{ color: EX.muted, lineHeight: 1.6 }}>{fighter.bio}</p>
-                </div>
-              )}
-
-              {/* Gym Affiliations */}
-              {gyms.length > 0 && (
-                <div style={{ marginBottom: 24 }}>
-                  <h2 style={{ fontSize: 18, fontWeight: 700, color: EX.text, marginBottom: 12, fontFamily: "'Bebas Neue', sans-serif" }}>GYM AFFILIATIONS</h2>
-                  <div className="space-y-3">
-                    {gyms.map((link: any) => (
-                      <Link
-                        key={link.gym_id}
-                        to={`/gyms/${link.gyms?.id}`}
-                        className="flex items-center justify-between"
-                        style={{
-                          borderRadius: 8, border: `1px solid ${EX.border}`, background: EX.raised,
-                          padding: "10px 14px", transition: "all 0.2s",
-                        }}
-                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = EX.goldBorder; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = EX.border; }}
-                      >
-                        <div>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: EX.text }}>{link.gyms?.name}</p>
-                          {link.gyms?.location && (
-                            <p className="flex items-center gap-1 mt-1" style={{ fontSize: 12, color: EX.muted }}>
-                              <MapPin style={{ width: 12, height: 12 }} />{link.gyms.location}
-                            </p>
-                          )}
-                        </div>
-                        {link.is_primary && <span style={{ fontSize: 12, fontWeight: 500, color: EX.gold }}>Primary</span>}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Bottom action buttons */}
-              <div className="flex gap-3" style={{ marginBottom: 32 }}>
-                {showFollow && (
-                  <button onClick={toggleFollow} disabled={followLoading} style={{
-                    flex: 1, padding: "10px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-                    background: isFollowing ? EX.goldDim : EX.gold, color: isFollowing ? EX.gold : EX.bg,
-                    border: isFollowing ? `1px solid ${EX.gold}` : "none", transition: "all 0.2s",
-                  }}>
-                    {isFollowing ? "✓ Following" : "Follow Fighter"}
-                  </button>
-                )}
-                <button onClick={handleShare} style={{
-                  flex: 1, padding: "10px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-                  background: "transparent", border: `1px solid ${EX.border}`, color: EX.muted, cursor: "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                }}>
-                  <Share2 style={{ width: 14, height: 14 }} /> Share Profile
-                </button>
               </div>
+            </div>
 
-            </motion.div>
-          </div>
-        </section>
+            {/* TABS: Record | Stats */}
+            <div className="flex" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", margin: "0 16px" }}>
+              {(["record", "stats"] as const).map((t) => (
+                <button key={t} onClick={() => setActiveTab(t)} style={{
+                  flex: 1, padding: "14px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", background: "none", border: "none",
+                  color: activeTab === t ? "#e8eaf0" : "#555b6b", borderBottom: activeTab === t ? "2px solid #e8eaf0" : "2px solid transparent",
+                  textTransform: "capitalize", transition: "all 0.2s",
+                }}>
+                  {t === "record" ? "Record" : "Stats"}
+                </button>
+              ))}
+            </div>
+
+            {activeTab === "record" && (
+              <>
+                {/* PRO RECORD SUMMARY CARD */}
+                <div style={{
+                  margin: "16px 16px 0", background: "#111318", borderRadius: 12, padding: "16px 20px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
+                }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#8b909e", textTransform: "uppercase", letterSpacing: "0.08em" }}>PRO RECORD SUMMARY</span>
+                  <div className="flex items-center justify-between" style={{ marginTop: 10 }}>
+                    <span style={{ fontSize: 30, fontWeight: 800, color: "#e8eaf0" }}>{displayWins}-{displayLosses}-{displayDraws}</span>
+                    {stats.wins > 0 && (
+                      <span style={{ background: "rgba(34,197,94,0.12)", color: "#22c55e", borderRadius: 9999, padding: "5px 12px", fontSize: 13, fontWeight: 700 }}>
+                        {finishRate}% Finish Rate
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "12px 0" }} />
+                  {/* Two column wins/losses */}
+                  <div className="grid grid-cols-2" style={{ gap: 0 }}>
+                    <div style={{ paddingRight: 16, borderRight: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>Wins</span>
+                        <span style={{ fontSize: 16, fontWeight: 700, color: "#22c55e" }}>{displayWins}</span>
+                      </div>
+                      <MethodRow label="KO/TKO" count={stats.kos + stats.tkos} total={total} color="#22c55e" />
+                      <MethodRow label="DEC" count={stats.decs} total={total} color="#22c55e" />
+                      <MethodRow label="SUB" count={stats.subs} total={total} color="#22c55e" />
+                    </div>
+                    <div style={{ paddingLeft: 16 }}>
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>Losses</span>
+                        <span style={{ fontSize: 16, fontWeight: 700, color: "#ef4444" }}>{displayLosses}</span>
+                      </div>
+                      <MethodRow label="KO/TKO" count={stats.lossKos} total={total} color="#ef4444" />
+                      <MethodRow label="DEC" count={stats.lossDecs} total={total} color="#ef4444" />
+                      <MethodRow label="SUB" count={stats.lossSubs} total={total} color="#ef4444" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* FILTER PILLS */}
+                <div className="flex gap-2" style={{ padding: "14px 16px" }}>
+                  {(["all", "kos", "subs", "decs"] as const).map((f) => (
+                    <button key={f} onClick={() => setFightFilter(f)} style={{
+                      padding: "8px 20px", borderRadius: 9999, fontSize: 13, fontWeight: fightFilter === f ? 700 : 600, cursor: "pointer", border: "none",
+                      background: fightFilter === f ? "#e8eaf0" : "#181c24", color: fightFilter === f ? "#080a0d" : "#8b909e", transition: "all 0.2s",
+                    }}>
+                      {f === "all" ? "All" : f === "kos" ? "KOs" : f === "subs" ? "SUBs" : "DECs"}
+                    </button>
+                  ))}
+                </div>
+
+                {/* FIGHT HISTORY BY YEAR */}
+                {filteredFights.length === 0 ? (
+                  <p style={{ fontSize: 13, color: "#8b909e", textAlign: "center", padding: "40px 20px" }}>No fight record available</p>
+                ) : (
+                  grouped.map(([year, yearFights]) => (
+                    <div key={year}>
+                      <div style={{ padding: "16px 20px 8px" }}>
+                        <span style={{ fontSize: 16, fontWeight: 700, color: "#e8eaf0" }}>{year}</span>
+                        <span style={{ fontSize: 14, color: "#8b909e", marginLeft: 8 }}>• {yearRecord(yearFights)}</span>
+                      </div>
+                      {yearFights.map((fight: any) => {
+                        const w = isWin(fight, fighter.id);
+                        const l = isLoss(fight);
+                        const resultLetter = w ? "W" : l ? "L" : "D";
+                        const resultColor = w ? "#22c55e" : l ? "#ef4444" : "#f59e0b";
+                        const opName = fight.opponent_name ?? "Unknown";
+                        const running = runningRecords.get(fight.id) || "";
+                        const dateStr = fight.event_date ? new Date(fight.event_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+
+                        return (
+                          <div key={fight.id} style={{ padding: "12px 20px", boxShadow: "inset 0 -1px 0 rgba(255,255,255,0.04)" }}>
+                            <div className="flex gap-3" style={{ alignItems: "flex-start" }}>
+                              <div style={{
+                                width: 28, height: 28, borderRadius: 6, background: resultColor, flexShrink: 0,
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                fontSize: 13, fontWeight: 700, color: "white",
+                              }}>
+                                {resultLetter}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-1.5">
+                                    <span style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{opName}</span>
+                                  </div>
+                                  <span style={{ fontSize: 12, color: "#8b909e" }}>{fight.event_name || ""}</span>
+                                </div>
+                                <div className="flex items-center justify-between" style={{ marginTop: 3 }}>
+                                  <span style={{ fontSize: 12, color: "#8b909e" }}>{fight.method || "—"}</span>
+                                  <span style={{ fontSize: 12, color: "#8b909e" }}>{dateStr}</span>
+                                </div>
+                                <div className="flex items-center gap-2" style={{ marginTop: 4 }}>
+                                  {running && (
+                                    <span style={{ background: "rgba(34,197,94,0.12)", color: "#22c55e", borderRadius: 4, padding: "2px 8px", fontSize: 11, fontWeight: 700 }}>
+                                      {running}
+                                    </span>
+                                  )}
+                                  {fight.round && (
+                                    <span style={{ fontSize: 11, color: "#8b909e" }}>R{fight.round}</span>
+                                  )}
+                                </div>
+                              </div>
+                              <button onClick={() => setExpandedFight(expandedFight === fight.id ? null : fight.id)} style={{
+                                flexShrink: 0, marginTop: 2, background: "none", border: "none", cursor: "pointer", color: "#555b6b",
+                                transform: expandedFight === fight.id ? "rotate(180deg)" : "none", transition: "transform 0.2s",
+                              }}>
+                                <ChevronDown style={{ width: 16, height: 16 }} />
+                              </button>
+                            </div>
+                            {expandedFight === fight.id && (
+                              <div style={{ marginTop: 8, paddingLeft: 40, fontSize: 12, color: "#8b909e" }}>
+                                {fight.event_name && <p>Event: {fight.event_name}</p>}
+                                {fight.method && <p>Method: {fight.method}</p>}
+                                {fight.round && <p>Round: {fight.round}{fight.total_rounds ? ` of ${fight.total_rounds}` : ""}</p>}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))
+                )}
+              </>
+            )}
+
+            {activeTab === "stats" && (
+              <div style={{ padding: "16px" }}>
+                {/* Radar Chart */}
+                <div style={{ background: "#111318", borderRadius: 12, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>Performance Analytics</span>
+                  <ResponsiveContainer width="100%" height={280}>
+                    <RadarChart data={radarData}>
+                      <PolarGrid stroke="rgba(255,255,255,0.06)" />
+                      <PolarAngleAxis dataKey="subject" tick={{ fill: "#8b909e", fontSize: 11 }} />
+                      <Radar name="fighter" dataKey="value" stroke="#e8a020" fill="rgba(232,160,32,0.3)" fillOpacity={1} dot={{ fill: "#e8a020", r: 4 } as any} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+                {/* Finish Methods Grid */}
+                <div className="grid grid-cols-2 gap-3" style={{ marginTop: 16 }}>
+                  {[
+                    { label: "Knockouts", value: stats.kos },
+                    { label: "TKOs", value: stats.tkos },
+                    { label: "Submissions", value: stats.subs },
+                    { label: "Decisions", value: stats.decs },
+                  ].map((m) => (
+                    <div key={m.label} style={{
+                      background: "#181c24", borderRadius: 8, padding: 14,
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
+                    }}>
+                      <span style={{ fontSize: 22, fontWeight: 700, color: "#e8eaf0" }}>{m.value}</span>
+                      <span style={{ fontSize: 11, color: "#8b909e", display: "block" }}>{m.label}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* Fighter Info */}
+                <div style={{ marginTop: 16, background: "#111318", borderRadius: 12, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", display: "block", marginBottom: 12 }}>Fighter Information</span>
+                  {[
+                    { label: "Weight Class", value: WEIGHT_CLASS_LABELS[fighter.weight_class] || fighter.weight_class },
+                    { label: "Training Gym", value: gymName },
+                    { label: "Nationality", value: getCountryDisplayName(fighter.country) },
+                    { label: "Record", value: `${displayWins}-${displayLosses}-${displayDraws}` },
+                  ].map((row, i, arr) => (
+                    <div key={row.label}>
+                      <div className="flex justify-between py-2">
+                        <span style={{ fontSize: 12, color: "#8b909e" }}>{row.label}</span>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{row.value}</span>
+                      </div>
+                      {i < arr.length - 1 && <div style={{ height: 1, background: "rgba(255,255,255,0.04)" }} />}
+                    </div>
+                  ))}
+                </div>
+                {/* Bio */}
+                {fighter.bio && (
+                  <div style={{ marginTop: 16 }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", display: "block", marginBottom: 8 }}>About</span>
+                    <p style={{ color: "#8b909e", lineHeight: 1.6, fontSize: 13 }}>{fighter.bio}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Gym affiliations (always visible) */}
+            {gyms.length > 0 && (
+              <div style={{ padding: "16px", marginTop: 8 }}>
+                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, fontWeight: 700, color: "#e8eaf0", display: "block", marginBottom: 12 }}>GYM AFFILIATIONS</span>
+                <div className="space-y-2">
+                  {gyms.map((link: any) => (
+                    <Link key={link.gym_id} to={`/gyms/${link.gyms?.id}`} className="flex items-center justify-between" style={{
+                      borderRadius: 8, background: "#181c24", padding: "10px 14px", transition: "all 0.2s",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
+                    }}>
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{link.gyms?.name}</p>
+                        {link.gyms?.location && <p style={{ fontSize: 12, color: "#8b909e", marginTop: 2 }}>{link.gyms.location}</p>}
+                      </div>
+                      {link.is_primary && <span style={{ fontSize: 12, fontWeight: 500, color: "#e8a020" }}>Primary</span>}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </motion.div>
+        </div>
       </main>
       <Footer />
     </div>
