@@ -100,31 +100,8 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
   const [undefeatedOnly, setUndefeatedOnly] = useState(false);
   const [localOnly, setLocalOnly] = useState(false);
 
-  const adjustSliders = useCallback((changed: "comp" | "ent" | "style" | "narr", newVal: number) => {
-    const others = { comp, ent, style, narr };
-    others[changed] = newVal;
-    const remaining = 100 - newVal;
-    const otherKeys = (["comp", "ent", "style", "narr"] as const).filter((k) => k !== changed);
-    const otherSum = otherKeys.reduce((s, k) => s + others[k], 0);
-    if (otherSum === 0) {
-      const each = Math.floor(remaining / 3);
-      otherKeys.forEach((k, i) => { others[k] = i < remaining % 3 ? each + 1 : each; });
-    } else {
-      let distributed = 0;
-      otherKeys.forEach((k, i) => {
-        if (i === otherKeys.length - 1) {
-          others[k] = remaining - distributed;
-        } else {
-          others[k] = Math.round((others[k] / otherSum) * remaining);
-          distributed += others[k];
-        }
-      });
-    }
-    setComp(others.comp);
-    setEnt(others.ent);
-    setStyle(others.style);
-    setNarr(others.narr);
-  }, [comp, ent, style, narr]);
+  const sliderTotal = comp + ent + style + narr;
+  const slidersValid = sliderTotal === 100;
 
   const applyPreset = (key: string) => {
     const p = PRESETS[key];
@@ -262,6 +239,9 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
   }, [fighters, existingProposalFighterIds, keyword, allFights, comp, ent, style, narr, expTiers, stanceFilter, availableOnly, regionFilter, minFinishRate, undefeatedOnly, localOnly, eventData]);
 
   const handleSelect = async (fighterA: FighterProfile, fighterB: FighterProfile) => {
+    if (!slidersValid) {
+      return;
+    }
     if (user && eventId) {
       await supabase.from("organiser_preferences").upsert({
         organiser_id: user.id,
@@ -314,22 +294,40 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
         </div>
       </div>
 
-      {/* Sliders */}
+      {/* Sliders — independent */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-3">
         {([
-          { key: "comp" as const, label: "Competitiveness", val: comp, set: (v: number) => adjustSliders("comp", v) },
-          { key: "ent" as const, label: "Entertainment", val: ent, set: (v: number) => adjustSliders("ent", v) },
-          { key: "style" as const, label: "Style Contrast", val: style, set: (v: number) => adjustSliders("style", v) },
-          { key: "narr" as const, label: "Narrative", val: narr, set: (v: number) => adjustSliders("narr", v) },
+          { key: "comp" as const, label: "Competitiveness", val: comp, set: setComp },
+          { key: "ent" as const, label: "Entertainment", val: ent, set: setEnt },
+          { key: "style" as const, label: "Style Contrast", val: style, set: setStyle },
+          { key: "narr" as const, label: "Narrative", val: narr, set: setNarr },
         ]).map((s) => (
           <div key={s.key}>
             <div className="flex justify-between text-xs mb-1">
               <span className="text-muted-foreground">{s.label}</span>
               <span className="text-primary font-medium">{s.val}%</span>
             </div>
-            <Slider value={[s.val]} min={0} max={100} step={5} onValueChange={([v]) => { s.set(v); setSelectedPreset(null); }} />
+            <div className="flex items-center gap-2">
+              <Slider className="flex-1" value={[s.val]} min={0} max={100} step={5} onValueChange={([v]) => { s.set(v); setSelectedPreset(null); }} />
+              <div className="flex items-center gap-0.5">
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={s.val}
+                  onChange={(e) => { s.set(Math.min(100, Math.max(0, parseInt(e.target.value) || 0))); setSelectedPreset(null); }}
+                  className="h-7 text-xs text-center p-0"
+                  style={{ width: 52, background: "#181c24" }}
+                />
+                <span className="text-[10px] text-muted-foreground">%</span>
+              </div>
+            </div>
           </div>
         ))}
+      </div>
+      {/* Running total */}
+      <div className="text-xs font-medium" style={{ color: sliderTotal === 100 ? "#22c55e" : sliderTotal > 100 ? "#ef4444" : "#f59e0b" }}>
+        {sliderTotal === 100 ? "Total: 100% ✓" : sliderTotal > 100 ? `Total: ${sliderTotal}% — must equal 100%` : `Total: ${sliderTotal}% — ${100 - sliderTotal}% remaining`}
       </div>
 
       {/* Additional Filters */}

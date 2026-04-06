@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -70,6 +71,8 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: {
   const [loading, setLoading] = useState(false);
   const [boutType, setBoutType] = useState(bout.bout_type || "Undercard");
   const [isPublic, setIsPublic] = useState(bout.is_public !== false);
+  const [weightKg, setWeightKg] = useState(bout.specific_weight_kg?.toString() || "");
+  const [weightLbs, setWeightLbs] = useState(bout.specific_weight_lbs?.toString() || "");
   const fAInitial = Array.isArray(bout.fighter_a) ? bout.fighter_a[0] : bout.fighter_a;
   const fBInitial = Array.isArray(bout.fighter_b) ? bout.fighter_b[0] : bout.fighter_b;
   const [fighterA, setFighterA] = useState<FighterProfile | null>(fAInitial || null);
@@ -90,7 +93,9 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: {
       bout_type: boutType,
       is_public: isPublic,
       weight_class: wc,
-    }).eq("id", bout.id);
+      specific_weight_kg: weightKg ? parseFloat(weightKg) : null,
+      specific_weight_lbs: weightLbs ? parseFloat(weightLbs) : null,
+    } as any).eq("id", bout.id);
     if (error) {
       toast({ title: "Error updating bout", description: error.message, variant: "destructive" });
     } else {
@@ -179,6 +184,38 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: {
           <div className="flex items-center justify-between">
             <Label className="text-xs">Public (visible to spectators)</Label>
             <Switch checked={isPublic} onCheckedChange={setIsPublic} />
+          </div>
+
+          {/* Linked weight inputs */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Specific Weight (kg)</Label>
+              <Input
+                type="number" min={40} max={120} step={0.1}
+                placeholder="e.g. 70.0" value={weightKg}
+                onChange={(e) => {
+                  const kg = e.target.value;
+                  setWeightKg(kg);
+                  if (kg) setWeightLbs((parseFloat(kg) * 2.2046).toFixed(1));
+                  else setWeightLbs("");
+                }}
+                className="h-9 text-sm"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Specific Weight (lbs)</Label>
+              <Input
+                type="number" min={88} max={265} step={0.1}
+                placeholder="e.g. 154.3" value={weightLbs}
+                onChange={(e) => {
+                  const lbs = e.target.value;
+                  setWeightLbs(lbs);
+                  if (lbs) setWeightKg((parseFloat(lbs) / 2.2046).toFixed(1));
+                  else setWeightKg("");
+                }}
+                className="h-9 text-sm"
+              />
+            </div>
           </div>
 
           <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between">

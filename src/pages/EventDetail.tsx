@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Plus, Phone, Globe, Mail } from "lucide-react";
+import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Plus, Phone, Globe, Mail, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
+import { addToBasket, getBasketCount } from "@/pages/Checkout";
 import { toast } from "sonner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -29,6 +30,129 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
 function unwrap<T>(val: T | T[] | null | undefined): T | null {
   if (Array.isArray(val)) return val[0] ?? null;
   return val ?? null;
+}
+
+function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event: any; purchaseUrl: string | null }) {
+  const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const navigate = useNavigate();
+
+  const setQty = (ticketId: string, val: number) => {
+    setQuantities((prev) => ({ ...prev, [ticketId]: val }));
+  };
+
+  const handleAddToBasket = (ticket: any) => {
+    const qty = quantities[ticket.id] || 0;
+    if (qty <= 0) return;
+    addToBasket({
+      ticket_type: ticket.ticket_type,
+      price: Number(ticket.price),
+      quantity: qty,
+      event_id: event.id,
+      event_title: event.title,
+    });
+    setQty(ticket.id, 0);
+    toast.success(`${qty}× ${ticket.ticket_type} added to basket`);
+  };
+
+  const basketCount = getBasketCount();
+
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <div className="flex items-center justify-between mb-3">
+        <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#e8eaf0" }}>TICKETS</h3>
+        {basketCount > 0 && (
+          <button
+            onClick={() => navigate("/checkout")}
+            className="relative"
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#e8eaf0" }}
+          >
+            <ShoppingCart style={{ width: 22, height: 22 }} />
+            <span style={{
+              position: "absolute", top: -6, right: -8,
+              background: "#e8a020", color: "#0d0f12",
+              fontSize: 10, fontWeight: 700, borderRadius: 9999,
+              width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
+            }}>{basketCount}</span>
+          </button>
+        )}
+      </div>
+      <div className="space-y-2">
+        {tickets.map((ticket: any) => {
+          const ticketUrl = purchaseUrl || ticket.external_link || null;
+          const qty = quantities[ticket.id] || 0;
+          const maxQty = ticket.quantity_available ?? 100;
+          const soldOut = event.sold_out || (ticket.quantity_available != null && ticket.quantity_available <= 0);
+
+          return (
+            <div key={ticket.id} className="flex items-center gap-4" style={{
+              background: "#181c24", borderRadius: 8, padding: "14px 20px",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
+            }}>
+              {/* Left: type + availability */}
+              <div className="flex-1 min-w-0">
+                <span style={{ fontSize: 15, fontWeight: 600, color: "#e8eaf0", display: "block" }}>{ticket.ticket_type}</span>
+                {soldOut ? (
+                  <span style={{ fontSize: 11, color: "#ef4444" }}>Sold Out</span>
+                ) : ticket.quantity_available != null && ticket.quantity_available < 20 ? (
+                  <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} remaining</span>
+                ) : (
+                  <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
+                )}
+              </div>
+              {/* Price */}
+              {ticket.price != null && (
+                <span style={{ fontSize: 22, fontWeight: 700, color: "#e8a020", fontFamily: "Inter, sans-serif", flexShrink: 0 }}>£{Number(ticket.price).toFixed(2)}</span>
+              )}
+              {/* Quantity selector or external link */}
+              {soldOut ? (
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#ef4444", flexShrink: 0 }}>Sold Out</span>
+              ) : ticketUrl ? (
+                <a href={ticketUrl} target="_blank" rel="noopener noreferrer" style={{
+                  display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", fontSize: 13, fontWeight: 600,
+                  background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none", flexShrink: 0,
+                }}>
+                  <ShoppingCart style={{ width: 14, height: 14 }} /> Buy Tickets
+                </a>
+              ) : (
+                <div className="flex items-center gap-2" style={{ flexShrink: 0 }}>
+                  <button
+                    onClick={() => setQty(ticket.id, Math.max(0, qty - 1))}
+                    disabled={qty <= 0}
+                    style={{
+                      width: 28, height: 28, borderRadius: "50%", border: "none", cursor: qty <= 0 ? "not-allowed" : "pointer",
+                      background: "rgba(255,255,255,0.06)", color: qty <= 0 ? "#555b6b" : "#e8eaf0", fontSize: 16, fontWeight: 700,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >−</button>
+                  <span style={{ width: 28, textAlign: "center", fontSize: 16, fontWeight: 700, color: "#e8eaf0" }}>{qty}</span>
+                  <button
+                    onClick={() => setQty(ticket.id, Math.min(maxQty, qty + 1))}
+                    disabled={qty >= maxQty}
+                    style={{
+                      width: 28, height: 28, borderRadius: "50%", border: "none", cursor: qty >= maxQty ? "not-allowed" : "pointer",
+                      background: "rgba(255,255,255,0.06)", color: qty >= maxQty ? "#555b6b" : "#e8eaf0", fontSize: 16, fontWeight: 700,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >+</button>
+                  <button
+                    onClick={() => handleAddToBasket(ticket)}
+                    disabled={qty <= 0}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
+                      background: qty <= 0 ? "rgba(232,160,32,0.3)" : "#e8a020", color: "#0d0f12", borderRadius: 8, border: "none",
+                      cursor: qty <= 0 ? "not-allowed" : "pointer", marginLeft: 4,
+                    }}
+                  >
+                    <ShoppingCart style={{ width: 14, height: 14 }} /> Add to Basket
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export default function EventDetail() {
@@ -389,45 +513,7 @@ export default function EventDetail() {
                     if (activeTickets.length === 0) return null;
                     const purchaseUrl = (event as any).ticket_url || null;
                     return (
-                      <div style={{ marginBottom: 24 }}>
-                        <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#e8eaf0", marginBottom: 12 }}>TICKETS</h3>
-                        <div className="space-y-2">
-                          {activeTickets.map((ticket: any) => {
-                            const ticketUrl = purchaseUrl || ticket.external_link || null;
-                            return (
-                              <div key={ticket.id} className="flex items-center justify-between" style={{
-                                background: "#1a1e28", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 8, padding: "16px 20px",
-                              }}>
-                                <div>
-                                  <span style={{ fontSize: 15, fontWeight: 600, color: "#e8eaf0", display: "block" }}>{ticket.ticket_type}</span>
-                                  {ticket.quantity_available != null && ticket.quantity_available < 20 ? (
-                                    <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} remaining</span>
-                                  ) : (
-                                    <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
-                                  )}
-                                </div>
-                                {ticket.price != null && (
-                                  <span style={{ fontSize: 24, fontWeight: 700, color: "#e8a020" }}>£{Number(ticket.price).toFixed(2)}</span>
-                                )}
-                                <div>
-                                  {event.sold_out ? (
-                                    <button disabled style={{
-                                      padding: "10px 20px", fontSize: 13, fontWeight: 600, borderRadius: 8,
-                                      background: "rgba(239,68,68,0.12)", color: "#ef4444", cursor: "not-allowed", border: "none",
-                                    }}>Sold Out</button>
-                                  ) : ticketUrl ? (
-                                    <a href={ticketUrl} target="_blank" rel="noopener noreferrer" style={{
-                                      display: "inline-block", padding: "10px 20px", fontSize: 13, fontWeight: 600,
-                                      background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none",
-                                      transition: "background 0.2s",
-                                    }}>Buy Tickets</a>
-                                  ) : null}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
+                      <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
                     );
                   })()}
 
