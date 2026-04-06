@@ -9,7 +9,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
-import { addToBasket, getBasketCount } from "@/pages/Checkout";
+import { addToBasket } from "@/pages/Checkout";
 import { toast } from "sonner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
