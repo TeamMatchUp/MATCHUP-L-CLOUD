@@ -239,6 +239,9 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
   }, [fighters, existingProposalFighterIds, keyword, allFights, comp, ent, style, narr, expTiers, stanceFilter, availableOnly, regionFilter, minFinishRate, undefeatedOnly, localOnly, eventData]);
 
   const handleSelect = async (fighterA: FighterProfile, fighterB: FighterProfile) => {
+    if (!slidersValid) {
+      return;
+    }
     if (user && eventId) {
       await supabase.from("organiser_preferences").upsert({
         organiser_id: user.id,

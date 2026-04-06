@@ -93,12 +93,16 @@ export function AddFightModal({
   const [manualDisc, setManualDisc] = useState<string>("");
   const [manualRounds, setManualRounds] = useState<string>("");
   const [manualRoundTime, setManualRoundTime] = useState<string>("");
+  const [manualWeightKg, setManualWeightKg] = useState<string>("");
+  const [manualWeightLbs, setManualWeightLbs] = useState<string>("");
 
   // Open slot state
   const [openWc, setOpenWc] = useState<string>("");
   const [openDisc, setOpenDisc] = useState<string>("");
   const [openRounds, setOpenRounds] = useState<string>("");
   const [openRoundTime, setOpenRoundTime] = useState<string>("");
+  const [openWeightKg, setOpenWeightKg] = useState<string>("");
+  const [openWeightLbs, setOpenWeightLbs] = useState<string>("");
 
   const reset = () => {
     setStep("menu");
@@ -108,10 +112,14 @@ export function AddFightModal({
     setManualDisc("");
     setManualRounds("");
     setManualRoundTime("");
+    setManualWeightKg("");
+    setManualWeightLbs("");
     setOpenWc("");
     setOpenDisc("");
     setOpenRounds("");
     setOpenRoundTime("");
+    setOpenWeightKg("");
+    setOpenWeightLbs("");
   };
 
   const handleClose = (v: boolean) => {
@@ -299,12 +307,14 @@ export function AddFightModal({
     disc: string, setDisc: (v: string) => void,
     rounds: string, setRounds: (v: string) => void,
     roundTime: string, setRoundTime: (v: string) => void,
+    weightKg: string, setWeightKg: (v: string) => void,
+    weightLbs: string, setWeightLbs: (v: string) => void,
   ) => (
     <div className="grid grid-cols-2 gap-3">
       <div className="space-y-1">
         <Label style={{ fontSize: 11, color: "#8b909e" }}>Weight Class</Label>
         <Select value={wc || "any"} onValueChange={(v) => setWc(v === "any" ? "" : v)}>
-          <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28" }}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -318,7 +328,7 @@ export function AddFightModal({
       <div className="space-y-1">
         <Label style={{ fontSize: 11, color: "#8b909e" }}>Discipline</Label>
         <Select value={disc || "any"} onValueChange={(v) => setDisc(v === "any" ? "" : v)}>
-          <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28" }}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -330,6 +340,44 @@ export function AddFightModal({
         </Select>
       </div>
       <div className="space-y-1">
+        <Label style={{ fontSize: 11, color: "#8b909e" }}>Specific Weight (kg)</Label>
+        <Input
+          type="number"
+          min={40}
+          max={120}
+          step={0.1}
+          placeholder="e.g. 70.0"
+          value={weightKg}
+          onChange={(e) => {
+            const kg = e.target.value;
+            setWeightKg(kg);
+            if (kg) setWeightLbs((parseFloat(kg) * 2.2046).toFixed(1));
+            else setWeightLbs("");
+          }}
+          className="h-9 text-sm"
+          style={{ background: "#1a1e28" }}
+        />
+      </div>
+      <div className="space-y-1">
+        <Label style={{ fontSize: 11, color: "#8b909e" }}>Specific Weight (lbs)</Label>
+        <Input
+          type="number"
+          min={88}
+          max={265}
+          step={0.1}
+          placeholder="e.g. 154.3"
+          value={weightLbs}
+          onChange={(e) => {
+            const lbs = e.target.value;
+            setWeightLbs(lbs);
+            if (lbs) setWeightKg((parseFloat(lbs) / 2.2046).toFixed(1));
+            else setWeightKg("");
+          }}
+          className="h-9 text-sm"
+          style={{ background: "#1a1e28" }}
+        />
+      </div>
+      <div className="space-y-1">
         <Label style={{ fontSize: 11, color: "#8b909e" }}>Rounds</Label>
         <Input
           type="number"
@@ -339,13 +387,13 @@ export function AddFightModal({
           value={rounds}
           onChange={(e) => setRounds(e.target.value)}
           className="h-9 text-sm"
-          style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ background: "#1a1e28" }}
         />
       </div>
       <div className="space-y-1">
         <Label style={{ fontSize: 11, color: "#8b909e" }}>Time / Round</Label>
         <Select value={roundTime || "any"} onValueChange={(v) => setRoundTime(v === "any" ? "" : v)}>
-          <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28" }}>
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
