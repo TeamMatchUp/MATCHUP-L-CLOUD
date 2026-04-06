@@ -1,51 +1,83 @@
 
 
-# Plan: Expand Country Enum and Searchable Dropdowns Sitewide
+# Plan: Fix Explore Country Filter + Expand CSV Import for Matchmaking Parity
 
-## What we're doing
+## Overview
 
-The database `country_code` enum currently only has 3 values (UK, USA, AUS). We need to expand it to 48 countries and update all 12 files that use country dropdowns to use the full list with search filtering.
+Three changes: (1) Replace hardcoded 3-country filter on Explore page with full 48-country searchable dropdown, (2) Expand CSV import to support all matchmaking-relevant fields that `AddFighterDialog` supports, (3) Remove hardcoded `country: "UK"` default from CSV import.
 
-## Step 1 — Database Migration
+---
 
-Run a migration to add 45 new values to the `country_code` enum:
+## Change 1: Explore Page Country Filter
 
-```sql
-ALTER TYPE country_code ADD VALUE IF NOT EXISTS 'IE';
-ALTER TYPE country_code ADD VALUE IF NOT EXISTS 'FR';
--- ... all 45 additional codes
+**File**: `src/pages/Explore.tsx` (lines 426-434)
+
+Replace the hardcoded `<Select>` with 3 countries (UK/USA/AUS) with the `SearchableCountrySelect` component using `includeAll={true}`. This gives the full 48-country list with search filtering, matching every other country dropdown on the platform.
+
+---
+
+## Change 2: CSV Import — Full Field Parity with AddFighterDialog
+
+**File**: `src/components/coach/ImportFightersDialog.tsx`
+
+Currently the CSV only supports 7 columns: `first_name, last_name, email, weight_class, wins, losses, draws`. The `AddFighterDialog` supports 16 fields. The CSV needs to support all fields that affect matchmaking and fighter display.
+
+### New optional CSV columns (all optional, only `first_name` + `last_name` remain required):
+
+| Column | Maps to DB field | Validation |
+|--------|-----------------|------------|
+| `country` | `country` | Must be valid 48-code enum, no default |
+| `discipline` | `discipline` | Free text (Boxing, Muay Thai, MMA, etc.) |
+| `style` | `style` | Must be valid fighting_style enum |
+| `stance` | `stance` | Orthodox, Southpaw, or Switch |
+| `date_of_birth` | `date_of_birth` | ISO format YYYY-MM-DD |
+| `height_cm` | `height` | Integer |
+| `reach_cm` | `reach` | Integer |
+| `walk_around_weight_kg` | `walk_around_weight_kg` | Numeric |
+| `amateur_wins` | `amateur_wins` | Integer, default 0 |
+| `amateur_losses` | `amateur_losses` | Integer, default 0 |
+| `amateur_draws` | `amateur_draws` | Integer, default 0 |
+
+### Specific changes in ImportFightersDialog.tsx:
+
+1. **Expand `ALL_HEADERS`** to include all new columns
+2. **Expand `ImportRow` interface** with new fields
+3. **Update CSV parsing/mapping** to extract new fields from raw rows
+4. **Update validation** — validate `country` against `ALL_COUNTRIES` codes, validate `style` against enum, validate `stance` against allowed values
+5. **Remove `country: "UK"` hardcode** (line 207) — use CSV-provided country or omit entirely
+6. **Remove `weight_class` fallback to "lightweight"** (line 196/202) — if no weight class provided and action is "create", mark as error requiring weight_class
+7. **Update the insert query** to include all new fields
+8. **Update preview table** to show country and discipline columns
+9. **Update the CSV template display** to show a comprehensive example with new columns
+10. **Import `ALL_COUNTRIES`** from `src/lib/countries.ts` for country validation
+
+### Insert query will become:
+```typescript
+{
+  name: `${pr.row.first_name} ${pr.row.last_name}`,
+  email: pr.row.email || null,
+  weight_class: wc,
+  country: pr.row.country || undefined,  // no default
+  discipline: pr.row.discipline || null,
+  style: validStyle || null,
+  stance: pr.row.stance || null,
+  date_of_birth: pr.row.date_of_birth || null,
+  height: parseInt(pr.row.height_cm) || null,
+  reach: parseInt(pr.row.reach_cm) || null,
+  walk_around_weight_kg: parseFloat(pr.row.walk_around_weight_kg) || null,
+  record_wins: parseInt(pr.row.wins) || 0,
+  record_losses: parseInt(pr.row.losses) || 0,
+  record_draws: parseInt(pr.row.draws) || 0,
+  amateur_wins: parseInt(pr.row.amateur_wins) || 0,
+  amateur_losses: parseInt(pr.row.amateur_losses) || 0,
+  amateur_draws: parseInt(pr.row.amateur_draws) || 0,
+  created_by_coach_id: coachId,
+}
 ```
 
-## Step 2 — Create shared country utility
-
-Create `src/lib/countries.ts` exporting `ALL_COUNTRIES` array (the same 48-entry list currently duplicated in `CreateFighterProfileForm.tsx`) and a `getCountryLabel(code)` helper.
-
-## Step 3 — Update all 12 files using country dropdowns
-
-Replace `Constants.public.Enums.country_code` references with the shared `ALL_COUNTRIES` list and add a search `<Input>` inside each `<SelectContent>` for filtering.
-
-Files to update:
-1. `src/components/coach/EditFighterDialog.tsx`
-2. `src/components/coach/AddFighterDialog.tsx`
-3. `src/components/fighter/CreateFighterProfileForm.tsx` — import from shared util instead of local array
-4. `src/components/fighter/EditableProfilePanel.tsx`
-5. `src/components/gym/EditGymDialog.tsx`
-6. `src/components/gym/AddFighterToGymDialog.tsx`
-7. `src/components/organiser/EditEventDialog.tsx`
-8. `src/components/organiser/FighterSearchPanel.tsx`
-9. `src/components/organiser/FighterSearchDropdown.tsx`
-10. `src/pages/organiser/CreateEvent.tsx`
-11. `src/pages/RegisterGym.tsx`
-12. `src/pages/GymOwnerDashboard.tsx`
-13. `src/components/dashboard/DashboardGyms.tsx`
-
-Each dropdown will show `"{code} — {label}"` with a text input at the top for filtering. The `FlagIcon` component already handles all ISO2 codes, so flags will work automatically for all 48 countries.
-
-## Step 4 — Update FlagIcon mapping
-
-Add any missing enum codes to the `COUNTRY_NAME_TO_ISO2` map in `FlagIcon.tsx` (e.g. ensure all 48 codes resolve correctly — most already do via the `resolveCode` fallback).
+---
 
 ## What stays unchanged
 
-All routing, RLS policies, authentication, matchmaking, proposals, notifications, existing data (UK/USA/AUS values remain valid).
+All routing, RLS policies, authentication, matchmaking algorithm, proposal/notification flows, ManageFighterTitles, all other components, existing gym link logic in the CSV import, email-based duplicate detection.
 
