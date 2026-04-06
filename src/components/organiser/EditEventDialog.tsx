@@ -33,7 +33,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
-import { Checkbox } from "@/components/ui/checkbox";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 import { Trash2, Globe, EyeOff, MapPin } from "lucide-react";
 import { geocodePostcode } from "@/hooks/use-postcode-search";
 import { BannerImageUpload } from "@/components/BannerImageUpload";
@@ -41,7 +41,7 @@ import { BannerImageUpload } from "@/components/BannerImageUpload";
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type EventStatus = Database["public"]["Enums"]["event_status"];
 type EventRow = Database["public"]["Tables"]["events"]["Row"];
-const COUNTRIES = Constants.public.Enums.country_code;
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface EditEventDialogProps {
   open: boolean;
@@ -186,14 +186,7 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
             </div>
             <div className="space-y-1">
               <Label>Country</Label>
-              <Select value={country} onValueChange={(v) => setCountry(v as CountryCode)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableCountrySelect value={country} onValueChange={(v) => setCountry(v as CountryCode)} />
             </div>
           </div>
 

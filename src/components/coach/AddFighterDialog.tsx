@@ -18,13 +18,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 
 type WeightClass = Database["public"]["Enums"]["weight_class"];
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type FightingStyle = Database["public"]["Enums"]["fighting_style"];
 
 const WEIGHT_CLASSES = Constants.public.Enums.weight_class;
-const COUNTRIES = Constants.public.Enums.country_code;
 const STYLES = Constants.public.Enums.fighting_style;
 
 const DISCIPLINES = ["Boxing", "Muay Thai", "MMA", "BJJ", "Kickboxing", "Wrestling", "Other"];
@@ -177,14 +177,7 @@ export function AddFighterDialog({ open, onOpenChange, coachId, gymId, onSuccess
             </div>
             <div className="space-y-1">
               <Label>Country</Label>
-              <Select value={country} onValueChange={(v) => setCountry(v as CountryCode)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableCountrySelect value={country} onValueChange={(v) => setCountry(v as CountryCode)} />
             </div>
 
             <div className="space-y-1">

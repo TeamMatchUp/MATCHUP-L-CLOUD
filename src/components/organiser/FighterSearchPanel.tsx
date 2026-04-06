@@ -15,6 +15,7 @@ import { Search, X, Check, UserCheck } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 
 type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
 type FightSlot = Database["public"]["Tables"]["fight_slots"]["Row"];
@@ -23,7 +24,6 @@ type CountryCode = Database["public"]["Enums"]["country_code"];
 type FightingStyle = Database["public"]["Enums"]["fighting_style"];
 
 const WEIGHT_CLASSES = Constants.public.Enums.weight_class;
-const COUNTRIES = Constants.public.Enums.country_code;
 const STYLES = Constants.public.Enums.fighting_style;
 
 import { formatEnum } from "@/lib/format";
@@ -133,17 +133,7 @@ export function FighterSearchPanel({
           </SelectContent>
         </Select>
 
-        <Select value={country} onValueChange={(v) => setCountry(v as CountryCode | "all")}>
-          <SelectTrigger>
-            <SelectValue placeholder="Country" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Countries</SelectItem>
-            {COUNTRIES.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <SearchableCountrySelect value={country} onValueChange={(v) => setCountry(v as CountryCode | "all")} includeAll />
 
         <Select value={style} onValueChange={(v) => setStyle(v as FightingStyle | "all")}>
           <SelectTrigger>

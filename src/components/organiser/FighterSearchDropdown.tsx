@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -139,15 +140,7 @@ export function FighterSearchDropdown({ label, selected, onSelect, onClear, excl
             ))}
           </SelectContent>
         </Select>
-        <Select value={country} onValueChange={(v) => { setCountry(v); setPage(0); }}>
-          <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Country" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All countries</SelectItem>
-            {Constants.public.Enums.country_code.map((c) => (
-              <SelectItem key={c} value={c}>{c}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <SearchableCountrySelect value={country} onValueChange={(v) => { setCountry(v); setPage(0); }} includeAll />
         <Select value={discipline} onValueChange={(v) => { setDiscipline(v); setPage(0); }}>
           <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Discipline" /></SelectTrigger>
           <SelectContent>

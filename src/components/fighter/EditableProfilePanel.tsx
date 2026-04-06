@@ -14,6 +14,7 @@ import { FighterFightHistory } from "./FighterFightHistory";
 import { ProfileCompletionBar } from "./ProfileCompletionBar";
 import { Constants } from "@/integrations/supabase/types";
 import { useQuery } from "@tanstack/react-query";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 import { ImageCropDialog } from "@/components/ImageCropDialog";
 
 
@@ -272,12 +273,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
               <div><Label>Walk-around Weight (kg)</Label><Input type="number" step="0.1" {...register("walk_around_weight_kg")} /></div>
               <div>
                 <Label>Country</Label>
-                <Select value={watch("country")} onValueChange={(v) => setValue("country", v)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent position="popper" side="bottom">
-                    {Constants.public.Enums.country_code.map((c) => (<SelectItem key={c} value={c}>{c}</SelectItem>))}
-                  </SelectContent>
-                </Select>
+                <SearchableCountrySelect value={watch("country")} onValueChange={(v) => setValue("country", v)} />
               </div>
               <div><Label>Region</Label><Input {...register("region")} placeholder="e.g. South London" /></div>
               <div><Label>Postcode</Label><Input {...register("postcode")} placeholder="e.g. SW1A 1AA" /></div>
