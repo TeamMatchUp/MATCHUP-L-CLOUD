@@ -118,6 +118,12 @@ export function DashboardNetwork() {
     admin: "Admin",
   };
 
+  const getProfileUrl = (item: { userId: string; profile?: any; role?: string }) => {
+    if (item.role === "fighter") return `/fighters/${item.userId}`;
+    if ((item.role === "coach" || item.role === "gym_owner") && item.profile?.gym_id) return `/gyms/${item.profile.gym_id}`;
+    return null;
+  };
+
   const renderList = (
     items: { userId: string; profile?: any; role?: string }[],
     showUnfollow: boolean
@@ -134,55 +140,66 @@ export function DashboardNetwork() {
     }
     return (
       <div className="space-y-2">
-        {items.map((item) => (
-          <div
-            key={item.userId}
-            className="flex items-center gap-3 p-3 rounded-lg"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}
-          >
+        {items.map((item) => {
+          const profileUrl = getProfileUrl(item);
+          return (
             <div
-              style={{
-                width: 36, height: 36, borderRadius: "50%", background: "#1a1e28",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 13, fontWeight: 600, color: "#8b909e", overflow: "hidden", flexShrink: 0,
-              }}
+              key={item.userId}
+              className="flex items-center gap-3 p-3 rounded-lg transition-all duration-150"
+              style={{ background: "rgba(255,255,255,0.02)", cursor: profileUrl ? "pointer" : "default" }}
+              onClick={() => { if (profileUrl) { setSheet(null); navigate(profileUrl); } }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
             >
-              {item.profile?.avatar_url ? (
-                <img src={item.profile.avatar_url} alt="" className="h-full w-full object-cover" />
-              ) : (
-                getInitials(item.profile?.full_name)
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>
-                {item.profile?.full_name || "Unknown"}
-              </p>
-              {item.role && (
-                <span
-                  style={{
-                    fontSize: 10, fontWeight: 600, color: "#e8a020",
-                    background: "rgba(232,160,32,0.1)", border: "1px solid rgba(232,160,32,0.25)",
-                    borderRadius: 4, padding: "2px 6px",
-                  }}
-                >
-                  {ROLE_LABELS[item.role] || item.role}
-                </span>
-              )}
-            </div>
-            {showUnfollow && (
-              <button
-                onClick={() => handleUnfollow(item.userId)}
+              <div
                 style={{
-                  fontSize: 11, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)",
-                  border: "1px solid rgba(239,68,68,0.25)", borderRadius: 6, padding: "4px 10px",
-                  cursor: "pointer", transition: "all 0.15s",
+                  width: 36, height: 36, borderRadius: "50%", background: "#1a1e28",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 13, fontWeight: 600, color: "#8b909e", overflow: "hidden", flexShrink: 0,
                 }}
               >
-                Unfollow
-              </button>
-            )}
-          </div>
-        ))}
+                {item.profile?.avatar_url ? (
+                  <img src={item.profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  getInitials(item.profile?.full_name)
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>
+                  {item.profile?.full_name || "Unknown"}
+                </p>
+                <div className="flex items-center gap-2">
+                  {item.role && (
+                    <span
+                      style={{
+                        fontSize: 10, fontWeight: 600, color: "#e8a020",
+                        background: "rgba(232,160,32,0.1)",
+                        borderRadius: 4, padding: "2px 6px",
+                      }}
+                    >
+                      {ROLE_LABELS[item.role] || item.role}
+                    </span>
+                  )}
+                  {profileUrl && (
+                    <span style={{ fontSize: 12, color: "#e8a020", fontWeight: 500 }}>View Profile</span>
+                  )}
+                </div>
+              </div>
+              {showUnfollow && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleUnfollow(item.userId); }}
+                  style={{
+                    fontSize: 11, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)",
+                    borderRadius: 6, padding: "4px 10px",
+                    cursor: "pointer", transition: "all 0.15s",
+                  }}
+                >
+                  Unfollow
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
     );
   };
