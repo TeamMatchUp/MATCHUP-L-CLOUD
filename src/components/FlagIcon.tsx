@@ -142,12 +142,4 @@ export function FlagIcon({ countryCode, size = 16 }: FlagIconProps) {
   );
 }
 
-export function getCountryDisplayName(code: string | null | undefined): string {
-  if (!code) return "";
-  const reverseMap: Record<string, string> = {
-    UK: "United Kingdom",
-    USA: "United States",
-    AUS: "Australia",
-  };
-  return reverseMap[code] || code;
-}
+export { getCountryLabel as getCountryDisplayName } from "@/lib/countries";
