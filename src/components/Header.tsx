@@ -235,9 +235,9 @@ export function Header() {
             {user && (
               <a
                 href="/dashboard"
-                onClick={(e) => { handleDashboardClick(e); setMobileOpen(false); }}
+                 onClick={(e) => { handleDashboardClick(e); setMobileOpen(false); }}
                 className="cursor-pointer flex items-center"
-                style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "hsl(var(--foreground))", borderBottom: "1px solid hsl(var(--hover-subtle, 0 0% 100% / 0.04))" }}
               >
                 DASHBOARD
               </a>
