@@ -42,6 +42,8 @@ interface MatchSuggestionsPanelProps {
   eventId?: string;
   weightClassOverride?: string | null;
   disciplineOverride?: string | null;
+  /** When set, suggests individual opponents for this fighter (Scenario A / one TBA) */
+  anchorFighter?: FighterProfile;
 }
 
 function matchesKeyword(fighter: FighterProfile, keyword: string, fights: any[]): boolean {
