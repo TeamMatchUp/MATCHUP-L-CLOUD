@@ -787,9 +787,9 @@ function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymI
             <Link
               to={`/gyms/${gym.id}`}
               className="block transition-all duration-200"
-              style={{ background: EX.card, border: `1px solid ${highlightedGymId === gym.id ? EX.gold : EX.border}`, borderRadius: 12, overflow: "hidden", cursor: "pointer" }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = EX.goldBorder; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = highlightedGymId === gym.id ? EX.gold : EX.border; e.currentTarget.style.boxShadow = "none"; }}
+              style={{ background: EX.card, border: "none", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
             >
               {/* Hero */}
               <div style={{ height: 180, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -874,9 +874,9 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
       <Link
         to={`/fighters/${fighter.id}`}
         className="block transition-all duration-200"
-        style={{ background: EX.card, border: `1px solid ${EX.border}`, borderRadius: 12, overflow: "hidden", cursor: "pointer" }}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = EX.goldBorder; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = EX.border; e.currentTarget.style.boxShadow = "none"; }}
+        style={{ background: EX.card, border: "none", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)" }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
       >
         {/* Top area */}
         <div style={{ height: 200, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
