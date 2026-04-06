@@ -9,7 +9,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
-import { addToBasket, getBasketCount } from "@/pages/Checkout";
+import { addToBasket } from "@/pages/Checkout";
 import { toast } from "sonner";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -54,27 +54,10 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
     toast.success(`${qty}× ${ticket.ticket_type} added to basket`);
   };
 
-  const basketCount = getBasketCount();
-
   return (
     <div style={{ marginBottom: 24 }}>
       <div className="flex items-center justify-between mb-3">
         <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#e8eaf0" }}>TICKETS</h3>
-        {basketCount > 0 && (
-          <button
-            onClick={() => navigate("/checkout")}
-            className="relative"
-            style={{ background: "none", border: "none", cursor: "pointer", color: "#e8eaf0" }}
-          >
-            <ShoppingCart style={{ width: 22, height: 22 }} />
-            <span style={{
-              position: "absolute", top: -6, right: -8,
-              background: "#e8a020", color: "#0d0f12",
-              fontSize: 10, fontWeight: 700, borderRadius: 9999,
-              width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
-            }}>{basketCount}</span>
-          </button>
-        )}
       </div>
       <div className="space-y-2">
         {tickets.map((ticket: any) => {

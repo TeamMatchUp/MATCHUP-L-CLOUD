@@ -1,10 +1,11 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ChevronDown, LogOut, User, Menu, X, Settings } from "lucide-react";
+import { ChevronDown, LogOut, User, Menu, X, Settings, ShoppingCart } from "lucide-react";
 import { AppLogo } from "@/components/AppLogo";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
+import { useBasket } from "@/pages/Checkout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +42,8 @@ const navLinks: { label: string; to: string }[] = [];
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, roles, activeRole, setActiveRole, signOut } = useAuth();
+  const basket = useBasket();
+  const basketCount = basket.reduce((sum, i) => sum + i.quantity, 0);
   const navigate = useNavigate();
   const location = useLocation();
   const isLanding = location.pathname === "/";
@@ -125,6 +128,17 @@ export function Header() {
         <div className="hidden md:flex items-center gap-2">
           {user ? (
             <>
+            {basketCount > 0 && (
+              <Link to="/checkout" className="relative" style={{ color: "#e8eaf0" }}>
+                <ShoppingCart style={{ width: 20, height: 20 }} />
+                <span style={{
+                  position: "absolute", top: -6, right: -8,
+                  background: "#e8a020", color: "#0d0f12",
+                  fontSize: 10, fontWeight: 700, borderRadius: 9999,
+                  width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
+                }}>{basketCount}</span>
+              </Link>
+            )}
             <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -190,6 +204,17 @@ export function Header() {
 
         {/* Mobile: notification bell + hamburger */}
         <div className="md:hidden flex items-center gap-2">
+          {basketCount > 0 && (
+            <Link to="/checkout" className="relative" style={{ color: "#e8eaf0" }}>
+              <ShoppingCart style={{ width: 20, height: 20 }} />
+              <span style={{
+                position: "absolute", top: -6, right: -8,
+                background: "#e8a020", color: "#0d0f12",
+                fontSize: 10, fontWeight: 700, borderRadius: 9999,
+                width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
+              }}>{basketCount}</span>
+            </Link>
+          )}
           {user && <NotificationBell />}
           <button
             className="flex flex-col justify-center items-center gap-[5px] w-8 h-8 group"
