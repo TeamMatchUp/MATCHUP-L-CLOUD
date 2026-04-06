@@ -414,15 +414,17 @@ export function AddFightModal({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className="max-h-[85vh] overflow-y-auto"
+        className={step === "suggested" ? "" : "max-h-[85vh] overflow-y-auto"}
         style={{
-          background: "#14171e",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 16,
-          width: "min(540px, 95vw)",
+          background: "#111318",
+          border: "none",
+          borderRadius: step === "suggested" ? 14 : 16,
+          width: step === "suggested" ? "min(95vw, 1200px)" : "min(540px, 95vw)",
           maxWidth: "95vw",
-          padding: 24,
-          boxShadow: "0 16px 48px rgba(0,0,0,0.6)",
+          padding: step === "suggested" ? 0 : 24,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+          maxHeight: step === "suggested" ? "90vh" : "85vh",
+          overflow: step === "suggested" ? "hidden" : undefined,
         }}
       >
         {step === "menu" && (
@@ -517,45 +519,14 @@ export function AddFightModal({
         )}
 
         {step === "suggested" && (
-          <>
-            <button
-              onClick={() => setStep("menu")}
-              className="flex items-center gap-1 mb-3 text-sm transition-colors"
-              style={{ color: "#8b909e", background: "none", border: "none", cursor: "pointer" }}
-            >
-              <ArrowLeft className="h-3.5 w-3.5" /> Back
-            </button>
-            <DialogHeader>
-              <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>
-                Suggested Matches
-              </DialogTitle>
-            </DialogHeader>
-            <div className="mt-3">
-              {!fightSlot && !prefillSlot && (
-                <div
-                  style={{
-                    background: "rgba(245,158,11,0.08)",
-                    border: "1px solid rgba(245,158,11,0.2)",
-                    borderRadius: 8,
-                    padding: "10px 14px",
-                    marginBottom: 12,
-                    fontSize: 12,
-                    color: "#f59e0b",
-                  }}
-                >
-                  No open slots found — a new slot will be created when you confirm a match
-                </div>
-              )}
-              <MatchSuggestionsPanel
-                slot={fightSlot ?? undefined}
-                existingProposalFighterIds={existingFighterIds}
-                onSelectPair={handleSuggestionSelect}
-                eventId={eventId}
-                weightClassOverride={prefillSlot?.weight_class ?? null}
-                disciplineOverride={prefillSlot?.discipline ?? null}
-              />
-            </div>
-          </>
+          <MatchSuggestionsPanel
+            slot={fightSlot ?? undefined}
+            existingProposalFighterIds={existingFighterIds}
+            onSelectPair={handleSuggestionSelect}
+            eventId={eventId}
+            weightClassOverride={prefillSlot?.weight_class ?? null}
+            disciplineOverride={prefillSlot?.discipline ?? null}
+          />
         )}
 
         {step === "open" && (

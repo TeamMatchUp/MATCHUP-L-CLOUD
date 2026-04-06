@@ -48,11 +48,11 @@ const ITEMS_PER_PAGE_MOBILE = 20;
 
 /* ── Explore design tokens (inline, not polluting global CSS) ── */
 const EX = {
-  bg: "#0d0f12",
-  card: "#14171e",
-  raised: "#1a1e28",
-  border: "rgba(255,255,255,0.06)",
-  borderMid: "rgba(255,255,255,0.1)",
+  bg: "#080a0d",
+  card: "#111318",
+  raised: "#181c24",
+  border: "transparent",
+  borderMid: "transparent",
   gold: "#e8a020",
   goldDim: "rgba(232,160,32,0.12)",
   goldBorder: "rgba(232,160,32,0.25)",
@@ -787,9 +787,9 @@ function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymI
             <Link
               to={`/gyms/${gym.id}`}
               className="block transition-all duration-200"
-              style={{ background: EX.card, border: `1px solid ${highlightedGymId === gym.id ? EX.gold : EX.border}`, borderRadius: 12, overflow: "hidden", cursor: "pointer" }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = EX.goldBorder; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = highlightedGymId === gym.id ? EX.gold : EX.border; e.currentTarget.style.boxShadow = "none"; }}
+              style={{ background: EX.card, border: "none", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)" }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
             >
               {/* Hero */}
               <div style={{ height: 180, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -874,9 +874,9 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
       <Link
         to={`/fighters/${fighter.id}`}
         className="block transition-all duration-200"
-        style={{ background: EX.card, border: `1px solid ${EX.border}`, borderRadius: 12, overflow: "hidden", cursor: "pointer" }}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = EX.goldBorder; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = EX.border; e.currentTarget.style.boxShadow = "none"; }}
+        style={{ background: EX.card, border: "none", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)" }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
       >
         {/* Top area */}
         <div style={{ height: 200, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -893,11 +893,6 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
             ) : (
               <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 26, color: EX.gold }}>{initials}</span>
             )}
-          </div>
-          {/* Win Rate badge */}
-          <div className="absolute top-3 right-3" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", borderRadius: 9999, padding: "5px 12px" }}>
-            <span style={{ fontSize: 9, color: EX.muted, display: "block" }}>Win Rate</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: EX.gold }}>{winRate}%</span>
           </div>
           {/* Follow button */}
           {showFollow && (
@@ -927,12 +922,17 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
           <div className="flex items-baseline gap-4" style={{ marginTop: 10 }}>
             <div>
               <span style={{ fontSize: 20, fontWeight: 700, color: EX.text }}>{record.wins}-{record.losses}-{record.draws}</span>
-              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>WIN-LOSS-DRAW</span>
+              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>W-L-D</span>
             </div>
             <div style={{ width: 1, height: 28, background: EX.border, alignSelf: "center" }} />
             <div>
               <span style={{ fontSize: 20, fontWeight: 700, color: EX.gold }}>0</span>
-              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>KNOCKOUTS</span>
+              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>KOs</span>
+            </div>
+            <div style={{ width: 1, height: 28, background: EX.border, alignSelf: "center" }} />
+            <div>
+              <span style={{ fontSize: 16, fontWeight: 700, color: EX.gold }}>{winRate}%</span>
+              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>WIN RATE</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5" style={{ marginTop: 8 }}>
