@@ -761,6 +761,57 @@ export type Database = {
           },
         ]
       }
+      fighter_titles: {
+        Row: {
+          awarded_at: string | null
+          awarded_by_coach_id: string | null
+          created_at: string | null
+          fighter_id: string | null
+          id: string
+          is_current: boolean | null
+          organisation: string | null
+          title: string
+          weight_class: string | null
+        }
+        Insert: {
+          awarded_at?: string | null
+          awarded_by_coach_id?: string | null
+          created_at?: string | null
+          fighter_id?: string | null
+          id?: string
+          is_current?: boolean | null
+          organisation?: string | null
+          title: string
+          weight_class?: string | null
+        }
+        Update: {
+          awarded_at?: string | null
+          awarded_by_coach_id?: string | null
+          created_at?: string | null
+          fighter_id?: string | null
+          id?: string
+          is_current?: boolean | null
+          organisation?: string | null
+          title?: string
+          weight_class?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fighter_titles_awarded_by_coach_id_fkey"
+            columns: ["awarded_by_coach_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fighter_titles_fighter_id_fkey"
+            columns: ["fighter_id"]
+            isOneToOne: false
+            referencedRelation: "fighter_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fights: {
         Row: {
           created_at: string
