@@ -405,19 +405,7 @@ export default function EventManager() {
             </div>
 
             {/* KPI Strip */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              {[
-                { label: "Tickets Available", value: "—", color: "#e8a020" },
-                { label: "Est. Revenue", value: "—", color: "#22c55e" },
-                { label: "Matched Fights", value: String(confirmedCount), color: "#e8eaf0" },
-                { label: "Open Slots", value: String(openSlotCount), color: "#e8eaf0" },
-              ].map((kpi) => (
-                <div key={kpi.label} style={{ background: "#14171e", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 12, padding: "20px 16px", boxShadow: "0 4px 24px -4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
-                  <p style={{ fontSize: 11, color: "#8b909e", marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.06em" }}>{kpi.label}</p>
-                  <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, color: kpi.color, lineHeight: 1 }}>{kpi.value}</p>
-                </div>
-              ))}
-            </div>
+            <EventKpiStrip eventId={id!} confirmedCount={confirmedCount} openSlotCount={openSlotCount} />
 
             {/* Event header */}
             <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
