@@ -30,6 +30,8 @@ import logoWhite from "@/assets/logo-full-white.svg";
 import iconWhite from "@/assets/icon-white.svg";
 import NetworkBackground from "@/components/NetworkBackground";
 import { ExploreBanner } from "@/components/ExploreBanner";
+import { FlagIcon, getCountryDisplayName } from "@/components/FlagIcon";
+import { Award } from "lucide-react";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
