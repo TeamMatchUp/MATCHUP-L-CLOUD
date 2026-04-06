@@ -48,11 +48,11 @@ const ITEMS_PER_PAGE_MOBILE = 20;
 
 /* ── Explore design tokens (inline, not polluting global CSS) ── */
 const EX = {
-  bg: "#0d0f12",
-  card: "#14171e",
-  raised: "#1a1e28",
-  border: "rgba(255,255,255,0.06)",
-  borderMid: "rgba(255,255,255,0.1)",
+  bg: "#080a0d",
+  card: "#111318",
+  raised: "#181c24",
+  border: "transparent",
+  borderMid: "transparent",
   gold: "#e8a020",
   goldDim: "rgba(232,160,32,0.12)",
   goldBorder: "rgba(232,160,32,0.25)",
