@@ -8,6 +8,7 @@ import { Link, useNavigate } from "react-router-dom";
 export function DashboardNetwork() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [sheet, setSheet] = useState<"followers" | "following" | null>(null);
 
   const { data: followerCount = 0 } = useQuery({
@@ -46,7 +47,7 @@ export function DashboardNetwork() {
       const ids = data.map((d) => d.follower_id);
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, full_name, avatar_url")
+        .select("id, full_name, avatar_url, gym_id")
         .in("id", ids);
       const { data: roles } = await supabase
         .from("user_roles")
@@ -75,7 +76,7 @@ export function DashboardNetwork() {
       const ids = data.map((d) => d.following_id);
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, full_name, avatar_url")
+        .select("id, full_name, avatar_url, gym_id")
         .in("id", ids);
       const { data: roles } = await supabase
         .from("user_roles")
