@@ -170,6 +170,8 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
 
   const suggestions = useMemo(() => {
     const excludeIds = new Set(existingProposalFighterIds);
+    // Also exclude the anchor fighter from the pool
+    if (anchorFighter) excludeIds.add(anchorFighter.id);
     let filteredPool = fighters.filter((f) => !excludeIds.has(f.id));
     if (availableOnly) filteredPool = filteredPool.filter((f) => f.available);
     filteredPool = filteredPool.filter((f) => {
@@ -182,6 +184,48 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
     if (regionFilter !== "any") {
       filteredPool = filteredPool.filter((f) => f.region === regionFilter);
     }
+
+    if (anchorFighter) {
+      // Anchor mode: score each fighter individually against the anchor
+      const scored = filteredPool.map((f) => {
+        const { score, reason } = scorePairForAnchor(anchorFighter, f);
+        return { fighter: f, score, reason };
+      });
+      // Apply stance filter
+      let filtered = scored;
+      if (stanceFilter === "orthodox_southpaw") {
+        const anchorStance = (anchorFighter.stance || "").toLowerCase();
+        filtered = filtered.filter((item) => {
+          const s = (item.fighter.stance || "").toLowerCase();
+          return (anchorStance === "orthodox" && s === "southpaw") || (anchorStance === "southpaw" && s === "orthodox");
+        });
+      } else if (stanceFilter === "same") {
+        const anchorStance = (anchorFighter.stance || "").toLowerCase();
+        filtered = filtered.filter((item) => {
+          const s = (item.fighter.stance || "").toLowerCase();
+          return s && anchorStance && s === anchorStance;
+        });
+      }
+      if (undefeatedOnly) {
+        filtered = filtered.filter((item) => item.fighter.record_losses === 0 && item.fighter.record_wins > 0);
+      }
+      if (localOnly && eventData) {
+        const eventCity = (eventData.city || "").toLowerCase();
+        const eventPostcode = (eventData.postcode || "").toLowerCase().slice(0, 3);
+        filtered = filtered.filter((item) => {
+          const r = (item.fighter.region || "").toLowerCase();
+          const p = (item.fighter.postcode || "").toLowerCase().slice(0, 3);
+          return r.includes(eventCity) || p === eventPostcode;
+        });
+      }
+      if (keyword.trim()) {
+        filtered = filtered.filter((item) => matchesKeyword(item.fighter, keyword, allFights));
+      }
+      filtered.sort((a, b) => a.score - b.score);
+      return filtered.slice(0, 20);
+    }
+
+    // Pair mode (no anchor): existing logic
     const all = generateSuggestions(filteredPool, new Set(), 50);
     let filtered = all;
     if (stanceFilter === "orthodox_southpaw") {
@@ -217,7 +261,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
       );
     }
     return filtered.slice(0, 20);
-  }, [fighters, existingProposalFighterIds, keyword, allFights, comp, ent, style, narr, expTiers, stanceFilter, availableOnly, regionFilter, minFinishRate, undefeatedOnly, localOnly, eventData]);
+  }, [fighters, existingProposalFighterIds, keyword, allFights, comp, ent, style, narr, expTiers, stanceFilter, availableOnly, regionFilter, minFinishRate, undefeatedOnly, localOnly, eventData, anchorFighter]);
 
   const handleSelect = async (fighterA: FighterProfile, fighterB: FighterProfile) => {
     if (allZero) return;
