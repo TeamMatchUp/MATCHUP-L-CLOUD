@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
@@ -15,13 +16,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Constants } from "@/integrations/supabase/types";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
+import { getCountryLabel } from "@/lib/countries";
 
 type WeightClass = Database["public"]["Enums"]["weight_class"];
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type FightingStyle = Database["public"]["Enums"]["fighting_style"];
 
 const WEIGHT_CLASSES = Constants.public.Enums.weight_class;
-const COUNTRIES = Constants.public.Enums.country_code;
 const STYLES = Constants.public.Enums.fighting_style;
 
 interface FighterData {
@@ -132,14 +133,7 @@ export function EditFighterDialog({ open, onOpenChange, fighter, onSuccess }: Ed
             </div>
             <div className="space-y-1">
               <Label>Country</Label>
-              <Select value={country} onValueChange={(v) => setCountry(v as CountryCode)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {COUNTRIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableCountrySelect value={country} onValueChange={(v) => setCountry(v as CountryCode)} />
             </div>
           </div>
           <div className="space-y-1">
