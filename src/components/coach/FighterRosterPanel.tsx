@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, FileText, Search, ShieldCheck, UserCheck, Upload, Pencil } from "lucide-react";
 import { EditFighterDialog } from "./EditFighterDialog";
+import { ManageFighterTitles } from "./ManageFighterTitles";
 import { formatEnum } from "@/lib/format";
 
 interface Fighter {
@@ -206,6 +207,7 @@ export function FighterRosterPanel({
                   <Pencil className="h-3 w-3" /> Edit
                 </Button>
               </div>
+              <ManageFighterTitles fighterId={f.id} fighterName={f.name} />
             </div>
           )})}
         </div>
