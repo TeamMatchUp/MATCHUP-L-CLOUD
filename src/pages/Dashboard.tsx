@@ -315,7 +315,7 @@ export default function Dashboard() {
   const sidebarW = isMobile ? 0 : (sidebarCollapsed ? 56 : 220);
 
   return (
-    <div style={{ background: "#080a0d", width: "100vw", minHeight: "100vh", margin: 0 }}>
+    <div style={{ background: "hsl(var(--background))", width: "100vw", minHeight: "100vh", margin: 0 }}>
       {/* Mobile sidebar overlay */}
       {isMobile && mobileSidebarOpen && (
         <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setMobileSidebarOpen(false)} />
@@ -342,12 +342,12 @@ export default function Dashboard() {
           marginLeft: sidebarW,
           transition: "margin-left 0.2s ease",
           minHeight: "100vh",
-          background: "#0d0f12",
+          background: "hsl(var(--bg-page, var(--background)))",
         }}
       >
         {/* Mobile hamburger */}
         {isMobile && (
-          <div className="sticky top-0 z-30 flex items-center h-12 px-3" style={{ background: "#080a0d" }}>
+          <div className="sticky top-0 z-30 flex items-center h-12 px-3" style={{ background: "hsl(var(--background))" }}>
             <Button
               variant="ghost"
               size="icon"
