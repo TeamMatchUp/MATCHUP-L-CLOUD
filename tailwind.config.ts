@@ -21,7 +21,7 @@ export default {
         body: ["var(--font-body)", "sans-serif"],
       },
       colors: {
-        border: "hsl(var(--border))",
+        border: "transparent",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
