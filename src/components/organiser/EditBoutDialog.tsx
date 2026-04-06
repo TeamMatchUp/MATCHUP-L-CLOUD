@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -70,6 +71,8 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: {
   const [loading, setLoading] = useState(false);
   const [boutType, setBoutType] = useState(bout.bout_type || "Undercard");
   const [isPublic, setIsPublic] = useState(bout.is_public !== false);
+  const [weightKg, setWeightKg] = useState(bout.specific_weight_kg?.toString() || "");
+  const [weightLbs, setWeightLbs] = useState(bout.specific_weight_lbs?.toString() || "");
   const fAInitial = Array.isArray(bout.fighter_a) ? bout.fighter_a[0] : bout.fighter_a;
   const fBInitial = Array.isArray(bout.fighter_b) ? bout.fighter_b[0] : bout.fighter_b;
   const [fighterA, setFighterA] = useState<FighterProfile | null>(fAInitial || null);
@@ -90,7 +93,9 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: {
       bout_type: boutType,
       is_public: isPublic,
       weight_class: wc,
-    }).eq("id", bout.id);
+      specific_weight_kg: weightKg ? parseFloat(weightKg) : null,
+      specific_weight_lbs: weightLbs ? parseFloat(weightLbs) : null,
+    } as any).eq("id", bout.id);
     if (error) {
       toast({ title: "Error updating bout", description: error.message, variant: "destructive" });
     } else {
