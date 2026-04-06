@@ -92,7 +92,7 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-nav/90 backdrop-blur-xl border-b border-border/50">
+    <header className="fixed top-0 left-0 right-0 z-50" style={{ background: "var(--glass-header, rgba(8,10,13,0.88))", backdropFilter: "blur(20px) saturate(160%)", WebkitBackdropFilter: "blur(20px) saturate(160%)" }}>
       <div className="container flex h-16 items-center justify-between relative">
         <Link to="/" className="flex items-center gap-2">
           <AppLogo className="h-10" />
@@ -230,14 +230,14 @@ export function Header() {
 
       {/* Mobile dropdown menu */}
       {mobileOpen && (
-        <div className="md:hidden" style={{ background: "#0d0f12" }}>
+        <div className="md:hidden" style={{ background: "hsl(var(--card))" }}>
           <div className="flex flex-col">
             {user && (
               <a
                 href="/dashboard"
-                onClick={(e) => { handleDashboardClick(e); setMobileOpen(false); }}
+                 onClick={(e) => { handleDashboardClick(e); setMobileOpen(false); }}
                 className="cursor-pointer flex items-center"
-                style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "hsl(var(--foreground))", borderBottom: "1px solid hsl(var(--hover-subtle, 0 0% 100% / 0.04))" }}
               >
                 DASHBOARD
               </a>

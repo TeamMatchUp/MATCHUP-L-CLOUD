@@ -103,7 +103,7 @@
     --sidebar-border: 220 10% 14%;
     --sidebar-ring: 37 82% 52%;
 
-    /* Coach dashboard design tokens */
+    /* Depth system tokens */
     --bg-base: 240 14% 4%;
     --bg-page: 216 18% 6%;
     --bg-card: 220 17% 10%;
@@ -117,6 +117,89 @@
     --coach-red: 0 84% 60%;
     --coach-amber: 38 92% 50%;
     --coach-purple: 263 83% 78%;
+
+    --shadow-card: 0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+    --shadow-modal: 0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+    --shadow-raised: inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3);
+
+    --glass-header: rgba(8,10,13,0.88);
+    --glass-overlay: rgba(0,0,0,0.75);
+    --glass-badge: rgba(0,0,0,0.6);
+    --hover-subtle: rgba(255,255,255,0.04);
+    --inset-highlight: rgba(255,255,255,0.04);
+  }
+
+  .light {
+    --background: 220 10% 95%;
+    --foreground: 220 20% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 10%;
+
+    --primary: 37 82% 52%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 173 60% 40%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 10% 94%;
+    --muted-foreground: 220 10% 40%;
+
+    --accent: 220 10% 94%;
+    --accent-foreground: 220 20% 10%;
+
+    --destructive: 0 84% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --border: 0 0% 100% / 0;
+    --input: 220 10% 90%;
+    --ring: 37 82% 52%;
+
+    --nav-background: 220 10% 97%;
+
+    --text-secondary: 220 10% 35%;
+    --text-muted: 220 10% 55%;
+
+    --sidebar-background: 220 10% 97%;
+    --sidebar-foreground: 220 10% 35%;
+    --sidebar-primary: 37 82% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 10% 94%;
+    --sidebar-accent-foreground: 220 20% 10%;
+    --sidebar-border: 220 10% 90%;
+    --sidebar-ring: 37 82% 52%;
+
+    --bg-base: 220 10% 95%;
+    --bg-page: 220 10% 95%;
+    --bg-card: 0 0% 100%;
+    --bg-raised: 220 10% 96%;
+    --bg-overlay: 220 10% 93%;
+
+    --gold: 37 82% 52%;
+    --gold-dim: 37 82% 42%;
+
+    --coach-green: 142 71% 40%;
+    --coach-red: 0 84% 50%;
+    --coach-amber: 38 92% 50%;
+    --coach-purple: 263 83% 60%;
+
+    --shadow-card: 0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
+    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.12), 0 12px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(232,160,32,0.15);
+    --shadow-modal: 0 8px 32px rgba(0,0,0,0.15), 0 24px 64px rgba(0,0,0,0.1);
+    --shadow-raised: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 6px rgba(0,0,0,0.08);
+
+    --glass-header: rgba(248,249,250,0.88);
+    --glass-overlay: rgba(0,0,0,0.4);
+    --glass-badge: rgba(255,255,255,0.75);
+    --hover-subtle: rgba(0,0,0,0.04);
+    --inset-highlight: rgba(0,0,0,0.03);
   }
 }
 
@@ -274,48 +357,92 @@
 
   /* ═══ MU Material System ═══ */
   .mu-card {
-    background: #111318;
+    background: hsl(var(--card));
     border: none;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+    box-shadow: var(--shadow-card);
     overflow: hidden;
     transition: all 0.2s ease;
   }
   .mu-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+    box-shadow: var(--shadow-card-hover);
   }
   .mu-raised {
-    background: #181c24;
+    background: hsl(var(--bg-raised, var(--accent)));
     border: none;
     border-radius: 8px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3);
+    box-shadow: var(--shadow-raised);
   }
   .mu-modal {
-    background: #111318;
+    background: hsl(var(--card));
     border: none;
     border-radius: 14px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+    box-shadow: var(--shadow-modal);
   }
   .mu-input {
-    background: #181c24 !important;
+    background: hsl(var(--bg-raised, var(--accent))) !important;
     border: none !important;
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
     border-radius: 8px;
-    color: #e8eaf0;
+    color: hsl(var(--foreground));
   }
   .mu-input::placeholder {
-    color: #555b6b;
+    color: hsl(var(--text-muted, var(--muted-foreground)));
   }
   .mu-input:focus {
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 2px rgba(232,160,32,0.25) !important;
     outline: none !important;
   }
   .mu-glass-dropdown {
-    background: rgba(17,19,24,0.96);
+    background: hsl(var(--card) / 0.96);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: none;
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+}
+
+/* Light mode input overrides */
+.light .mu-input {
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+.light .mu-input:focus {
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06), 0 0 0 2px rgba(232,160,32,0.3) !important;
+}
+.light .glass-badge {
+  background: rgba(255,255,255,0.75);
+  color: #111318;
+}
+.light .depth-card {
+  background: #ffffff;
+  box-shadow: var(--shadow-card);
+}
+.light .depth-raised {
+  background: #f5f6f8;
+  box-shadow: var(--shadow-raised);
+}
+.light .depth-input {
+  background: #f0f1f3 !important;
+  color: #111318;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+/* ═══ Mobile Responsive ═══ */
+@media (max-width: 767px) {
+  .font-heading {
+    font-size: 28px !important;
+  }
+
+  /* Bottom sheet style modals on mobile */
+  [role="dialog"] {
+    width: 95vw !important;
+    max-height: 92vh !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+
+  /* Touch-friendly form inputs */
+  input, select, textarea {
+    font-size: 16px !important;
   }
 }
