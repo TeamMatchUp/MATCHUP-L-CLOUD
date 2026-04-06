@@ -357,48 +357,92 @@
 
   /* ═══ MU Material System ═══ */
   .mu-card {
-    background: #111318;
+    background: hsl(var(--card));
     border: none;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+    box-shadow: var(--shadow-card);
     overflow: hidden;
     transition: all 0.2s ease;
   }
   .mu-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+    box-shadow: var(--shadow-card-hover);
   }
   .mu-raised {
-    background: #181c24;
+    background: hsl(var(--bg-raised, var(--accent)));
     border: none;
     border-radius: 8px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3);
+    box-shadow: var(--shadow-raised);
   }
   .mu-modal {
-    background: #111318;
+    background: hsl(var(--card));
     border: none;
     border-radius: 14px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+    box-shadow: var(--shadow-modal);
   }
   .mu-input {
-    background: #181c24 !important;
+    background: hsl(var(--bg-raised, var(--accent))) !important;
     border: none !important;
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
     border-radius: 8px;
-    color: #e8eaf0;
+    color: hsl(var(--foreground));
   }
   .mu-input::placeholder {
-    color: #555b6b;
+    color: hsl(var(--text-muted, var(--muted-foreground)));
   }
   .mu-input:focus {
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 2px rgba(232,160,32,0.25) !important;
     outline: none !important;
   }
   .mu-glass-dropdown {
-    background: rgba(17,19,24,0.96);
+    background: hsl(var(--card) / 0.96);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: none;
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+}
+
+/* Light mode input overrides */
+.light .mu-input {
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+.light .mu-input:focus {
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06), 0 0 0 2px rgba(232,160,32,0.3) !important;
+}
+.light .glass-badge {
+  background: rgba(255,255,255,0.75);
+  color: #111318;
+}
+.light .depth-card {
+  background: #ffffff;
+  box-shadow: var(--shadow-card);
+}
+.light .depth-raised {
+  background: #f5f6f8;
+  box-shadow: var(--shadow-raised);
+}
+.light .depth-input {
+  background: #f0f1f3 !important;
+  color: #111318;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+/* ═══ Mobile Responsive ═══ */
+@media (max-width: 767px) {
+  .font-heading {
+    font-size: 28px !important;
+  }
+
+  /* Bottom sheet style modals on mobile */
+  [role="dialog"] {
+    width: 95vw !important;
+    max-height: 92vh !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+
+  /* Touch-friendly form inputs */
+  input, select, textarea {
+    font-size: 16px !important;
   }
 }
