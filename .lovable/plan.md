@@ -1,47 +1,51 @@
 
 
-# Replace All Logos with New SVG Brand Assets
+# Plan: Expand Country Enum and Searchable Dropdowns Sitewide
 
-## Overview
-Copy the four uploaded SVG logos into the project and update every component that references the old logo files to use the new ones. The white versions display on dark backgrounds (dark theme, dark cards), the black versions on light backgrounds (light theme).
+## What we're doing
 
-## Asset Mapping
+The database `country_code` enum currently only has 3 values (UK, USA, AUS). We need to expand it to 48 countries and update all 12 files that use country dropdowns to use the full list with search filtering.
 
-| Uploaded File | Purpose | Destination |
-|---|---|---|
-| MATCH_HARD_FI_3.svg | Full logo (icon + text), white | src/assets/logo-full-white.svg |
-| MATCH_HARD_FI_6.svg | Full logo (icon + text), black | src/assets/logo-full-black.svg |
-| MATCH_HARD_FI_1.svg | Icon only, white | src/assets/icon-white.svg |
-| MATCH_HARD_FI_5.svg | Icon only, black | src/assets/icon-black.svg |
+## Step 1 — Database Migration
 
-## Files to Edit
+Run a migration to add 45 new values to the `country_code` enum:
 
-### 1. Copy assets
-Copy all four SVGs from `user-uploads://` to `src/assets/`.
+```sql
+ALTER TYPE country_code ADD VALUE IF NOT EXISTS 'IE';
+ALTER TYPE country_code ADD VALUE IF NOT EXISTS 'FR';
+-- ... all 45 additional codes
+```
 
-### 2. Update `src/components/AppLogo.tsx`
-- Import `logo-full-white.svg` and `logo-full-black.svg` instead of the old `.png`/`.webp` files
-- Dark theme uses the white logo; light theme uses the black logo
-- Keep the same component API (className, alt props)
+## Step 2 — Create shared country utility
 
-### 3. Create `src/components/AppIcon.tsx` (new)
-- A small component similar to AppLogo but renders the icon-only SVGs
-- Dark theme uses white icon; light theme uses black icon
-- Used wherever the standalone icon appears
+Create `src/lib/countries.ts` exporting `ALL_COUNTRIES` array (the same 48-entry list currently duplicated in `CreateFighterProfileForm.tsx`) and a `getCountryLabel(code)` helper.
 
-### 4. Update icon usage in pages
-- **`src/pages/Fighters.tsx`** and **`src/pages/Events.tsx`**: Replace `icon-gold.webp` import with the new `AppIcon` component or direct SVG import
+## Step 3 — Update all 12 files using country dropdowns
 
-### 5. Update favicon
-- Copy the black icon SVG to `public/icon.svg` and update `index.html` to reference it (replacing the current `/icon.png`)
+Replace `Constants.public.Enums.country_code` references with the shared `ALL_COUNTRIES` list and add a search `<Input>` inside each `<SelectContent>` for filtering.
 
-### 6. No other files need changes
-The AppLogo component is already used consistently across Header, Footer, DashboardSidebar, Auth, Onboarding, Feedback, and AuthErrorBoundary — updating the component updates all of them automatically.
+Files to update:
+1. `src/components/coach/EditFighterDialog.tsx`
+2. `src/components/coach/AddFighterDialog.tsx`
+3. `src/components/fighter/CreateFighterProfileForm.tsx` — import from shared util instead of local array
+4. `src/components/fighter/EditableProfilePanel.tsx`
+5. `src/components/gym/EditGymDialog.tsx`
+6. `src/components/gym/AddFighterToGymDialog.tsx`
+7. `src/components/organiser/EditEventDialog.tsx`
+8. `src/components/organiser/FighterSearchPanel.tsx`
+9. `src/components/organiser/FighterSearchDropdown.tsx`
+10. `src/pages/organiser/CreateEvent.tsx`
+11. `src/pages/RegisterGym.tsx`
+12. `src/pages/GymOwnerDashboard.tsx`
+13. `src/components/dashboard/DashboardGyms.tsx`
 
-### 7. Clean up old assets
-Remove the now-unused files from `src/assets/`: `logo-full-dark.png`, `logo-full.webp`, `icon-gold.webp`, `icon.png`, `logo.png`.
+Each dropdown will show `"{code} — {label}"` with a text input at the top for filtering. The `FlagIcon` component already handles all ISO2 codes, so flags will work automatically for all 48 countries.
 
-## Technical Notes
-- SVGs imported via Vite are resolved as URL strings by default, so the `<img src={...}>` pattern in AppLogo continues to work
-- The theme detection via `useTheme()` from `next-themes` remains unchanged
+## Step 4 — Update FlagIcon mapping
+
+Add any missing enum codes to the `COUNTRY_NAME_TO_ISO2` map in `FlagIcon.tsx` (e.g. ensure all 48 codes resolve correctly — most already do via the `resolveCode` fallback).
+
+## What stays unchanged
+
+All routing, RLS policies, authentication, matchmaking, proposals, notifications, existing data (UK/USA/AUS values remain valid).
 
