@@ -405,6 +405,7 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { track } = useAnalytics();
 
   // Gym fields
   const [gymName, setGymName] = useState("");

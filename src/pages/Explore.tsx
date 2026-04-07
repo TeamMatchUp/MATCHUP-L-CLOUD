@@ -857,6 +857,7 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
   const { isFollowing, toggle, loading: followLoading } = useFollow(fighter.user_id);
   const [followHover, setFollowHover] = useState(false);
   const showFollow = currentUserId && fighter.user_id && fighter.user_id !== currentUserId;
+  const { track: trackAnalytics } = useAnalytics();
 
   const { data: titles = [] } = useQuery({
     queryKey: ["fighter-titles-card", fighter.id],
@@ -875,7 +876,7 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
       <Link
         to={`/fighters/${fighter.id}`}
         className="block transition-all duration-200"
-        onClick={() => void track("fighter_card_clicked", { fighter_id: fighter.id })}
+        onClick={() => void trackAnalytics("fighter_card_clicked", { fighter_id: fighter.id })}
         style={{ background: EX.card, border: "none", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)" }}
         onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
