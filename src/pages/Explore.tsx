@@ -27,6 +27,7 @@ import { Map as PigeonMap, Marker, Overlay } from "pigeon-maps";
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFollow } from "@/hooks/useFollow";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import logoWhite from "@/assets/logo-full-white.svg";
 import iconWhite from "@/assets/icon-white.svg";
 import NetworkBackground from "@/components/NetworkBackground";
@@ -89,6 +90,7 @@ export default function Explore() {
   const isMobile = useIsMobile();
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
+  const { track } = useAnalytics();
 
   const getInitialTab = (): TabType => {
     if (location.pathname === "/explore/events" || location.pathname === "/events") return "events";
@@ -98,6 +100,11 @@ export default function Explore() {
   };
 
   const [tab, setTab] = useState<TabType>(getInitialTab);
+
+  // Track page view on mount and tab change
+  useEffect(() => {
+    void track("explore_page_viewed", { category: tab });
+  }, [tab]);
   const [mapOpen, setMapOpen] = useState(false);
   const [highlightedGymId, setHighlightedGymId] = useState<string | null>(null);
   const [popupItem, setPopupItem] = useState<any>(null);
@@ -673,6 +680,7 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
               <Link
                 to={`/events/${event.id}`}
                 className="block transition-all duration-200"
+                onClick={() => void track("event_card_clicked", { event_id: event.id })}
                 style={{ background: EX.card, border: `1px solid ${EX.border}`, borderRadius: 12, overflow: "hidden", cursor: "pointer" }}
                 onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = EX.goldBorder; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = EX.border; e.currentTarget.style.boxShadow = "none"; }}
@@ -771,6 +779,7 @@ function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymI
             <Link
               to={`/gyms/${gym.id}`}
               className="block transition-all duration-200"
+              onClick={() => void track("gym_card_clicked", { gym_id: gym.id })}
               style={{ background: EX.card, border: "none", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)" }}
               onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
@@ -866,6 +875,7 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
       <Link
         to={`/fighters/${fighter.id}`}
         className="block transition-all duration-200"
+        onClick={() => void track("fighter_card_clicked", { fighter_id: fighter.id })}
         style={{ background: EX.card, border: "none", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)" }}
         onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
