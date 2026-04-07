@@ -28,6 +28,7 @@ import Contact from "./pages/Contact";
 import Feedback from "./pages/Feedback";
 import AdvertiseEnquiry from "./pages/AdvertiseEnquiry";
 import Admin from "./pages/Admin";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import Explore from "./pages/Explore";
