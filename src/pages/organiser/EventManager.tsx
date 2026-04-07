@@ -214,6 +214,11 @@ export default function EventManager() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { track } = useAnalytics();
+
+  useEffect(() => {
+    if (id) void track("fight_builder_opened", { event_id: id });
+  }, [id]);
 
   const [showEditEvent, setShowEditEvent] = useState(false);
   const [editingBout, setEditingBout] = useState<any>(null);
