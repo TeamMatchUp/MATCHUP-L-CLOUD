@@ -660,6 +660,7 @@ export default function Explore() {
 // ── Sub-components ──
 
 function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null }) {
+  const { track } = useAnalytics();
   if (isLoading) return <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{[1,2,3].map(i => <div key={i} style={{ height: 320, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
   if (events.length === 0) return <p className="text-center py-12" style={{ color: EX.muted }}>No events found matching your filters.</p>;
   return (
@@ -759,6 +760,7 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
 }
 
 function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymId }: { gyms: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null; mapOpen?: boolean; highlightedGymId?: string | null }) {
+  const { track } = useAnalytics();
   if (isLoading) return <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{[1,2,3].map(i => <div key={i} style={{ height: 320, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
   if (gyms.length === 0) return <p className="text-center py-12" style={{ color: EX.muted }}>No gyms found matching your filters.</p>;
   return (
