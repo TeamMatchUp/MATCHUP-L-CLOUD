@@ -14,6 +14,7 @@ import { generateSuggestions } from "@/lib/matchSuggestions";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
 type FightSlot = Database["public"]["Tables"]["fight_slots"]["Row"];
