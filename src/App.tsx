@@ -28,6 +28,7 @@ import Contact from "./pages/Contact";
 import Feedback from "./pages/Feedback";
 import AdvertiseEnquiry from "./pages/AdvertiseEnquiry";
 import Admin from "./pages/Admin";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import NotFound from "./pages/NotFound";
 import Onboarding from "./pages/Onboarding";
 import Explore from "./pages/Explore";
@@ -75,6 +76,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route
               path="/onboarding"
               element={
