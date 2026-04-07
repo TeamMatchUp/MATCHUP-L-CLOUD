@@ -70,6 +70,7 @@ export function ProposeMatchDialog({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const { toast } = useToast();
+  const { track } = useAnalytics();
 
   const handlePropose = async () => {
     setLoading(true);
