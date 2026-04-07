@@ -107,6 +107,7 @@ const SLIDER_COLORS = {
 
 export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSelectPair, eventId, weightClassOverride, disciplineOverride, anchorFighter }: MatchSuggestionsPanelProps) {
   const { user } = useAuth();
+  const { track } = useAnalytics();
   const [refreshKey, setRefreshKey] = useState(0);
   const [keyword, setKeyword] = useState("");
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
