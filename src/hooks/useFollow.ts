@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 export function useFollow(targetUserId: string | null | undefined) {
   const { user } = useAuth();
+  const { track } = useAnalytics();
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
@@ -34,6 +36,7 @@ export function useFollow(targetUserId: string | null | undefined) {
     const was = isFollowing;
     setIsFollowing(!was);
     setFollowerCount((c) => c + (was ? -1 : 1));
+    void track("follow_toggled", { target_id: targetUserId, action: was ? "unfollow" : "follow" });
     try {
       if (was) {
         await supabase

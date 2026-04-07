@@ -14,6 +14,7 @@ import { generateSuggestions } from "@/lib/matchSuggestions";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
 type FightSlot = Database["public"]["Tables"]["fight_slots"]["Row"];
@@ -106,6 +107,7 @@ const SLIDER_COLORS = {
 
 export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSelectPair, eventId, weightClassOverride, disciplineOverride, anchorFighter }: MatchSuggestionsPanelProps) {
   const { user } = useAuth();
+  const { track } = useAnalytics();
   const [refreshKey, setRefreshKey] = useState(0);
   const [keyword, setKeyword] = useState("");
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
@@ -296,6 +298,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
         w_narr: normNarr / 100,
       }, { onConflict: "organiser_id,event_id" }).select();
     }
+    void track("suggested_fight_selected", { composite_score: 0 });
     onSelectPair(fighterA, fighterB);
   };
 

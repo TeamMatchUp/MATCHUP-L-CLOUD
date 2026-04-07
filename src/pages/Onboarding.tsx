@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -138,6 +139,17 @@ function FighterForm({ onComplete }: { onComplete: () => void }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { track } = useAnalytics();
+
+  // Track abandonment on unmount if not completed
+  const completedRef = { current: false };
+  useEffect(() => {
+    return () => {
+      if (!completedRef.current) {
+        void track("onboarding_abandoned", { step: 1, role: "fighter" });
+      }
+    };
+  }, []);
   const [weightClass, setWeightClass] = useState<WeightClass | "">("");
   const [discipline, setDiscipline] = useState("");
   const [stance, setStance] = useState("");
@@ -243,6 +255,8 @@ function FighterForm({ onComplete }: { onComplete: () => void }) {
     }
 
     await markOnboardingComplete(queryClient);
+    completedRef.current = true;
+    void track("onboarding_completed", { role: "fighter" });
     setLoading(false);
     navigate("/fighter/dashboard", { replace: true });
   };
@@ -391,6 +405,7 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { track } = useAnalytics();
 
   // Gym fields
   const [gymName, setGymName] = useState("");
@@ -488,6 +503,7 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
     }
 
     await markOnboardingComplete(queryClient);
+    void track("onboarding_completed", { role: "coach" });
     setLoading(false);
     onComplete();
   };
@@ -651,13 +667,17 @@ function OrganiserLanding() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const { track } = useAnalytics();
+
   const handleCreateEvent = async () => {
     await markOnboardingComplete(queryClient);
+    void track("onboarding_completed", { role: "organiser" });
     navigate("/organiser/create-event", { replace: true });
   };
 
   const handleBrowseEvents = async () => {
     await markOnboardingComplete(queryClient);
+    void track("onboarding_completed", { role: "organiser" });
     navigate("/explore?tab=events", { replace: true });
   };
 

@@ -1,8 +1,9 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -213,6 +214,11 @@ export default function EventManager() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { track } = useAnalytics();
+
+  useEffect(() => {
+    if (id) void track("fight_builder_opened", { event_id: id });
+  }, [id]);
 
   const [showEditEvent, setShowEditEvent] = useState(false);
   const [editingBout, setEditingBout] = useState<any>(null);

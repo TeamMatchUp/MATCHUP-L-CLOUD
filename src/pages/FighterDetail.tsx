@@ -1,5 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Header } from "@/components/Header";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ArrowLeft, Share2, ChevronDown, Award } from "lucide-react";
@@ -34,10 +35,15 @@ export default function FighterDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
+  const { user, activeRole } = useAuth();
   const fromParam = searchParams.get("from");
   const [activeTab, setActiveTab] = useState<"record" | "stats">("record");
   const [fightFilter, setFightFilter] = useState<"all" | "kos" | "subs" | "decs">("all");
+  const { track } = useAnalytics();
+
+  useEffect(() => {
+    if (id) void track("fighter_profile_viewed", { fighter_id: id, viewed_by_role: activeRole || "anonymous" });
+  }, [id]);
   const [expandedFight, setExpandedFight] = useState<string | null>(null);
 
   const { data: fighter, isLoading } = useQuery({

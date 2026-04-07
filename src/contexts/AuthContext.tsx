@@ -95,6 +95,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         if (session?.user) {
           setTimeout(() => fetchRoles(session.user.id), 0);
+          if (event === "SIGNED_IN") {
+            try {
+              const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", session.user.id);
+              const role = roles?.[0]?.role || "unknown";
+              await (supabase.from("analytics_events") as any).insert({
+                user_id: session.user.id,
+                event_type: "session_started",
+                event_data: { role },
+                page: window.location.pathname,
+              });
+            } catch {}
+          }
         } else {
           setRoles([]);
           setActiveRole(null);
