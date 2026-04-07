@@ -141,6 +141,7 @@ export function MatchProposalCard({
       toast({ title: "Accepted", description: `Waiting for ${requiredParties.size - confirmedUserIds.size} more confirmation(s).` });
     }
 
+    void track("proposal_accepted", { proposal_id: proposal.id, fighter_id: fighterProfileId });
     setLoading(false);
     onActionComplete();
   };
@@ -185,6 +186,7 @@ export function MatchProposalCard({
     );
     await Promise.all(promises);
 
+    void track("proposal_declined", { proposal_id: proposal.id, fighter_id: fighterProfileId });
     setLoading(false);
     toast({ title: "Proposal declined" });
     onActionComplete();
