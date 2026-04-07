@@ -298,6 +298,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
         w_narr: normNarr / 100,
       }, { onConflict: "organiser_id,event_id" }).select();
     }
+    void track("suggested_fight_selected", { composite_score: 0 });
     onSelectPair(fighterA, fighterB);
   };
 
