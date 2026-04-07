@@ -150,6 +150,7 @@ export function ProposeMatchDialog({
     await Promise.all(notificationPromises);
 
     setLoading(false);
+    void track("proposal_sent", { event_id: slot.event_id, fighter_a_id: fighterA.id, fighter_b_id: fighterB.id });
     toast({ title: "Match proposed", description: "All coaches and fighters have been notified." });
     onSuccess();
   };

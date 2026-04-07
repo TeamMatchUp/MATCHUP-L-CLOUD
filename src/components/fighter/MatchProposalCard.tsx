@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export function MatchProposalCard({
   const [loading, setLoading] = useState(false);
   const [showComment, setShowComment] = useState(false);
   const { toast } = useToast();
+  const { track } = useAnalytics();
 
   const fighterA = proposal.fighter_a;
   const fighterB = proposal.fighter_b;
