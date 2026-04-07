@@ -8,7 +8,7 @@ export function useAnalytics() {
   const track = useCallback(
     async (eventType: string, data?: object, page?: string) => {
       try {
-        await supabase.from("analytics_events").insert({
+        await (supabase.from("analytics_events") as any).insert({
           user_id: user?.id ?? null,
           event_type: eventType,
           event_data: data ?? {},
