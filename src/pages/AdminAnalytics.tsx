@@ -95,7 +95,7 @@ export default function AdminAnalytics() {
         acceptanceRate: rate,
       };
     },
-    enabled: !!isAdmin,
+    enabled: adminChecked && isAdmin,
     refetchInterval: 30_000,
   });
 
@@ -120,7 +120,7 @@ export default function AdminAnalytics() {
         .map(([step, roles]) => ({ step, fighter: roles.fighter || 0, coach: roles.coach || 0, organiser: roles.organiser || 0 }))
         .sort((a, b) => parseInt(a.step.replace("Step ", "")) - parseInt(b.step.replace("Step ", "")));
     },
-    enabled: !!isAdmin,
+    enabled: adminChecked && isAdmin,
   });
 
   // ── ROW 3: Explore Engagement ──
@@ -233,7 +233,7 @@ export default function AdminAnalytics() {
 
       return { daily, avgResponseHours };
     },
-    enabled: !!isAdmin,
+    enabled: adminChecked && isAdmin,
   });
 
   // ── ROW 5: Retention ──
