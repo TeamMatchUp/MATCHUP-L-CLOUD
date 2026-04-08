@@ -54,7 +54,7 @@ class AdminErrorBoundary extends Component<
 }
 
 // ── Safe query wrapper ──
-async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; error: any }>): Promise<T> {
+async function safeQuery<T>(queryFn: () => PromiseLike<{ data: T | null; error: any }>): Promise<T> {
   try {
     const { data, error } = await queryFn();
     if (error) { console.error("Supabase query error:", error); return [] as any; }
