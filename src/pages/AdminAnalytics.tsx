@@ -45,9 +45,26 @@ function KpiCard({ title, value, icon: Icon, subtitle }: {
 
 export default function AdminAnalytics() {
   const { user, loading } = useAuth();
+  const [timedOut, setTimedOut] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Admin check via app_metadata
-  const isAdmin = user?.app_metadata?.role === "admin";
+  // Timeout: show dashboard with zeros after 5s
+  useEffect(() => {
+    const timer = setTimeout(() => setTimedOut(true), 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Admin check via getUser() for reliable app_metadata
+  useEffect(() => {
+    if (loading) return;
+    const check = async () => {
+      const { data: { user: freshUser } } = await supabase.auth.getUser();
+      setIsAdmin(freshUser?.app_metadata?.role === "admin");
+      setAdminChecked(true);
+    };
+    check();
+  }, [loading]);
 
   // ── ROW 1: Today's KPIs ──
   const { data: kpis } = useQuery({
