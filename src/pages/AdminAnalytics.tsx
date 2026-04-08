@@ -166,7 +166,7 @@ export default function AdminAnalytics() {
         topProfiles,
       };
     },
-    enabled: !!isAdmin,
+    enabled: adminChecked && isAdmin,
   });
 
   // ── ROW 4: Proposal Pipeline ──
@@ -282,7 +282,7 @@ export default function AdminAnalytics() {
 
       return result;
     },
-    enabled: !!isAdmin,
+    enabled: adminChecked && isAdmin,
   });
 
   // Fetch fighter names for top profiles
@@ -299,7 +299,7 @@ export default function AdminAnalytics() {
     enabled: topProfileIds.length > 0,
   });
 
-  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
+  if (loading || !adminChecked) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
   if (!isAdmin) return <Navigate to="/dashboard" replace />;
 
   const funnelConfig = {
