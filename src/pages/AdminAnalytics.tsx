@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,9 +45,26 @@ function KpiCard({ title, value, icon: Icon, subtitle }: {
 
 export default function AdminAnalytics() {
   const { user, loading } = useAuth();
+  const [timedOut, setTimedOut] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Admin check via app_metadata
-  const isAdmin = user?.app_metadata?.role === "admin";
+  // Timeout: show dashboard with zeros after 5s
+  useEffect(() => {
+    const timer = setTimeout(() => setTimedOut(true), 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Admin check via getUser() for reliable app_metadata
+  useEffect(() => {
+    if (loading) return;
+    const check = async () => {
+      const { data: { user: freshUser } } = await supabase.auth.getUser();
+      setIsAdmin(freshUser?.app_metadata?.role === "admin");
+      setAdminChecked(true);
+    };
+    check();
+  }, [loading]);
 
   // ── ROW 1: Today's KPIs ──
   const { data: kpis } = useQuery({
@@ -78,7 +95,7 @@ export default function AdminAnalytics() {
         acceptanceRate: rate,
       };
     },
-    enabled: !!isAdmin,
+    enabled: adminChecked && isAdmin,
     refetchInterval: 30_000,
   });
 
@@ -103,7 +120,7 @@ export default function AdminAnalytics() {
         .map(([step, roles]) => ({ step, fighter: roles.fighter || 0, coach: roles.coach || 0, organiser: roles.organiser || 0 }))
         .sort((a, b) => parseInt(a.step.replace("Step ", "")) - parseInt(b.step.replace("Step ", "")));
     },
-    enabled: !!isAdmin,
+    enabled: adminChecked && isAdmin,
   });
 
   // ── ROW 3: Explore Engagement ──
@@ -149,7 +166,7 @@ export default function AdminAnalytics() {
         topProfiles,
       };
     },
-    enabled: !!isAdmin,
+    enabled: adminChecked && isAdmin,
   });
 
   // ── ROW 4: Proposal Pipeline ──
@@ -216,7 +233,7 @@ export default function AdminAnalytics() {
 
       return { daily, avgResponseHours };
     },
-    enabled: !!isAdmin,
+    enabled: adminChecked && isAdmin,
   });
 
   // ── ROW 5: Retention ──
@@ -265,7 +282,7 @@ export default function AdminAnalytics() {
 
       return result;
     },
-    enabled: !!isAdmin,
+    enabled: adminChecked && isAdmin,
   });
 
   // Fetch fighter names for top profiles
@@ -282,7 +299,7 @@ export default function AdminAnalytics() {
     enabled: topProfileIds.length > 0,
   });
 
-  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
+  if (loading || !adminChecked) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
   if (!isAdmin) return <Navigate to="/dashboard" replace />;
 
   const funnelConfig = {
