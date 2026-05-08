@@ -128,8 +128,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchRoles]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem("matchup_active_role");
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch (e) {
+      console.error("signOut error", e);
+    }
+    try {
+      localStorage.removeItem("matchup_active_role");
+      // Clear any lingering supabase auth tokens
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith("sb-") && k.endsWith("-auth-token"))
+        .forEach((k) => localStorage.removeItem(k));
+    } catch {}
+    setSession(null);
+    setUser(null);
+    setRoles([]);
+    setActiveRole(null);
   };
 
   const refreshRoles = async () => {
