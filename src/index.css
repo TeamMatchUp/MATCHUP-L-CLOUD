@@ -455,4 +455,39 @@
   input, select, textarea {
     font-size: 16px !important;
   }
+
+  /* Prevent any container from forcing horizontal scroll */
+  main, section, article, header, footer, aside {
+    max-width: 100vw;
+  }
+
+  /* Wide tables become horizontally scrollable instead of breaking layout */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  /* Long words/URLs wrap rather than overflow */
+  p, span, h1, h2, h3, h4, h5, h6, a, li, td, th {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Cap oversized display text on small screens */
+  .text-5xl, .text-6xl, .text-7xl, .text-8xl, .text-9xl {
+    font-size: 2.25rem !important;
+    line-height: 1.15 !important;
+  }
+  .text-4xl {
+    font-size: 1.875rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Container padding safety */
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
 }
