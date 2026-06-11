@@ -330,7 +330,7 @@ export default function Dashboard() {
 
       {/* Sidebar — fixed */}
       <div
-        className={isMobile ? "fixed top-0 left-0 bottom-0 z-50" : ""}
+        className={isMobile ? "fixed top-0 left-0 bottom-0 z-50" : "fixed top-0 left-0 bottom-0 z-30"}
         style={isMobile ? { transform: mobileSidebarOpen ? "translateX(0)" : "translateX(-100%)", transition: "transform 0.2s ease" } : {}}
       >
         <DashboardSidebar
