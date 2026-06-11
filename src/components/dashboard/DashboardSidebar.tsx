@@ -247,11 +247,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
         transition: "width 0.2s ease",
         overflow: "hidden",
         background: "hsl(var(--background))",
-        position: "fixed",
-        top: 0,
-        left: 0,
         height: "100vh",
-        zIndex: 30,
       }}
     >
       {/* Logo + collapse at TOP */}
