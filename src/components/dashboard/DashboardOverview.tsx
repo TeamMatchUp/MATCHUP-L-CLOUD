@@ -508,15 +508,49 @@ export function DashboardOverview({
     </>
   );
 
+  const OverviewHeader = () => (
+    <div style={{ marginBottom: 4 }}>
+      <h1 style={{
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: 32, color: "#e8eaf0",
+        letterSpacing: "0.04em", textTransform: "uppercase",
+        lineHeight: 1.1,
+      }}>
+        Over<span style={{ color: "#e8a020" }}>view</span>
+      </h1>
+      <p style={{ fontSize: 13, color: "#8b909e", marginTop: 4 }}>
+        Welcome back, {profileData?.full_name || "User"}.
+      </p>
+    </div>
+  );
+
+  // Uniform card cell — gives every overview widget the same shape, radius, padding and min-height.
+  const Cell = ({ children, span = 1 }: { children: React.ReactNode; span?: 1 | 2 }) => (
+    <div
+      className={span === 2 ? "lg:col-span-2" : "lg:col-span-1"}
+      style={{
+        background: "#111318",
+        borderRadius: 16,
+        padding: 20,
+        minHeight: 320,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
+        display: "flex", flexDirection: "column",
+      }}
+    >
+      {children}
+    </div>
+  );
+
   // ═══ FIGHTER ═══
   if (isFighter && !isCoachOrOwner) {
     return (
       <div>
-        <div className="space-y-4" style={{ padding: "0 24px 24px" }}>
-          <CardWrapper visible={fighterCardVis.record}><FighterRecordHero /></CardWrapper>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-            {fighterCardVis.nextFight && <div className="lg:col-span-3"><FighterNextFight /></div>}
-            {fighterCardVis.calendar && <div className={fighterCardVis.nextFight ? "lg:col-span-2" : "lg:col-span-5"}><EventCalendar events={calendarEvents} highlightedDates={highlightedDates} /></div>}
+        <div className="space-y-6" style={{ padding: "0 24px 24px" }}>
+          <OverviewHeader />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {fighterCardVis.record && <Cell span={2}><FighterRecordHero /></Cell>}
+            {fighterCardVis.nextFight && <Cell><FighterNextFight /></Cell>}
+            {fighterCardVis.calendar && <Cell><EventCalendar events={calendarEvents} highlightedDates={highlightedDates} /></Cell>}
           </div>
         </div>
         {networkModal && user && <NetworkModal type={networkModal} userId={user.id} onClose={() => setNetworkModal(null)} />}
@@ -528,11 +562,12 @@ export function DashboardOverview({
   if (isCoachOrOwner) {
     return (
       <div>
-        <div className="space-y-4" style={{ padding: "0 24px 24px" }}>
-          <CardWrapper visible={coachCardVis.kpis} maxH="400px"><CoachKpiStrip /></CardWrapper>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-            {coachCardVis.fights && <div className={coachCardVis.calendar ? "lg:col-span-3" : "lg:col-span-5"}><CoachUpcomingFights /></div>}
-            {coachCardVis.calendar && <div className={coachCardVis.fights ? "lg:col-span-2" : "lg:col-span-5"}><EventCalendar events={calendarEvents} highlightedDates={highlightedDates} /></div>}
+        <div className="space-y-6" style={{ padding: "0 24px 24px" }}>
+          <OverviewHeader />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {coachCardVis.kpis && <Cell span={2}><CoachKpiStrip /></Cell>}
+            {coachCardVis.fights && <Cell><CoachUpcomingFights /></Cell>}
+            {coachCardVis.calendar && <Cell><EventCalendar events={calendarEvents} highlightedDates={highlightedDates} /></Cell>}
           </div>
         </div>
         {networkModal && user && <NetworkModal type={networkModal} userId={user.id} onClose={() => setNetworkModal(null)} />}
@@ -544,11 +579,12 @@ export function DashboardOverview({
   if (isOrganiser) {
     return (
       <div>
-        <div className="space-y-4" style={{ padding: "0 24px 24px" }}>
-          <CardWrapper visible={orgCardVis.stats}><OrganiserOverviewHero /></CardWrapper>
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-            {orgCardVis.pending && <div className={orgCardVis.calendar ? "lg:col-span-3" : "lg:col-span-5"}><OrganiserPendingMatches /></div>}
-            {orgCardVis.calendar && <div className={orgCardVis.pending ? "lg:col-span-2" : "lg:col-span-5"}><EventCalendar events={calendarEvents} highlightedDates={highlightedDates} /></div>}
+        <div className="space-y-6" style={{ padding: "0 24px 24px" }}>
+          <OverviewHeader />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {orgCardVis.stats && <Cell span={2}><OrganiserOverviewHero /></Cell>}
+            {orgCardVis.pending && <Cell><OrganiserPendingMatches /></Cell>}
+            {orgCardVis.calendar && <Cell><EventCalendar events={calendarEvents} highlightedDates={highlightedDates} /></Cell>}
           </div>
         </div>
         {networkModal && user && <NetworkModal type={networkModal} userId={user.id} onClose={() => setNetworkModal(null)} />}

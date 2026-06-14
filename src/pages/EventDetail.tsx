@@ -1,11 +1,11 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Plus, Phone, Globe, Mail, ShoppingCart } from "lucide-react";
+import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Plus, Phone, Globe, Mail, ShoppingCart, Map as MapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, Navigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -67,53 +67,55 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
           const soldOut = event.sold_out || (ticket.quantity_available != null && ticket.quantity_available <= 0);
 
           return (
-            <div key={ticket.id} className="flex items-center gap-4" style={{
-              background: "#181c24", borderRadius: 8, padding: "14px 20px",
+            <div key={ticket.id} className="flex items-center gap-3 sm:gap-4" style={{
+              background: "#181c24", borderRadius: 10, padding: "10px 16px", minHeight: 56,
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
             }}>
-              {/* Left: type + availability */}
-              <div className="flex-1 min-w-0">
-                <span style={{ fontSize: 15, fontWeight: 600, color: "#e8eaf0", display: "block" }}>{ticket.ticket_type}</span>
-                {soldOut ? (
-                  <span style={{ fontSize: 11, color: "#ef4444" }}>Sold Out</span>
-                ) : ticket.quantity_available != null && ticket.quantity_available < 20 ? (
-                  <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} remaining</span>
-                ) : (
-                  <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
+              {/* Left: tier + availability + price grouped */}
+              <div className="flex-1 min-w-0 flex items-center gap-3 sm:gap-4">
+                <div className="min-w-0">
+                  <span className="block truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>{ticket.ticket_type}</span>
+                  {soldOut ? (
+                    <span style={{ fontSize: 11, color: "#ef4444" }}>Sold Out</span>
+                  ) : ticket.quantity_available != null && ticket.quantity_available < 20 ? (
+                    <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} left</span>
+                  ) : (
+                    <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
+                  )}
+                </div>
+                {ticket.price != null && (
+                  <span style={{ fontSize: 18, fontWeight: 700, color: "#e8a020", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
                 )}
               </div>
-              {/* Price */}
-              {ticket.price != null && (
-                <span style={{ fontSize: 22, fontWeight: 700, color: "#e8a020", fontFamily: "Inter, sans-serif", flexShrink: 0 }}>£{Number(ticket.price).toFixed(2)}</span>
-              )}
-              {/* Quantity selector or external link */}
+
+              {/* Right: CTA */}
               {soldOut ? (
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#ef4444", flexShrink: 0 }}>Sold Out</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#ef4444", flexShrink: 0 }}>Sold Out</span>
               ) : ticketUrl ? (
                 <a href={ticketUrl} target="_blank" rel="noopener noreferrer" style={{
-                  display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", fontSize: 13, fontWeight: 600,
+                  display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
                   background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none", flexShrink: 0,
                 }}>
-                  <ShoppingCart style={{ width: 14, height: 14 }} /> Buy Tickets
+                  <ShoppingCart style={{ width: 14, height: 14 }} /> Buy
                 </a>
               ) : (
-                <div className="flex items-center gap-2" style={{ flexShrink: 0 }}>
+                <div className="flex items-center gap-1.5" style={{ flexShrink: 0 }}>
                   <button
                     onClick={() => setQty(ticket.id, Math.max(0, qty - 1))}
                     disabled={qty <= 0}
                     style={{
-                      width: 28, height: 28, borderRadius: "50%", border: "none", cursor: qty <= 0 ? "not-allowed" : "pointer",
-                      background: "rgba(255,255,255,0.06)", color: qty <= 0 ? "#555b6b" : "#e8eaf0", fontSize: 16, fontWeight: 700,
+                      width: 26, height: 26, borderRadius: "50%", border: "none", cursor: qty <= 0 ? "not-allowed" : "pointer",
+                      background: "rgba(255,255,255,0.06)", color: qty <= 0 ? "#555b6b" : "#e8eaf0", fontSize: 14, fontWeight: 700,
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
                   >−</button>
-                  <span style={{ width: 28, textAlign: "center", fontSize: 16, fontWeight: 700, color: "#e8eaf0" }}>{qty}</span>
+                  <span style={{ width: 22, textAlign: "center", fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{qty}</span>
                   <button
                     onClick={() => setQty(ticket.id, Math.min(maxQty, qty + 1))}
                     disabled={qty >= maxQty}
                     style={{
-                      width: 28, height: 28, borderRadius: "50%", border: "none", cursor: qty >= maxQty ? "not-allowed" : "pointer",
-                      background: "rgba(255,255,255,0.06)", color: qty >= maxQty ? "#555b6b" : "#e8eaf0", fontSize: 16, fontWeight: 700,
+                      width: 26, height: 26, borderRadius: "50%", border: "none", cursor: qty >= maxQty ? "not-allowed" : "pointer",
+                      background: "rgba(255,255,255,0.06)", color: qty >= maxQty ? "#555b6b" : "#e8eaf0", fontSize: 14, fontWeight: 700,
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
                   >+</button>
@@ -126,7 +128,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                       cursor: qty <= 0 ? "not-allowed" : "pointer", marginLeft: 4,
                     }}
                   >
-                    <ShoppingCart style={{ width: 14, height: 14 }} /> Add to Basket
+                    <ShoppingCart style={{ width: 14, height: 14 }} /> Add
                   </button>
                 </div>
               )}
@@ -150,6 +152,7 @@ export default function EventDetail() {
   const [sending, setSending] = useState(false);
   const [mainPage, setMainPage] = useState(0);
   const [underPage, setUnderPage] = useState(0);
+  const [mapOpen, setMapOpen] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const BOUTS_PER_PAGE = 5;
@@ -271,6 +274,11 @@ export default function EventDetail() {
         <Footer />
       </div>
     );
+  }
+
+  // Auto-redirect organisers viewing their own event to the manager view
+  if (user && isOrganiser && event.organiser_id === user.id) {
+    return <Navigate to={`/organiser/events/${id}`} replace />;
   }
 
   // Show all public bouts regardless of status; render details based on assignment + status
@@ -438,113 +446,108 @@ export default function EventDetail() {
                 </div>
               )}
 
-              {/* Two-panel layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                {/* Left panel */}
-                <div>
-                  {!event.banner_image && <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>}
-                  {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
+              {/* Main info panel */}
+              <div className="mb-8">
+                {!event.banner_image && <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>}
+                {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
 
-                  {event.description && (
-                    <p className="text-muted-foreground mb-6">{event.description}</p>
+                {event.description && (
+                  <p className="text-muted-foreground mb-6 max-w-3xl">{event.description}</p>
+                )}
+
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground mb-6">
+                  <span className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    {new Date(event.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
+                  </span>
+                  {hasCoords && (
+                    <button
+                      onClick={() => setMapOpen((v) => !v)}
+                      className="inline-flex items-center gap-2 transition-colors"
+                      style={{
+                        background: mapOpen ? "rgba(232,160,32,0.12)" : "rgba(255,255,255,0.04)",
+                        color: mapOpen ? "#e8a020" : "#8b909e",
+                        borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      }}
+                    >
+                      <MapIcon className="h-3.5 w-3.5" /> {mapOpen ? "Hide map" : "Show map"}
+                    </button>
                   )}
-
-                  <div className="flex flex-wrap gap-6 text-sm text-muted-foreground mb-6">
-                    <span className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      {new Date(event.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
-                    </span>
-                  </div>
-
-                  {hasContact && (
-                    <div className="rounded-lg border border-border bg-card p-5 mb-6">
-                      <h3 className="font-heading text-sm text-muted-foreground uppercase tracking-wide mb-3">Contact</h3>
-                      <div className="space-y-2 text-sm">
-                        {event.contact_email && (
-                          <a href={`mailto:${event.contact_email}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                            <Mail className="h-4 w-4 text-muted-foreground" /> {event.contact_email}
-                          </a>
-                        )}
-                        {event.contact_phone && (
-                          <a href={`tel:${event.contact_phone}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                            <Phone className="h-4 w-4 text-muted-foreground" /> {event.contact_phone}
-                          </a>
-                        )}
-                        {event.contact_website && (
-                          <a href={event.contact_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                            <Globe className="h-4 w-4 text-muted-foreground" /> {event.contact_website}
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Ticket Section */}
-                  {(() => {
-                    const tickets = (event as any).tickets ?? [];
-                    if (!event.ticket_enabled || tickets.length === 0) return null;
-                    const now = new Date();
-                    const activeTickets = tickets.filter((t: any) =>
-                      (!t.sales_start || new Date(t.sales_start) <= now) &&
-                      (!t.sales_end || new Date(t.sales_end) >= now)
-                    );
-                    if (activeTickets.length === 0) return null;
-                    const purchaseUrl = (event as any).ticket_url || null;
-                    return (
-                      <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
-                    );
-                  })()}
-
-                  <div className="flex flex-wrap gap-3">
-                    {user && (isFighter || isCoach) && fighterProfile && (
-                      existingInterest ? (
-                        <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
-                          <Star className="h-4 w-4 fill-primary" /> Interested
-                        </Button>
-                      ) : (
-                        <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={handleToggleInterest} disabled={sending}>
-                          <Star className="h-4 w-4" /> I'm Interested
-                        </Button>
-                      )
-                    )}
-                    {isCoach && user && (
-                      <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowPutForward(true)}>
-                        <Users className="h-4 w-4" /> Put Forward Fighters
-                      </Button>
-                    )}
-                    {isOrganiser && user && event.organiser_id === user.id && (
-                      <Button className="gap-2" onClick={() => navigate('/organiser/events/' + id, { replace: true })}>
-                        <Plus className="h-4 w-4" /> Manage Event
-                      </Button>
-                    )}
-                  </div>
                 </div>
 
-                {/* Right panel — map */}
-                <div>
-                  {hasCoords ? (
-                    <div className="rounded-lg border border-border overflow-hidden">
-                      <div style={{ height: 320 }}>
-                        <PigeonMap defaultCenter={[event.latitude!, event.longitude!]} defaultZoom={14} height={320}>
-                          <Marker anchor={[event.latitude!, event.longitude!]} color="hsl(46, 93%, 61%)" width={36} />
-                        </PigeonMap>
-                      </div>
-                      <div className="bg-card px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4 text-primary" />
-                        {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
-                      </div>
+                {mapOpen && hasCoords && (
+                  <div className="rounded-lg overflow-hidden mb-6" style={{ background: "#111318", boxShadow: "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+                    <div style={{ height: 320 }}>
+                      <PigeonMap defaultCenter={[event.latitude!, event.longitude!]} defaultZoom={14} height={320}>
+                        <Marker anchor={[event.latitude!, event.longitude!]} color="hsl(46, 93%, 61%)" width={36} />
+                      </PigeonMap>
                     </div>
-                  ) : (
-                    <div className="rounded-lg border border-border bg-card p-8 flex items-center justify-center h-[320px]">
-                      <div className="text-center text-muted-foreground">
-                        <MapPin className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                        <p className="text-sm">Map unavailable — no coordinates set</p>
-                      </div>
+                    <div className="px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
                     </div>
+                  </div>
+                )}
+
+                {hasContact && (
+                  <div className="rounded-lg bg-card p-5 mb-6 max-w-xl" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+                    <h3 className="font-heading text-sm text-muted-foreground uppercase tracking-wide mb-3">Contact</h3>
+                    <div className="space-y-2 text-sm">
+                      {event.contact_email && (
+                        <a href={`mailto:${event.contact_email}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                          <Mail className="h-4 w-4 text-muted-foreground" /> {event.contact_email}
+                        </a>
+                      )}
+                      {event.contact_phone && (
+                        <a href={`tel:${event.contact_phone}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                          <Phone className="h-4 w-4 text-muted-foreground" /> {event.contact_phone}
+                        </a>
+                      )}
+                      {event.contact_website && (
+                        <a href={event.contact_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                          <Globe className="h-4 w-4 text-muted-foreground" /> {event.contact_website}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Ticket Section */}
+                {(() => {
+                  const tickets = (event as any).tickets ?? [];
+                  if (!event.ticket_enabled || tickets.length === 0) return null;
+                  const now = new Date();
+                  const activeTickets = tickets.filter((t: any) =>
+                    (!t.sales_start || new Date(t.sales_start) <= now) &&
+                    (!t.sales_end || new Date(t.sales_end) >= now)
+                  );
+                  if (activeTickets.length === 0) return null;
+                  const purchaseUrl = (event as any).ticket_url || null;
+                  return (
+                    <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
+                  );
+                })()}
+
+                <div className="flex flex-wrap gap-3">
+                  {user && (isFighter || isCoach) && fighterProfile && (
+                    existingInterest ? (
+                      <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
+                        <Star className="h-4 w-4 fill-primary" /> Interested
+                      </Button>
+                    ) : (
+                      <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={handleToggleInterest} disabled={sending}>
+                        <Star className="h-4 w-4" /> I'm Interested
+                      </Button>
+                    )
+                  )}
+                  {isCoach && user && (
+                    <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowPutForward(true)}>
+                      <Users className="h-4 w-4" /> Put Forward Fighters
+                    </Button>
                   )}
                 </div>
               </div>

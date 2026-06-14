@@ -344,36 +344,33 @@ export default function Explore() {
       <Header />
       <main className="flex-1 flex flex-col" style={{ paddingTop: 56 }}>
         <section className="flex-1 flex flex-col" style={{ padding: "24px 32px" }}>
-          {/* Category Selector Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {([
-              { key: "gyms" as TabType, icon: Building2, title: "GYMS", sub: `Explore ${gymLiveCount} training facilities and gyms` },
-              { key: "events" as TabType, icon: Calendar, title: "EVENTS", sub: `Discover ${eventLiveCount} upcoming events` },
-              { key: "fighters" as TabType, icon: Users, title: "FIGHTERS", sub: `Explore ${fighterLiveCount} detailed fighter profiles` },
+          {/* Pill Tab Navigation */}
+          <div className="flex items-center gap-2 mb-6 flex-wrap">
+            {([
+              { key: "gyms" as TabType, icon: Building2, title: "Gyms" },
+              { key: "fighters" as TabType, icon: Users, title: "Fighters" },
+              { key: "events" as TabType, icon: Calendar, title: "Events" },
             ] as const).map((cat) => {
               const isActive = tab === cat.key;
               return (
                 <button
                   key={cat.key}
                   onClick={() => handleTabChange(cat.key)}
-                  className="text-left transition-all duration-200"
+                  className="inline-flex items-center gap-2 transition-all duration-200"
                   style={{
-                    background: isActive ? "rgba(232,160,32,0.06)" : EX.card,
-                    borderRadius: 12, padding: "28px 24px", cursor: "pointer",
-                    overflow: "hidden", transform: isActive ? "translateY(-2px)" : "none",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
+                    background: isActive ? EX.goldDim : "rgba(255,255,255,0.04)",
+                    color: isActive ? EX.gold : EX.muted,
+                    borderRadius: 999,
+                    padding: "10px 20px",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    letterSpacing: "0.02em",
+                    cursor: "pointer",
+                    boxShadow: isActive ? "inset 0 0 0 1px rgba(232,160,32,0.35)" : "inset 0 1px 0 rgba(255,255,255,0.03)",
                   }}
-                  onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "rgba(232,160,32,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
-                  onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = EX.card; e.currentTarget.style.transform = "none"; } }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(232,160,32,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <cat.icon style={{ width: 24, height: 24, color: EX.gold }} />
-                    </div>
-                  </div>
-                  <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: EX.text, marginTop: 16 }}>{cat.title}</p>
-                  <p style={{ fontSize: 13, color: EX.muted, marginTop: 4 }}>{cat.sub}</p>
-                  <div style={{ width: isActive ? "100%" : 40, height: 2, background: EX.gold, marginTop: 12, transition: "width 0.3s ease" }} />
+                  <cat.icon style={{ width: 16, height: 16 }} />
+                  {cat.title}
                 </button>
               );
             })}
@@ -493,47 +490,7 @@ export default function Explore() {
             </AnimatePresence>
           </div>
 
-          {/* Map Container (when not in split mode) */}
-          {!mapOpen && (tab === "gyms" || tab === "events") && mapMarkers.length > 0 && (
-            <div style={{ marginBottom: 16, background: EX.card, border: `1px solid ${EX.border}`, borderRadius: 12, overflow: "hidden" }}>
-              <div className="flex items-center justify-between" style={{ padding: "12px 16px" }}>
-                <div className="flex items-center gap-1.5" style={{ background: "rgba(255,255,255,0.06)", borderRadius: 6, padding: "5px 12px" }}>
-                  <MapPin style={{ width: 14, height: 14, color: EX.gold }} />
-                  <span style={{ fontSize: 13, color: EX.text }}>{tab === "gyms" ? "Gyms" : "Events"} Locations</span>
-                </div>
-                <button
-                  onClick={() => { setMapOpen(true); setPopupItem(null); }}
-                  style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all 0.2s" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = EX.goldDim; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                >
-                  <Maximize2 style={{ width: 14, height: 14, color: EX.muted }} />
-                </button>
-              </div>
-              <div style={{ height: 420 }}>
-                <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={420}>
-                  {mapMarkers.map((m) => (
-                    <Marker key={`${m.type}-${m.id}`} anchor={[m.lat, m.lng]} color="hsl(46, 93%, 61%)" width={32} onClick={() => setPopupItem(m)} />
-                  ))}
-                  {popupItem && (
-                    <Overlay anchor={[popupItem.lat, popupItem.lng]} offset={[0, -20]}>
-                      <div style={{ background: EX.raised, border: `1px solid ${EX.borderMid}`, borderRadius: 8, padding: "10px 14px", minWidth: 180 }} onClick={(e) => e.stopPropagation()}>
-                        <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 14, color: EX.text, marginBottom: 4 }}>{popupItem.name}</p>
-                        <p style={{ fontSize: 12, color: EX.muted, marginBottom: 8 }}>{popupItem.city}</p>
-                        <Link to={tab === "gyms" ? `/gyms/${popupItem.id}` : `/events/${popupItem.id}`} style={{ fontSize: 12, color: EX.gold }}>View →</Link>
-                        <button onClick={() => setPopupItem(null)} className="absolute top-1 right-1" style={{ color: EX.muted }}><X className="h-3 w-3" /></button>
-                      </div>
-                    </Overlay>
-                  )}
-                </PigeonMap>
-              </div>
-              <div className="flex items-center gap-3" style={{ padding: "10px 16px", background: "rgba(20,23,30,0.75)", backdropFilter: "blur(10px)", borderTop: `1px solid ${EX.border}` }}>
-                <span style={{ fontSize: 12, color: EX.muted }}>Total Locations: {mapMarkers.length}</span>
-                <div style={{ width: 1, height: 12, background: EX.border }} />
-                <span style={{ fontSize: 12, color: EX.muted }}>Category: <span style={{ color: EX.gold }}>{tab === "gyms" ? "Gyms" : "Events"}</span></span>
-              </div>
-            </div>
-          )}
+          {/* Permanent map removed — toggled via Map button in filter bar */}
 
           {/* Mobile map modal */}
           {mapOpen && (tab === "gyms" || tab === "events") && isMobile && (
