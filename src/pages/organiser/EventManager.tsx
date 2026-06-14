@@ -406,9 +406,9 @@ export default function EventManager() {
         <section style={{ padding: "24px 0 64px" }}>
           <div className="container" style={{ paddingLeft: 35, paddingRight: 35 }}>
             <div className="flex items-center gap-4 mb-6">
-              <Link to={`/events/${id}`} className="inline-flex items-center gap-2 text-sm hover:text-foreground" style={{ color: "#8b909e" }}>
+              <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-sm hover:text-foreground" style={{ color: "#8b909e" }}>
                 <ArrowLeft className="h-4 w-4" /> Back to Event
-              </Link>
+              </button>
             </div>
 
             {/* KPI Strip */}

@@ -517,10 +517,8 @@ export default function EventDetail() {
                       </Button>
                     )}
                     {isOrganiser && user && event.organiser_id === user.id && (
-                      <Button className="gap-2" asChild>
-                        <Link to={`/organiser/events/${id}`}>
-                          <Plus className="h-4 w-4" /> Manage Event
-                        </Link>
+                      <Button className="gap-2" onClick={() => navigate('/organiser/events/' + id, { replace: true })}>
+                        <Plus className="h-4 w-4" /> Manage Event
                       </Button>
                     )}
                   </div>
