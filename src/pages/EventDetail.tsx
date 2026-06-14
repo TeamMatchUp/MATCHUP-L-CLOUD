@@ -302,8 +302,8 @@ export default function EventDetail() {
     const nameA = fA?.name ?? "TBD";
     const nameB = fB?.name ?? "TBD";
     return (
-      <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6 relative">
-        <div className="grid" style={{ gridTemplateColumns: "1fr 140px 1fr" }}>
+      <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-4 sm:p-6 relative">
+        <div className="grid items-center gap-2 sm:gap-4" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
           {/* Fighter A — left aligned */}
           <div className="flex items-center gap-3 overflow-hidden">
             {fA?.profile_image && (
