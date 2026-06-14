@@ -326,7 +326,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
   const dominantDim = weightBarSegments.reduce((a, b) => a.pct >= b.pct ? a : b).label;
 
   return (
-    <div className="relative flex flex-col md:flex-row" style={{ maxHeight: "92vh", minHeight: 480, overflow: "hidden" }}>
+    <div className="relative flex flex-col md:flex-row overflow-y-auto md:overflow-hidden" style={{ maxHeight: "92vh", minHeight: 480 }}>
       {/* Top-right close/back button (always visible) */}
       {onClose && (
         <button
