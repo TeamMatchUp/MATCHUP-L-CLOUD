@@ -273,8 +273,8 @@ export default function EventDetail() {
     );
   }
 
-  // Filter to only confirmed + public bouts for the public page
-  const publicBouts = allBouts.filter((b: any) => b.is_public === true && b.status === "confirmed" && (b.fighter_a_id || b.fighter_b_id));
+  // Show all public bouts regardless of status; render details based on assignment + status
+  const publicBouts = allBouts.filter((b: any) => b.is_public === true);
   const mainEvents = publicBouts.filter((b: any) => b.bout_type === "Main Event");
   const undercards = publicBouts.filter((b: any) => b.bout_type !== "Main Event");
 
@@ -286,56 +286,73 @@ export default function EventDetail() {
   const hasContact = event.contact_email || event.contact_phone || event.contact_website;
   const hasCoords = event.latitude != null && event.longitude != null;
 
-  // Helper for open slot check (used in render)
-  const isOpen = (bout: any) => !bout.fighter_a_id && !bout.fighter_b_id && bout.status === "open";
+  // Status badge for a bout based on assignments + status
+  const getStatusBadge = (bout: any): { label: string; className: string } | null => {
+    const hasA = !!bout.fighter_a_id;
+    const hasB = !!bout.fighter_b_id;
+    const status = (bout.status || "").toLowerCase();
+    if (hasA && hasB && status === "confirmed") {
+      return { label: "CONFIRMED", className: "bg-green-500/15 text-green-400" };
+    }
+    if (hasA && hasB && (status === "proposed")) {
+      return { label: "PROPOSED", className: "bg-blue-500/15 text-blue-400" };
+    }
+    if (hasA && hasB && (status === "open" || status === "pending")) {
+      return { label: "PENDING", className: "bg-yellow-500/15 text-yellow-400" };
+    }
+    return null;
+  };
 
   const renderMainBout = (bout: any) => {
-    const showDetails = bout.is_public === true && bout.status === "confirmed";
-    const fA = showDetails ? unwrap(bout.fighter_a) : null;
-    const fB = showDetails ? unwrap(bout.fighter_b) : null;
-    const nameA = showDetails ? (fA?.name ?? "TBA") : "TBA";
-    const nameB = showDetails ? (fB?.name ?? "TBA") : "TBA";
+    const fA = unwrap(bout.fighter_a);
+    const fB = unwrap(bout.fighter_b);
+    const nameA = fA?.name ?? "TBD";
+    const nameB = fB?.name ?? "TBD";
+    const badge = getStatusBadge(bout);
     return (
       <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6 relative">
-        {/* Three-column layout with fixed center: Fighter A | VS + Weight | Fighter B */}
-      <div className="grid" style={{ gridTemplateColumns: "1fr 140px 1fr" }}>
+        {badge && (
+          <span className={`absolute top-3 right-3 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${badge.className}`}>
+            {badge.label}
+          </span>
+        )}
+        <div className="grid" style={{ gridTemplateColumns: "1fr 140px 1fr" }}>
           {/* Fighter A — left aligned */}
           <div className="flex items-center gap-3 overflow-hidden">
-            {showDetails && fA?.profile_image && (
+            {fA?.profile_image && (
               <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 shrink-0">
                 <img src={fA.profile_image} alt={fA.name} className="h-full w-full object-cover" />
               </div>
             )}
             <div className="text-left min-w-0">
-              {showDetails && fA ? (
+              {fA ? (
                 <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-xl md:text-2xl text-foreground uppercase truncate">{nameA}</p>
                 </Link>
               ) : (
                 <p className="font-heading text-xl md:text-2xl text-muted-foreground uppercase">{nameA}</p>
               )}
-              {showDetails && fA && <p className="text-primary font-bold text-lg mt-1">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
+              {fA && <p className="text-primary font-bold text-lg mt-1">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
             </div>
           </div>
-          {/* Centre — VS + weight class */}
+          {/* Centre */}
           <div className="flex flex-col items-center justify-center">
-            {isOpen(bout) && <span className="text-primary text-xs font-semibold uppercase tracking-wide">Open</span>}
             <span className="font-heading text-primary text-2xl">VS</span>
             {bout.weight_class && <p className="text-xs text-muted-foreground mt-1 whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
           {/* Fighter B — right aligned */}
           <div className="flex items-center gap-3 justify-end overflow-hidden">
             <div className="text-right min-w-0">
-              {showDetails && fB ? (
+              {fB ? (
                 <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-xl md:text-2xl text-foreground uppercase truncate">{nameB}</p>
                 </Link>
               ) : (
                 <p className="font-heading text-xl md:text-2xl text-muted-foreground uppercase">{nameB}</p>
               )}
-              {showDetails && fB && <p className="text-primary font-bold text-lg mt-1">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
+              {fB && <p className="text-primary font-bold text-lg mt-1">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
             </div>
-            {showDetails && fB?.profile_image && (
+            {fB?.profile_image && (
               <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 shrink-0">
                 <img src={fB.profile_image} alt={fB.name} className="h-full w-full object-cover" />
               </div>
@@ -347,47 +364,51 @@ export default function EventDetail() {
   };
 
   const renderUndercardBout = (bout: any) => {
-    const showDetails = bout.is_public === true && bout.status === "confirmed";
-    const fA = showDetails ? unwrap(bout.fighter_a) : null;
-    const fB = showDetails ? unwrap(bout.fighter_b) : null;
-    const nameA = showDetails ? (fA?.name ?? "TBA") : "TBA";
-    const nameB = showDetails ? (fB?.name ?? "TBA") : "TBA";
+    const fA = unwrap(bout.fighter_a);
+    const fB = unwrap(bout.fighter_b);
+    const nameA = fA?.name ?? "TBD";
+    const nameB = fB?.name ?? "TBD";
+    const badge = getStatusBadge(bout);
     return (
       <div key={bout.id} className="rounded-lg border border-border bg-card p-4 relative">
+        {badge && (
+          <span className={`absolute top-2 right-2 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${badge.className}`}>
+            {badge.label}
+          </span>
+        )}
         <div className="grid items-center gap-3" style={{ gridTemplateColumns: "1fr 120px 1fr" }}>
           {/* Fighter A */}
           <div className="flex items-center gap-2 overflow-hidden">
-            {showDetails && fA?.profile_image && (
+            {fA?.profile_image && (
               <div className="h-10 w-10 rounded-full overflow-hidden border border-primary/20 shrink-0">
                 <img src={fA.profile_image} alt={fA.name} className="h-full w-full object-cover" />
               </div>
             )}
             <div className="text-left min-w-0">
-              {showDetails && fA ? (
+              {fA ? (
                 <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-sm text-foreground uppercase truncate">{nameA}</p>
                 </Link>
               ) : <p className="font-heading text-sm text-muted-foreground uppercase">{nameA}</p>}
-              {showDetails && fA && <p className="text-xs text-muted-foreground">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
+              {fA && <p className="text-xs text-muted-foreground">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
             </div>
           </div>
           {/* Centre */}
           <div className="flex flex-col items-center justify-center">
-            {isOpen(bout) && <span className="text-primary text-[10px] font-semibold uppercase tracking-wide">Open</span>}
             <span className="font-heading text-primary text-xs">VS</span>
             {bout.weight_class && <p className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
           {/* Fighter B */}
           <div className="flex items-center gap-2 justify-end overflow-hidden">
             <div className="text-right min-w-0">
-              {showDetails && fB ? (
+              {fB ? (
                 <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-sm text-foreground uppercase truncate">{nameB}</p>
                 </Link>
               ) : <p className="font-heading text-sm text-muted-foreground uppercase">{nameB}</p>}
-              {showDetails && fB && <p className="text-xs text-muted-foreground">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
+              {fB && <p className="text-xs text-muted-foreground">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
             </div>
-            {showDetails && fB?.profile_image && (
+            {fB?.profile_image && (
               <div className="h-10 w-10 rounded-full overflow-hidden border border-primary/20 shrink-0">
                 <img src={fB.profile_image} alt={fB.name} className="h-full w-full object-cover" />
               </div>
