@@ -323,9 +323,9 @@ export default function EventDetail() {
             </div>
           </div>
           {/* Centre */}
-          <div className="flex flex-col items-center justify-center">
-            <span className="font-heading text-primary text-2xl">VS</span>
-            {bout.weight_class && <p className="text-xs text-muted-foreground mt-1 whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
+          <div className="flex flex-col items-center justify-center self-center px-1 sm:px-2">
+            <span className="font-heading text-primary text-xl sm:text-2xl leading-none">VS</span>
+            {bout.weight_class && <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 text-center whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
           {/* Fighter B — right aligned */}
           <div className="flex items-center gap-3 justify-end overflow-hidden">
