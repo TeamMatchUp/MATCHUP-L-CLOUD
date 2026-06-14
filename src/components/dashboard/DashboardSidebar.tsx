@@ -60,6 +60,26 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
     staleTime: 60000,
   });
 
+  const { data: followerCount = 0 } = useQuery({
+    queryKey: ["dash-sidebar-followers", user?.id],
+    queryFn: async () => {
+      const { count } = await supabase.from("user_follows").select("id", { count: "exact", head: true }).eq("following_id", user!.id);
+      return count ?? 0;
+    },
+    enabled: !!user,
+    staleTime: 60000,
+  });
+
+  const { data: followingCount = 0 } = useQuery({
+    queryKey: ["dash-sidebar-following", user?.id],
+    queryFn: async () => {
+      const { count } = await supabase.from("user_follows").select("id", { count: "exact", head: true }).eq("follower_id", user!.id);
+      return count ?? 0;
+    },
+    enabled: !!user,
+    staleTime: 60000,
+  });
+
   const initials = (profile?.full_name || user?.email || "U").slice(0, 2).toUpperCase();
   const isDark = theme === "dark";
 
