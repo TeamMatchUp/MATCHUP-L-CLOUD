@@ -155,6 +155,7 @@ export default function EventDetail() {
   const [mapOpen, setMapOpen] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const BOUTS_PER_PAGE = 5;
 
   // Load fighter profile for fighters AND coaches (coaches also have fighter profiles)
