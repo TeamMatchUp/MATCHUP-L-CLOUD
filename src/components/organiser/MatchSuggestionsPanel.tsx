@@ -326,7 +326,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
   const dominantDim = weightBarSegments.reduce((a, b) => a.pct >= b.pct ? a : b).label;
 
   return (
-    <div className="relative flex flex-col md:flex-row" style={{ maxHeight: "92vh", minHeight: 480, overflow: "hidden" }}>
+    <div className="relative flex flex-col md:flex-row overflow-y-auto md:overflow-hidden" style={{ maxHeight: "92vh", minHeight: 480 }}>
       {/* Top-right close/back button (always visible) */}
       {onClose && (
         <button
@@ -350,11 +350,12 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
       )}
 
       {/* ═══ LEFT COLUMN — Config ═══ */}
-      <div className="flex flex-col" style={{
+      <div className="flex flex-col md:overflow-y-auto" style={{
         width: "100%", maxWidth: 420, flexShrink: 0, background: "#111318",
         boxShadow: "inset -1px 0 0 rgba(255,255,255,0.04)",
-        overflowY: "auto", padding: "28px 24px", gap: 20,
+        padding: "28px 24px", gap: 20,
       }}>
+
         {/* Header */}
         <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, color: "#e8eaf0", letterSpacing: "0.04em" }}>
           {anchorFighter ? (
@@ -416,8 +417,28 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                 {preset.label}
               </button>
             ))}
+            {(selectedPreset !== null || comp !== 50 || ent !== 50 || style !== 50 || narr !== 50) && (
+              <button
+                onClick={() => {
+                  setSelectedPreset(null);
+                  setComp(50); setEnt(50); setStyle(50); setNarr(50);
+                  setSettingsChanged(false);
+                }}
+                style={{
+                  background: "transparent", color: "#8b909e",
+                  borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, border: "none",
+                  cursor: "pointer", transition: "all 0.15s", display: "inline-flex", alignItems: "center", gap: 6,
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2330"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+              >
+                <RefreshCw style={{ width: 12, height: 12 }} />
+                Reset
+              </button>
+            )}
           </div>
         </div>
+
 
         {/* WEIGHTING */}
         <div>
@@ -580,7 +601,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
       </div>
 
       {/* ═══ RIGHT COLUMN — Results ═══ */}
-      <div className="flex-1 flex flex-col" style={{ background: "#0d1018", overflowY: "auto", padding: "28px 24px" }}>
+      <div className="flex-1 flex flex-col md:overflow-y-auto" style={{ background: "#0d1018", padding: "28px 24px" }}>
         {/* Header row */}
         <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
           <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>
