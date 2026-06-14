@@ -500,19 +500,21 @@ export function AddFightModal({
     </div>
   );
 
+  const wideStep = step === "suggested" || step === "manual";
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className={step === "suggested" ? "" : "max-h-[85vh] overflow-y-auto"}
+        className={step === "suggested" ? "" : "max-h-[90vh] overflow-y-auto"}
         style={{
           background: "#111318",
           border: "none",
           borderRadius: step === "suggested" ? 14 : 16,
-          width: step === "suggested" ? "min(95vw, 1200px)" : "min(540px, 95vw)",
+          width: wideStep ? "min(95vw, 1100px)" : "min(540px, 95vw)",
           maxWidth: "95vw",
           padding: step === "suggested" ? 0 : 24,
           boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
-          maxHeight: step === "suggested" ? "90vh" : "85vh",
+          maxHeight: step === "suggested" ? "92vh" : "90vh",
           overflow: step === "suggested" ? "hidden" : undefined,
         }}
       >
