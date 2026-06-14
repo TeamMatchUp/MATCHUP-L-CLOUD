@@ -107,7 +107,7 @@ const SLIDER_COLORS = {
   narr: "#a855f7",
 };
 
-export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSelectPair, eventId, weightClassOverride, disciplineOverride, anchorFighter }: MatchSuggestionsPanelProps) {
+export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSelectPair, eventId, weightClassOverride, disciplineOverride, anchorFighter, onClose }: MatchSuggestionsPanelProps) {
   const { user } = useAuth();
   const { track } = useAnalytics();
   const [refreshKey, setRefreshKey] = useState(0);
