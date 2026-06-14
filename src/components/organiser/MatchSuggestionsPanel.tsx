@@ -45,6 +45,8 @@ interface MatchSuggestionsPanelProps {
   disciplineOverride?: string | null;
   /** When set, suggests individual opponents for this fighter (Scenario A / one TBA) */
   anchorFighter?: FighterProfile;
+  /** Optional dismiss/back handler — shows a visible close button when provided. */
+  onClose?: () => void;
 }
 
 function matchesKeyword(fighter: FighterProfile, keyword: string, fights: any[]): boolean {
