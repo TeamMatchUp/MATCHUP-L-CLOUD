@@ -30,6 +30,8 @@ export function DashboardEvents({
   fighterProfileId,
 }: DashboardEventsProps) {
   const [eventSearch, setEventSearch] = useState("");
+  const { user } = useAuth();
+  const currentUserId = user?.id;
 
   // Fighter view - interested events
   if (isFighter && !isCoachOrOwner && !isOrganiser && fighterProfileId) {
