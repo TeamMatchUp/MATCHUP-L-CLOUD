@@ -472,7 +472,7 @@ export default function EventDetail() {
 
               {/* Main info panel */}
               <div className="mb-8">
-                {!event.banner_image && <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>}
+                {!event.banner_image && <h1 className="font-heading text-foreground mb-2 truncate" style={{ fontSize: "clamp(1.5rem, 6vw, 3rem)", lineHeight: 1.05 }}>{event.title}</h1>}
                 {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
 
                 {event.description && (
