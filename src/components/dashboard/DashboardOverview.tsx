@@ -554,6 +554,7 @@ export function DashboardOverview({
             {fighterCardVis.record && <Cell span={2}><FighterRecordHero /></Cell>}
             {fighterCardVis.nextFight && <Cell><FighterNextFight /></Cell>}
             {fighterCardVis.calendar && <Cell><EventCalendar events={calendarEvents} highlightedDates={highlightedDates} /></Cell>}
+            {fighterProfileId && <Cell><GymsNearYouWidget fighterProfileId={fighterProfileId} /></Cell>}
           </div>
         </div>
         {networkModal && user && <NetworkModal type={networkModal} userId={user.id} onClose={() => setNetworkModal(null)} />}
