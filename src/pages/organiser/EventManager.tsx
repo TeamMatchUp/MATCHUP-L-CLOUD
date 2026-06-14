@@ -1,238 +1,160 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { EditEventDialog } from "@/components/organiser/EditEventDialog";
-import { EditBoutDialog } from "@/components/organiser/EditBoutDialog";
 import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
-import { AddFightModal } from "@/components/organiser/AddFightModal";
-import { EventKpiStrip } from "@/components/organiser/EventKpiStrip";
-import { ArrowLeft, Globe, Pencil, Plus, Eye, EyeOff, GripVertical, Search, Trash2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import type { Database } from "@/integrations/supabase/types";
+import {
+  ArrowLeft, Pencil, Eye, Share2, Calendar, MapPin, Building2,
+  CheckCircle2, Circle, Ticket, TrendingUp, Users, AlertCircle,
+  ChevronRight, Plus, Trophy, PoundSterling,
+} from "lucide-react";
 import { formatEnum } from "@/lib/format";
 
-type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
+// ─── Design tokens ──────────────────────────────────────────
+const PAGE_BG = "#080a0d";
+const CARD = "#111318";
+const RAISED = "#181c24";
+const ACCENT = "#e8a020";
+const ACCENT_DIM = "rgba(232,160,32,0.12)";
+const TEXT = "#e8eaf0";
+const TEXT_SEC = "#8b909e";
+const TEXT_MUTED = "#555b6b";
+const SUCCESS = "#22c55e";
+const WARNING = "#f59e0b";
+const DANGER = "#ef4444";
 
-const WEIGHT_LBS: Record<string, number> = {
-  strawweight: 115, flyweight: 125, bantamweight: 135, featherweight: 145,
-  lightweight: 155, super_lightweight: 160, welterweight: 170, super_welterweight: 175,
-  middleweight: 185, super_middleweight: 195, light_heavyweight: 205,
-  cruiserweight: 224, heavyweight: 265, super_heavyweight: 300,
+const CARD_SHADOW =
+  "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)";
+
+const cardStyle: React.CSSProperties = {
+  background: CARD,
+  borderRadius: 16,
+  padding: 20,
+  boxShadow: CARD_SHADOW,
 };
 
-const WEIGHT_CLASS_LABELS: Record<string, string> = {
-  strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
-  featherweight: "Featherweight", lightweight: "Lightweight", super_lightweight: "Super Lightweight",
-  welterweight: "Welterweight", super_welterweight: "Super Welterweight", middleweight: "Middleweight",
-  super_middleweight: "Super Middleweight", light_heavyweight: "Light Heavyweight",
-  cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
-};
+// ─── Helpers ────────────────────────────────────────────────
+const fmtGBP = (v: number) =>
+  "£" + v.toLocaleString("en-GB", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+
+function timeAgo(date: string) {
+  const diff = (Date.now() - new Date(date).getTime()) / 1000;
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return new Date(date).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
 
 function unwrap<T>(val: T | T[] | null | undefined): T | null {
   if (Array.isArray(val)) return val[0] ?? null;
   return val ?? null;
 }
 
-function weightDisplay(wc: string | null) {
-  if (!wc) return "Open Weight";
-  const label = WEIGHT_CLASS_LABELS[wc] || formatEnum(wc);
-  const lbs = WEIGHT_LBS[wc];
-  if (!lbs) return label;
-  const kg = (lbs / 2.2046).toFixed(1);
-  return `${label} · ${lbs}lbs / ${kg}kg`;
-}
-
-// ─── Slot Card ──────────────────────────────────────────────
-interface SlotCardProps {
-  bout: any;
-  onEdit: (b: any) => void;
-  onTogglePublic: (id: string, val: boolean) => void;
-  onFindMatches: (b: any) => void;
-  onDelete: (id: string) => void;
-  onDragStart: (e: React.DragEvent, id: string) => void;
-  onDragOver: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent, id: string) => void;
-}
-
-function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDragStart, onDragOver, onDrop }: SlotCardProps) {
-  const fA = unwrap(bout.fighter_a);
-  const fB = unwrap(bout.fighter_b);
-  const status = bout.status || "empty";
-  const isEmpty = !fA && !fB;
-  const isConfirmed = status === "confirmed" && fA && fB;
-  const isDeclined = status === "declined";
-  const isPending = status === "proposed" || status === "pending";
-  // Scenario detection based on ASSIGNMENT (not proposal status)
-  const oneTBA = (bout.fighter_a_id && !bout.fighter_b_id) || (!bout.fighter_a_id && bout.fighter_b_id);
-  const bothTBA = !bout.fighter_a_id && !bout.fighter_b_id;
-  const hasTBA = oneTBA || bothTBA;
-
-  let cardStyle: React.CSSProperties = {
-    background: "#1a1e28",
-    border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: 8,
-    padding: "14px 16px",
-    marginBottom: 8,
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    transition: "all 0.2s ease",
-  };
-  if (isConfirmed) {
-    cardStyle.background = "rgba(232,160,32,0.08)";
-    cardStyle.border = "1px solid rgba(232,160,32,0.3)";
-  } else if (isDeclined) {
-    cardStyle.border = "2px dashed rgba(239,68,68,0.5)";
-    cardStyle.background = "rgba(239,68,68,0.04)";
-  } else if (isPending) {
-    cardStyle.border = "1px solid rgba(245,158,11,0.3)";
-    cardStyle.background = "rgba(245,158,11,0.04)";
-  }
-
-  const statusBadge = (s: string) => {
-    if (s === "confirmed") return <span style={{ fontSize: 10, background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Confirmed</span>;
-    if (s === "proposed" || s === "pending") return <span style={{ fontSize: 10, background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Pending</span>;
-    if (s === "declined") return <span style={{ fontSize: 10, background: "rgba(239,68,68,0.15)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Declined</span>;
-    return null;
-  };
-
-  const fighterBlock = (fighter: FighterProfile | null, side: "a" | "b", align: "left" | "right") => {
-    const isAssigned = side === "a" ? !!bout.fighter_a_id : !!bout.fighter_b_id;
-    return (
-      <div style={{ flex: 1, textAlign: align, minWidth: 0 }}>
-        <p style={{ fontWeight: 600, fontSize: 14, color: isAssigned ? "#e8eaf0" : "#555b6b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {fighter?.name ?? "TBA"}
-        </p>
-        {fighter && (
-          <p style={{ fontSize: 11, color: "#8b909e", marginTop: 1 }}>
-            {fighter.record_wins}-{fighter.record_losses}-{fighter.record_draws}
-          </p>
-        )}
-        {isAssigned && statusBadge(status)}
-        {!isAssigned && <span style={{ fontSize: 11, color: "#555b6b" }}>—</span>}
-      </div>
-    );
-  };
-
-  // Button label based on scenario
-  const findLabel = oneTBA ? "Find Matches" : "Find Fights";
-
+// ─── Sub-components ─────────────────────────────────────────
+function SectionTitle({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div
-      style={cardStyle}
-      draggable
-      onDragStart={(e) => onDragStart(e, bout.id)}
-      onDragOver={onDragOver}
-      onDrop={(e) => onDrop(e, bout.id)}
-    >
-      {/* Drag handle */}
-      <div style={{ cursor: "grab", flexShrink: 0 }}>
-        <GripVertical className="h-3.5 w-3.5" style={{ color: "#555b6b" }} />
-      </div>
-
-      {/* Centre content */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Weight + discipline row */}
-        <div style={{ fontSize: 12, color: "#8b909e", marginBottom: 4 }}>
-          {weightDisplay(bout.weight_class)}
-          {bout.discipline && <span style={{ marginLeft: 8, color: "#555b6b" }}>{formatEnum(bout.discipline)}</span>}
-        </div>
-
-        {/* Rounds row */}
-        {bout.rounds && bout.round_duration_minutes && (
-          <div style={{ fontSize: 11, color: "#555b6b", marginBottom: 6 }}>
-            {bout.rounds} × {bout.round_duration_minutes} min rounds
-          </div>
-        )}
-
-        {/* Fighters row */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {fighterBlock(fA, "a", "left")}
-          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8a020", flexShrink: 0 }}>VS</span>
-          {fighterBlock(fB, "b", "right")}
-        </div>
-
-        {isEmpty && (
-          <p style={{ fontSize: 12, color: "#555b6b", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>EMPTY</p>
-        )}
-      </div>
-
-      {/* Action buttons */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0 }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0"
-          onClick={() => onTogglePublic(bout.id, !bout.is_public)}
-          title={bout.is_public !== false ? "Make unlisted" : "Make public"}
-        >
-          {bout.is_public !== false ? <Eye className="h-3.5 w-3.5" style={{ color: "#8b909e" }} /> : <EyeOff className="h-3.5 w-3.5" style={{ color: "#8b909e" }} />}
-        </Button>
-        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onEdit(bout)}>
-          <Pencil className="h-3.5 w-3.5" style={{ color: "#8b909e" }} />
-        </Button>
-        {hasTBA && (
-          <button
-            onClick={() => onFindMatches(bout)}
-            style={{
-              fontSize: 10,
-              fontWeight: 600,
-              color: "#e8a020",
-              background: "transparent",
-              border: "1px solid rgba(232,160,32,0.3)",
-              borderRadius: 6,
-              padding: "3px 8px",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              transition: "all 0.15s",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.1)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-          >
-            {findLabel}
-          </button>
-        )}
-        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onDelete(bout.id)}>
-          <Trash2 className="h-3.5 w-3.5" style={{ color: "#555b6b" }} />
-        </Button>
-      </div>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+      <h2 style={{
+        fontFamily: "'Bebas Neue', sans-serif",
+        fontSize: 18, color: TEXT, letterSpacing: "0.04em", textTransform: "uppercase",
+      }}>{children}</h2>
+      {action}
     </div>
   );
 }
 
-// ─── Main Page ──────────────────────────────────────────────
+function ProgressBar({ pct, color = ACCENT }: { pct: number; color?: string }) {
+  return (
+    <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 999, overflow: "hidden" }}>
+      <div style={{
+        width: `${Math.max(0, Math.min(100, pct))}%`,
+        height: "100%", background: color, borderRadius: 999,
+        transition: "width 0.3s ease",
+      }} />
+    </div>
+  );
+}
+
+function StatusPill({ status }: { status: string }) {
+  const isPublished = status === "published";
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 6,
+      padding: "4px 10px", borderRadius: 999,
+      fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase",
+      background: isPublished ? "rgba(34,197,94,0.14)" : "rgba(245,158,11,0.14)",
+      color: isPublished ? SUCCESS : WARNING,
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: 999, background: "currentColor" }} />
+      {status}
+    </span>
+  );
+}
+
+function GhostButton({ children, onClick, href, icon: Icon }: {
+  children: React.ReactNode; onClick?: () => void; href?: string; icon?: any;
+}) {
+  const style: React.CSSProperties = {
+    display: "inline-flex", alignItems: "center", gap: 6,
+    padding: "9px 14px", fontSize: 13, fontWeight: 600, borderRadius: 10,
+    background: RAISED, color: TEXT, border: "none", cursor: "pointer",
+    textDecoration: "none", transition: "background 0.15s",
+  };
+  const onEnter = (e: any) => (e.currentTarget.style.background = "#1e2330");
+  const onLeave = (e: any) => (e.currentTarget.style.background = RAISED);
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" style={style} onMouseEnter={onEnter} onMouseLeave={onLeave}>
+        {Icon && <Icon className="h-3.5 w-3.5" />} {children}
+      </a>
+    );
+  }
+  return (
+    <button onClick={onClick} style={style} onMouseEnter={onEnter} onMouseLeave={onLeave}>
+      {Icon && <Icon className="h-3.5 w-3.5" />} {children}
+    </button>
+  );
+}
+
+function GoldButton({ children, onClick, icon: Icon, size = "md" }: {
+  children: React.ReactNode; onClick?: () => void; icon?: any; size?: "sm" | "md";
+}) {
+  const style: React.CSSProperties = {
+    display: "inline-flex", alignItems: "center", gap: 6,
+    padding: size === "sm" ? "7px 12px" : "9px 14px",
+    fontSize: size === "sm" ? 12 : 13, fontWeight: 700, borderRadius: 10,
+    background: ACCENT, color: "#0d0f12", border: "none", cursor: "pointer",
+    boxShadow: "0 0 16px rgba(232,160,32,0.25)", transition: "background 0.15s",
+  };
+  return (
+    <button onClick={onClick} style={style}
+      onMouseEnter={(e) => (e.currentTarget.style.background = "#c47e10")}
+      onMouseLeave={(e) => (e.currentTarget.style.background = ACCENT)}>
+      {Icon && <Icon className="h-3.5 w-3.5" />} {children}
+    </button>
+  );
+}
+
+// ─── Page ───────────────────────────────────────────────────
 export default function EventManager() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { track } = useAnalytics();
 
+  const [showEditEvent, setShowEditEvent] = useState(false);
+  const [showTickets, setShowTickets] = useState(false);
+
   useEffect(() => {
-    if (id) void track("fight_builder_opened", { event_id: id });
+    if (id) void track("event_hub_opened", { event_id: id });
   }, [id]);
 
-  const [showEditEvent, setShowEditEvent] = useState(false);
-  const [editingBout, setEditingBout] = useState<any>(null);
-  const [addModal, setAddModal] = useState<{ open: boolean; section: "Main Event" | "Undercard"; mode: "add" | "find"; slot?: any }>({
-    open: false, section: "Main Event", mode: "add",
-  });
-  const [dragId, setDragId] = useState<string | null>(null);
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-
-  const { data: event, isLoading: eventLoading } = useQuery({
+  const { data: event, isLoading } = useQuery({
     queryKey: ["organiser-event", id],
     queryFn: async () => {
       const { data, error } = await supabase.from("events").select("*").eq("id", id!).single();
@@ -242,22 +164,12 @@ export default function EventManager() {
     enabled: !!id,
   });
 
-  const { data: slots = [] } = useQuery({
-    queryKey: ["event-slots", id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("fight_slots").select("*").eq("event_id", id!).order("slot_number");
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!id,
-  });
-
-  const { data: bouts = [], refetch: refetchBouts } = useQuery({
+  const { data: bouts = [] } = useQuery({
     queryKey: ["event-fight-slots-manager", id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("event_fight_slots")
-        .select("*, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(id, name, record_wins, record_losses, record_draws, weight_class, profile_image, user_id, created_by_coach_id), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(id, name, record_wins, record_losses, record_draws, weight_class, profile_image, user_id, created_by_coach_id)")
+        .select("*, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(id, name, record_wins, record_losses, record_draws, weight_class), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(id, name, record_wins, record_losses, record_draws, weight_class)")
         .eq("event_id", id!)
         .order("slot_number", { ascending: true });
       if (error) throw error;
@@ -266,266 +178,395 @@ export default function EventManager() {
     enabled: !!id,
   });
 
-  const mainBouts = useMemo(() => bouts.filter((b: any) => b.bout_type === "Main Event" || b.slot_number === 1), [bouts]);
-  const underBouts = useMemo(() => bouts.filter((b: any) => b.bout_type !== "Main Event" && b.slot_number !== 1), [bouts]);
-
-  const publishMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from("events").update({ status: "published" }).eq("id", id!);
+  const { data: tickets = [] } = useQuery({
+    queryKey: ["event-tickets", id],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("tickets").select("*").eq("event_id", id!).order("created_at");
       if (error) throw error;
+      return data ?? [];
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["organiser-event", id] });
-      toast({ title: "Event published" });
-    },
+    enabled: !!id,
   });
 
-  const handleTogglePublic = async (boutId: string, val: boolean) => {
-    await supabase.from("event_fight_slots").update({ is_public: val }).eq("id", boutId);
-    refetchBouts();
-  };
+  // Derived metrics
+  const metrics = useMemo(() => {
+    const totalCapacity = tickets.reduce((s: number, t: any) => s + (t.quantity_available ?? 0), 0);
+    const estRevenue = tickets.reduce((s: number, t: any) => s + (t.quantity_available ?? 0) * (Number(t.price) || 0), 0);
+    const totalSlots = bouts.length;
+    const confirmed = bouts.filter((b: any) => b.status === "confirmed" && b.fighter_a_id && b.fighter_b_id).length;
+    const open = bouts.filter((b: any) => !b.fighter_a_id || !b.fighter_b_id).length;
+    const main = bouts.filter((b: any) => b.bout_type === "Main Event" || b.slot_number === 1);
+    const under = bouts.filter((b: any) => b.bout_type === "Undercard");
+    const prelim = bouts.filter((b: any) => b.bout_type === "Prelim" || b.bout_type === "Prelims");
+    return { totalCapacity, estRevenue, totalSlots, confirmed, open, main, under, prelim };
+  }, [tickets, bouts]);
 
-  const handleDelete = async (boutId: string) => {
-    await supabase.from("event_fight_slots").delete().eq("id", boutId);
-    refetchBouts();
-    toast({ title: "Slot removed" });
-  };
+  // Progress checklist
+  const checklist = useMemo(() => {
+    const hasDetails = !!(event && event.title && event.date && event.venue_name);
+    const buildPct = metrics.totalSlots > 0 ? 100 : 0;
+    const mmPct = metrics.totalSlots > 0 ? Math.round((metrics.confirmed / metrics.totalSlots) * 100) : 0;
+    const hasTickets = tickets.length > 0;
+    const isPublished = event?.status === "published";
+    return [
+      { label: "Event details", done: hasDetails, info: hasDetails ? "Completed" : "Add details" },
+      { label: "Build fight card", done: buildPct === 100, info: `${metrics.totalSlots} slots` },
+      { label: "Matchmaking", done: metrics.totalSlots > 0 && metrics.confirmed === metrics.totalSlots, info: `${metrics.confirmed} / ${metrics.totalSlots}` },
+      { label: "Tickets & pricing", done: hasTickets, info: hasTickets ? "Completed" : "Add tickets" },
+      { label: "Publish event", done: isPublished, info: isPublished ? "Completed" : "Draft" },
+    ];
+  }, [event, tickets, metrics]);
+  const completedSteps = checklist.filter((c) => c.done).length;
+  const overallPct = Math.round((completedSteps / checklist.length) * 100);
 
-  const handleBoutSuccess = () => {
-    refetchBouts();
-    queryClient.invalidateQueries({ queryKey: ["event-confirmed-bouts", id] });
-  };
+  // Recent activity (synthesised from existing data)
+  const activity = useMemo(() => {
+    const items: { icon: any; title: string; subtitle: string; ts: string; color: string }[] = [];
+    bouts.slice(-6).forEach((b: any) => {
+      const fA = unwrap(b.fighter_a);
+      const fB = unwrap(b.fighter_b);
+      if (b.status === "confirmed" && fA && fB) {
+        items.push({
+          icon: CheckCircle2, color: SUCCESS,
+          title: "Match confirmed",
+          subtitle: `${fA.name} vs ${fB.name}`,
+          ts: b.updated_at || b.created_at,
+        });
+      } else if (fA || fB) {
+        items.push({
+          icon: Plus, color: ACCENT,
+          title: "Fight added to card",
+          subtitle: formatEnum(b.weight_class || "") + " bout",
+          ts: b.created_at,
+        });
+      }
+    });
+    if (event?.status === "published") {
+      items.push({
+        icon: TrendingUp, color: ACCENT,
+        title: "Event published",
+        subtitle: `${event.title} is now live`,
+        ts: event.updated_at,
+      });
+    }
+    return items.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime()).slice(0, 5);
+  }, [bouts, event]);
 
-  // Drag and drop
-  const handleDragStart = (e: React.DragEvent, boutId: string) => {
-    setDragId(boutId);
-    e.dataTransfer.effectAllowed = "move";
-  };
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
-  const handleDrop = async (e: React.DragEvent, targetId: string) => {
-    e.preventDefault();
-    if (!dragId || dragId === targetId) return;
-    const dragBout = bouts.find((b: any) => b.id === dragId);
-    const targetBout = bouts.find((b: any) => b.id === targetId);
-    if (!dragBout || !targetBout) return;
-    await Promise.all([
-      supabase.from("event_fight_slots").update({ slot_number: targetBout.slot_number }).eq("id", dragId),
-      supabase.from("event_fight_slots").update({ slot_number: dragBout.slot_number }).eq("id", targetId),
-    ]);
-    setDragId(null);
-    refetchBouts();
-  };
-
-  if (eventLoading) {
+  if (isLoading || !event) {
     return (
-      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
+      <div className="min-h-screen" style={{ background: PAGE_BG }}>
         <Header />
-        <main className="pt-16"><div className="container py-16"><div className="animate-pulse" style={{ color: "#8b909e" }}>Loading event...</div></div></main>
+        <main className="pt-16"><div className="container py-16"><div className="animate-pulse" style={{ color: TEXT_SEC }}>Loading event…</div></div></main>
       </div>
     );
   }
-
-  if (!event) {
-    return (
-      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
-        <Header />
-        <main className="pt-16"><div className="container py-16 text-center">
-          <p style={{ color: "#8b909e" }}>Event not found.</p>
-          <Button variant="outline" asChild className="mt-4"><Link to="/organiser/dashboard">Back to Dashboard</Link></Button>
-        </div></main>
-      </div>
-    );
-  }
-
-  const existingFighterIds = bouts.flatMap((b: any) => [b.fighter_a_id, b.fighter_b_id].filter(Boolean));
-  const confirmedCount = bouts.filter((b: any) => b.status === "confirmed" && b.fighter_a_id && b.fighter_b_id).length;
-  const openSlotCount = bouts.filter((b: any) => !b.fighter_a_id || !b.fighter_b_id || b.status !== "confirmed").length;
-
-  const STATUS_COLORS: Record<string, string> = {
-    draft: "bg-muted text-muted-foreground",
-    published: "bg-green-500/20 text-green-400 border-green-500/30",
-    completed: "bg-secondary/20 text-secondary",
-    cancelled: "bg-destructive/20 text-destructive",
-  };
-
-  const sectionContainer = (isMain: boolean, children: React.ReactNode, sectionBouts: any[]) => (
-    <div style={{
-      background: "#14171e",
-      border: isMain ? "1px solid rgba(232,160,32,0.2)" : "1px solid rgba(255,255,255,0.08)",
-      borderRadius: 12,
-      padding: 20,
-      marginBottom: 16,
-    }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-        <h2 style={{
-          fontFamily: "'Bebas Neue', sans-serif",
-          fontSize: 18,
-          color: isMain ? "#e8a020" : "#e8eaf0",
-          letterSpacing: "0.04em",
-        }}>
-          {isMain ? "MAIN CARD" : "UNDERCARD"}
-        </h2>
-        <button
-          onClick={() => setAddModal({ open: true, section: isMain ? "Main Event" : "Undercard", mode: "add" })}
-          style={{
-            padding: "8px 16px",
-            fontSize: 13,
-            fontWeight: 600,
-            borderRadius: 8,
-            cursor: "pointer",
-            transition: "all 0.2s",
-            ...(isMain
-              ? { background: "#e8a020", color: "#0d0f12", border: "none", boxShadow: "0 0 12px rgba(232,160,32,0.25)" }
-              : { background: "transparent", color: "#e8eaf0", border: "1px solid rgba(255,255,255,0.1)" }
-            ),
-          }}
-          onMouseEnter={(e) => {
-            if (isMain) e.currentTarget.style.background = "#c47e10";
-            else e.currentTarget.style.borderColor = "rgba(232,160,32,0.3)";
-          }}
-          onMouseLeave={(e) => {
-            if (isMain) e.currentTarget.style.background = "#e8a020";
-            else e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
-          }}
-        >
-          <Plus className="h-3.5 w-3.5 inline mr-1" style={{ verticalAlign: "middle" }} />
-          Add Fight
-        </button>
-      </div>
-
-      {sectionBouts.length === 0 ? (
-        <p style={{ fontSize: 13, color: "#555b6b", textAlign: "center", padding: "24px 0", borderTop: "1px dashed rgba(255,255,255,0.06)" }}>
-          No {isMain ? "main card" : "undercard"} bouts yet.
-        </p>
-      ) : children}
-    </div>
-  );
 
   return (
-    <div className="min-h-screen" style={{ background: "#0d0f12" }}>
+    <div className="min-h-screen" style={{ background: PAGE_BG }}>
       <Header />
       <main className="pt-16">
         <section style={{ padding: "24px 0 64px" }}>
-          <div className="container" style={{ paddingLeft: 35, paddingRight: 35 }}>
-            <div className="flex items-center gap-4 mb-6">
-              <button type="button" onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-sm hover:text-foreground" style={{ color: "#8b909e" }}>
-                <ArrowLeft className="h-4 w-4" /> Back to Event
-              </button>
+          <div className="container" style={{ paddingLeft: 24, paddingRight: 24, maxWidth: 1400 }}>
+            {/* Back link */}
+            <div className="mb-5">
+              <Link to="/organiser/dashboard" className="inline-flex items-center gap-2 text-sm" style={{ color: TEXT_SEC }}>
+                <ArrowLeft className="h-4 w-4" /> Back to Events
+              </Link>
             </div>
 
-            {/* KPI Strip */}
-            <EventKpiStrip eventId={id!} confirmedCount={confirmedCount} openSlotCount={openSlotCount} />
-
-            {/* Event header */}
-            <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
-              <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <h1 className="truncate" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.5rem, 5vw, 2rem)", color: "#e8eaf0", textTransform: "uppercase", lineHeight: 1.05, maxWidth: "100%" }}>{event.title}</h1>
-                  <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>{event.status}</Badge>
+            {/* TOP BAR */}
+            <div style={{ ...cardStyle, padding: 20, marginBottom: 20 }}>
+              <div className="flex items-start gap-4 flex-wrap">
+                {event.banner_image ? (
+                  <div style={{ width: 180, height: 120, borderRadius: 12, overflow: "hidden", flexShrink: 0, background: RAISED }}>
+                    <img src={event.banner_image} alt={event.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                ) : (
+                  <div style={{ width: 180, height: 120, borderRadius: 12, background: RAISED, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Trophy style={{ color: TEXT_MUTED }} className="h-8 w-8" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 flex-wrap mb-2">
+                    <h1 className="truncate" style={{
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      fontSize: "clamp(1.75rem, 4vw, 2.4rem)",
+                      color: TEXT, textTransform: "uppercase", lineHeight: 1.05,
+                      letterSpacing: "0.02em",
+                    }}>{event.title}</h1>
+                    <StatusPill status={event.status} />
+                  </div>
+                  <div className="flex items-center gap-4 flex-wrap mb-2" style={{ fontSize: 13, color: TEXT_SEC }}>
+                    <span className="inline-flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" />{new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
+                    {event.city && <span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{event.city}</span>}
+                    {event.venue_name && <span className="inline-flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" />{event.venue_name}</span>}
+                  </div>
+                  {event.description && (
+                    <p style={{ fontSize: 13, color: TEXT_SEC, maxWidth: 640 }} className="line-clamp-2">{event.description}</p>
+                  )}
                 </div>
-                <p style={{ fontSize: 13, color: "#8b909e" }}>
-                  {new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} · {event.location} · {event.country}
+                <div className="flex gap-2 flex-wrap" style={{ alignSelf: "flex-start" }}>
+                  <GhostButton icon={Eye} href={`/events/${id}`}>Preview Public Page</GhostButton>
+                  <GhostButton icon={Share2} onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/events/${id}`); }}>Share Event</GhostButton>
+                  <GoldButton icon={Pencil} onClick={() => setShowEditEvent(true)}>Edit Event Details</GoldButton>
+                </div>
+              </div>
+            </div>
+
+            {/* KPI STRIP */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+              {[
+                { label: "Tickets Available", value: metrics.totalCapacity.toLocaleString("en-GB"), sub: `${tickets.length} tier${tickets.length === 1 ? "" : "s"}`, pct: metrics.totalCapacity > 0 ? 100 : 0, color: ACCENT, icon: Ticket },
+                { label: "Est. Revenue", value: fmtGBP(metrics.estRevenue), sub: "Projected", pct: metrics.estRevenue > 0 ? 100 : 0, color: SUCCESS, icon: PoundSterling },
+                { label: "Matched Fights", value: `${metrics.confirmed}`, sub: `/ ${metrics.totalSlots} slots`, pct: metrics.totalSlots > 0 ? (metrics.confirmed / metrics.totalSlots) * 100 : 0, color: ACCENT, icon: Users },
+                { label: "Open Slots", value: `${metrics.open}`, sub: `/ ${metrics.totalSlots} slots`, pct: metrics.totalSlots > 0 ? (metrics.open / metrics.totalSlots) * 100 : 0, color: DANGER, icon: AlertCircle },
+              ].map((kpi) => (
+                <div key={kpi.label} style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: ACCENT_DIM, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <kpi.icon style={{ color: ACCENT }} className="h-3.5 w-3.5" />
+                    </div>
+                    <span style={{ fontSize: 11, color: TEXT_SEC, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>{kpi.label}</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mb-3">
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, color: TEXT, lineHeight: 1 }}>{kpi.value}</span>
+                    <span style={{ fontSize: 12, color: TEXT_MUTED }}>{kpi.sub}</span>
+                  </div>
+                  <ProgressBar pct={kpi.pct} color={kpi.color} />
+                </div>
+              ))}
+            </div>
+
+            {/* MAIN GRID */}
+            <div className="grid gap-5 mb-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 460px), 1fr))" }}>
+              {/* Event Progress */}
+              <div style={cardStyle}>
+                <SectionTitle>Event Progress</SectionTitle>
+                <div className="space-y-2">
+                  {checklist.map((row) => (
+                    <div key={row.label} className="flex items-center justify-between" style={{ padding: "10px 12px", background: RAISED, borderRadius: 10 }}>
+                      <div className="flex items-center gap-3">
+                        {row.done ? <CheckCircle2 className="h-4 w-4" style={{ color: SUCCESS }} /> : <Circle className="h-4 w-4" style={{ color: TEXT_MUTED }} />}
+                        <span style={{ fontSize: 13, color: TEXT, fontWeight: 500 }}>{row.label}</span>
+                      </div>
+                      <span style={{ fontSize: 12, color: row.done ? SUCCESS : TEXT_SEC, fontWeight: 600 }}>{row.info}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-2" style={{ fontSize: 12, color: TEXT_SEC }}>
+                    <span>{completedSteps} of {checklist.length} completed</span>
+                    <span style={{ color: ACCENT, fontWeight: 700 }}>{overallPct}%</span>
+                  </div>
+                  <ProgressBar pct={overallPct} />
+                </div>
+              </div>
+
+              {/* Fight Card Overview */}
+              <div style={cardStyle}>
+                <SectionTitle action={
+                  <GhostButton icon={Pencil} onClick={() => navigate(`/organiser/events/${id}/fight-card`)}>Edit Fight Card</GhostButton>
+                }>Fight Card Overview</SectionTitle>
+                {[
+                  { label: "Main Card", bouts: metrics.main, total: Math.max(metrics.main.length, 1) },
+                  { label: "Undercard", bouts: metrics.under, total: Math.max(metrics.under.length, 1) },
+                  { label: "Prelims", bouts: metrics.prelim, total: Math.max(metrics.prelim.length, 1) },
+                ].map((sec) => {
+                  const filled = sec.bouts.filter((b: any) => b.fighter_a_id && b.fighter_b_id).length;
+                  const pct = sec.total > 0 ? (filled / sec.total) * 100 : 0;
+                  return (
+                    <div key={sec.label} className="mb-4 last:mb-0">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div>
+                          <p style={{ fontSize: 14, color: TEXT, fontWeight: 600 }}>{sec.label}</p>
+                          <p style={{ fontSize: 11, color: TEXT_MUTED }}>{sec.bouts.length} fight{sec.bouts.length === 1 ? "" : "s"}</p>
+                        </div>
+                        <span style={{ fontSize: 13, color: TEXT_SEC, fontWeight: 600 }}>{filled} / {sec.bouts.length}</span>
+                      </div>
+                      <ProgressBar pct={pct} />
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Recent Matchups */}
+              <div style={cardStyle}>
+                <SectionTitle action={
+                  <GhostButton onClick={() => navigate(`/organiser/events/${id}/fight-card`)}>View all matchups</GhostButton>
+                }>Recent Matchups</SectionTitle>
+                <div className="space-y-2">
+                  {bouts.slice(0, 4).map((b: any) => {
+                    const fA = unwrap(b.fighter_a);
+                    const fB = unwrap(b.fighter_b);
+                    const isEmpty = !fA || !fB;
+                    return (
+                      <div key={b.id} className="flex items-center justify-between gap-3" style={{ padding: "12px", background: RAISED, borderRadius: 10 }}>
+                        <div className="flex-1 min-w-0">
+                          <p style={{ fontSize: 11, color: TEXT_MUTED, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>
+                            {formatEnum(b.weight_class || "Open")}
+                          </p>
+                          <div className="flex items-center gap-2" style={{ fontSize: 13, color: TEXT }}>
+                            <span className="truncate font-medium">{fA?.name || "TBD"}</span>
+                            <span style={{ color: TEXT_MUTED }}>vs</span>
+                            <span className="truncate font-medium">{fB?.name || "TBD"}</span>
+                          </div>
+                          {!isEmpty && (
+                            <p style={{ fontSize: 11, color: TEXT_SEC, marginTop: 2 }}>
+                              {fA?.record_wins ?? 0}-{fA?.record_losses ?? 0}-{fA?.record_draws ?? 0} · {fB?.record_wins ?? 0}-{fB?.record_losses ?? 0}-{fB?.record_draws ?? 0}
+                            </p>
+                          )}
+                        </div>
+                        {isEmpty ? (
+                          <button onClick={() => navigate(`/organiser/events/${id}/fight-card`)} style={{
+                            padding: "6px 12px", fontSize: 12, fontWeight: 600, borderRadius: 8,
+                            background: "transparent", color: ACCENT, border: `1px solid ${ACCENT_DIM}`,
+                            cursor: "pointer",
+                          }}>Find Match</button>
+                        ) : (
+                          <span style={{
+                            fontSize: 11, fontWeight: 700, padding: "4px 8px", borderRadius: 6,
+                            background: b.status === "confirmed" ? "rgba(34,197,94,0.14)" : "rgba(245,158,11,0.14)",
+                            color: b.status === "confirmed" ? SUCCESS : WARNING,
+                            textTransform: "uppercase", letterSpacing: "0.04em",
+                          }}>{b.status || "pending"}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {bouts.length === 0 && (
+                    <p style={{ fontSize: 13, color: TEXT_MUTED, textAlign: "center", padding: "24px 0" }}>No matchups yet.</p>
+                  )}
+                </div>
+                <div className="flex items-center justify-between mt-4 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                  <span className="inline-flex items-center gap-2" style={{ fontSize: 12, color: TEXT_SEC }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 999, background: ACCENT }} />
+                    {metrics.open} open slots remaining
+                  </span>
+                  <GoldButton size="sm" onClick={() => navigate(`/organiser/events/${id}/fight-card`)}>
+                    Go to Matchmaking <ChevronRight className="h-3.5 w-3.5" />
+                  </GoldButton>
+                </div>
+              </div>
+
+              {/* Ticket Sales */}
+              <div style={cardStyle}>
+                <SectionTitle action={
+                  <GhostButton icon={Pencil} onClick={() => setShowTickets((s) => !s)}>Manage Tickets</GhostButton>
+                }>Ticket Sales</SectionTitle>
+                <div className="space-y-2">
+                  {tickets.length === 0 && (
+                    <p style={{ fontSize: 13, color: TEXT_MUTED, textAlign: "center", padding: "24px 0" }}>No ticket tiers yet.</p>
+                  )}
+                  {tickets.map((t: any) => {
+                    const qty = t.quantity_available ?? 0;
+                    const sub = qty * (Number(t.price) || 0);
+                    const sharePct = metrics.estRevenue > 0 ? Math.round((sub / metrics.estRevenue) * 100) : 0;
+                    return (
+                      <div key={t.id} className="flex items-center justify-between gap-3" style={{ padding: "10px 12px", background: RAISED, borderRadius: 10 }}>
+                        <div className="flex-1 min-w-0">
+                          <p style={{ fontSize: 13, color: TEXT, fontWeight: 600 }} className="truncate">{t.ticket_type}</p>
+                          <p style={{ fontSize: 11, color: TEXT_SEC }}>{fmtGBP(Number(t.price) || 0)} · {qty.toLocaleString("en-GB")} available</p>
+                        </div>
+                        <span style={{ fontSize: 13, color: ACCENT, fontWeight: 700 }}>{sharePct}%</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-between mt-4 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                  <div>
+                    <p style={{ fontSize: 11, color: TEXT_SEC, textTransform: "uppercase", letterSpacing: "0.06em" }}>Est. Revenue</p>
+                    <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, color: SUCCESS, lineHeight: 1 }}>{fmtGBP(metrics.estRevenue)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p style={{ fontSize: 11, color: TEXT_SEC, textTransform: "uppercase", letterSpacing: "0.06em" }}>Avg Order Value</p>
+                    <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, color: TEXT, lineHeight: 1 }}>
+                      {fmtGBP(tickets.length > 0 ? metrics.estRevenue / Math.max(metrics.totalCapacity, 1) : 0)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Inline ticket management */}
+            {showTickets && (
+              <div style={{ ...cardStyle, marginBottom: 20 }}>
+                <SectionTitle action={
+                  <GhostButton onClick={() => setShowTickets(false)}>Close</GhostButton>
+                }>Manage Tickets</SectionTitle>
+                <ManageTicketsPanel eventId={id!} />
+              </div>
+            )}
+
+            {/* BOTTOM ROW */}
+            <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))" }}>
+              {/* Event Information */}
+              <div style={cardStyle}>
+                <SectionTitle action={
+                  <GhostButton icon={Pencil} onClick={() => setShowEditEvent(true)}>Edit</GhostButton>
+                }>Event Information</SectionTitle>
+                <div className="space-y-2">
+                  {[
+                    ["Date", new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })],
+                    ["Venue", [event.venue_name, event.city].filter(Boolean).join(", ") || "—"],
+                    ["Event Type", event.event_type ? formatEnum(event.event_type) : "—"],
+                    ["Discipline", event.discipline ? formatEnum(event.discipline) : "—"],
+                    ["Capacity", metrics.totalCapacity > 0 ? metrics.totalCapacity.toLocaleString("en-GB") : "—"],
+                    ["Promotion", event.promotion_name || "—"],
+                  ].map(([k, v]) => (
+                    <div key={k} className="flex items-start justify-between gap-3" style={{ padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                      <span style={{ fontSize: 12, color: TEXT_SEC }}>{k}</span>
+                      <span style={{ fontSize: 13, color: TEXT, textAlign: "right", maxWidth: "65%" }}>{v}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Financial Summary */}
+              <div style={cardStyle}>
+                <SectionTitle>Financial Summary</SectionTitle>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between" style={{ padding: "10px 12px", background: RAISED, borderRadius: 10 }}>
+                    <span style={{ fontSize: 12, color: TEXT_SEC }}>Total Revenue (Est.)</span>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: SUCCESS }}>{fmtGBP(metrics.estRevenue)}</span>
+                  </div>
+                  <div className="flex items-center justify-between" style={{ padding: "10px 12px", background: RAISED, borderRadius: 10 }}>
+                    <span style={{ fontSize: 12, color: TEXT_SEC }}>Total Expenses</span>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: TEXT }}>{fmtGBP(0)}</span>
+                  </div>
+                  <div className="flex items-center justify-between" style={{ padding: "10px 12px", background: ACCENT_DIM, borderRadius: 10 }}>
+                    <span style={{ fontSize: 12, color: TEXT_SEC }}>Net Profit (Est.)</span>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: ACCENT }}>{fmtGBP(metrics.estRevenue)}</span>
+                  </div>
+                </div>
+                <p style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 12 }}>
+                  Estimates based on current ticket inventory. Add expenses to refine net profit.
                 </p>
               </div>
-              <div className="flex gap-2 flex-wrap">
-                <button onClick={() => setShowEditEvent(true)} style={{
-                  padding: "8px 16px", fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: "pointer",
-                  background: "transparent", border: "1px solid rgba(232,160,32,0.4)", color: "#e8a020",
-                  transition: "all 0.2s",
-                }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.1)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-                >
-                  <Pencil className="h-3 w-3 inline mr-1" /> Edit Event Details
-                </button>
-                <a href={`/events/${id}`} target="_blank" rel="noopener noreferrer" style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  padding: "8px 16px", fontSize: 13, fontWeight: 600, borderRadius: 8,
-                  background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#8b909e",
-                  textDecoration: "none", transition: "all 0.2s",
-                }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(232,160,32,0.4)"; e.currentTarget.style.color = "#e8a020"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#8b909e"; }}
-                >
-                  <Eye className="h-3.5 w-3.5" /> Preview public page
-                </a>
-                {event.status === "draft" && (
-                  <Button onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending} className="gap-2">
-                    <Globe className="h-4 w-4" />{publishMutation.isPending ? "Publishing..." : "Publish Event"}
-                  </Button>
-                )}
+
+              {/* Recent Activity */}
+              <div style={cardStyle}>
+                <SectionTitle>Recent Activity</SectionTitle>
+                <div className="space-y-2">
+                  {activity.length === 0 && (
+                    <p style={{ fontSize: 13, color: TEXT_MUTED, textAlign: "center", padding: "24px 0" }}>No recent activity.</p>
+                  )}
+                  {activity.map((a, i) => (
+                    <div key={i} className="flex items-start gap-3" style={{ padding: "10px 12px", background: RAISED, borderRadius: 10 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 8, background: ACCENT_DIM, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <a.icon style={{ color: a.color }} className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p style={{ fontSize: 13, color: TEXT, fontWeight: 600 }}>{a.title}</p>
+                        <p style={{ fontSize: 11, color: TEXT_SEC }} className="truncate">{a.subtitle}</p>
+                      </div>
+                      <span style={{ fontSize: 11, color: TEXT_MUTED, whiteSpace: "nowrap" }}>{timeAgo(a.ts)}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-
-            {event.description && <p style={{ color: "#8b909e", marginBottom: 32, maxWidth: 640 }}>{event.description}</p>}
-
-            {/* MAIN CARD */}
-            {sectionContainer(true, (
-              <div>
-                {mainBouts.map((bout: any) => (
-                  <SlotCard
-                    key={bout.id}
-                    bout={bout}
-                    onEdit={setEditingBout}
-                    onTogglePublic={handleTogglePublic}
-                    onFindMatches={(b) => setAddModal({ open: true, section: "Main Event", mode: "find", slot: b })}
-                    onDelete={(boutId) => setPendingDeleteId(boutId)}
-                    onDragStart={handleDragStart}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                  />
-                ))}
-              </div>
-            ), mainBouts)}
-
-            {/* UNDERCARD */}
-            {sectionContainer(false, (
-              <div>
-                {underBouts.map((bout: any) => (
-                  <SlotCard
-                    key={bout.id}
-                    bout={bout}
-                    onEdit={setEditingBout}
-                    onTogglePublic={handleTogglePublic}
-                    onFindMatches={(b) => setAddModal({ open: true, section: "Undercard", mode: "find", slot: b })}
-                    onDelete={(boutId) => setPendingDeleteId(boutId)}
-                    onDragStart={handleDragStart}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
-                  />
-                ))}
-              </div>
-            ), underBouts)}
-
-            {/* Tickets Panel */}
-            <div className="mb-10">
-              <ManageTicketsPanel eventId={id!} />
             </div>
 
             {/* Dialogs */}
-            <AddFightModal
-              open={addModal.open}
-              onOpenChange={(v) => setAddModal((prev) => ({ ...prev, open: v }))}
-              eventId={id!}
-              sectionType={addModal.section}
-              nextSlotNumber={bouts.length + 1}
-              onSuccess={handleBoutSuccess}
-              existingFighterIds={existingFighterIds}
-              fightSlot={slots.length > 0 ? slots[0] : null}
-              prefillSlot={addModal.slot}
-              mode={addModal.mode}
-            />
-            {editingBout && (
-              <EditBoutDialog
-                open={!!editingBout}
-                onOpenChange={(open) => { if (!open) setEditingBout(null); }}
-                bout={editingBout}
-                onSuccess={handleBoutSuccess}
-              />
-            )}
             {showEditEvent && event && (
               <EditEventDialog
                 open={showEditEvent}
@@ -538,28 +579,6 @@ export default function EventManager() {
           </div>
         </section>
       </main>
-      <AlertDialog open={!!pendingDeleteId} onOpenChange={(o) => { if (!o) setPendingDeleteId(null); }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete fight slot?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this fight slot? This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={async () => {
-                if (pendingDeleteId) await handleDelete(pendingDeleteId);
-                setPendingDeleteId(null);
-              }}
-              style={{ background: "#ef4444", color: "#fff" }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
       <Footer />
     </div>
   );
