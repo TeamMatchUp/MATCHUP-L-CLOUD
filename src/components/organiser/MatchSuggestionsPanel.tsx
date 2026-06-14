@@ -45,6 +45,8 @@ interface MatchSuggestionsPanelProps {
   disciplineOverride?: string | null;
   /** When set, suggests individual opponents for this fighter (Scenario A / one TBA) */
   anchorFighter?: FighterProfile;
+  /** Optional dismiss/back handler — shows a visible close button when provided. */
+  onClose?: () => void;
 }
 
 function matchesKeyword(fighter: FighterProfile, keyword: string, fights: any[]): boolean {
@@ -105,7 +107,7 @@ const SLIDER_COLORS = {
   narr: "#a855f7",
 };
 
-export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSelectPair, eventId, weightClassOverride, disciplineOverride, anchorFighter }: MatchSuggestionsPanelProps) {
+export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSelectPair, eventId, weightClassOverride, disciplineOverride, anchorFighter, onClose }: MatchSuggestionsPanelProps) {
   const { user } = useAuth();
   const { track } = useAnalytics();
   const [refreshKey, setRefreshKey] = useState(0);
@@ -324,7 +326,29 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
   const dominantDim = weightBarSegments.reduce((a, b) => a.pct >= b.pct ? a : b).label;
 
   return (
-    <div className="flex flex-col md:flex-row" style={{ height: "90vh", maxHeight: "90vh", overflow: "hidden" }}>
+    <div className="relative flex flex-col md:flex-row" style={{ maxHeight: "92vh", minHeight: 480, overflow: "hidden" }}>
+      {/* Top-right close/back button (always visible) */}
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close suggestions"
+          className="absolute z-20 flex items-center gap-1 transition-colors"
+          style={{
+            top: 12, right: 12,
+            background: "rgba(255,255,255,0.06)",
+            color: "#e8eaf0",
+            borderRadius: 8, padding: "6px 12px",
+            fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none",
+            backdropFilter: "blur(8px)",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.18)"; e.currentTarget.style.color = "#e8a020"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#e8eaf0"; }}
+        >
+          <X style={{ width: 14, height: 14 }} /> Close
+        </button>
+      )}
+
       {/* ═══ LEFT COLUMN — Config ═══ */}
       <div className="flex flex-col" style={{
         width: "100%", maxWidth: 420, flexShrink: 0, background: "#111318",
@@ -702,58 +726,86 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                 <div
                   key={`${pair.fighterA.id}-${pair.fighterB.id}`}
                   style={{
-                    background: "#181c24", borderRadius: 10, padding: 16,
+                    background: "#181c24", borderRadius: 12, padding: 16,
                     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
-                    transition: "all 0.2s ease", cursor: "default",
+                    transition: "all 0.2s ease",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2330"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3), 0 0 0 1px rgba(232,160,32,0.08)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "#181c24"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)"; }}
                 >
-                  {/* Top: names */}
-                  <div className="flex items-center justify-between">
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{pair.fighterA.name}</span>
-                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8a020" }}>VS</span>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{pair.fighterB.name}</span>
+                  {/* Side-by-side fighter panels */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 12 }}>
+                    {[pair.fighterA, pair.fighterB].map((fighter: FighterProfile, idx: number) => (
+                      <div key={fighter.id + idx} style={{
+                        background: "#1e2330", borderRadius: 10, padding: 12,
+                        order: idx === 0 ? 1 : 3,
+                        minWidth: 0,
+                      }}>
+                        <p className="truncate" style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{fighter.name}</p>
+                        <p className="truncate" style={{ fontSize: 11, color: "#8b909e", marginTop: 2 }}>
+                          {formatEnum(fighter.weight_class)}
+                          {fighter.style && ` · ${formatEnum(fighter.style)}`}
+                        </p>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: "#e8a020", marginTop: 6 }}>
+                          {fighter.record_wins}-{fighter.record_losses}-{fighter.record_draws}
+                        </p>
+                      </div>
+                    ))}
+                    <span style={{ order: 2, fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#e8a020", textAlign: "center" }}>VS</span>
                   </div>
 
-                  {/* Score bar */}
-                  <div style={{ marginTop: 10 }}>
+                  {/* Compatibility score bar */}
+                  <div style={{ marginTop: 12 }}>
                     <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
-                      <span style={{ fontSize: 9, color: "#555b6b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Composite Score</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#e8a020" }}>{compositeScore.toFixed(0)}</span>
+                      <span style={{ fontSize: 9, color: "#555b6b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Compatibility</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#e8a020" }}>{compositeScore.toFixed(0)} / 100</span>
                     </div>
-                    <div style={{ height: 3, borderRadius: 2, background: "#1e2330" }}>
+                    <div style={{ height: 4, borderRadius: 2, background: "#1e2330" }}>
                       <div style={{ width: `${compositeScore}%`, height: "100%", borderRadius: 2, background: "#e8a020", transition: "width 0.3s" }} />
                     </div>
+                    <p style={{ fontSize: 10, color: "#8b909e", marginTop: 6 }}>
+                      Elo Δ{eloDelta} · {pair.reason}
+                    </p>
                   </div>
 
-                  {/* Stats row */}
-                  <div className="flex items-center gap-1" style={{ marginTop: 8, fontSize: 10, color: "#8b909e" }}>
-                    <span>{formatEnum(pair.fighterA.weight_class)}</span>
-                    <span>·</span>
-                    <span>Elo Δ{eloDelta}</span>
-                    <span>·</span>
-                    <span>{pair.reason}</span>
-                  </div>
-
-                  {/* Bottom: elo + select */}
-                  <div className="flex items-center justify-between" style={{ marginTop: 10 }}>
-                    <span style={{ fontSize: 10, color: "#555b6b" }}>
-                      {pair.fighterA.record_wins}W-{pair.fighterA.record_losses}L ({eloA}) vs {pair.fighterB.record_wins}W-{pair.fighterB.record_losses}L ({eloB})
-                    </span>
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-2" style={{ marginTop: 12, justifyContent: "flex-end" }}>
+                    <a
+                      href={`/fighters/${pair.fighterA.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        background: "transparent", color: "#8b909e",
+                        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.08)",
+                        borderRadius: 6, padding: "6px 12px", fontSize: 12, fontWeight: 600,
+                        textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4,
+                      }}
+                    >
+                      View A
+                    </a>
+                    <a
+                      href={`/fighters/${pair.fighterB.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        background: "transparent", color: "#8b909e",
+                        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.08)",
+                        borderRadius: 6, padding: "6px 12px", fontSize: 12, fontWeight: 600,
+                        textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4,
+                      }}
+                    >
+                      View B
+                    </a>
                     <button
                       onClick={() => handleSelect(pair.fighterA, pair.fighterB)}
                       disabled={allZero}
                       style={{
-                        background: "rgba(232,160,32,0.12)", color: "#e8a020", borderRadius: 6,
-                        padding: "5px 14px", fontSize: 12, fontWeight: 600, border: "none",
+                        background: allZero ? "rgba(232,160,32,0.3)" : "#e8a020",
+                        color: "#0d0f12", borderRadius: 6,
+                        padding: "6px 16px", fontSize: 12, fontWeight: 700, border: "none",
                         cursor: allZero ? "not-allowed" : "pointer", transition: "all 0.15s",
-                        display: "flex", alignItems: "center", gap: 4,
+                        display: "inline-flex", alignItems: "center", gap: 4,
                       }}
-                      onMouseEnter={(e) => { if (!allZero) e.currentTarget.style.background = "rgba(232,160,32,0.2)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.12)"; }}
                     >
-                      <Check style={{ width: 12, height: 12 }} /> Select
+                      <Check style={{ width: 12, height: 12 }} /> Accept
                     </button>
                   </div>
                 </div>
