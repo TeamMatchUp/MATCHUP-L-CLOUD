@@ -60,6 +60,26 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
     staleTime: 60000,
   });
 
+  const { data: followerCount = 0 } = useQuery({
+    queryKey: ["dash-sidebar-followers", user?.id],
+    queryFn: async () => {
+      const { count } = await supabase.from("user_follows").select("id", { count: "exact", head: true }).eq("following_id", user!.id);
+      return count ?? 0;
+    },
+    enabled: !!user,
+    staleTime: 60000,
+  });
+
+  const { data: followingCount = 0 } = useQuery({
+    queryKey: ["dash-sidebar-following", user?.id],
+    queryFn: async () => {
+      const { count } = await supabase.from("user_follows").select("id", { count: "exact", head: true }).eq("follower_id", user!.id);
+      return count ?? 0;
+    },
+    enabled: !!user,
+    staleTime: 60000,
+  });
+
   const initials = (profile?.full_name || user?.email || "U").slice(0, 2).toUpperCase();
   const isDark = theme === "dark";
 
@@ -405,11 +425,14 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           </Avatar>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate" style={{ fontSize: 12, fontWeight: 600, color: "#e8eaf0", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <p className="truncate" style={{ fontSize: 12, fontWeight: 600, color: "#e8eaf0", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {profile?.full_name || "User"}
               </p>
-              <p className="truncate" style={{ fontSize: 10, color: "#8b909e", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <p className="truncate" style={{ fontSize: 10, color: "#8b909e", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {user?.email}
+              </p>
+              <p style={{ fontSize: 10, color: "#8b909e", marginTop: 2, whiteSpace: "nowrap" }}>
+                <span style={{ color: "#e8eaf0", fontWeight: 600 }}>{followerCount}</span> Followers <span style={{ color: "#555b6b" }}>·</span> <span style={{ color: "#e8eaf0", fontWeight: 600 }}>{followingCount}</span> Following
               </p>
             </div>
           )}
