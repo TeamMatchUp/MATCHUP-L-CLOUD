@@ -259,8 +259,8 @@ export function FighterSearchDropdown({
         </div>
       </div>
 
-      {/* Results — scrollable */}
-      <div className="space-y-3" style={{ maxHeight: 480, overflowY: "auto", paddingRight: 4 }}>
+      {/* Results */}
+      <div className="space-y-3">
         {isLoading ? (
           <p className="text-xs text-muted-foreground p-4 text-center">Loading fighters...</p>
         ) : filtered.length === 0 ? (
