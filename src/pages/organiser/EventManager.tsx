@@ -230,6 +230,7 @@ export default function EventManager() {
     open: false, section: "Main Event", mode: "add",
   });
   const [dragId, setDragId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["organiser-event", id],
