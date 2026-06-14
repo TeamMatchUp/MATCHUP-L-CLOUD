@@ -436,6 +436,17 @@ export default function EventManager() {
                 >
                   <Pencil className="h-3 w-3 inline mr-1" /> Edit Event Details
                 </button>
+                <a href={`/events/${id}`} target="_blank" rel="noopener noreferrer" style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "8px 16px", fontSize: 13, fontWeight: 600, borderRadius: 8,
+                  background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#8b909e",
+                  textDecoration: "none", transition: "all 0.2s",
+                }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(232,160,32,0.4)"; e.currentTarget.style.color = "#e8a020"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#8b909e"; }}
+                >
+                  <Eye className="h-3.5 w-3.5" /> Preview public page
+                </a>
                 {event.status === "draft" && (
                   <Button onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending} className="gap-2">
                     <Globe className="h-4 w-4" />{publishMutation.isPending ? "Publishing..." : "Publish Event"}
