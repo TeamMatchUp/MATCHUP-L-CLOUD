@@ -374,7 +374,7 @@ export function CoachAnalyticsV2({ userId }: { userId: string }) {
       <AnalyticsCard
         title="Fights Booked"
         action={
-          <PillToggle
+          <PillToggle<"30" | "60" | "90">
             value={bookedWindow}
             onChange={setBookedWindow}
             options={[
