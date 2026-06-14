@@ -424,9 +424,36 @@ export default function EventDetail() {
   return (
     <div className="min-h-screen" style={{ background: "#0d0f12" }}>
       <Header />
+      {isOwnEvent && (
+        <div
+          style={{
+            position: "sticky", top: 60, zIndex: 28,
+            background: "rgba(232,160,32,0.12)",
+            backdropFilter: "blur(12px)",
+            boxShadow: "inset 0 -1px 0 rgba(232,160,32,0.25)",
+            padding: "10px 16px",
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+          }}
+        >
+          <span style={{ fontSize: 13, color: "#e8eaf0", fontWeight: 600 }}>
+            Previewing your public event page
+          </span>
+          <button
+            onClick={() => navigate(`/organiser/events/${id}`)}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              background: "#e8a020", color: "#0d0f12",
+              fontSize: 12, fontWeight: 700, borderRadius: 8,
+              padding: "6px 12px", border: "none", cursor: "pointer", whiteSpace: "nowrap",
+            }}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to Manage Event
+          </button>
+        </div>
+      )}
       <main className="pt-16">
         <section style={{ padding: "10px 0" }}>
-          <div className="container" style={{ paddingLeft: 35, paddingRight: 35 }}>
+          <div className="container" style={{ paddingLeft: 16, paddingRight: 16 }}>
             <div className="pt-2">
               <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-4 w-4 mr-2" />Back
