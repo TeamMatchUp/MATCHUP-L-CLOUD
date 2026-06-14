@@ -538,6 +538,28 @@ export default function EventManager() {
           </div>
         </section>
       </main>
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(o) => { if (!o) setPendingDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete fight slot?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this fight slot? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (pendingDeleteId) await handleDelete(pendingDeleteId);
+                setPendingDeleteId(null);
+              }}
+              style={{ background: "#ef4444", color: "#fff" }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <Footer />
     </div>
   );
