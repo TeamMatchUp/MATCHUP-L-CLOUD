@@ -343,7 +343,7 @@ export default function Explore() {
     <div className="min-h-screen flex flex-col" style={{ background: EX.bg }}>
       <Header />
       <main className="flex-1 flex flex-col" style={{ paddingTop: 56 }}>
-        <section className="flex-1 flex flex-col" style={{ padding: "24px 32px" }}>
+        <section className="flex-1 flex flex-col px-4 sm:px-8" style={{ paddingTop: 24, paddingBottom: 24 }}>
           {/* Pill Tab Navigation */}
           <div className="flex items-center gap-1.5 sm:gap-2 mb-6 flex-nowrap overflow-x-auto">
             {([
