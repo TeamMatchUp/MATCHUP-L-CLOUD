@@ -472,7 +472,7 @@ export default function EventManager() {
                     onEdit={setEditingBout}
                     onTogglePublic={handleTogglePublic}
                     onFindMatches={(b) => setAddModal({ open: true, section: "Main Event", mode: "find", slot: b })}
-                    onDelete={handleDelete}
+                    onDelete={(boutId) => setPendingDeleteId(boutId)}
                     onDragStart={handleDragStart}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
@@ -491,7 +491,7 @@ export default function EventManager() {
                     onEdit={setEditingBout}
                     onTogglePublic={handleTogglePublic}
                     onFindMatches={(b) => setAddModal({ open: true, section: "Undercard", mode: "find", slot: b })}
-                    onDelete={handleDelete}
+                    onDelete={(boutId) => setPendingDeleteId(boutId)}
                     onDragStart={handleDragStart}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
