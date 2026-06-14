@@ -490,47 +490,7 @@ export default function Explore() {
             </AnimatePresence>
           </div>
 
-          {/* Map Container (when not in split mode) */}
-          {!mapOpen && (tab === "gyms" || tab === "events") && mapMarkers.length > 0 && (
-            <div style={{ marginBottom: 16, background: EX.card, border: `1px solid ${EX.border}`, borderRadius: 12, overflow: "hidden" }}>
-              <div className="flex items-center justify-between" style={{ padding: "12px 16px" }}>
-                <div className="flex items-center gap-1.5" style={{ background: "rgba(255,255,255,0.06)", borderRadius: 6, padding: "5px 12px" }}>
-                  <MapPin style={{ width: 14, height: 14, color: EX.gold }} />
-                  <span style={{ fontSize: 13, color: EX.text }}>{tab === "gyms" ? "Gyms" : "Events"} Locations</span>
-                </div>
-                <button
-                  onClick={() => { setMapOpen(true); setPopupItem(null); }}
-                  style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all 0.2s" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = EX.goldDim; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                >
-                  <Maximize2 style={{ width: 14, height: 14, color: EX.muted }} />
-                </button>
-              </div>
-              <div style={{ height: 420 }}>
-                <PigeonMap defaultCenter={[53.5, -2.5]} defaultZoom={5.5} height={420}>
-                  {mapMarkers.map((m) => (
-                    <Marker key={`${m.type}-${m.id}`} anchor={[m.lat, m.lng]} color="hsl(46, 93%, 61%)" width={32} onClick={() => setPopupItem(m)} />
-                  ))}
-                  {popupItem && (
-                    <Overlay anchor={[popupItem.lat, popupItem.lng]} offset={[0, -20]}>
-                      <div style={{ background: EX.raised, border: `1px solid ${EX.borderMid}`, borderRadius: 8, padding: "10px 14px", minWidth: 180 }} onClick={(e) => e.stopPropagation()}>
-                        <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 14, color: EX.text, marginBottom: 4 }}>{popupItem.name}</p>
-                        <p style={{ fontSize: 12, color: EX.muted, marginBottom: 8 }}>{popupItem.city}</p>
-                        <Link to={tab === "gyms" ? `/gyms/${popupItem.id}` : `/events/${popupItem.id}`} style={{ fontSize: 12, color: EX.gold }}>View →</Link>
-                        <button onClick={() => setPopupItem(null)} className="absolute top-1 right-1" style={{ color: EX.muted }}><X className="h-3 w-3" /></button>
-                      </div>
-                    </Overlay>
-                  )}
-                </PigeonMap>
-              </div>
-              <div className="flex items-center gap-3" style={{ padding: "10px 16px", background: "rgba(20,23,30,0.75)", backdropFilter: "blur(10px)", borderTop: `1px solid ${EX.border}` }}>
-                <span style={{ fontSize: 12, color: EX.muted }}>Total Locations: {mapMarkers.length}</span>
-                <div style={{ width: 1, height: 12, background: EX.border }} />
-                <span style={{ fontSize: 12, color: EX.muted }}>Category: <span style={{ color: EX.gold }}>{tab === "gyms" ? "Gyms" : "Events"}</span></span>
-              </div>
-            </div>
-          )}
+          {/* Permanent map removed — toggled via Map button in filter bar */}
 
           {/* Mobile map modal */}
           {mapOpen && (tab === "gyms" || tab === "events") && isMobile && (
