@@ -286,36 +286,18 @@ export default function EventDetail() {
   const hasContact = event.contact_email || event.contact_phone || event.contact_website;
   const hasCoords = event.latitude != null && event.longitude != null;
 
-  // Status badge for a bout based on assignments + status
-  const getStatusBadge = (bout: any): { label: string; className: string } | null => {
-    const hasA = !!bout.fighter_a_id;
-    const hasB = !!bout.fighter_b_id;
-    const status = (bout.status || "").toLowerCase();
-    if (hasA && hasB && status === "confirmed") {
-      return { label: "CONFIRMED", className: "bg-green-500/15 text-green-400" };
-    }
-    if (hasA && hasB && (status === "proposed")) {
-      return { label: "PROPOSED", className: "bg-blue-500/15 text-blue-400" };
-    }
-    if (hasA && hasB && (status === "open" || status === "pending")) {
-      return { label: "PENDING", className: "bg-yellow-500/15 text-yellow-400" };
-    }
-    return null;
-  };
+  // Reveal fighter details only when bout is confirmed AND public
+  const isRevealed = (bout: any) =>
+    bout.is_public === true && (bout.status || "").toLowerCase() === "confirmed";
 
   const renderMainBout = (bout: any) => {
-    const fA = unwrap(bout.fighter_a);
-    const fB = unwrap(bout.fighter_b);
+    const revealed = isRevealed(bout);
+    const fA = revealed ? unwrap(bout.fighter_a) : null;
+    const fB = revealed ? unwrap(bout.fighter_b) : null;
     const nameA = fA?.name ?? "TBD";
     const nameB = fB?.name ?? "TBD";
-    const badge = getStatusBadge(bout);
     return (
       <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6 relative">
-        {badge && (
-          <span className={`absolute top-3 right-3 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${badge.className}`}>
-            {badge.label}
-          </span>
-        )}
         <div className="grid" style={{ gridTemplateColumns: "1fr 140px 1fr" }}>
           {/* Fighter A — left aligned */}
           <div className="flex items-center gap-3 overflow-hidden">
@@ -364,18 +346,13 @@ export default function EventDetail() {
   };
 
   const renderUndercardBout = (bout: any) => {
-    const fA = unwrap(bout.fighter_a);
-    const fB = unwrap(bout.fighter_b);
+    const revealed = isRevealed(bout);
+    const fA = revealed ? unwrap(bout.fighter_a) : null;
+    const fB = revealed ? unwrap(bout.fighter_b) : null;
     const nameA = fA?.name ?? "TBD";
     const nameB = fB?.name ?? "TBD";
-    const badge = getStatusBadge(bout);
     return (
       <div key={bout.id} className="rounded-lg border border-border bg-card p-4 relative">
-        {badge && (
-          <span className={`absolute top-2 right-2 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${badge.className}`}>
-            {badge.label}
-          </span>
-        )}
         <div className="grid items-center gap-3" style={{ gridTemplateColumns: "1fr 120px 1fr" }}>
           {/* Fighter A */}
           <div className="flex items-center gap-2 overflow-hidden">
@@ -418,6 +395,7 @@ export default function EventDetail() {
       </div>
     );
   };
+
 
   const Pagination = ({ page: p, total, setPage: sp }: { page: number; total: number; setPage: (n: number) => void }) => {
     if (total <= 1) return null;
