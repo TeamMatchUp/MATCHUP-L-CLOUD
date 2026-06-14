@@ -344,6 +344,7 @@ export function DashboardOverview({
   highlightedDates = [],
   effectiveRoles,
   onNavigateSection,
+  fighterProfileId,
 }: DashboardOverviewProps) {
   const { user } = useAuth();
   const isCoachOrOwner = effectiveRoles.includes("gym_owner") || effectiveRoles.includes("coach");
