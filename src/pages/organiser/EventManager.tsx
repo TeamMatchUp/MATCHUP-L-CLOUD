@@ -8,6 +8,10 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { EditEventDialog } from "@/components/organiser/EditEventDialog";
 import { EditBoutDialog } from "@/components/organiser/EditBoutDialog";
 import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
