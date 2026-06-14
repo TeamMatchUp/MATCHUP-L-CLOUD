@@ -593,7 +593,37 @@ export function AddFightModal({
             )}
 
             <div className="space-y-4 mt-3">
-              {paramFields(manualWc, setManualWc, manualDisc, setManualDisc, manualRounds, setManualRounds, manualRoundTime, setManualRoundTime, manualWeightKg, setManualWeightKg, manualWeightLbs, setManualWeightLbs)}
+              {/* Slimmer slot parameters — weight class and discipline only (rounds / time / specific weight are not fighter characteristics) */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "#8b909e" }}>Weight Class (slot)</Label>
+                  <Select value={manualWc || "any"} onValueChange={(v) => setManualWc(v === "any" ? "" : v)}>
+                    <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28" }}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any</SelectItem>
+                      {WEIGHT_CLASSES.map((w) => (
+                        <SelectItem key={w} value={w}>{formatEnum(w)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "#8b909e" }}>Discipline (slot)</Label>
+                  <Select value={manualDisc || "any"} onValueChange={(v) => setManualDisc(v === "any" ? "" : v)}>
+                    <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28" }}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Any</SelectItem>
+                      {DISCIPLINES.map((d) => (
+                        <SelectItem key={d} value={d}>{formatEnum(d)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
               {scenario === "oneTBA" ? (
                 /* Only one fighter search for the TBA side */
@@ -605,6 +635,8 @@ export function AddFightModal({
                   excludeId={anchorFighter?.id}
                   coachId={isCoach ? user?.id : null}
                   eventId={eventId}
+                  preferredWeightClass={manualWc || anchorFighter?.weight_class || prefillSlot?.weight_class || null}
+                  preferredDiscipline={manualDisc || prefillSlot?.discipline || null}
                 />
               ) : (
                 /* Both fighters for bothTBA or add mode */
@@ -617,6 +649,8 @@ export function AddFightModal({
                     excludeId={fighterB?.id}
                     coachId={isCoach ? user?.id : null}
                     eventId={eventId}
+                    preferredWeightClass={manualWc || prefillSlot?.weight_class || null}
+                    preferredDiscipline={manualDisc || prefillSlot?.discipline || null}
                   />
                   <FighterSearchDropdown
                     label="Fighter B"
@@ -626,11 +660,16 @@ export function AddFightModal({
                     excludeId={fighterA?.id}
                     coachId={isCoach ? user?.id : null}
                     eventId={eventId}
+                    preferredWeightClass={manualWc || fighterA?.weight_class || prefillSlot?.weight_class || null}
+                    preferredDiscipline={manualDisc || prefillSlot?.discipline || null}
                   />
                 </>
               )}
 
-              <div className="flex gap-2 justify-end pt-2">
+              <div
+                className="flex gap-2 justify-end pt-3"
+                style={{ position: "sticky", bottom: 0, background: "#111318", boxShadow: "0 -8px 16px rgba(17,19,24,0.95)" }}
+              >
                 <Button variant="ghost" onClick={() => handleClose(false)} style={{ color: "#8b909e" }}>Cancel</Button>
                 <Button
                   onClick={handleManualSave}
