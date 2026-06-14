@@ -273,8 +273,8 @@ export default function EventDetail() {
     );
   }
 
-  // Filter to only confirmed + public bouts for the public page
-  const publicBouts = allBouts.filter((b: any) => b.is_public === true && b.status === "confirmed" && (b.fighter_a_id || b.fighter_b_id));
+  // Show all public bouts regardless of status; render details based on assignment + status
+  const publicBouts = allBouts.filter((b: any) => b.is_public === true);
   const mainEvents = publicBouts.filter((b: any) => b.bout_type === "Main Event");
   const undercards = publicBouts.filter((b: any) => b.bout_type !== "Main Event");
 
@@ -286,8 +286,22 @@ export default function EventDetail() {
   const hasContact = event.contact_email || event.contact_phone || event.contact_website;
   const hasCoords = event.latitude != null && event.longitude != null;
 
-  // Helper for open slot check (used in render)
-  const isOpen = (bout: any) => !bout.fighter_a_id && !bout.fighter_b_id && bout.status === "open";
+  // Status badge for a bout based on assignments + status
+  const getStatusBadge = (bout: any): { label: string; className: string } | null => {
+    const hasA = !!bout.fighter_a_id;
+    const hasB = !!bout.fighter_b_id;
+    const status = (bout.status || "").toLowerCase();
+    if (hasA && hasB && status === "confirmed") {
+      return { label: "CONFIRMED", className: "bg-green-500/15 text-green-400" };
+    }
+    if (hasA && hasB && (status === "proposed")) {
+      return { label: "PROPOSED", className: "bg-blue-500/15 text-blue-400" };
+    }
+    if (hasA && hasB && (status === "open" || status === "pending")) {
+      return { label: "PENDING", className: "bg-yellow-500/15 text-yellow-400" };
+    }
+    return null;
+  };
 
   const renderMainBout = (bout: any) => {
     const showDetails = bout.is_public === true && bout.status === "confirmed";
