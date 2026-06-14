@@ -304,52 +304,55 @@ export default function EventDetail() {
   };
 
   const renderMainBout = (bout: any) => {
-    const showDetails = bout.is_public === true && bout.status === "confirmed";
-    const fA = showDetails ? unwrap(bout.fighter_a) : null;
-    const fB = showDetails ? unwrap(bout.fighter_b) : null;
-    const nameA = showDetails ? (fA?.name ?? "TBA") : "TBA";
-    const nameB = showDetails ? (fB?.name ?? "TBA") : "TBA";
+    const fA = unwrap(bout.fighter_a);
+    const fB = unwrap(bout.fighter_b);
+    const nameA = fA?.name ?? "TBD";
+    const nameB = fB?.name ?? "TBD";
+    const badge = getStatusBadge(bout);
     return (
       <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6 relative">
-        {/* Three-column layout with fixed center: Fighter A | VS + Weight | Fighter B */}
-      <div className="grid" style={{ gridTemplateColumns: "1fr 140px 1fr" }}>
+        {badge && (
+          <span className={`absolute top-3 right-3 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded ${badge.className}`}>
+            {badge.label}
+          </span>
+        )}
+        <div className="grid" style={{ gridTemplateColumns: "1fr 140px 1fr" }}>
           {/* Fighter A — left aligned */}
           <div className="flex items-center gap-3 overflow-hidden">
-            {showDetails && fA?.profile_image && (
+            {fA?.profile_image && (
               <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 shrink-0">
                 <img src={fA.profile_image} alt={fA.name} className="h-full w-full object-cover" />
               </div>
             )}
             <div className="text-left min-w-0">
-              {showDetails && fA ? (
+              {fA ? (
                 <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-xl md:text-2xl text-foreground uppercase truncate">{nameA}</p>
                 </Link>
               ) : (
                 <p className="font-heading text-xl md:text-2xl text-muted-foreground uppercase">{nameA}</p>
               )}
-              {showDetails && fA && <p className="text-primary font-bold text-lg mt-1">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
+              {fA && <p className="text-primary font-bold text-lg mt-1">{fA.record_wins}-{fA.record_losses}-{fA.record_draws}</p>}
             </div>
           </div>
-          {/* Centre — VS + weight class */}
+          {/* Centre */}
           <div className="flex flex-col items-center justify-center">
-            {isOpen(bout) && <span className="text-primary text-xs font-semibold uppercase tracking-wide">Open</span>}
             <span className="font-heading text-primary text-2xl">VS</span>
             {bout.weight_class && <p className="text-xs text-muted-foreground mt-1 whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
           {/* Fighter B — right aligned */}
           <div className="flex items-center gap-3 justify-end overflow-hidden">
             <div className="text-right min-w-0">
-              {showDetails && fB ? (
+              {fB ? (
                 <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-xl md:text-2xl text-foreground uppercase truncate">{nameB}</p>
                 </Link>
               ) : (
                 <p className="font-heading text-xl md:text-2xl text-muted-foreground uppercase">{nameB}</p>
               )}
-              {showDetails && fB && <p className="text-primary font-bold text-lg mt-1">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
+              {fB && <p className="text-primary font-bold text-lg mt-1">{fB.record_wins}-{fB.record_losses}-{fB.record_draws}</p>}
             </div>
-            {showDetails && fB?.profile_image && (
+            {fB?.profile_image && (
               <div className="h-16 w-16 md:h-20 md:w-20 rounded-full overflow-hidden border-2 border-primary/30 shrink-0">
                 <img src={fB.profile_image} alt={fB.name} className="h-full w-full object-cover" />
               </div>
