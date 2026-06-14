@@ -423,7 +423,7 @@ export default function EventManager() {
             <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, color: "#e8eaf0", textTransform: "uppercase" }}>{event.title}</h1>
+                  <h1 className="truncate" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.5rem, 5vw, 2rem)", color: "#e8eaf0", textTransform: "uppercase", lineHeight: 1.05, maxWidth: "100%" }}>{event.title}</h1>
                   <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>{event.status}</Badge>
                 </div>
                 <p style={{ fontSize: 13, color: "#8b909e" }}>
