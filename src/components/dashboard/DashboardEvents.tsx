@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Calendar, ArrowRight, ArrowLeft, Search } from "lucide-react";
 import { InterestedEventsPanel } from "@/components/fighter/InterestedEventsPanel";
+import { useAuth } from "@/contexts/AuthContext";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
