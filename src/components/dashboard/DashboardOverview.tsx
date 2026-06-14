@@ -544,8 +544,7 @@ export function DashboardOverview({
   if (isOrganiser) {
     return (
       <div>
-        <StickyHeader quickActionsContent={quickActionsOrg} />
-        <div className="space-y-4" style={{ padding: "72px 24px 24px" }}>
+        <div className="space-y-4" style={{ padding: "0 24px 24px" }}>
           <CardWrapper visible={orgCardVis.stats}><OrganiserOverviewHero /></CardWrapper>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
             {orgCardVis.pending && <div className={orgCardVis.calendar ? "lg:col-span-3" : "lg:col-span-5"}><OrganiserPendingMatches /></div>}
