@@ -417,8 +417,28 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                 {preset.label}
               </button>
             ))}
+            {(selectedPreset !== null || comp !== 50 || ent !== 50 || style !== 50 || narr !== 50) && (
+              <button
+                onClick={() => {
+                  setSelectedPreset(null);
+                  setComp(50); setEnt(50); setStyle(50); setNarr(50);
+                  setSettingsChanged(false);
+                }}
+                style={{
+                  background: "transparent", color: "#8b909e",
+                  borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, border: "none",
+                  cursor: "pointer", transition: "all 0.15s", display: "inline-flex", alignItems: "center", gap: 6,
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2330"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+              >
+                <RefreshCw style={{ width: 12, height: 12 }} />
+                Reset
+              </button>
+            )}
           </div>
         </div>
+
 
         {/* WEIGHTING */}
         <div>
