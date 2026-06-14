@@ -150,6 +150,7 @@ export default function EventDetail() {
   const [sending, setSending] = useState(false);
   const [mainPage, setMainPage] = useState(0);
   const [underPage, setUnderPage] = useState(0);
+  const [mapOpen, setMapOpen] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const BOUTS_PER_PAGE = 5;
