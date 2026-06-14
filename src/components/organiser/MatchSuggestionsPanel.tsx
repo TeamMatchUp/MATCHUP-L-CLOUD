@@ -350,11 +350,12 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
       )}
 
       {/* ═══ LEFT COLUMN — Config ═══ */}
-      <div className="flex flex-col" style={{
+      <div className="flex flex-col md:overflow-y-auto" style={{
         width: "100%", maxWidth: 420, flexShrink: 0, background: "#111318",
         boxShadow: "inset -1px 0 0 rgba(255,255,255,0.04)",
-        overflowY: "auto", padding: "28px 24px", gap: 20,
+        padding: "28px 24px", gap: 20,
       }}>
+
         {/* Header */}
         <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, color: "#e8eaf0", letterSpacing: "0.04em" }}>
           {anchorFighter ? (
