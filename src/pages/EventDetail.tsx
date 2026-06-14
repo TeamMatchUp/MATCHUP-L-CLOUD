@@ -277,6 +277,7 @@ export default function EventDetail() {
   }
 
   const isOwnEvent = !!(user && isOrganiser && event.organiser_id === user.id);
+  const isPreview = searchParams.get("preview") === "true";
 
   // Show all public bouts regardless of status; render details based on assignment + status
   const publicBouts = allBouts.filter((b: any) => b.is_public === true);
