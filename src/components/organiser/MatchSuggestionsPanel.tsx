@@ -581,7 +581,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
       </div>
 
       {/* ═══ RIGHT COLUMN — Results ═══ */}
-      <div className="flex-1 flex flex-col" style={{ background: "#0d1018", overflowY: "auto", padding: "28px 24px" }}>
+      <div className="flex-1 flex flex-col md:overflow-y-auto" style={{ background: "#0d1018", padding: "28px 24px" }}>
         {/* Header row */}
         <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
           <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>
