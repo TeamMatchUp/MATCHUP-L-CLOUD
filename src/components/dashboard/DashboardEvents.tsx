@@ -100,7 +100,7 @@ export function DashboardEvents({
             return (
               <Link
                 key={event.id}
-                to={isOrganiser ? `/organiser/events/${event.id}` : `/events/${event.id}`}
+                to={event.organiser_id === currentUserId ? `/organiser/events/${event.id}` : `/events/${event.id}`}
                 className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors"
               >
                 <div>
