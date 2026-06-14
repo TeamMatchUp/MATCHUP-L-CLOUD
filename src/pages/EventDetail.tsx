@@ -466,7 +466,7 @@ export default function EventDetail() {
                 <div className="mb-8 rounded-xl overflow-hidden relative" style={{ height: 280 }}>
                   <img src={event.banner_image} alt={event.title} className="w-full h-full object-cover" />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(13,15,18,0.95) 100%)" }} />
-                  <h1 className="absolute bottom-6 left-6 font-heading text-4xl md:text-5xl text-foreground" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{event.title}</h1>
+                  <h1 className="absolute bottom-4 left-4 right-4 font-heading text-foreground truncate" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.5rem, 6vw, 3rem)", lineHeight: 1.05 }}>{event.title}</h1>
                 </div>
               )}
 
