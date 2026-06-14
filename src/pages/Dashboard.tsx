@@ -171,10 +171,8 @@ export default function Dashboard() {
               highlightedDates={highlightedDates}
               effectiveRoles={effectiveRoles as string[]}
               onNavigateSection={navigateToSection}
+              fighterProfileId={fighterProfile?.id ?? null}
             />
-            {isFighter && fighterProfile && (
-              <GymsNearYouWidget fighterProfileId={fighterProfile.id} />
-            )}
           </div>
         );
 
