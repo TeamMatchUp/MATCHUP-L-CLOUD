@@ -5,12 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
 import { EditEventDialog } from "@/components/organiser/EditEventDialog";
 import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
 import {
   ArrowLeft, Pencil, Eye, Share2, Calendar, MapPin, Building2,
-  CheckCircle2, Circle, Clock, Ticket, TrendingUp, Users, AlertCircle,
+  CheckCircle2, Circle, Ticket, TrendingUp, Users, AlertCircle,
   ChevronRight, Plus, Trophy, PoundSterling,
 } from "lucide-react";
 import { formatEnum } from "@/lib/format";
