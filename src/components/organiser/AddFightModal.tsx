@@ -697,6 +697,7 @@ export function AddFightModal({
             weightClassOverride={prefillSlot?.weight_class ?? null}
             disciplineOverride={prefillSlot?.discipline ?? null}
             anchorFighter={anchorFighter ?? undefined}
+            onClose={() => setStep("menu")}
           />
         )}
 
