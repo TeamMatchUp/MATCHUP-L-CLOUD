@@ -1,11 +1,11 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Plus, Phone, Globe, Mail, ShoppingCart, Map as MapIcon } from "lucide-react";
+import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Plus, Phone, Globe, Mail, ShoppingCart, Map as MapIcon, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -155,6 +155,7 @@ export default function EventDetail() {
   const [mapOpen, setMapOpen] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const BOUTS_PER_PAGE = 5;
 
   // Load fighter profile for fighters AND coaches (coaches also have fighter profiles)
@@ -277,6 +278,7 @@ export default function EventDetail() {
   }
 
   const isOwnEvent = !!(user && isOrganiser && event.organiser_id === user.id);
+  const isPreview = searchParams.get("preview") === "true";
 
   // Show all public bouts regardless of status; render details based on assignment + status
   const publicBouts = allBouts.filter((b: any) => b.is_public === true);
@@ -424,7 +426,7 @@ export default function EventDetail() {
   return (
     <div className="min-h-screen" style={{ background: "#0d0f12" }}>
       <Header />
-      {isOwnEvent && (
+      {isOwnEvent && isPreview && (
         <div
           style={{
             position: "sticky", top: 60, zIndex: 28,
@@ -450,6 +452,21 @@ export default function EventDetail() {
             <ArrowLeft className="h-3.5 w-3.5" /> Back to Manage Event
           </button>
         </div>
+      )}
+      {isOwnEvent && !isPreview && (
+        <button
+          onClick={() => navigate(`/organiser/events/${id}`)}
+          style={{
+            position: "fixed", top: 72, right: 16, zIndex: 28,
+            display: "inline-flex", alignItems: "center", gap: 6,
+            background: "#e8a020", color: "#0d0f12",
+            fontSize: 12, fontWeight: 700, borderRadius: 999,
+            padding: "6px 14px", border: "none", cursor: "pointer", whiteSpace: "nowrap",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+          }}
+        >
+          <Settings className="h-3.5 w-3.5" /> Manage Event
+        </button>
       )}
       <main className="pt-16">
         <section style={{ padding: "10px 0" }}>
