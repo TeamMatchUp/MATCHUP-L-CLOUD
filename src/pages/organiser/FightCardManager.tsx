@@ -212,7 +212,7 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
 }
 
 // ─── Main Page ──────────────────────────────────────────────
-export default function EventManager() {
+export default function FightCardManager() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
