@@ -425,11 +425,14 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           </Avatar>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate" style={{ fontSize: 12, fontWeight: 600, color: "#e8eaf0", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <p className="truncate" style={{ fontSize: 12, fontWeight: 600, color: "#e8eaf0", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {profile?.full_name || "User"}
               </p>
-              <p className="truncate" style={{ fontSize: 10, color: "#8b909e", maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <p className="truncate" style={{ fontSize: 10, color: "#8b909e", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {user?.email}
+              </p>
+              <p style={{ fontSize: 10, color: "#8b909e", marginTop: 2, whiteSpace: "nowrap" }}>
+                <span style={{ color: "#e8eaf0", fontWeight: 600 }}>{followerCount}</span> Followers <span style={{ color: "#555b6b" }}>·</span> <span style={{ color: "#e8eaf0", fontWeight: 600 }}>{followingCount}</span> Following
               </p>
             </div>
           )}
