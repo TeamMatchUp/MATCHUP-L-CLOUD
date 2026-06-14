@@ -326,7 +326,29 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
   const dominantDim = weightBarSegments.reduce((a, b) => a.pct >= b.pct ? a : b).label;
 
   return (
-    <div className="flex flex-col md:flex-row" style={{ height: "90vh", maxHeight: "90vh", overflow: "hidden" }}>
+    <div className="relative flex flex-col md:flex-row" style={{ maxHeight: "92vh", minHeight: 480, overflow: "hidden" }}>
+      {/* Top-right close/back button (always visible) */}
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close suggestions"
+          className="absolute z-20 flex items-center gap-1 transition-colors"
+          style={{
+            top: 12, right: 12,
+            background: "rgba(255,255,255,0.06)",
+            color: "#e8eaf0",
+            borderRadius: 8, padding: "6px 12px",
+            fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none",
+            backdropFilter: "blur(8px)",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.18)"; e.currentTarget.style.color = "#e8a020"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#e8eaf0"; }}
+        >
+          <X style={{ width: 14, height: 14 }} /> Close
+        </button>
+      )}
+
       {/* ═══ LEFT COLUMN — Config ═══ */}
       <div className="flex flex-col" style={{
         width: "100%", maxWidth: 420, flexShrink: 0, background: "#111318",
