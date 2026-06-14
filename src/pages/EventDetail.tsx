@@ -444,113 +444,108 @@ export default function EventDetail() {
                 </div>
               )}
 
-              {/* Two-panel layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-                {/* Left panel */}
-                <div>
-                  {!event.banner_image && <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>}
-                  {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
+              {/* Main info panel */}
+              <div className="mb-8">
+                {!event.banner_image && <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>}
+                {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
 
-                  {event.description && (
-                    <p className="text-muted-foreground mb-6">{event.description}</p>
+                {event.description && (
+                  <p className="text-muted-foreground mb-6 max-w-3xl">{event.description}</p>
+                )}
+
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground mb-6">
+                  <span className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-primary" />
+                    {new Date(event.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
+                  </span>
+                  {hasCoords && (
+                    <button
+                      onClick={() => setMapOpen((v) => !v)}
+                      className="inline-flex items-center gap-2 transition-colors"
+                      style={{
+                        background: mapOpen ? "rgba(232,160,32,0.12)" : "rgba(255,255,255,0.04)",
+                        color: mapOpen ? "#e8a020" : "#8b909e",
+                        borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      }}
+                    >
+                      <MapIcon className="h-3.5 w-3.5" /> {mapOpen ? "Hide map" : "Show map"}
+                    </button>
                   )}
-
-                  <div className="flex flex-wrap gap-6 text-sm text-muted-foreground mb-6">
-                    <span className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      {new Date(event.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-primary" />
-                      {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
-                    </span>
-                  </div>
-
-                  {hasContact && (
-                    <div className="rounded-lg border border-border bg-card p-5 mb-6">
-                      <h3 className="font-heading text-sm text-muted-foreground uppercase tracking-wide mb-3">Contact</h3>
-                      <div className="space-y-2 text-sm">
-                        {event.contact_email && (
-                          <a href={`mailto:${event.contact_email}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                            <Mail className="h-4 w-4 text-muted-foreground" /> {event.contact_email}
-                          </a>
-                        )}
-                        {event.contact_phone && (
-                          <a href={`tel:${event.contact_phone}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                            <Phone className="h-4 w-4 text-muted-foreground" /> {event.contact_phone}
-                          </a>
-                        )}
-                        {event.contact_website && (
-                          <a href={event.contact_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                            <Globe className="h-4 w-4 text-muted-foreground" /> {event.contact_website}
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Ticket Section */}
-                  {(() => {
-                    const tickets = (event as any).tickets ?? [];
-                    if (!event.ticket_enabled || tickets.length === 0) return null;
-                    const now = new Date();
-                    const activeTickets = tickets.filter((t: any) =>
-                      (!t.sales_start || new Date(t.sales_start) <= now) &&
-                      (!t.sales_end || new Date(t.sales_end) >= now)
-                    );
-                    if (activeTickets.length === 0) return null;
-                    const purchaseUrl = (event as any).ticket_url || null;
-                    return (
-                      <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
-                    );
-                  })()}
-
-                  <div className="flex flex-wrap gap-3">
-                    {user && (isFighter || isCoach) && fighterProfile && (
-                      existingInterest ? (
-                        <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
-                          <Star className="h-4 w-4 fill-primary" /> Interested
-                        </Button>
-                      ) : (
-                        <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={handleToggleInterest} disabled={sending}>
-                          <Star className="h-4 w-4" /> I'm Interested
-                        </Button>
-                      )
-                    )}
-                    {isCoach && user && (
-                      <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowPutForward(true)}>
-                        <Users className="h-4 w-4" /> Put Forward Fighters
-                      </Button>
-                    )}
-                    {isOrganiser && user && event.organiser_id === user.id && (
-                      <Button className="gap-2" onClick={() => navigate('/organiser/events/' + id, { replace: true })}>
-                        <Plus className="h-4 w-4" /> Manage Event
-                      </Button>
-                    )}
-                  </div>
                 </div>
 
-                {/* Right panel — map */}
-                <div>
-                  {hasCoords ? (
-                    <div className="rounded-lg border border-border overflow-hidden">
-                      <div style={{ height: 320 }}>
-                        <PigeonMap defaultCenter={[event.latitude!, event.longitude!]} defaultZoom={14} height={320}>
-                          <Marker anchor={[event.latitude!, event.longitude!]} color="hsl(46, 93%, 61%)" width={36} />
-                        </PigeonMap>
-                      </div>
-                      <div className="bg-card px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4 text-primary" />
-                        {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
-                      </div>
+                {mapOpen && hasCoords && (
+                  <div className="rounded-lg overflow-hidden mb-6" style={{ background: "#111318", boxShadow: "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+                    <div style={{ height: 320 }}>
+                      <PigeonMap defaultCenter={[event.latitude!, event.longitude!]} defaultZoom={14} height={320}>
+                        <Marker anchor={[event.latitude!, event.longitude!]} color="hsl(46, 93%, 61%)" width={36} />
+                      </PigeonMap>
                     </div>
-                  ) : (
-                    <div className="rounded-lg border border-border bg-card p-8 flex items-center justify-center h-[320px]">
-                      <div className="text-center text-muted-foreground">
-                        <MapPin className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                        <p className="text-sm">Map unavailable — no coordinates set</p>
-                      </div>
+                    <div className="px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
                     </div>
+                  </div>
+                )}
+
+                {hasContact && (
+                  <div className="rounded-lg bg-card p-5 mb-6 max-w-xl" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
+                    <h3 className="font-heading text-sm text-muted-foreground uppercase tracking-wide mb-3">Contact</h3>
+                    <div className="space-y-2 text-sm">
+                      {event.contact_email && (
+                        <a href={`mailto:${event.contact_email}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                          <Mail className="h-4 w-4 text-muted-foreground" /> {event.contact_email}
+                        </a>
+                      )}
+                      {event.contact_phone && (
+                        <a href={`tel:${event.contact_phone}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                          <Phone className="h-4 w-4 text-muted-foreground" /> {event.contact_phone}
+                        </a>
+                      )}
+                      {event.contact_website && (
+                        <a href={event.contact_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                          <Globe className="h-4 w-4 text-muted-foreground" /> {event.contact_website}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Ticket Section */}
+                {(() => {
+                  const tickets = (event as any).tickets ?? [];
+                  if (!event.ticket_enabled || tickets.length === 0) return null;
+                  const now = new Date();
+                  const activeTickets = tickets.filter((t: any) =>
+                    (!t.sales_start || new Date(t.sales_start) <= now) &&
+                    (!t.sales_end || new Date(t.sales_end) >= now)
+                  );
+                  if (activeTickets.length === 0) return null;
+                  const purchaseUrl = (event as any).ticket_url || null;
+                  return (
+                    <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
+                  );
+                })()}
+
+                <div className="flex flex-wrap gap-3">
+                  {user && (isFighter || isCoach) && fighterProfile && (
+                    existingInterest ? (
+                      <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
+                        <Star className="h-4 w-4 fill-primary" /> Interested
+                      </Button>
+                    ) : (
+                      <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={handleToggleInterest} disabled={sending}>
+                        <Star className="h-4 w-4" /> I'm Interested
+                      </Button>
+                    )
+                  )}
+                  {isCoach && user && (
+                    <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowPutForward(true)}>
+                      <Users className="h-4 w-4" /> Put Forward Fighters
+                    </Button>
                   )}
                 </div>
               </div>
