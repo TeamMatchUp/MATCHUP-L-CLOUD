@@ -426,7 +426,7 @@ export default function EventDetail() {
   return (
     <div className="min-h-screen" style={{ background: "#0d0f12" }}>
       <Header />
-      {isOwnEvent && (
+      {isOwnEvent && isPreview && (
         <div
           style={{
             position: "sticky", top: 60, zIndex: 28,
@@ -452,6 +452,21 @@ export default function EventDetail() {
             <ArrowLeft className="h-3.5 w-3.5" /> Back to Manage Event
           </button>
         </div>
+      )}
+      {isOwnEvent && !isPreview && (
+        <button
+          onClick={() => navigate(`/organiser/events/${id}`)}
+          style={{
+            position: "fixed", top: 72, right: 16, zIndex: 28,
+            display: "inline-flex", alignItems: "center", gap: 6,
+            background: "#e8a020", color: "#0d0f12",
+            fontSize: 12, fontWeight: 700, borderRadius: 999,
+            padding: "6px 14px", border: "none", cursor: "pointer", whiteSpace: "nowrap",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+          }}
+        >
+          <Settings className="h-3.5 w-3.5" /> Manage Event
+        </button>
       )}
       <main className="pt-16">
         <section style={{ padding: "10px 0" }}>
