@@ -5,7 +5,7 @@ import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Plus, P
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useParams, Link, useNavigate, Navigate } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState } from "react";
@@ -276,10 +276,7 @@ export default function EventDetail() {
     );
   }
 
-  // Auto-redirect organisers viewing their own event to the manager view
-  if (user && isOrganiser && event.organiser_id === user.id) {
-    return <Navigate to={`/organiser/events/${id}`} replace />;
-  }
+  const isOwnEvent = !!(user && isOrganiser && event.organiser_id === user.id);
 
   // Show all public bouts regardless of status; render details based on assignment + status
   const publicBouts = allBouts.filter((b: any) => b.is_public === true);
@@ -305,8 +302,8 @@ export default function EventDetail() {
     const nameA = fA?.name ?? "TBD";
     const nameB = fB?.name ?? "TBD";
     return (
-      <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-6 relative">
-        <div className="grid" style={{ gridTemplateColumns: "1fr 140px 1fr" }}>
+      <div key={bout.id} className="rounded-lg border-2 border-primary/30 bg-card p-4 sm:p-6 relative">
+        <div className="grid items-center gap-2 sm:gap-4" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
           {/* Fighter A — left aligned */}
           <div className="flex items-center gap-3 overflow-hidden">
             {fA?.profile_image && (
@@ -326,9 +323,9 @@ export default function EventDetail() {
             </div>
           </div>
           {/* Centre */}
-          <div className="flex flex-col items-center justify-center">
-            <span className="font-heading text-primary text-2xl">VS</span>
-            {bout.weight_class && <p className="text-xs text-muted-foreground mt-1 whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
+          <div className="flex flex-col items-center justify-center self-center px-1 sm:px-2">
+            <span className="font-heading text-primary text-xl sm:text-2xl leading-none">VS</span>
+            {bout.weight_class && <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 text-center whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
           {/* Fighter B — right aligned */}
           <div className="flex items-center gap-3 justify-end overflow-hidden">
@@ -360,8 +357,8 @@ export default function EventDetail() {
     const nameA = fA?.name ?? "TBD";
     const nameB = fB?.name ?? "TBD";
     return (
-      <div key={bout.id} className="rounded-lg border border-border bg-card p-4 relative">
-        <div className="grid items-center gap-3" style={{ gridTemplateColumns: "1fr 120px 1fr" }}>
+      <div key={bout.id} className="rounded-lg border border-border bg-card p-3 sm:p-4 relative">
+        <div className="grid items-center gap-2 sm:gap-3" style={{ gridTemplateColumns: "1fr auto 1fr" }}>
           {/* Fighter A */}
           <div className="flex items-center gap-2 overflow-hidden">
             {fA?.profile_image && (
@@ -379,9 +376,9 @@ export default function EventDetail() {
             </div>
           </div>
           {/* Centre */}
-          <div className="flex flex-col items-center justify-center">
-            <span className="font-heading text-primary text-xs">VS</span>
-            {bout.weight_class && <p className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
+          <div className="flex flex-col items-center justify-center self-center px-1">
+            <span className="font-heading text-primary text-xs leading-none">VS</span>
+            {bout.weight_class && <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 text-center whitespace-nowrap">{WEIGHT_CLASS_LABELS[bout.weight_class] || bout.weight_class}</p>}
           </div>
           {/* Fighter B */}
           <div className="flex items-center gap-2 justify-end overflow-hidden">
@@ -427,9 +424,36 @@ export default function EventDetail() {
   return (
     <div className="min-h-screen" style={{ background: "#0d0f12" }}>
       <Header />
+      {isOwnEvent && (
+        <div
+          style={{
+            position: "sticky", top: 60, zIndex: 28,
+            background: "rgba(232,160,32,0.12)",
+            backdropFilter: "blur(12px)",
+            boxShadow: "inset 0 -1px 0 rgba(232,160,32,0.25)",
+            padding: "10px 16px",
+            display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+          }}
+        >
+          <span style={{ fontSize: 13, color: "#e8eaf0", fontWeight: 600 }}>
+            Previewing your public event page
+          </span>
+          <button
+            onClick={() => navigate(`/organiser/events/${id}`)}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              background: "#e8a020", color: "#0d0f12",
+              fontSize: 12, fontWeight: 700, borderRadius: 8,
+              padding: "6px 12px", border: "none", cursor: "pointer", whiteSpace: "nowrap",
+            }}
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to Manage Event
+          </button>
+        </div>
+      )}
       <main className="pt-16">
         <section style={{ padding: "10px 0" }}>
-          <div className="container" style={{ paddingLeft: 35, paddingRight: 35 }}>
+          <div className="container" style={{ paddingLeft: 16, paddingRight: 16 }}>
             <div className="pt-2">
               <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-4 w-4 mr-2" />Back
@@ -442,13 +466,13 @@ export default function EventDetail() {
                 <div className="mb-8 rounded-xl overflow-hidden relative" style={{ height: 280 }}>
                   <img src={event.banner_image} alt={event.title} className="w-full h-full object-cover" />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(13,15,18,0.95) 100%)" }} />
-                  <h1 className="absolute bottom-6 left-6 font-heading text-4xl md:text-5xl text-foreground" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{event.title}</h1>
+                  <h1 className="absolute bottom-4 left-4 right-4 font-heading text-foreground truncate" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.5rem, 6vw, 3rem)", lineHeight: 1.05 }}>{event.title}</h1>
                 </div>
               )}
 
               {/* Main info panel */}
               <div className="mb-8">
-                {!event.banner_image && <h1 className="font-heading text-4xl md:text-5xl text-foreground mb-2">{event.title}</h1>}
+                {!event.banner_image && <h1 className="font-heading text-foreground mb-2 truncate" style={{ fontSize: "clamp(1.5rem, 6vw, 3rem)", lineHeight: 1.05 }}>{event.title}</h1>}
                 {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
 
                 {event.description && (

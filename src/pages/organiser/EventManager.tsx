@@ -8,6 +8,10 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { EditEventDialog } from "@/components/organiser/EditEventDialog";
 import { EditBoutDialog } from "@/components/organiser/EditBoutDialog";
 import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
@@ -226,6 +230,7 @@ export default function EventManager() {
     open: false, section: "Main Event", mode: "add",
   });
   const [dragId, setDragId] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const { data: event, isLoading: eventLoading } = useQuery({
     queryKey: ["organiser-event", id],
@@ -418,7 +423,7 @@ export default function EventManager() {
             <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, color: "#e8eaf0", textTransform: "uppercase" }}>{event.title}</h1>
+                  <h1 className="truncate" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.5rem, 5vw, 2rem)", color: "#e8eaf0", textTransform: "uppercase", lineHeight: 1.05, maxWidth: "100%" }}>{event.title}</h1>
                   <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>{event.status}</Badge>
                 </div>
                 <p style={{ fontSize: 13, color: "#8b909e" }}>
@@ -467,7 +472,7 @@ export default function EventManager() {
                     onEdit={setEditingBout}
                     onTogglePublic={handleTogglePublic}
                     onFindMatches={(b) => setAddModal({ open: true, section: "Main Event", mode: "find", slot: b })}
-                    onDelete={handleDelete}
+                    onDelete={(boutId) => setPendingDeleteId(boutId)}
                     onDragStart={handleDragStart}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
@@ -486,7 +491,7 @@ export default function EventManager() {
                     onEdit={setEditingBout}
                     onTogglePublic={handleTogglePublic}
                     onFindMatches={(b) => setAddModal({ open: true, section: "Undercard", mode: "find", slot: b })}
-                    onDelete={handleDelete}
+                    onDelete={(boutId) => setPendingDeleteId(boutId)}
                     onDragStart={handleDragStart}
                     onDragOver={handleDragOver}
                     onDrop={handleDrop}
@@ -533,6 +538,28 @@ export default function EventManager() {
           </div>
         </section>
       </main>
+      <AlertDialog open={!!pendingDeleteId} onOpenChange={(o) => { if (!o) setPendingDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete fight slot?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this fight slot? This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (pendingDeleteId) await handleDelete(pendingDeleteId);
+                setPendingDeleteId(null);
+              }}
+              style={{ background: "#ef4444", color: "#fff" }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <Footer />
     </div>
   );

@@ -666,10 +666,7 @@ export function AddFightModal({
                 </>
               )}
 
-              <div
-                className="flex gap-2 justify-end pt-3"
-                style={{ position: "sticky", bottom: 0, background: "#111318", boxShadow: "0 -8px 16px rgba(17,19,24,0.95)" }}
-              >
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end pt-3">
                 <Button variant="ghost" onClick={() => handleClose(false)} style={{ color: "#8b909e" }}>Cancel</Button>
                 <Button
                   onClick={handleManualSave}

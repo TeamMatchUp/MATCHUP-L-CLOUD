@@ -343,9 +343,9 @@ export default function Explore() {
     <div className="min-h-screen flex flex-col" style={{ background: EX.bg }}>
       <Header />
       <main className="flex-1 flex flex-col" style={{ paddingTop: 56 }}>
-        <section className="flex-1 flex flex-col" style={{ padding: "24px 32px" }}>
+        <section className="flex-1 flex flex-col px-4 sm:px-8" style={{ paddingTop: 24, paddingBottom: 24 }}>
           {/* Pill Tab Navigation */}
-          <div className="flex items-center gap-2 mb-6 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-6 flex-nowrap overflow-x-auto">
             {([
               { key: "gyms" as TabType, icon: Building2, title: "Gyms" },
               { key: "fighters" as TabType, icon: Users, title: "Fighters" },
@@ -356,20 +356,20 @@ export default function Explore() {
                 <button
                   key={cat.key}
                   onClick={() => handleTabChange(cat.key)}
-                  className="inline-flex items-center gap-2 transition-all duration-200"
+                  className="inline-flex items-center gap-1.5 sm:gap-2 transition-all duration-200 whitespace-nowrap shrink-0"
                   style={{
                     background: isActive ? EX.goldDim : "rgba(255,255,255,0.04)",
                     color: isActive ? EX.gold : EX.muted,
                     borderRadius: 999,
-                    padding: "10px 20px",
-                    fontSize: 14,
+                    padding: "8px 14px",
+                    fontSize: 13,
                     fontWeight: 600,
                     letterSpacing: "0.02em",
                     cursor: "pointer",
                     boxShadow: isActive ? "inset 0 0 0 1px rgba(232,160,32,0.35)" : "inset 0 1px 0 rgba(255,255,255,0.03)",
                   }}
                 >
-                  <cat.icon style={{ width: 16, height: 16 }} />
+                  <cat.icon style={{ width: 14, height: 14 }} />
                   {cat.title}
                 </button>
               );

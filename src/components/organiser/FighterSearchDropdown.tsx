@@ -204,10 +204,9 @@ export function FighterSearchDropdown({
     <div className="space-y-3">
       <Label className="text-xs">{label}</Label>
 
-      {/* Sticky filter bar */}
+      {/* Filter bar */}
       <div
         style={{
-          position: "sticky", top: 0, zIndex: 5,
           background: "#111318", padding: "8px 0",
           boxShadow: "0 1px 0 rgba(255,255,255,0.04)",
         }}
@@ -260,8 +259,8 @@ export function FighterSearchDropdown({
         </div>
       </div>
 
-      {/* Results — scrollable */}
-      <div className="space-y-3" style={{ maxHeight: 480, overflowY: "auto", paddingRight: 4 }}>
+      {/* Results */}
+      <div className="space-y-3">
         {isLoading ? (
           <p className="text-xs text-muted-foreground p-4 text-center">Loading fighters...</p>
         ) : filtered.length === 0 ? (

@@ -16,12 +16,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { GymsNearYouWidget } from "@/components/fighter/GymsNearYouWidget";
 
 interface DashboardOverviewProps {
   calendarEvents: any[];
   highlightedDates?: string[];
   effectiveRoles: string[];
   onNavigateSection: (section: string) => void;
+  fighterProfileId?: string | null;
 }
 
 /* ── Quick Actions Button ── */
@@ -342,6 +344,7 @@ export function DashboardOverview({
   highlightedDates = [],
   effectiveRoles,
   onNavigateSection,
+  fighterProfileId,
 }: DashboardOverviewProps) {
   const { user } = useAuth();
   const isCoachOrOwner = effectiveRoles.includes("gym_owner") || effectiveRoles.includes("coach");
@@ -551,6 +554,7 @@ export function DashboardOverview({
             {fighterCardVis.record && <Cell span={2}><FighterRecordHero /></Cell>}
             {fighterCardVis.nextFight && <Cell><FighterNextFight /></Cell>}
             {fighterCardVis.calendar && <Cell><EventCalendar events={calendarEvents} highlightedDates={highlightedDates} /></Cell>}
+            {fighterProfileId && <Cell><GymsNearYouWidget fighterProfileId={fighterProfileId} /></Cell>}
           </div>
         </div>
         {networkModal && user && <NetworkModal type={networkModal} userId={user.id} onClose={() => setNetworkModal(null)} />}
