@@ -274,6 +274,11 @@ export default function EventDetail() {
     );
   }
 
+  // Auto-redirect organisers viewing their own event to the manager view
+  if (user && isOrganiser && event.organiser_id === user.id) {
+    return <Navigate to={`/organiser/events/${id}`} replace />;
+  }
+
   // Show all public bouts regardless of status; render details based on assignment + status
   const publicBouts = allBouts.filter((b: any) => b.is_public === true);
   const mainEvents = publicBouts.filter((b: any) => b.bout_type === "Main Event");
