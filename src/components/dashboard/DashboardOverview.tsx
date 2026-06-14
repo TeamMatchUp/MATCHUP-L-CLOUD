@@ -528,8 +528,7 @@ export function DashboardOverview({
   if (isCoachOrOwner) {
     return (
       <div>
-        <StickyHeader quickActionsContent={quickActionsCoach} />
-        <div className="space-y-4" style={{ padding: "72px 24px 24px" }}>
+        <div className="space-y-4" style={{ padding: "0 24px 24px" }}>
           <CardWrapper visible={coachCardVis.kpis} maxH="400px"><CoachKpiStrip /></CardWrapper>
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
             {coachCardVis.fights && <div className={coachCardVis.calendar ? "lg:col-span-3" : "lg:col-span-5"}><CoachUpcomingFights /></div>}
