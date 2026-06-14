@@ -1,49 +1,29 @@
-# Fix Organiser Event Routing
+## Two targeted changes — event-creator-based routing/visibility
 
-Three coordinated changes so organisers reach the right page from each entry point, and the public preview banner only appears during an explicit preview.
+### 1. `src/pages/EventDetail.tsx` (line 280)
+Remove the role requirement from `isOwnEvent` so any logged-in user who created the event is treated as the owner.
 
-## 1. Dashboard → My Events → select event
-
-File: `src/components/dashboard/DashboardOverview.tsx` (line 226)
-
-The My Events list currently routes to `/events/${e.id}` (public page). Change the click handler to route organisers to the manage hub:
-
-```
-onClick={() => handleSelect(`/organiser/events/${e.id}`)}
+```ts
+// before
+const isOwnEvent = !!(user && isOrganiser && event.organiser_id === user.id);
+// after
+const isOwnEvent = !!(user && event.organiser_id === user.id);
 ```
 
-This list is already inside the organiser-only "My Events" section, so all entries belong to the current user — always route to the hub.
+No other logic in this file changes. The existing branches (`isOwnEvent && isPreview` → banner, `isOwnEvent && !isPreview` → Manage Event pill) continue to work unchanged.
 
-## 2. Manage Event hub → Preview Public Page
+### 2. `src/components/dashboard/DashboardEvents.tsx` (line 100)
+Route to the manage hub when the logged-in user created the event, regardless of role.
 
-File: `src/pages/organiser/EventManager.tsx` (line 309)
+- Import `useAuth` from `@/contexts/AuthContext` (same hook used by the parent `Dashboard.tsx`).
+- Inside the component, pull the current user: `const { user } = useAuth();` and derive `const currentUserId = user?.id;`.
+- Update the `Link` `to` prop:
 
-Update the Preview Public Page link to include the preview flag so the banner shows only when arriving via this button:
-
-```
-href={`/events/${id}?preview=true`}
-```
-
-## 3. Public event page (`/events/:id`)
-
-File: `src/pages/EventDetail.tsx`
-
-a. Read the query param:
-```
-const [searchParams] = useSearchParams();
-const isPreview = searchParams.get("preview") === "true";
+```tsx
+to={event.organiser_id === currentUserId ? `/organiser/events/${event.id}` : `/events/${event.id}`}
 ```
 
-b. Gate the existing sticky "Previewing your public event page" banner (lines 427–453) on `isOwnEvent && isPreview` instead of just `isOwnEvent`.
+The `isOrganiser` prop stays on the component (still used elsewhere — e.g. the empty-state / header logic for organiser vs fighter views). Only the per-event link condition swaps from `isOrganiser` to the creator check.
 
-c. When `isOwnEvent && !isPreview`, render a small "Manage Event" pill in the top-right of the page (positioned in the hero/top section, not as a full-width banner). Styling per design system:
-- Gold pill: background `#e8a020`, text `#0d0f12`, `fontSize: 12`, `fontWeight: 700`, `borderRadius: 999`, padding `6px 14px`, gear/settings icon + label.
-- Click → `navigate(\`/organiser/events/${id}\`)`.
-- Placed absolutely in the top-right of the banner/hero area (or inline at the right of the title row) so non-creators see a clean public page.
-
-## 4. Explore page
-
-No change required — Explore already links to `/events/${id}` (without `?preview=true`), so per the new rule the banner won't show, and creators get the Manage Event pill from step 3c.
-
-## Out of scope
-No route additions, no RLS changes, no changes to matchmaking, fight card, or ticket logic. No styling changes to non-creator views of the public event page.
+### Out of scope
+No changes to Explore, EventManager, RLS, or any other routing/permission logic.

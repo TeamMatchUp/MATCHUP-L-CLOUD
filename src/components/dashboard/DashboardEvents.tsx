@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Calendar, ArrowRight, ArrowLeft, Search } from "lucide-react";
 import { InterestedEventsPanel } from "@/components/fighter/InterestedEventsPanel";
+import { useAuth } from "@/contexts/AuthContext";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -29,6 +30,8 @@ export function DashboardEvents({
   fighterProfileId,
 }: DashboardEventsProps) {
   const [eventSearch, setEventSearch] = useState("");
+  const { user } = useAuth();
+  const currentUserId = user?.id;
 
   // Fighter view - interested events
   if (isFighter && !isCoachOrOwner && !isOrganiser && fighterProfileId) {
@@ -97,7 +100,7 @@ export function DashboardEvents({
             return (
               <Link
                 key={event.id}
-                to={isOrganiser ? `/organiser/events/${event.id}` : `/events/${event.id}`}
+                to={event.organiser_id === currentUserId ? `/organiser/events/${event.id}` : `/events/${event.id}`}
                 className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors"
               >
                 <div>
