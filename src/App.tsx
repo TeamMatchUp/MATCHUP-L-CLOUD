@@ -121,6 +121,14 @@ const App = () => (
               }
             />
             <Route
+              path="/organiser/events/:id/fight-card"
+              element={
+                <ProtectedRoute requiredRole="organiser">
+                  <FightCardManager />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/gym-owner/dashboard"
               element={
                 <ProtectedRoute requiredRole="gym_owner">
