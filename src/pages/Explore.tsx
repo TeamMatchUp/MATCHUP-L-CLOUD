@@ -344,36 +344,33 @@ export default function Explore() {
       <Header />
       <main className="flex-1 flex flex-col" style={{ paddingTop: 56 }}>
         <section className="flex-1 flex flex-col" style={{ padding: "24px 32px" }}>
-          {/* Category Selector Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              {([
-              { key: "gyms" as TabType, icon: Building2, title: "GYMS", sub: `Explore ${gymLiveCount} training facilities and gyms` },
-              { key: "events" as TabType, icon: Calendar, title: "EVENTS", sub: `Discover ${eventLiveCount} upcoming events` },
-              { key: "fighters" as TabType, icon: Users, title: "FIGHTERS", sub: `Explore ${fighterLiveCount} detailed fighter profiles` },
+          {/* Pill Tab Navigation */}
+          <div className="flex items-center gap-2 mb-6 flex-wrap">
+            {([
+              { key: "gyms" as TabType, icon: Building2, title: "Gyms" },
+              { key: "fighters" as TabType, icon: Users, title: "Fighters" },
+              { key: "events" as TabType, icon: Calendar, title: "Events" },
             ] as const).map((cat) => {
               const isActive = tab === cat.key;
               return (
                 <button
                   key={cat.key}
                   onClick={() => handleTabChange(cat.key)}
-                  className="text-left transition-all duration-200"
+                  className="inline-flex items-center gap-2 transition-all duration-200"
                   style={{
-                    background: isActive ? "rgba(232,160,32,0.06)" : EX.card,
-                    borderRadius: 12, padding: "28px 24px", cursor: "pointer",
-                    overflow: "hidden", transform: isActive ? "translateY(-2px)" : "none",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
+                    background: isActive ? EX.goldDim : "rgba(255,255,255,0.04)",
+                    color: isActive ? EX.gold : EX.muted,
+                    borderRadius: 999,
+                    padding: "10px 20px",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    letterSpacing: "0.02em",
+                    cursor: "pointer",
+                    boxShadow: isActive ? "inset 0 0 0 1px rgba(232,160,32,0.35)" : "inset 0 1px 0 rgba(255,255,255,0.03)",
                   }}
-                  onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "rgba(232,160,32,0.06)"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
-                  onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = EX.card; e.currentTarget.style.transform = "none"; } }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ width: 48, height: 48, borderRadius: 10, background: "rgba(232,160,32,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <cat.icon style={{ width: 24, height: 24, color: EX.gold }} />
-                    </div>
-                  </div>
-                  <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: EX.text, marginTop: 16 }}>{cat.title}</p>
-                  <p style={{ fontSize: 13, color: EX.muted, marginTop: 4 }}>{cat.sub}</p>
-                  <div style={{ width: isActive ? "100%" : 40, height: 2, background: EX.gold, marginTop: 12, transition: "width 0.3s ease" }} />
+                  <cat.icon style={{ width: 16, height: 16 }} />
+                  {cat.title}
                 </button>
               );
             })}
