@@ -19,6 +19,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import CreateEvent from "./pages/organiser/CreateEvent";
 import EventManager from "./pages/organiser/EventManager";
+import FightCardManager from "./pages/organiser/FightCardManager";
 import RegisterGym from "./pages/RegisterGym";
 import AccountSettings from "./pages/AccountSettings";
 import TermsOfService from "./pages/TermsOfService";
