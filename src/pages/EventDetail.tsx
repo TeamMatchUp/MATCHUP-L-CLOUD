@@ -67,53 +67,55 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
           const soldOut = event.sold_out || (ticket.quantity_available != null && ticket.quantity_available <= 0);
 
           return (
-            <div key={ticket.id} className="flex items-center gap-4" style={{
-              background: "#181c24", borderRadius: 8, padding: "14px 20px",
+            <div key={ticket.id} className="flex items-center gap-3 sm:gap-4" style={{
+              background: "#181c24", borderRadius: 10, padding: "10px 16px", minHeight: 56,
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
             }}>
-              {/* Left: type + availability */}
-              <div className="flex-1 min-w-0">
-                <span style={{ fontSize: 15, fontWeight: 600, color: "#e8eaf0", display: "block" }}>{ticket.ticket_type}</span>
-                {soldOut ? (
-                  <span style={{ fontSize: 11, color: "#ef4444" }}>Sold Out</span>
-                ) : ticket.quantity_available != null && ticket.quantity_available < 20 ? (
-                  <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} remaining</span>
-                ) : (
-                  <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
+              {/* Left: tier + availability + price grouped */}
+              <div className="flex-1 min-w-0 flex items-center gap-3 sm:gap-4">
+                <div className="min-w-0">
+                  <span className="block truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>{ticket.ticket_type}</span>
+                  {soldOut ? (
+                    <span style={{ fontSize: 11, color: "#ef4444" }}>Sold Out</span>
+                  ) : ticket.quantity_available != null && ticket.quantity_available < 20 ? (
+                    <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} left</span>
+                  ) : (
+                    <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
+                  )}
+                </div>
+                {ticket.price != null && (
+                  <span style={{ fontSize: 18, fontWeight: 700, color: "#e8a020", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
                 )}
               </div>
-              {/* Price */}
-              {ticket.price != null && (
-                <span style={{ fontSize: 22, fontWeight: 700, color: "#e8a020", fontFamily: "Inter, sans-serif", flexShrink: 0 }}>£{Number(ticket.price).toFixed(2)}</span>
-              )}
-              {/* Quantity selector or external link */}
+
+              {/* Right: CTA */}
               {soldOut ? (
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#ef4444", flexShrink: 0 }}>Sold Out</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#ef4444", flexShrink: 0 }}>Sold Out</span>
               ) : ticketUrl ? (
                 <a href={ticketUrl} target="_blank" rel="noopener noreferrer" style={{
-                  display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", fontSize: 13, fontWeight: 600,
+                  display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
                   background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none", flexShrink: 0,
                 }}>
-                  <ShoppingCart style={{ width: 14, height: 14 }} /> Buy Tickets
+                  <ShoppingCart style={{ width: 14, height: 14 }} /> Buy
                 </a>
               ) : (
-                <div className="flex items-center gap-2" style={{ flexShrink: 0 }}>
+                <div className="flex items-center gap-1.5" style={{ flexShrink: 0 }}>
                   <button
                     onClick={() => setQty(ticket.id, Math.max(0, qty - 1))}
                     disabled={qty <= 0}
                     style={{
-                      width: 28, height: 28, borderRadius: "50%", border: "none", cursor: qty <= 0 ? "not-allowed" : "pointer",
-                      background: "rgba(255,255,255,0.06)", color: qty <= 0 ? "#555b6b" : "#e8eaf0", fontSize: 16, fontWeight: 700,
+                      width: 26, height: 26, borderRadius: "50%", border: "none", cursor: qty <= 0 ? "not-allowed" : "pointer",
+                      background: "rgba(255,255,255,0.06)", color: qty <= 0 ? "#555b6b" : "#e8eaf0", fontSize: 14, fontWeight: 700,
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
                   >−</button>
-                  <span style={{ width: 28, textAlign: "center", fontSize: 16, fontWeight: 700, color: "#e8eaf0" }}>{qty}</span>
+                  <span style={{ width: 22, textAlign: "center", fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{qty}</span>
                   <button
                     onClick={() => setQty(ticket.id, Math.min(maxQty, qty + 1))}
                     disabled={qty >= maxQty}
                     style={{
-                      width: 28, height: 28, borderRadius: "50%", border: "none", cursor: qty >= maxQty ? "not-allowed" : "pointer",
-                      background: "rgba(255,255,255,0.06)", color: qty >= maxQty ? "#555b6b" : "#e8eaf0", fontSize: 16, fontWeight: 700,
+                      width: 26, height: 26, borderRadius: "50%", border: "none", cursor: qty >= maxQty ? "not-allowed" : "pointer",
+                      background: "rgba(255,255,255,0.06)", color: qty >= maxQty ? "#555b6b" : "#e8eaf0", fontSize: 14, fontWeight: 700,
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
                   >+</button>
@@ -126,7 +128,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                       cursor: qty <= 0 ? "not-allowed" : "pointer", marginLeft: 4,
                     }}
                   >
-                    <ShoppingCart style={{ width: 14, height: 14 }} /> Add to Basket
+                    <ShoppingCart style={{ width: 14, height: 14 }} /> Add
                   </button>
                 </div>
               )}
