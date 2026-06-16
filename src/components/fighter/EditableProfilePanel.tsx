@@ -315,37 +315,29 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
 
           <div>
             <h3 className="font-heading text-sm text-muted-foreground mb-3 uppercase tracking-wide">Availability</h3>
-            <div className="space-y-3">
-              <div>
-                <Label className="text-xs text-muted-foreground">Days</Label>
-                <div className="flex flex-wrap gap-2 mt-1.5">
-                  {DAYS.map((d) => {
-                    const active = availableDays.includes(d);
-                    return (
-                      <button key={d} type="button" onClick={() => setAvailableDays(toggleArr(availableDays, d))}
-                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
-                        {d}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">Time of day</Label>
-                <div className="flex flex-wrap gap-2 mt-1.5">
-                  {TIMES.map((t) => {
-                    const active = availableTimes.includes(t);
-                    return (
-                      <button key={t} type="button" onClick={() => setAvailableTimes(toggleArr(availableTimes, t))}
-                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
-                        {t}
-                      </button>
-                    );
-                  })}
-                </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Are you currently available for fights?</Label>
+              <div className="flex gap-2 mt-1.5">
+                {[
+                  { v: true, label: "Yes" },
+                  { v: false, label: "No" },
+                ].map((opt) => {
+                  const active = isAvailable === opt.v;
+                  return (
+                    <button
+                      key={opt.label}
+                      type="button"
+                      onClick={() => setIsAvailable(opt.v)}
+                      className={`px-4 py-1.5 rounded-md text-xs font-medium transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
+
 
           <div><Label>Bio</Label><Textarea {...register("bio")} rows={3} placeholder="Tell your story..." /></div>
           <div className="flex gap-2">
