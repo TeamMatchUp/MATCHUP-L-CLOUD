@@ -500,7 +500,7 @@ export function CoachAnalyticsV2({ userId, title = "Analytics" }: { userId: stri
 
   return (
     <AnalyticsShell
-      title="Analytics"
+      title={title}
       kpis={kpis}
       tabs={[
         { value: "overview", label: "Overview", content: overview },
