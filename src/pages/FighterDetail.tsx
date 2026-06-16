@@ -96,8 +96,14 @@ export default function FighterDetail() {
     const w = fights.filter((f: any) => isWin(f, fighter.id));
     const l = fights.filter((f: any) => isLoss(f));
     const d = fights.filter((f: any) => isDraw(f));
+    // Combine cached signup record (pro + amateur) with computed values from fights table
+    const cachedW = (fighter.record_wins ?? 0) + (fighter.amateur_wins ?? 0);
+    const cachedL = (fighter.record_losses ?? 0) + (fighter.amateur_losses ?? 0);
+    const cachedD = (fighter.record_draws ?? 0) + (fighter.amateur_draws ?? 0);
     return {
-      wins: w.length, losses: l.length, draws: d.length,
+      wins: Math.max(w.length, cachedW),
+      losses: Math.max(l.length, cachedL),
+      draws: Math.max(d.length, cachedD),
       kos: w.filter((f: any) => isKO(f.method)).length,
       tkos: w.filter((f: any) => isTKO(f.method)).length,
       subs: w.filter((f: any) => isSub(f.method)).length,
@@ -107,6 +113,7 @@ export default function FighterDetail() {
       lossSubs: l.filter((f: any) => isSub(f.method)).length,
     };
   }, [fights, fighter]);
+
 
   const total = stats.wins + stats.losses + stats.draws;
   const finishRate = stats.wins > 0 ? Math.round(((stats.kos + stats.tkos + stats.subs) / stats.wins) * 100) : 0;
@@ -422,8 +429,8 @@ export default function FighterDetail() {
                 {/* Radar Chart */}
                 <div style={{ background: "#111318", borderRadius: 12, padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>Performance Analytics</span>
-                  <ResponsiveContainer width="100%" height={280}>
-                    <RadarChart data={radarData}>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <RadarChart data={radarData} outerRadius="65%" margin={{ top: 24, right: 48, bottom: 24, left: 48 }}>
                       <PolarGrid stroke="rgba(255,255,255,0.06)" />
                       <PolarAngleAxis dataKey="subject" tick={{ fill: "#8b909e", fontSize: 11 }} />
                       <Radar name="fighter" dataKey="value" stroke="#e8a020" fill="rgba(232,160,32,0.3)" fillOpacity={1} dot={{ fill: "#e8a020", r: 4 } as any} />
