@@ -13,6 +13,8 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, Loader2, Save, User, Sun, Moon } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CoachFighterProfileForm } from "@/components/onboarding/CoachFighterProfileForm";
 
 export default function AccountSettings() {
   const { user, loading: authLoading } = useAuth();
