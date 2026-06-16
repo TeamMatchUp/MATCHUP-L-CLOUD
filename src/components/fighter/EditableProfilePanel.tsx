@@ -380,10 +380,20 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
                 {(() => {
                   const [recordFilter, setRecordFilter] = [heroRecordFilter, setHeroRecordFilter];
                   const filtered = recordFilter === "pro" ? fights.filter((f: any) => !f.is_amateur) : recordFilter === "amateur" ? fights.filter((f: any) => f.is_amateur) : fights;
-                  const w = filtered.filter((f: any) => f.result === "win").length;
-                  const l = filtered.filter((f: any) => f.result === "loss").length;
-                  const d = filtered.filter((f: any) => f.result === "draw").length;
-                  const total = filtered.length;
+                  let w = filtered.filter((f: any) => f.result === "win").length;
+                  let l = filtered.filter((f: any) => f.result === "loss").length;
+                  let d = filtered.filter((f: any) => f.result === "draw").length;
+                  // Merge with cached signup record so it always shows
+                  const proW = p.record_wins ?? 0, proL = p.record_losses ?? 0, proD = p.record_draws ?? 0;
+                  const amW = p.amateur_wins ?? 0, amL = p.amateur_losses ?? 0, amD = p.amateur_draws ?? 0;
+                  if (recordFilter === "pro") {
+                    w = Math.max(w, proW); l = Math.max(l, proL); d = Math.max(d, proD);
+                  } else if (recordFilter === "amateur") {
+                    w = Math.max(w, amW); l = Math.max(l, amL); d = Math.max(d, amD);
+                  } else {
+                    w = Math.max(w, proW + amW); l = Math.max(l, proL + amL); d = Math.max(d, proD + amD);
+                  }
+                  const total = w + l + d;
                   const wp = total > 0 ? Math.round((w / total) * 100) : 0;
                   return (
                     <>
