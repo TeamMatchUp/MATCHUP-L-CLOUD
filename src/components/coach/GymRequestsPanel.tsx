@@ -111,33 +111,48 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
   };
 
   return (
-    <div className="mb-8">
-      <h2 className="font-heading text-2xl text-foreground mb-4">
-        GYM <span className="text-primary">REQUESTS</span>
-      </h2>
-      <div className="space-y-3">
+    <div
+      style={{
+        background: "#111318",
+        borderRadius: 16,
+        padding: 20,
+        boxShadow:
+          "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
+      }}
+    >
+      <h3
+        className="font-heading text-foreground mb-4"
+        style={{ fontSize: 18, letterSpacing: "0.04em", textTransform: "uppercase" }}
+      >
+        GYM <span style={{ color: "#e8a020" }}>REQUESTS</span>
+      </h3>
+      <div className="space-y-2">
         {pendingLinks.map((link: any) => {
           const fighter = unwrap(link.fighter);
           const gym = unwrap(link.gym);
           return (
             <div
               key={link.id}
-              className="rounded-lg border border-border bg-card p-4 flex items-center justify-between gap-4"
+              className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+              style={{ background: "#181c24", borderRadius: 10, padding: "10px 12px" }}
             >
-              <div>
-                <p className="font-medium text-foreground">{fighter?.name ?? "Unknown"}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {fighter?.discipline ? formatEnum(fighter.discipline) : "—"} · {formatEnum(fighter?.weight_class)} · {fighter?.stance ?? "—"}
+              <div className="min-w-0 flex-1">
+                <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>
+                  {fighter?.name ?? "Unknown"}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Wants to join <span className="text-foreground">{gym?.name}</span>
+                <p className="truncate" style={{ fontSize: 11, color: "#8b909e", marginTop: 2 }}>
+                  {fighter?.discipline ? formatEnum(fighter.discipline) : "—"} · {formatEnum(fighter?.weight_class)}
+                  {fighter?.stance ? ` · ${fighter.stance}` : ""}
+                </p>
+                <p className="truncate" style={{ fontSize: 11, color: "#8b909e" }}>
+                  Wants to join <span style={{ color: "#e8eaf0" }}>{gym?.name}</span>
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
-                <Button size="sm" variant="outline" onClick={() => handleDecline(link)}>
+                <Button size="sm" variant="outline" className="h-8 px-3 text-xs" onClick={() => handleDecline(link)}>
                   <X className="h-3.5 w-3.5 mr-1" /> Decline
                 </Button>
-                <Button size="sm" onClick={() => handleAccept(link)}>
+                <Button size="sm" className="h-8 px-3 text-xs" onClick={() => handleAccept(link)}>
                   <Check className="h-3.5 w-3.5 mr-1" /> Accept
                 </Button>
               </div>
@@ -148,3 +163,4 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
     </div>
   );
 }
+

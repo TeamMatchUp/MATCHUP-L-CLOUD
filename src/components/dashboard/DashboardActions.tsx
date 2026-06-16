@@ -797,36 +797,35 @@ export function DashboardActions({
     <div className="space-y-4">
 
       {/* Filter bar */}
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-wrap gap-2">
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-full sm:w-[200px] h-9 text-xs">
+          <SelectTrigger className="w-full sm:w-[180px] h-9 text-xs">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
             {categoryOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
-        <div className="flex gap-1">
-          <Button size="sm" variant={statusFilter === "active" ? "default" : "outline"} className="h-9 text-xs" onClick={() => { setStatusFilter("active"); exitMultiSelect(); }}>
+        <div className="flex flex-wrap gap-1">
+          <Button size="sm" variant={statusFilter === "active" ? "default" : "outline"} className="h-9 px-2 text-[11px]" onClick={() => { setStatusFilter("active"); exitMultiSelect(); }}>
             Active ({activeItems.length})
           </Button>
-          <Button size="sm" variant={statusFilter === "completed" ? "default" : "outline"} className="h-9 text-xs" onClick={() => { setStatusFilter("completed"); exitMultiSelect(); }}>
-            Completed ({completedItems.length})
+          <Button size="sm" variant={statusFilter === "completed" ? "default" : "outline"} className="h-9 px-2 text-[11px]" onClick={() => { setStatusFilter("completed"); exitMultiSelect(); }}>
+            Done ({completedItems.length})
           </Button>
-          <Button size="sm" variant={statusFilter === "bin" ? "default" : "outline"} className="h-9 text-xs gap-1" onClick={() => { setStatusFilter("bin"); exitMultiSelect(); }}>
+          <Button size="sm" variant={statusFilter === "bin" ? "default" : "outline"} className="h-9 px-2 text-[11px] gap-1" onClick={() => { setStatusFilter("bin"); exitMultiSelect(); }}>
             <Trash2 className="h-3 w-3" /> Bin ({validDiscarded.length})
           </Button>
+          <Button size="sm" variant={multiSelectMode ? "default" : "outline"} className="h-9 px-2 text-[11px] gap-1" onClick={() => multiSelectMode ? exitMultiSelect() : setMultiSelectMode(true)}>
+            <CheckSquare className="h-3 w-3" /> Select
+          </Button>
         </div>
-        <div className="flex gap-1 items-center">
-          <Button size="sm" variant={multiSelectMode ? "default" : "outline"} className="h-9 text-xs gap-1" onClick={() => multiSelectMode ? exitMultiSelect() : setMultiSelectMode(true)}>
-              <CheckSquare className="h-3 w-3" /> Select
-            </Button>
-        </div>
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-[160px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <Input value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} placeholder="Search by name or event..." className="pl-9 h-9 text-xs" />
+          <Input value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} placeholder="Search..." className="pl-9 h-9 text-xs" />
         </div>
       </div>
+
 
       {/* Multi-select bulk action bar */}
       {multiSelectMode && (
@@ -960,36 +959,38 @@ export function DashboardActions({
             return (
               <div
                 key={item.id}
-                className={`rounded-lg border bg-card p-4 flex items-start gap-4 transition-colors ${isCompleted ? "border-border/50 opacity-60" : "border-border hover:border-primary/20"}`}
+                className={`rounded-lg border bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 transition-colors ${isCompleted ? "border-border/50 opacity-60" : "border-border hover:border-primary/20"}`}
               >
-                {multiSelectMode && (
-                  <div className="shrink-0 mt-1">
-                    <Checkbox
-                      checked={selectedIds.has(item.id)}
-                      onCheckedChange={() => toggleSelect(item.id)}
-                    />
+                <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+                  {multiSelectMode && (
+                    <div className="shrink-0 mt-1">
+                      <Checkbox
+                        checked={selectedIds.has(item.id)}
+                        onCheckedChange={() => toggleSelect(item.id)}
+                      />
+                    </div>
+                  )}
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon className="h-4 w-4 text-muted-foreground" />
                   </div>
-                )}
-                <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <Badge variant="outline" className={badge.className + " text-[10px]"}>{badge.label}</Badge>
-                    {isCompleted && (
-                      <Badge variant="outline" className="text-[10px] bg-muted/50 text-muted-foreground">
-                        {item.status === "approved" || item.status === "confirmed" ? "✓ Resolved" : "✗ Declined"}
-                      </Badge>
-                    )}
-                    <span className="text-[11px] text-muted-foreground">
-                      {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}
-                    </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                      <Badge variant="outline" className={badge.className + " text-[9px] sm:text-[10px] px-1.5 py-0 leading-tight"}>{badge.label}</Badge>
+                      {isCompleted && (
+                        <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0 leading-tight bg-muted/50 text-muted-foreground">
+                          {item.status === "approved" || item.status === "confirmed" ? "✓ Resolved" : "✗ Declined"}
+                        </Badge>
+                      )}
+                      <span className="text-[10px] sm:text-[11px] text-muted-foreground">
+                        {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}
+                      </span>
+                    </div>
+                    <p className={`text-[13px] sm:text-sm font-medium break-words ${isCompleted ? "text-muted-foreground" : "text-foreground"}`}>{item.title}</p>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 break-words">{item.subtitle}</p>
                   </div>
-                  <p className={`text-sm font-medium ${isCompleted ? "text-muted-foreground" : "text-foreground"}`}>{item.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{item.subtitle}</p>
                 </div>
                 {!multiSelectMode && (
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 flex-wrap sm:shrink-0 sm:justify-end">
                     {renderActionButtons(item)}
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleDiscard(item)} title="Move to bin">
                       <Trash2 className="h-3.5 w-3.5" />
@@ -998,6 +999,7 @@ export function DashboardActions({
                 )}
               </div>
             );
+
           })}
         </div>
       )}

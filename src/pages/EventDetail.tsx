@@ -38,8 +38,6 @@ function unwrap<T>(val: T | T[] | null | undefined): T | null {
 function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event: any; purchaseUrl: string | null }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [detailsTicket, setDetailsTicket] = useState<any | null>(null);
-  const navigate = useNavigate();
 
   const setQty = (ticketId: string, val: number) => {
     setQuantities((prev) => ({ ...prev, [ticketId]: val }));
@@ -60,7 +58,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
   };
 
   return (
-    <div style={{ marginBottom: 24 }}>
+    <div style={{ marginTop: 32, marginBottom: 24 }}>
       <div className="flex items-center justify-between mb-3">
         <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#e8eaf0" }}>TICKETS</h3>
       </div>
@@ -70,47 +68,58 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
           const qty = quantities[ticket.id] || 0;
           const maxQty = ticket.quantity_available ?? 100;
           const soldOut = event.sold_out || (ticket.quantity_available != null && ticket.quantity_available <= 0);
-
           const isSelected = selectedId === ticket.id;
+
+          // Clicking a ticket row "selects" it and bumps the quantity to 1
+          // (if it's still 0) so the inline quantity selector becomes the
+          // single, consistent interaction for choosing how many to buy.
+          const handleRowClick = () => {
+            if (soldOut || ticketUrl) return;
+            setSelectedId(ticket.id);
+            if ((quantities[ticket.id] || 0) === 0) {
+              setQty(ticket.id, 1);
+            }
+          };
+
           return (
             <div
               key={ticket.id}
-              onClick={() => {
-                setSelectedId(ticket.id);
-                setDetailsTicket(ticket);
-              }}
-              className="flex items-center gap-3 sm:gap-4 cursor-pointer transition-transform duration-150"
+              onClick={handleRowClick}
+              className="grid items-center gap-3 cursor-pointer transition-all duration-150"
               style={{
+                gridTemplateColumns: "minmax(0,1fr) auto auto",
                 background: "#181c24",
                 borderRadius: 10,
-                padding: "10px 16px",
+                padding: "10px 14px",
                 minHeight: 56,
-                transform: isSelected ? "scale(1.025)" : "scale(1)",
+                transform: isSelected ? "scale(1.01)" : "scale(1)",
                 boxShadow: isSelected
                   ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,160,32,0.45)"
                   : "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
               }}
             >
-              {/* Left: tier + availability + price grouped */}
-              <div className="flex-1 min-w-0 flex items-center gap-3 sm:gap-4">
-                <div className="min-w-0">
-                  <span className="block truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>{ticket.ticket_type}</span>
-                  {soldOut ? (
-                    <span style={{ fontSize: 11, color: "#ef4444" }}>Sold Out</span>
-                  ) : ticket.quantity_available != null && ticket.quantity_available < 20 ? (
-                    <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} left</span>
-                  ) : (
-                    <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
-                  )}
-                </div>
-                {ticket.price != null && (
-                  <span style={{ fontSize: 18, fontWeight: 700, color: "#e8a020", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
+              {/* Title + availability (col 1) */}
+              <div className="min-w-0">
+                <span className="block truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", lineHeight: 1.2 }}>{ticket.ticket_type}</span>
+                {soldOut ? (
+                  <span style={{ fontSize: 11, color: "#ef4444" }}>Sold Out</span>
+                ) : ticket.quantity_available != null && ticket.quantity_available < 20 ? (
+                  <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} left</span>
+                ) : (
+                  <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
                 )}
               </div>
 
-              {/* Right: CTA */}
+              {/* Price (col 2) */}
+              <div style={{ minWidth: 60, textAlign: "right" }}>
+                {ticket.price != null && (
+                  <span style={{ fontSize: 16, fontWeight: 700, color: "#e8a020", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
+                )}
+              </div>
+
+              {/* Qty + CTA (col 3) */}
               {soldOut ? (
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#ef4444", flexShrink: 0 }}>Sold Out</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#ef4444" }}>Sold Out</span>
               ) : ticketUrl ? (
                 <a
                   href={ticketUrl}
@@ -119,13 +128,13 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                   onClick={(e) => e.stopPropagation()}
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
-                    background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none", flexShrink: 0,
+                    background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none",
                   }}
                 >
                   <ShoppingCart style={{ width: 14, height: 14 }} /> Buy
                 </a>
               ) : (
-                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
+                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => setQty(ticket.id, Math.max(0, qty - 1))}
                     disabled={qty <= 0}
@@ -135,7 +144,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                       display: "flex", alignItems: "center", justifyContent: "center",
                     }}
                   >−</button>
-                  <span style={{ width: 22, textAlign: "center", fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{qty}</span>
+                  <span style={{ width: 20, textAlign: "center", fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{qty}</span>
                   <button
                     onClick={() => setQty(ticket.id, Math.min(maxQty, qty + 1))}
                     disabled={qty >= maxQty}
@@ -154,7 +163,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                       cursor: qty <= 0 ? "not-allowed" : "pointer", marginLeft: 4,
                     }}
                   >
-                    <ShoppingCart style={{ width: 14, height: 14 }} /> Add
+                    <ShoppingCart style={{ width: 14, height: 14 }} /> Buy
                   </button>
                 </div>
               )}
@@ -162,82 +171,10 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
           );
         })}
       </div>
-
-      <Dialog open={!!detailsTicket} onOpenChange={(o) => { if (!o) setDetailsTicket(null); }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.04em", fontSize: 24 }}>
-              {detailsTicket?.ticket_type}
-            </DialogTitle>
-            {detailsTicket?.price != null && (
-              <DialogDescription className="text-base">
-                <span style={{ fontSize: 22, fontWeight: 700, color: "#e8a020" }}>£{Number(detailsTicket.price).toFixed(2)}</span>
-              </DialogDescription>
-            )}
-          </DialogHeader>
-          <div className="space-y-3 text-sm" style={{ color: "#e8eaf0" }}>
-            {detailsTicket?.description && (
-              <div>
-                <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "#8b909e" }}>What's included</div>
-                <p style={{ color: "#e8eaf0", whiteSpace: "pre-wrap" }}>{detailsTicket.description}</p>
-              </div>
-            )}
-            <div className="grid grid-cols-2 gap-3">
-              {detailsTicket?.quantity_available != null && (
-                <div>
-                  <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "#8b909e" }}>Availability</div>
-                  <p>{detailsTicket.quantity_available > 0 ? `${detailsTicket.quantity_available} left` : "Sold out"}</p>
-                </div>
-              )}
-              {detailsTicket?.sales_end && (
-                <div>
-                  <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "#8b909e" }}>Sales end</div>
-                  <p>{new Date(detailsTicket.sales_end).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
-                </div>
-              )}
-            </div>
-            {!detailsTicket?.description && (
-              <p style={{ color: "#8b909e" }}>No additional details provided for this ticket type.</p>
-            )}
-          </div>
-          <DialogFooter>
-            {(() => {
-              const t = detailsTicket;
-              if (!t) return null;
-              const url = purchaseUrl || t.external_link || null;
-              if (url) {
-                return (
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 18px", fontSize: 14, fontWeight: 600,
-                      background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none",
-                    }}
-                  >
-                    <ShoppingCart style={{ width: 16, height: 16 }} /> Buy ticket
-                  </a>
-                );
-              }
-              return (
-                <button
-                  onClick={() => { handleAddToBasket(t, 1); setDetailsTicket(null); }}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 18px", fontSize: 14, fontWeight: 600,
-                    background: "#e8a020", color: "#0d0f12", borderRadius: 8, border: "none", cursor: "pointer",
-                  }}
-                >
-                  <ShoppingCart style={{ width: 16, height: 16 }} /> Add to basket
-                </button>
-              );
-            })()}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
+
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();

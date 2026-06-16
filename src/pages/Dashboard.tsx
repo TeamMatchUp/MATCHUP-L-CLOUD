@@ -142,12 +142,6 @@ export default function Dashboard() {
       case "overview":
         return (
           <div className="space-y-6">
-            {isCoachOrOwner && myGyms.length > 0 && (
-              <GymRequestsPanel
-                gymIds={myGyms.map((g: any) => g.id)}
-                coachId={user!.id}
-              />
-            )}
             {isFighter && !fighterProfile && (
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex items-center justify-between">
                 <div>
@@ -171,13 +165,22 @@ export default function Dashboard() {
               fighterProfileId={fighterProfile?.id ?? null}
               onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
               underHeaderSlot={
-                isFighter && fighterProfile ? (
-                  <GymInvitesPanel fighterProfileId={fighterProfile.id} />
-                ) : null
+                <>
+                  {isCoachOrOwner && myGyms.length > 0 && (
+                    <GymRequestsPanel
+                      gymIds={myGyms.map((g: any) => g.id)}
+                      coachId={user!.id}
+                    />
+                  )}
+                  {isFighter && fighterProfile && (
+                    <GymInvitesPanel fighterProfileId={fighterProfile.id} />
+                  )}
+                </>
               }
             />
           </div>
         );
+
 
       case "gyms":
         return (

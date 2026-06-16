@@ -16,23 +16,20 @@ interface DashboardAnalyticsProps {
 export function DashboardAnalytics(props: DashboardAnalyticsProps) {
   const { isCoachOrOwner, isOrganiser, isFighter, fighterProfile, userId } = props;
 
-  // Only the first rendered analytics panel shows the "Analytics" heading
-  // to avoid duplicate titles when a user has multiple roles.
-  let titleUsed = false;
-  const nextTitle = () => {
-    if (titleUsed) return "";
-    titleUsed = true;
-    return "Analytics";
-  };
+  // For coaches, the gym/roster analytics are labelled "Gym Analytics" and
+  // the personal fighter analytics below them are labelled "Fighter Analytics"
+  // so the two sets are clearly distinguished.
+  const coachTitle = isCoachOrOwner ? "Gym Analytics" : "Analytics";
+  const fighterTitle = isCoachOrOwner ? "Fighter Analytics" : "Analytics";
 
   return (
     <div className="space-y-8">
-      {isCoachOrOwner && <CoachAnalyticsV2 userId={userId} title={nextTitle()} />}
+      {isCoachOrOwner && <CoachAnalyticsV2 userId={userId} title={coachTitle} />}
       {isFighter && fighterProfile && (
-        <FighterAnalyticsV2 fighterProfile={fighterProfile} title={nextTitle()} />
+        <FighterAnalyticsV2 fighterProfile={fighterProfile} title={fighterTitle} />
       )}
       {isOrganiser && !isCoachOrOwner && (
-        <OrganiserAnalyticsShared userId={userId} title={nextTitle()} />
+        <OrganiserAnalyticsShared userId={userId} title="Analytics" />
       )}
       {!isCoachOrOwner && !isFighter && !isOrganiser && (
         <p className="text-muted-foreground text-center py-12">No analytics available for your role yet.</p>
@@ -40,3 +37,5 @@ export function DashboardAnalytics(props: DashboardAnalyticsProps) {
     </div>
   );
 }
+
+
