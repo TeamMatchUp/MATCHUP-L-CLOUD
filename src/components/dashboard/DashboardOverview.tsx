@@ -333,12 +333,25 @@ export function DashboardOverview({
       background: scrolled ? "rgba(8,10,13,0.88)" : "#080a0d",
       backdropFilter: scrolled ? "blur(20px) saturate(160%)" : "none",
       boxShadow: scrolled ? "0 4px 24px rgba(0,0,0,0.5)" : "none",
-      padding: "0 24px",
+      padding: isMobile ? "0 10px" : "0 24px",
       transition: "all 0.3s ease",
       display: "flex", alignItems: "center", justifyContent: "space-between",
+      gap: 8,
     }}>
-      {/* LEFT: avatar + username + followers */}
-      <div className="flex items-center gap-3">
+      {/* LEFT: hamburger (mobile) + avatar + username + followers */}
+      <div className="flex items-center" style={{ gap: isMobile ? 8 : 12, minWidth: 0, flex: 1 }}>
+        {isMobile && onOpenMobileSidebar && (
+          <button
+            onClick={onOpenMobileSidebar}
+            aria-label="Open menu"
+            style={{
+              width: 36, height: 36, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+              background: "rgba(255,255,255,0.04)", color: "#8b909e", cursor: "pointer", flexShrink: 0,
+            }}
+          >
+            <PanelLeft style={{ width: 18, height: 18 }} />
+          </button>
+        )}
         <div style={{
           width: 36, height: 36, borderRadius: "50%",
           border: "2px solid rgba(232,160,32,0.4)",
@@ -351,9 +364,9 @@ export function DashboardOverview({
             <span style={{ color: "white", fontSize: 12, fontWeight: 700 }}>{initials}</span>
           )}
         </div>
-        <div>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", lineHeight: 1.2 }}>{profileData?.full_name || "User"}</p>
-          <div className="flex items-center gap-1" style={{ fontSize: 12, color: "#8b909e" }}>
+        <div style={{ minWidth: 0 }}>
+          <p className="truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", lineHeight: 1.2, maxWidth: isMobile ? 140 : 220 }}>{profileData?.full_name || "User"}</p>
+          <div className="flex items-center gap-1" style={{ fontSize: isMobile ? 11 : 12, color: "#8b909e" }}>
             <button onClick={() => setNetworkModal("followers")} style={{ cursor: "pointer" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "#e8a020"; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "#8b909e"; }}
@@ -370,15 +383,17 @@ export function DashboardOverview({
           </div>
         </div>
       </div>
-      {/* RIGHT: search + quick actions */}
-      <div className="flex items-center gap-3">
-        <GlobalSearch />
+      {/* RIGHT: search (desktop) + quick actions */}
+      <div className="flex items-center gap-3" style={{ flexShrink: 0 }}>
+        {!isMobile && <GlobalSearch />}
         <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
           {quickActionsContent}
         </QuickActionsButton>
       </div>
     </div>
   );
+
+
 
   const quickActionsFighter = (
     <>
