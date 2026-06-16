@@ -66,8 +66,15 @@ export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) 
       else if (f.result === "win") w++;
       else if (f.result === "loss") l++;
     });
+    // Combine cached signup record (pro + amateur) with computed from fights table
+    const cachedW = (fighterProfile.record_wins ?? 0) + (fighterProfile.amateur_wins ?? 0);
+    const cachedL = (fighterProfile.record_losses ?? 0) + (fighterProfile.amateur_losses ?? 0);
+    const cachedD = (fighterProfile.record_draws ?? 0) + (fighterProfile.amateur_draws ?? 0);
+    w = Math.max(w, cachedW);
+    l = Math.max(l, cachedL);
+    d = Math.max(d, cachedD);
     return { wins: w, losses: l, draws: d, total: w + l + d };
-  }, [fights, fighterId]);
+  }, [fights, fighterId, fighterProfile]);
 
   const upcomingBouts = upcomingSlots.filter(
     (s) => s.events && new Date(s.events.date) >= now
