@@ -415,6 +415,9 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
   const [matchedGym, setMatchedGym] = useState<{ id: string; name: string } | null>(null);
   const [dismissedMatch, setDismissedMatch] = useState(false);
 
+  // Is this coach also an active fighter?
+  const [isFighter, setIsFighter] = useState<"yes" | "no" | null>(null);
+
   // Fighter profile fields (same as FighterForm)
   const [weightClass, setWeightClass] = useState<WeightClass | "">("");
   const [discipline, setDiscipline] = useState("");
