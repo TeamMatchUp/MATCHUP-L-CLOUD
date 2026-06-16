@@ -163,9 +163,6 @@ export default function Dashboard() {
                 </Button>
               </div>
             )}
-            {isFighter && fighterProfile && (
-              <GymInvitesPanel fighterProfileId={fighterProfile.id} />
-            )}
             <DashboardOverview
               calendarEvents={calendarEvents}
               highlightedDates={highlightedDates}
@@ -173,6 +170,11 @@ export default function Dashboard() {
               onNavigateSection={navigateToSection}
               fighterProfileId={fighterProfile?.id ?? null}
               onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
+              underHeaderSlot={
+                isFighter && fighterProfile ? (
+                  <GymInvitesPanel fighterProfileId={fighterProfile.id} />
+                ) : null
+              }
             />
           </div>
         );
