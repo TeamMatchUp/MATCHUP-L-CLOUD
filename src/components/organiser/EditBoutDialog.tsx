@@ -14,6 +14,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
 import { FighterSearchDropdown } from "./FighterSearchDropdown";
 import { useAuth } from "@/contexts/AuthContext";
+import { notifyCancellationForSlot } from "@/lib/matchProposal";
 
 type FighterProfile = Database["public"]["Tables"]["fighter_profiles"]["Row"];
 
@@ -135,6 +136,7 @@ export function EditBoutDialog({ open, onOpenChange, bout, onSuccess }: {
       if (fAInitial) await notifyFighterRemoval(fAInitial, fBInitial, bout.event_id, bout.id, bout.weight_class);
       if (fBInitial) await notifyFighterRemoval(fBInitial, fAInitial, bout.event_id, bout.id, bout.weight_class);
     }
+    await notifyCancellationForSlot(bout.id);
     const { error } = await supabase.from("event_fight_slots").delete().eq("id", bout.id);
     if (error) {
       toast({ title: "Error deleting bout", description: error.message, variant: "destructive" });

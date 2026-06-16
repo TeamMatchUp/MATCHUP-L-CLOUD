@@ -84,7 +84,12 @@ export function NotificationBell() {
     queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
 
     setOpen(false);
-    navigate("/dashboard?section=actions");
+    const proposalTypes = ["match_proposed", "match_accepted", "match_declined", "match_confirmed", "match_withdrawn"];
+    if (proposalTypes.includes(notification.type) && notification.reference_id) {
+      navigate(`/proposals/${notification.reference_id}`);
+    } else {
+      navigate("/dashboard?section=actions");
+    }
   };
 
   if (!user) return null;
