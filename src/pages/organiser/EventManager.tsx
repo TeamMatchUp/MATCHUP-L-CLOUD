@@ -195,10 +195,9 @@ export default function EventManager() {
     const totalSlots = bouts.length;
     const confirmed = bouts.filter((b: any) => b.status === "confirmed" && b.fighter_a_id && b.fighter_b_id).length;
     const open = bouts.filter((b: any) => !b.fighter_a_id || !b.fighter_b_id).length;
-    const main = bouts.filter((b: any) => b.bout_type === "Main Event" || b.slot_number === 1);
-    const under = bouts.filter((b: any) => b.bout_type === "Undercard");
-    const prelim = bouts.filter((b: any) => b.bout_type === "Prelim" || b.bout_type === "Prelims");
-    return { totalCapacity, estRevenue, totalSlots, confirmed, open, main, under, prelim };
+    const main = bouts.filter((b: any) => b.bout_type === "Main Event");
+    const under = bouts.filter((b: any) => b.bout_type !== "Main Event");
+    return { totalCapacity, estRevenue, totalSlots, confirmed, open, main, under };
   }, [tickets, bouts]);
 
   // Progress checklist
