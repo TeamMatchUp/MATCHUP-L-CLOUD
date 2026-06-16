@@ -242,7 +242,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             <h3 className="font-heading text-sm text-muted-foreground mb-3 uppercase tracking-wide">Core Profile</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div><Label>Name</Label><Input {...register("name")} /></div>
-              <div><Label>Date of Birth</Label><Input type="date" {...register("date_of_birth")} /></div>
+              <div><Label>Date of Birth</Label><Input type="date" className="mu-date-input" {...register("date_of_birth")} /></div>
               <div>
                 <Label>Weight Class</Label>
                 <Select value={watch("weight_class")} onValueChange={(v) => setValue("weight_class", v)}>
@@ -317,7 +317,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             <h3 className="font-heading text-sm text-muted-foreground mb-3 uppercase tracking-wide">Availability</h3>
             <div>
               <Label className="text-xs text-muted-foreground">Are you currently available for fights?</Label>
-              <div className="flex gap-2 mt-1.5">
+              <div className="grid grid-cols-2 gap-2 mt-1.5 max-w-xs">
                 {[
                   { v: true, label: "Yes" },
                   { v: false, label: "No" },
@@ -328,7 +328,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
                       key={opt.label}
                       type="button"
                       onClick={() => setIsAvailable(opt.v)}
-                      className={`px-4 py-1.5 rounded-md text-xs font-medium transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+                      className={`h-9 rounded-md text-xs font-medium transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}
                     >
                       {opt.label}
                     </button>
