@@ -42,7 +42,7 @@ const ChartTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-export function CoachAnalyticsV2({ userId }: { userId: string }) {
+export function CoachAnalyticsV2({ userId, title = "Analytics" }: { userId: string; title?: string }) {
   const now = new Date();
   const [bookedWindow, setBookedWindow] = useState<"30" | "60" | "90">("30");
 
