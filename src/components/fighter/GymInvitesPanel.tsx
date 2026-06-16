@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Badge } from "@/components/ui/badge";
 import { Building2 } from "lucide-react";
 
 interface GymInvitesPanelProps {
@@ -24,32 +23,61 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
   if (pendingLinks.length === 0) return null;
 
   return (
-    <div className="mb-8">
-      <h2 className="font-heading text-2xl text-foreground mb-4">
-        GYM <span className="text-primary">REQUESTS</span>
-      </h2>
-      <div className="space-y-3">
+    <div
+      style={{
+        background: "#111318",
+        borderRadius: 16,
+        padding: 20,
+        boxShadow:
+          "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
+      }}
+    >
+      <h3
+        className="font-heading text-foreground mb-4"
+        style={{ fontSize: 18, letterSpacing: "0.04em", textTransform: "uppercase" }}
+      >
+        GYM <span style={{ color: "#e8a020" }}>REQUESTS</span>
+      </h3>
+      <div className="space-y-2">
         {pendingLinks.map((link: any) => {
           const gym = link.gyms;
           return (
             <div
               key={link.id}
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
+              className="flex items-center justify-between"
+              style={{ background: "#181c24", borderRadius: 10, padding: "10px 12px" }}
             >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center">
-                  <Building2 className="h-5 w-5 text-muted-foreground" />
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className="flex items-center justify-center shrink-0"
+                  style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(232,160,32,0.12)" }}
+                >
+                  <Building2 className="h-4 w-4" style={{ color: "#e8a020" }} />
                 </div>
-                <div>
-                  <p className="font-medium text-foreground">{gym?.name ?? "Unknown Gym"}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {gym?.location} · {gym?.country}
+                <div className="min-w-0">
+                  <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>
+                    {gym?.name ?? "Unknown Gym"}
+                  </p>
+                  <p className="truncate" style={{ fontSize: 11, color: "#8b909e" }}>
+                    {[gym?.location, gym?.country].filter(Boolean).join(" · ")}
                   </p>
                 </div>
               </div>
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-                Pending — {gym?.name ?? "Gym"}
-              </Badge>
+              <span
+                className="shrink-0"
+                style={{
+                  fontSize: 10,
+                  fontWeight: 600,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: "#e8a020",
+                  background: "rgba(232,160,32,0.12)",
+                  padding: "4px 8px",
+                  borderRadius: 6,
+                }}
+              >
+                Pending
+              </span>
             </div>
           );
         })}
