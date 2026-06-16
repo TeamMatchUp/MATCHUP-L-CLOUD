@@ -195,10 +195,9 @@ export default function EventManager() {
     const totalSlots = bouts.length;
     const confirmed = bouts.filter((b: any) => b.status === "confirmed" && b.fighter_a_id && b.fighter_b_id).length;
     const open = bouts.filter((b: any) => !b.fighter_a_id || !b.fighter_b_id).length;
-    const main = bouts.filter((b: any) => b.bout_type === "Main Event" || b.slot_number === 1);
-    const under = bouts.filter((b: any) => b.bout_type === "Undercard");
-    const prelim = bouts.filter((b: any) => b.bout_type === "Prelim" || b.bout_type === "Prelims");
-    return { totalCapacity, estRevenue, totalSlots, confirmed, open, main, under, prelim };
+    const main = bouts.filter((b: any) => b.bout_type === "Main Event");
+    const under = bouts.filter((b: any) => b.bout_type !== "Main Event");
+    return { totalCapacity, estRevenue, totalSlots, confirmed, open, main, under };
   }, [tickets, bouts]);
 
   // Progress checklist
@@ -368,20 +367,20 @@ export default function EventManager() {
                   <GhostButton icon={Pencil} onClick={() => navigate(`/organiser/events/${id}/fight-card`)}>Edit Fight Card</GhostButton>
                 }>Fight Card Overview</SectionTitle>
                 {[
-                  { label: "Main Card", bouts: metrics.main, total: Math.max(metrics.main.length, 1) },
-                  { label: "Undercard", bouts: metrics.under, total: Math.max(metrics.under.length, 1) },
-                  { label: "Prelims", bouts: metrics.prelim, total: Math.max(metrics.prelim.length, 1) },
+                  { label: "Main Card", bouts: metrics.main },
+                  { label: "Undercard", bouts: metrics.under },
                 ].map((sec) => {
-                  const filled = sec.bouts.filter((b: any) => b.fighter_a_id && b.fighter_b_id).length;
-                  const pct = sec.total > 0 ? (filled / sec.total) * 100 : 0;
+                  const total = sec.bouts.length;
+                  const confirmed = sec.bouts.filter((b: any) => b.status === "confirmed" && b.fighter_a_id && b.fighter_b_id).length;
+                  const pct = total > 0 ? (confirmed / total) * 100 : 0;
                   return (
                     <div key={sec.label} className="mb-4 last:mb-0">
                       <div className="flex items-center justify-between mb-1.5">
                         <div>
                           <p style={{ fontSize: 14, color: TEXT, fontWeight: 600 }}>{sec.label}</p>
-                          <p style={{ fontSize: 11, color: TEXT_MUTED }}>{sec.bouts.length} fight{sec.bouts.length === 1 ? "" : "s"}</p>
+                          <p style={{ fontSize: 11, color: TEXT_MUTED }}>{total} slot{total === 1 ? "" : "s"}</p>
                         </div>
-                        <span style={{ fontSize: 13, color: TEXT_SEC, fontWeight: 600 }}>{filled} / {sec.bouts.length}</span>
+                        <span style={{ fontSize: 13, color: TEXT_SEC, fontWeight: 600 }}>{confirmed} / {total}</span>
                       </div>
                       <ProgressBar pct={pct} />
                     </div>

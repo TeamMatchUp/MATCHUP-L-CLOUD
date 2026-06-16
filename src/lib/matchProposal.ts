@@ -304,7 +304,7 @@ export async function applyOutcome(
     if (parties.eventFightSlot?.id) {
       await supabase
         .from("event_fight_slots")
-        .update({ status: "confirmed" })
+        .update({ status: "confirmed", is_public: true })
         .eq("id", parties.eventFightSlot.id);
       // 3. Write bout_acceptances rows for every accepting user
       const acceptingUsers = confirmations.filter((c) => c.decision === "accepted");
