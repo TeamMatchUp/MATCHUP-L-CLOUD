@@ -16,22 +16,17 @@ interface DashboardAnalyticsProps {
 export function DashboardAnalytics(props: DashboardAnalyticsProps) {
   const { isCoachOrOwner, isOrganiser, isFighter, fighterProfile, userId } = props;
 
-  // When a user has both coach and fighter roles, label the two analytics
-  // panels distinctly so it's clear which set covers the gym/roster and which
-  // covers their own fighter stats.
-  const dualRole = isCoachOrOwner && isFighter && !!fighterProfile;
-  const coachTitle = dualRole ? "Gym Analytics" : "Analytics";
-  const fighterTitle = dualRole ? "Fighter Analytics" : "";
-  const fighterOnlyTitle = dualRole ? fighterTitle : "Analytics";
+  // For coaches, the gym/roster analytics are labelled "Gym Analytics" and
+  // the personal fighter analytics below them are labelled "Fighter Analytics"
+  // so the two sets are clearly distinguished.
+  const coachTitle = isCoachOrOwner ? "Gym Analytics" : "Analytics";
+  const fighterTitle = isCoachOrOwner ? "Fighter Analytics" : "Analytics";
 
   return (
     <div className="space-y-8">
       {isCoachOrOwner && <CoachAnalyticsV2 userId={userId} title={coachTitle} />}
       {isFighter && fighterProfile && (
-        <FighterAnalyticsV2
-          fighterProfile={fighterProfile}
-          title={isCoachOrOwner ? fighterTitle : fighterOnlyTitle}
-        />
+        <FighterAnalyticsV2 fighterProfile={fighterProfile} title={fighterTitle} />
       )}
       {isOrganiser && !isCoachOrOwner && (
         <OrganiserAnalyticsShared userId={userId} title="Analytics" />
@@ -42,4 +37,5 @@ export function DashboardAnalytics(props: DashboardAnalyticsProps) {
     </div>
   );
 }
+
 
