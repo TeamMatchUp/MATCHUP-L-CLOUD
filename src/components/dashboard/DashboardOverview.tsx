@@ -455,7 +455,7 @@ export function DashboardOverview({
       style={{
         background: "#111318",
         borderRadius: 16,
-        padding: 20,
+        padding: isMobile ? 14 : 20,
         minHeight: 320,
         boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
         display: "flex", flexDirection: "column",
