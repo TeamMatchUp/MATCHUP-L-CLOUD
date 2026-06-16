@@ -255,7 +255,7 @@ export default function EventManager() {
     return (
       <div className="min-h-screen" style={{ background: PAGE_BG }}>
         <Header />
-        <main className="pt-16"><div className="container py-16"><div className="animate-pulse" style={{ color: TEXT_SEC }}>Loading event…</div></div></main>
+        <main className="pt-16"><div className="container py-6 md:py-10"><div className="animate-pulse" style={{ color: TEXT_SEC }}>Loading event…</div></div></main>
       </div>
     );
   }

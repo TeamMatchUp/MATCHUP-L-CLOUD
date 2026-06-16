@@ -259,7 +259,7 @@ export default function EventDetail() {
     return (
       <div className="min-h-screen" style={{ background: "#0d0f12" }}>
         <Header />
-        <main className="pt-16"><div className="container py-16"><div className="h-8 w-64 bg-card animate-pulse rounded mb-4" /><div className="h-4 w-48 bg-card animate-pulse rounded" /></div></main>
+        <main className="pt-16"><div className="container py-6 md:py-10"><div className="h-8 w-64 bg-card animate-pulse rounded mb-4" /><div className="h-4 w-48 bg-card animate-pulse rounded" /></div></main>
       </div>
     );
   }
@@ -268,7 +268,7 @@ export default function EventDetail() {
     return (
       <div className="min-h-screen" style={{ background: "#0d0f12" }}>
         <Header />
-        <main className="pt-16"><div className="container py-16 text-center">
+        <main className="pt-16"><div className="container py-6 md:py-10 text-center">
           <h1 className="font-heading text-3xl text-foreground mb-4">Event Not Found</h1>
           <Button variant="ghost" onClick={() => navigate(-1)}><ArrowLeft className="h-4 w-4 mr-2" />Back</Button>
         </div></main>

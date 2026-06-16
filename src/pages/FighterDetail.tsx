@@ -162,11 +162,11 @@ export default function FighterDetail() {
   }, [stats]);
 
   if (isLoading) return (
-    <div className="min-h-screen" style={{ background: "#080a0d" }}><Header /><main className="pt-16"><div className="container py-16"><div className="h-8 w-64 animate-pulse rounded mb-4" style={{ background: "#111318" }} /></div></main></div>
+    <div className="min-h-screen" style={{ background: "#080a0d" }}><Header /><main className="pt-16"><div className="container py-6 md:py-10"><div className="h-8 w-64 animate-pulse rounded mb-4" style={{ background: "#111318" }} /></div></main></div>
   );
 
   if (!fighter) return (
-    <div className="min-h-screen" style={{ background: "#080a0d" }}><Header /><main className="pt-16"><div className="container py-16 text-center"><h1 className="font-heading text-3xl mb-4" style={{ color: "#e8eaf0" }}>Fighter Not Found</h1><Button variant="ghost" onClick={() => navigate(-1)}><ArrowLeft className="h-4 w-4 mr-2" />Back</Button></div></main><Footer /></div>
+    <div className="min-h-screen" style={{ background: "#080a0d" }}><Header /><main className="pt-16"><div className="container py-6 md:py-10 text-center"><h1 className="font-heading text-3xl mb-4" style={{ color: "#e8eaf0" }}>Fighter Not Found</h1><Button variant="ghost" onClick={() => navigate(-1)}><ArrowLeft className="h-4 w-4 mr-2" />Back</Button></div></main><Footer /></div>
   );
 
   const gyms = (fighter.fighter_gym_links ?? []).filter((l: any) => l.status === "approved");
