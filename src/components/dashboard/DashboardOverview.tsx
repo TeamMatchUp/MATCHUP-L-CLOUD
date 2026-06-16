@@ -469,7 +469,7 @@ export function DashboardOverview({
   if (isFighter && !isCoachOrOwner) {
     return (
       <div>
-        <div className="space-y-6" style={{ padding: "0 24px 24px" }}>
+        <div className="space-y-6" style={{ padding: isMobile ? "0 12px 16px" : "0 24px 24px" }}>
           <OverviewHeader />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {fighterCardVis.record && <Cell span={2}><FighterRecordHero /></Cell>}
@@ -487,7 +487,7 @@ export function DashboardOverview({
   if (isCoachOrOwner) {
     return (
       <div>
-        <div className="space-y-6" style={{ padding: "0 24px 24px" }}>
+        <div className="space-y-6" style={{ padding: isMobile ? "0 12px 16px" : "0 24px 24px" }}>
           <OverviewHeader />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {coachCardVis.kpis && <Cell span={2}><CoachKpiStrip /></Cell>}
@@ -504,7 +504,7 @@ export function DashboardOverview({
   if (isOrganiser) {
     return (
       <div>
-        <div className="space-y-6" style={{ padding: "0 24px 24px" }}>
+        <div className="space-y-6" style={{ padding: isMobile ? "0 12px 16px" : "0 24px 24px" }}>
           <OverviewHeader />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {orgCardVis.stats && <Cell span={2}><OrganiserOverviewHero /></Cell>}
