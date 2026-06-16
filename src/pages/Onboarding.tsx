@@ -565,7 +565,29 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
         </Select>
       </div>
 
+      {/* Active fighter gate */}
+      <div className="border-t border-border pt-4 mt-4 space-y-3">
+        <Label className="text-base text-foreground">Are you also an active fighter?</Label>
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant={isFighter === "yes" ? "hero" : "outline"}
+            onClick={() => setIsFighter("yes")}
+          >
+            Yes
+          </Button>
+          <Button
+            type="button"
+            variant={isFighter === "no" ? "hero" : "outline"}
+            onClick={() => setIsFighter("no")}
+          >
+            No
+          </Button>
+        </div>
+      </div>
+
       {/* Fighter profile section */}
+      {isFighter === "yes" && (
       <div className="border-t border-border pt-4 mt-4">
         <h4 className="font-heading text-lg text-foreground mb-3">
           YOUR <span className="text-primary">FIGHTER PROFILE</span>
