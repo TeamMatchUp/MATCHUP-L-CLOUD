@@ -397,6 +397,25 @@ export default function AccountSettings() {
         </div>
       </main>
       <Footer />
+
+      <Dialog open={fighterModalOpen} onOpenChange={setFighterModalOpen}>
+        <DialogContent className="max-w-[min(90vw,960px)] max-h-[88vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add fighter profile</DialogTitle>
+          </DialogHeader>
+          {user && (
+            <CoachFighterProfileForm
+              userId={user.id}
+              displayName={fullName || user.email || "Coach"}
+              onSaved={() => {
+                setFighterModalOpen(false);
+                setHasFighterProfile(true);
+              }}
+              onCancel={() => setFighterModalOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
