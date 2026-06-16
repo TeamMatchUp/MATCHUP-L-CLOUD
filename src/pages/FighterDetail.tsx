@@ -298,6 +298,9 @@ export default function FighterDetail() {
               </div>
             </div>
 
+          <div className="container max-w-2xl" style={{ paddingLeft: 0, paddingRight: 0 }}>
+            {isOwnerOrCoach && <div style={{ padding: "16px 16px 0" }}><ProfileCompletionBar fighterId={fighter.id} fighterProfile={fighter} /></div>}
+
             {/* TABS: Record | Stats */}
             <div className="flex" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", margin: "0 16px" }}>
               {(["record", "stats"] as const).map((t) => (
