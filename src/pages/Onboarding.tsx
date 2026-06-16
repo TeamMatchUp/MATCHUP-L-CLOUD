@@ -684,6 +684,7 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
           </div>
         </div>
       </div>
+      )}
 
       <div className="flex flex-col gap-3 pt-2">
         <Button variant="hero" onClick={handleSubmit} disabled={loading}>
