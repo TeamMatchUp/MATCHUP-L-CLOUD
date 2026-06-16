@@ -52,6 +52,12 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
   const [heroRecordFilter, setHeroRecordFilter] = useState<"pro" | "amateur" | "total">("pro");
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [showCrop, setShowCrop] = useState(false);
+  const [availableDays, setAvailableDays] = useState<string[]>(fighterProfile.available_days || []);
+  const [availableTimes, setAvailableTimes] = useState<string[]>(fighterProfile.available_times || []);
+
+  const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+  const TIMES = ["Morning", "Afternoon", "Evening"];
+  const toggleArr = (arr: string[], v: string) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 
   const { register, handleSubmit, setValue, watch, reset } = useForm({
     defaultValues: {
@@ -181,7 +187,9 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
       bio: data.bio || null, country: data.country, training_background: data.training_background || null,
       years_training: data.years_training ? parseInt(data.years_training) : null, region: data.region || null,
       postcode: data.postcode || null,
-    }).eq("id", fighterProfile.id);
+      available_days: availableDays,
+      available_times: availableTimes,
+    } as any).eq("id", fighterProfile.id);
     setSaving(false);
     if (error) { toast.error("Failed to update profile"); return; }
     toast.success("Profile updated"); setEditing(false); onRefresh();
@@ -240,7 +248,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             <h3 className="font-heading text-sm text-muted-foreground mb-3 uppercase tracking-wide">Core Profile</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div><Label>Name</Label><Input {...register("name")} /></div>
-              <div><Label>Date of Birth</Label><Input type="date" {...register("date_of_birth")} /></div>
+              <div className="md:max-w-[220px]"><Label>Date of Birth</Label><Input type="date" {...register("date_of_birth")} className="w-full" /></div>
               <div>
                 <Label>Weight Class</Label>
                 <Select value={watch("weight_class")} onValueChange={(v) => setValue("weight_class", v)}>
@@ -309,6 +317,40 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             ) : (
               <p className="text-sm text-muted-foreground">Set your discipline above to unlock style options.</p>
             )}
+          </div>
+
+          <div>
+            <h3 className="font-heading text-sm text-muted-foreground mb-3 uppercase tracking-wide">Availability</h3>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">Days</Label>
+                <div className="flex flex-wrap gap-2 mt-1.5">
+                  {DAYS.map((d) => {
+                    const active = availableDays.includes(d);
+                    return (
+                      <button key={d} type="button" onClick={() => setAvailableDays(toggleArr(availableDays, d))}
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+                        {d}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Time of day</Label>
+                <div className="flex flex-wrap gap-2 mt-1.5">
+                  {TIMES.map((t) => {
+                    const active = availableTimes.includes(t);
+                    return (
+                      <button key={t} type="button" onClick={() => setAvailableTimes(toggleArr(availableTimes, t))}
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+                        {t}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
 
           <div><Label>Bio</Label><Textarea {...register("bio")} rows={3} placeholder="Tell your story..." /></div>
