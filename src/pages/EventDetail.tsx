@@ -656,22 +656,6 @@ export default function EventDetail() {
                   </div>
                 )}
 
-                {/* Ticket Section */}
-                {(() => {
-                  const tickets = (event as any).tickets ?? [];
-                  if (!event.ticket_enabled || tickets.length === 0) return null;
-                  const now = new Date();
-                  const activeTickets = tickets.filter((t: any) =>
-                    (!t.sales_start || new Date(t.sales_start) <= now) &&
-                    (!t.sales_end || new Date(t.sales_end) >= now)
-                  );
-                  if (activeTickets.length === 0) return null;
-                  const purchaseUrl = (event as any).ticket_url || null;
-                  return (
-                    <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
-                  );
-                })()}
-
                 <div className="flex flex-wrap gap-3">
                   {user && (isFighter || isCoach) && fighterProfile && (
                     existingInterest ? (
@@ -690,6 +674,22 @@ export default function EventDetail() {
                     </Button>
                   )}
                 </div>
+
+                {/* Ticket Section */}
+                {(() => {
+                  const tickets = (event as any).tickets ?? [];
+                  if (!event.ticket_enabled || tickets.length === 0) return null;
+                  const now = new Date();
+                  const activeTickets = tickets.filter((t: any) =>
+                    (!t.sales_start || new Date(t.sales_start) <= now) &&
+                    (!t.sales_end || new Date(t.sales_end) >= now)
+                  );
+                  if (activeTickets.length === 0) return null;
+                  const purchaseUrl = (event as any).ticket_url || null;
+                  return (
+                    <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
+                  );
+                })()}
               </div>
             </motion.div>
 
