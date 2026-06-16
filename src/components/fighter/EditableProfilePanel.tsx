@@ -52,12 +52,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
   const [heroRecordFilter, setHeroRecordFilter] = useState<"pro" | "amateur" | "total">("pro");
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [showCrop, setShowCrop] = useState(false);
-  const [availableDays, setAvailableDays] = useState<string[]>(fighterProfile.available_days || []);
-  const [availableTimes, setAvailableTimes] = useState<string[]>(fighterProfile.available_times || []);
-
-  const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const TIMES = ["Morning", "Afternoon", "Evening"];
-  const toggleArr = (arr: string[], v: string) => arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
+  const [isAvailable, setIsAvailable] = useState<boolean>(fighterProfile.available ?? true);
 
   const { register, handleSubmit, setValue, watch, reset } = useForm({
     defaultValues: {
