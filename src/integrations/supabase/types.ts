@@ -638,6 +638,8 @@ export type Database = {
           amateur_losses: number
           amateur_wins: number
           available: boolean
+          available_days: string[] | null
+          available_times: string[] | null
           bio: string | null
           country: Database["public"]["Enums"]["country_code"]
           created_at: string
@@ -672,6 +674,8 @@ export type Database = {
           amateur_losses?: number
           amateur_wins?: number
           available?: boolean
+          available_days?: string[] | null
+          available_times?: string[] | null
           bio?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string
@@ -706,6 +710,8 @@ export type Database = {
           amateur_losses?: number
           amateur_wins?: number
           available?: boolean
+          available_days?: string[] | null
+          available_times?: string[] | null
           bio?: string | null
           country?: Database["public"]["Enums"]["country_code"]
           created_at?: string

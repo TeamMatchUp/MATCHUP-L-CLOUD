@@ -13,16 +13,15 @@ export function HeroSection() {
           <h1
             className="font-heading leading-[0.85] mb-3 sm:mb-6 w-full"
             style={{
-              fontSize: "clamp(4.5rem, 19vw, 13rem)",
               fontWeight: 800,
               letterSpacing: "0.01em",
             }}
           >
-            <span className="block whitespace-nowrap text-foreground">MATCH EASY,</span>
-            <span className="block whitespace-nowrap text-primary text-gold-glow">FIGHT HARD</span>
+            <span className="block whitespace-nowrap text-foreground" style={{ fontSize: "clamp(3.25rem, 17vw, 13rem)", lineHeight: 0.9 }}>MATCH EASY,</span>
+            <span className="block whitespace-nowrap text-primary text-gold-glow" style={{ fontSize: "clamp(3.25rem, 17vw, 13rem)", lineHeight: 0.9 }}>FIGHT HARD</span>
           </h1>
 
-          <p className="text-foreground text-[3.5vw] sm:text-base md:text-lg max-w-md mt-2 sm:mt-4">
+          <p className="text-foreground text-sm sm:text-base md:text-lg max-w-md mt-3 sm:mt-4">
             PROMOTE, MATCHUP, DONE. IT'S THAT SIMPLE...
           </p>
         </div>
