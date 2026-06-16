@@ -457,7 +457,11 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
       toast({ title: "Please enter your gym name", variant: "destructive" });
       return;
     }
-    if (!weightClass || !discipline) {
+    if (isFighter === null) {
+      toast({ title: "Please answer whether you are also an active fighter", variant: "destructive" });
+      return;
+    }
+    if (isFighter === "yes" && (!weightClass || !discipline)) {
       toast({ title: "Please fill in weight class and discipline", variant: "destructive" });
       return;
     }
@@ -469,44 +473,46 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
       coach_id: user!.id, discipline_tags: gymDisciplines.length > 0 ? gymDisciplines.join(", ") : null,
     });
 
-    // Create fighter profile for the coach
-    const styleValue = discipline === "Wrestling" || discipline === "Other" || discipline === "BJJ"
-      ? null
-      : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]);
+    // Create fighter profile only if coach opted in
+    if (isFighter === "yes") {
+      const styleValue = discipline === "Wrestling" || discipline === "Other" || discipline === "BJJ"
+        ? null
+        : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]);
 
-    const { data: existing } = await supabase.from("fighter_profiles").select("id").eq("user_id", user!.id).maybeSingle();
+      const { data: existing } = await supabase.from("fighter_profiles").select("id").eq("user_id", user!.id).maybeSingle();
 
-    const profileData = {
-      weight_class: weightClass as WeightClass,
-      style: styleValue,
-      stance: stance || null,
-      fighting_substyle: fightingSubstyle || null,
-      discipline,
-      date_of_birth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
-      walk_around_weight_kg: walkAroundWeight ? parseFloat(walkAroundWeight) : null,
-      height: heightCm ? parseInt(heightCm) : null,
-      reach: reachCm ? parseInt(reachCm) : null,
-      amateur_wins: parseInt(amateurWins) || 0,
-      amateur_losses: parseInt(amateurLosses) || 0,
-      amateur_draws: parseInt(amateurDraws) || 0,
-      record_wins: parseInt(proWins) || 0,
-      record_losses: parseInt(proLosses) || 0,
-      record_draws: parseInt(proDraws) || 0,
-      created_by_coach_id: user!.id,
-    };
+      const profileData = {
+        weight_class: weightClass as WeightClass,
+        style: styleValue,
+        stance: stance || null,
+        fighting_substyle: fightingSubstyle || null,
+        discipline,
+        date_of_birth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
+        walk_around_weight_kg: walkAroundWeight ? parseFloat(walkAroundWeight) : null,
+        height: heightCm ? parseInt(heightCm) : null,
+        reach: reachCm ? parseInt(reachCm) : null,
+        amateur_wins: parseInt(amateurWins) || 0,
+        amateur_losses: parseInt(amateurLosses) || 0,
+        amateur_draws: parseInt(amateurDraws) || 0,
+        record_wins: parseInt(proWins) || 0,
+        record_losses: parseInt(proLosses) || 0,
+        record_draws: parseInt(proDraws) || 0,
+        created_by_coach_id: user!.id,
+      };
 
-    if (!existing) {
-      await supabase.from("fighter_profiles").insert({
-        user_id: user!.id,
-        name: user!.user_metadata?.full_name || user!.email || "Coach",
-        ...profileData,
-      });
-    } else {
-      await supabase.from("fighter_profiles").update(profileData).eq("id", existing.id);
+      if (!existing) {
+        await supabase.from("fighter_profiles").insert({
+          user_id: user!.id,
+          name: user!.user_metadata?.full_name || user!.email || "Coach",
+          ...profileData,
+        });
+      } else {
+        await supabase.from("fighter_profiles").update(profileData).eq("id", existing.id);
+      }
     }
 
     await markOnboardingComplete(queryClient);
-    void track("onboarding_completed", { role: "coach" });
+    void track("onboarding_completed", { role: "coach", fighter_profile: isFighter === "yes" });
     setLoading(false);
     onComplete();
   };
