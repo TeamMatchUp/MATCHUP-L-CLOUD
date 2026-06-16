@@ -352,7 +352,7 @@ export default function Dashboard() {
         }}
       >
         {/* Mobile hamburger — always shown on mobile so the sidebar is reachable */}
-        {isMobile && (
+        {isMobile && activeSection !== "overview" && (
           <div className="sticky top-0 z-40 flex items-center h-12 px-3" style={{ background: "hsl(var(--background))" }}>
             <Button
               variant="ghost"
