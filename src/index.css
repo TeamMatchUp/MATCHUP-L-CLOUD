@@ -230,6 +230,17 @@
     font-family: var(--font-heading);
     letter-spacing: 0.02em;
     line-height: 1.1;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    hyphens: auto;
+  }
+
+  /* Sitewide guard: prevent bold headings from overflowing narrow containers */
+  @media (max-width: 640px) {
+    h1 { font-size: clamp(1.5rem, 6.5vw, 2.25rem); }
+    h2 { font-size: clamp(1.25rem, 5.5vw, 1.875rem); }
+    h3 { font-size: clamp(1.05rem, 4.6vw, 1.5rem); }
+    h4 { font-size: clamp(0.95rem, 4vw, 1.25rem); }
   }
 }
 
