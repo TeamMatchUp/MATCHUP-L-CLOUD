@@ -45,8 +45,8 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
     setQuantities((prev) => ({ ...prev, [ticketId]: val }));
   };
 
-  const handleAddToBasket = (ticket: any) => {
-    const qty = quantities[ticket.id] || 0;
+  const handleAddToBasket = (ticket: any, overrideQty?: number) => {
+    const qty = overrideQty ?? quantities[ticket.id] ?? 0;
     if (qty <= 0) return;
     addToBasket({
       ticket_type: ticket.ticket_type,
