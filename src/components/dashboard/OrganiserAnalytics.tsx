@@ -333,7 +333,7 @@ export function OrganiserAnalyticsShared({ userId, title = "Analytics" }: Organi
 
   return (
     <AnalyticsShell
-      title="Analytics"
+      title={title}
       kpis={kpis}
       tabs={[
         { value: "overview", label: "Overview", content: overview },
