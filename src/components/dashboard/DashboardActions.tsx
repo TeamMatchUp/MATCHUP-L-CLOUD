@@ -26,6 +26,7 @@ import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, 
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { formatEnum } from "@/lib/format";
+import { notifyCancellationForSlot } from "@/lib/matchProposal";
 
 function unwrap<T>(val: T | T[] | null | undefined): T | null {
   if (Array.isArray(val)) return val[0] ?? null;
@@ -411,6 +412,7 @@ export function DashboardActions({
       } else if (item.type === "match_suggestion" || item.type === "fight_proposal") {
         await supabase.from("match_suggestions").update({ status: "dismissed" }).eq("id", item.id);
       } else if (item.type === "bout_proposal") {
+        await notifyCancellationForSlot(item.id);
         await supabase.from("event_fight_slots").delete().eq("id", item.id);
       } else if (item.type === "event_interest") {
         await supabase.from("fighter_event_interests").delete().eq("id", item.id);
