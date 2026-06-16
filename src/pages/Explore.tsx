@@ -875,23 +875,23 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
           )}
         </div>
         {/* Body */}
-        <div style={{ padding: 16 }}>
-          <p style={{ fontSize: 16, fontWeight: 700, color: EX.text }}>{fighter.name}</p>
+        <div style={{ padding: 16, minWidth: 0 }}>
+          <p title={fighter.name} style={{ fontSize: "clamp(0.9rem, 3.6vw, 1rem)", fontWeight: 700, color: EX.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{fighter.name}</p>
           {fighter.country && (
-            <div className="flex items-center gap-1.5" style={{ marginTop: 4 }}>
+            <div className="flex items-center gap-1.5" style={{ marginTop: 4, minWidth: 0 }}>
               <FlagIcon countryCode={fighter.country} size={16} />
-              <span style={{ fontSize: 12, color: EX.muted }}>{getCountryDisplayName(fighter.country)}</span>
+              <span style={{ fontSize: 12, color: EX.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{getCountryDisplayName(fighter.country)}</span>
             </div>
           )}
-          <p style={{ fontSize: 12, color: EX.muted, marginTop: 2 }}>{WEIGHT_CLASS_LABELS[fighter.weight_class] || fighter.weight_class}</p>
-          <div className="flex items-baseline gap-4" style={{ marginTop: 10 }}>
+          <p style={{ fontSize: 12, color: EX.muted, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{WEIGHT_CLASS_LABELS[fighter.weight_class] || fighter.weight_class}</p>
+          <div className="flex items-baseline gap-3 sm:gap-4 flex-wrap" style={{ marginTop: 10 }}>
             <div>
-              <span style={{ fontSize: 20, fontWeight: 700, color: EX.text }}>{record.wins}-{record.losses}-{record.draws}</span>
+              <span style={{ fontSize: "clamp(1rem, 4.4vw, 1.25rem)", fontWeight: 700, color: EX.text }}>{record.wins}-{record.losses}-{record.draws}</span>
               <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>W-L-D</span>
             </div>
             <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.06)", alignSelf: "center" }} />
             <div>
-              <span style={{ fontSize: 16, fontWeight: 700, color: EX.gold }}>{winRate}%</span>
+              <span style={{ fontSize: "clamp(0.85rem, 3.8vw, 1rem)", fontWeight: 700, color: EX.gold }}>{winRate}%</span>
               <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>WIN RATE</span>
             </div>
           </div>

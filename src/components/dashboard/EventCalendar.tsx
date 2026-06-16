@@ -49,16 +49,16 @@ export function EventCalendar({ events, highlightedDates = [] }: EventCalendarPr
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-heading text-lg text-foreground">
+      <div className="flex items-center justify-between gap-2 mb-4 flex-nowrap">
+        <h3 className="font-heading text-base sm:text-lg text-foreground truncate min-w-0" style={{ fontSize: "clamp(0.95rem, 3.6vw, 1.125rem)" }}>
           EVENTS <span className="text-primary">CALENDAR</span>
         </h3>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm font-medium text-foreground min-w-[120px] text-center">
-            {format(currentMonth, "MMMM yyyy")}
+          <span className="text-xs sm:text-sm font-medium text-foreground min-w-[88px] sm:min-w-[120px] text-center whitespace-nowrap">
+            {format(currentMonth, "MMM yyyy")}
           </span>
           <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
             <ChevronRight className="h-4 w-4" />
