@@ -287,16 +287,23 @@ export default function GymDetail() {
                       {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                     </div>
                   ) : null}
-                  <div>
-                    <div className="flex items-center gap-2">
-                      {!gym.banner_image && <h1 className="font-heading text-3xl md:text-4xl text-foreground">{gym.name}</h1>}
-                      {gym.verified && <ShieldCheck className="h-5 w-5 text-primary" />}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 min-w-0 flex-nowrap">
+                      {!gym.banner_image && (
+                        <h1
+                          className="font-heading text-2xl md:text-4xl text-foreground truncate min-w-0 flex-1"
+                          title={gym.name}
+                        >
+                          {gym.name}
+                        </h1>
+                      )}
+                      {gym.verified && <ShieldCheck className="h-5 w-5 text-primary shrink-0" />}
                       {gym.claimed ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-xs font-semibold">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-[10px] md:text-xs font-semibold shrink-0 whitespace-nowrap">
                           <ShieldCheck className="h-3 w-3" /> Verified
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-muted text-muted-foreground border border-border px-2 py-0.5 text-xs font-semibold">
+                        <span className="inline-flex items-center rounded-full bg-muted text-muted-foreground border border-border px-2 py-0.5 text-[10px] md:text-xs font-semibold shrink-0 whitespace-nowrap">
                           Unclaimed
                         </span>
                       )}

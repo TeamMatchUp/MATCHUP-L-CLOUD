@@ -214,15 +214,28 @@ export default function FighterDetail() {
     <div className="min-h-screen" style={{ background: "#080a0d" }}>
       <Header />
       <main className="pt-14">
-        <div className="container max-w-2xl" style={{ paddingLeft: 0, paddingRight: 0 }}>
-          {isOwnerOrCoach && <div style={{ padding: "0 16px" }}><ProfileCompletionBar fighterId={fighter.id} fighterProfile={fighter} /></div>}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          {/* FULL-WIDTH HERO BANNER */}
+          <div style={{ position: "relative", width: "100%", height: 220, overflow: "hidden", background: "#080a0d" }}>
+            {/* Blurred avatar background */}
+            {fighter._avatar ? (
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute", inset: -40,
+                  backgroundImage: `url(${fighter._avatar})`,
+                  backgroundSize: "cover", backgroundPosition: "center",
+                  filter: "blur(32px) saturate(120%)",
+                  transform: "scale(1.2)",
+                }}
+              />
+            ) : null}
+            {/* Dark overlay for text contrast */}
+            <div aria-hidden style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(180deg, rgba(8,10,13,0.55) 0%, rgba(8,10,13,0.7) 60%, rgba(8,10,13,0.95) 100%)",
+            }} />
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            {/* HERO */}
-            <div style={{
-              position: "relative", height: 200,
-              background: "linear-gradient(180deg, rgba(180,30,30,0.35) 0%, rgba(8,10,13,0) 65%)",
-            }}>
               {/* Back button */}
               <button onClick={() => fromParam === "roster" ? navigate("/dashboard?section=roster") : navigate(-1)} style={{
                 position: "absolute", top: 16, left: 16, zIndex: 5, width: 32, height: 32, borderRadius: "50%",
@@ -284,6 +297,9 @@ export default function FighterDetail() {
                 </div>
               </div>
             </div>
+
+          <div className="container max-w-2xl" style={{ paddingLeft: 0, paddingRight: 0 }}>
+            {isOwnerOrCoach && <div style={{ padding: "16px 16px 0" }}><ProfileCompletionBar fighterId={fighter.id} fighterProfile={fighter} /></div>}
 
             {/* TABS: Record | Stats */}
             <div className="flex" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", margin: "0 16px" }}>
@@ -503,8 +519,8 @@ export default function FighterDetail() {
               </div>
             )}
 
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </main>
       <Footer />
     </div>
