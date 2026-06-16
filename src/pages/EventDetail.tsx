@@ -15,6 +15,9 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
 import { PutForwardFightersDialog } from "@/components/coach/PutForwardFightersDialog";
 import { ClaimEventDialog } from "@/components/organiser/ClaimEventDialog";
 import { Map as PigeonMap, Marker } from "pigeon-maps";
@@ -34,14 +37,16 @@ function unwrap<T>(val: T | T[] | null | undefined): T | null {
 
 function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event: any; purchaseUrl: string | null }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detailsTicket, setDetailsTicket] = useState<any | null>(null);
   const navigate = useNavigate();
 
   const setQty = (ticketId: string, val: number) => {
     setQuantities((prev) => ({ ...prev, [ticketId]: val }));
   };
 
-  const handleAddToBasket = (ticket: any) => {
-    const qty = quantities[ticket.id] || 0;
+  const handleAddToBasket = (ticket: any, overrideQty?: number) => {
+    const qty = overrideQty ?? quantities[ticket.id] ?? 0;
     if (qty <= 0) return;
     addToBasket({
       ticket_type: ticket.ticket_type,
@@ -66,11 +71,26 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
           const maxQty = ticket.quantity_available ?? 100;
           const soldOut = event.sold_out || (ticket.quantity_available != null && ticket.quantity_available <= 0);
 
+          const isSelected = selectedId === ticket.id;
           return (
-            <div key={ticket.id} className="flex items-center gap-3 sm:gap-4" style={{
-              background: "#181c24", borderRadius: 10, padding: "10px 16px", minHeight: 56,
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
-            }}>
+            <div
+              key={ticket.id}
+              onClick={() => {
+                setSelectedId(ticket.id);
+                setDetailsTicket(ticket);
+              }}
+              className="flex items-center gap-3 sm:gap-4 cursor-pointer transition-transform duration-150"
+              style={{
+                background: "#181c24",
+                borderRadius: 10,
+                padding: "10px 16px",
+                minHeight: 56,
+                transform: isSelected ? "scale(1.025)" : "scale(1)",
+                boxShadow: isSelected
+                  ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,160,32,0.45)"
+                  : "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
+              }}
+            >
               {/* Left: tier + availability + price grouped */}
               <div className="flex-1 min-w-0 flex items-center gap-3 sm:gap-4">
                 <div className="min-w-0">
@@ -92,14 +112,20 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
               {soldOut ? (
                 <span style={{ fontSize: 12, fontWeight: 600, color: "#ef4444", flexShrink: 0 }}>Sold Out</span>
               ) : ticketUrl ? (
-                <a href={ticketUrl} target="_blank" rel="noopener noreferrer" style={{
-                  display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
-                  background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none", flexShrink: 0,
-                }}>
+                <a
+                  href={ticketUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
+                    background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none", flexShrink: 0,
+                  }}
+                >
                   <ShoppingCart style={{ width: 14, height: 14 }} /> Buy
                 </a>
               ) : (
-                <div className="flex items-center gap-1.5" style={{ flexShrink: 0 }}>
+                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()} style={{ flexShrink: 0 }}>
                   <button
                     onClick={() => setQty(ticket.id, Math.max(0, qty - 1))}
                     disabled={qty <= 0}
@@ -136,6 +162,79 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
           );
         })}
       </div>
+
+      <Dialog open={!!detailsTicket} onOpenChange={(o) => { if (!o) setDetailsTicket(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.04em", fontSize: 24 }}>
+              {detailsTicket?.ticket_type}
+            </DialogTitle>
+            {detailsTicket?.price != null && (
+              <DialogDescription className="text-base">
+                <span style={{ fontSize: 22, fontWeight: 700, color: "#e8a020" }}>£{Number(detailsTicket.price).toFixed(2)}</span>
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          <div className="space-y-3 text-sm" style={{ color: "#e8eaf0" }}>
+            {detailsTicket?.description && (
+              <div>
+                <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "#8b909e" }}>What's included</div>
+                <p style={{ color: "#e8eaf0", whiteSpace: "pre-wrap" }}>{detailsTicket.description}</p>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              {detailsTicket?.quantity_available != null && (
+                <div>
+                  <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "#8b909e" }}>Availability</div>
+                  <p>{detailsTicket.quantity_available > 0 ? `${detailsTicket.quantity_available} left` : "Sold out"}</p>
+                </div>
+              )}
+              {detailsTicket?.sales_end && (
+                <div>
+                  <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "#8b909e" }}>Sales end</div>
+                  <p>{new Date(detailsTicket.sales_end).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</p>
+                </div>
+              )}
+            </div>
+            {!detailsTicket?.description && (
+              <p style={{ color: "#8b909e" }}>No additional details provided for this ticket type.</p>
+            )}
+          </div>
+          <DialogFooter>
+            {(() => {
+              const t = detailsTicket;
+              if (!t) return null;
+              const url = purchaseUrl || t.external_link || null;
+              if (url) {
+                return (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 18px", fontSize: 14, fontWeight: 600,
+                      background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none",
+                    }}
+                  >
+                    <ShoppingCart style={{ width: 16, height: 16 }} /> Buy ticket
+                  </a>
+                );
+              }
+              return (
+                <button
+                  onClick={() => { handleAddToBasket(t, 1); setDetailsTicket(null); }}
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 18px", fontSize: 14, fontWeight: 600,
+                    background: "#e8a020", color: "#0d0f12", borderRadius: 8, border: "none", cursor: "pointer",
+                  }}
+                >
+                  <ShoppingCart style={{ width: 16, height: 16 }} /> Add to basket
+                </button>
+              );
+            })()}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -557,22 +656,6 @@ export default function EventDetail() {
                   </div>
                 )}
 
-                {/* Ticket Section */}
-                {(() => {
-                  const tickets = (event as any).tickets ?? [];
-                  if (!event.ticket_enabled || tickets.length === 0) return null;
-                  const now = new Date();
-                  const activeTickets = tickets.filter((t: any) =>
-                    (!t.sales_start || new Date(t.sales_start) <= now) &&
-                    (!t.sales_end || new Date(t.sales_end) >= now)
-                  );
-                  if (activeTickets.length === 0) return null;
-                  const purchaseUrl = (event as any).ticket_url || null;
-                  return (
-                    <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
-                  );
-                })()}
-
                 <div className="flex flex-wrap gap-3">
                   {user && (isFighter || isCoach) && fighterProfile && (
                     existingInterest ? (
@@ -591,6 +674,22 @@ export default function EventDetail() {
                     </Button>
                   )}
                 </div>
+
+                {/* Ticket Section */}
+                {(() => {
+                  const tickets = (event as any).tickets ?? [];
+                  if (!event.ticket_enabled || tickets.length === 0) return null;
+                  const now = new Date();
+                  const activeTickets = tickets.filter((t: any) =>
+                    (!t.sales_start || new Date(t.sales_start) <= now) &&
+                    (!t.sales_end || new Date(t.sales_end) >= now)
+                  );
+                  if (activeTickets.length === 0) return null;
+                  const purchaseUrl = (event as any).ticket_url || null;
+                  return (
+                    <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
+                  );
+                })()}
               </div>
             </motion.div>
 
