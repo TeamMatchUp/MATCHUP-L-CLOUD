@@ -53,7 +53,7 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
   });
 
   const heading = (
-    <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8eaf0", letterSpacing: "0.04em", marginBottom: 12 }}>
+    <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.125rem, 4.5vw, 1.25rem)", color: "#e8eaf0", letterSpacing: "0.04em", marginBottom: 12, lineHeight: 1.1 }}>
       GYMS <span style={{ color: "#e8a020" }}>NEAR YOU</span>
     </h3>
   );
