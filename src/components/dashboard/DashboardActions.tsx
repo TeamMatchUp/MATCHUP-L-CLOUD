@@ -959,36 +959,38 @@ export function DashboardActions({
             return (
               <div
                 key={item.id}
-                className={`rounded-lg border bg-card p-4 flex items-start gap-4 transition-colors ${isCompleted ? "border-border/50 opacity-60" : "border-border hover:border-primary/20"}`}
+                className={`rounded-lg border bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 transition-colors ${isCompleted ? "border-border/50 opacity-60" : "border-border hover:border-primary/20"}`}
               >
-                {multiSelectMode && (
-                  <div className="shrink-0 mt-1">
-                    <Checkbox
-                      checked={selectedIds.has(item.id)}
-                      onCheckedChange={() => toggleSelect(item.id)}
-                    />
+                <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+                  {multiSelectMode && (
+                    <div className="shrink-0 mt-1">
+                      <Checkbox
+                        checked={selectedIds.has(item.id)}
+                        onCheckedChange={() => toggleSelect(item.id)}
+                      />
+                    </div>
+                  )}
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon className="h-4 w-4 text-muted-foreground" />
                   </div>
-                )}
-                <div className="h-9 w-9 rounded-lg bg-muted flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <Badge variant="outline" className={badge.className + " text-[10px]"}>{badge.label}</Badge>
-                    {isCompleted && (
-                      <Badge variant="outline" className="text-[10px] bg-muted/50 text-muted-foreground">
-                        {item.status === "approved" || item.status === "confirmed" ? "✓ Resolved" : "✗ Declined"}
-                      </Badge>
-                    )}
-                    <span className="text-[11px] text-muted-foreground">
-                      {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}
-                    </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                      <Badge variant="outline" className={badge.className + " text-[9px] sm:text-[10px] px-1.5 py-0 leading-tight"}>{badge.label}</Badge>
+                      {isCompleted && (
+                        <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0 leading-tight bg-muted/50 text-muted-foreground">
+                          {item.status === "approved" || item.status === "confirmed" ? "✓ Resolved" : "✗ Declined"}
+                        </Badge>
+                      )}
+                      <span className="text-[10px] sm:text-[11px] text-muted-foreground">
+                        {formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}
+                      </span>
+                    </div>
+                    <p className={`text-[13px] sm:text-sm font-medium break-words ${isCompleted ? "text-muted-foreground" : "text-foreground"}`}>{item.title}</p>
+                    <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 break-words">{item.subtitle}</p>
                   </div>
-                  <p className={`text-sm font-medium ${isCompleted ? "text-muted-foreground" : "text-foreground"}`}>{item.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">{item.subtitle}</p>
                 </div>
                 {!multiSelectMode && (
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 flex-wrap sm:shrink-0 sm:justify-end">
                     {renderActionButtons(item)}
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleDiscard(item)} title="Move to bin">
                       <Trash2 className="h-3.5 w-3.5" />
@@ -997,6 +999,7 @@ export function DashboardActions({
                 )}
               </div>
             );
+
           })}
         </div>
       )}
