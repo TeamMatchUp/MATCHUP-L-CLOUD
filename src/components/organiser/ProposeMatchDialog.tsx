@@ -121,7 +121,7 @@ export function ProposeMatchDialog({
       .from("fighter_gym_links")
       .select("gym_id, fighter_id")
       .in("fighter_id", [fighterA.id, fighterB.id])
-      .eq("status", "accepted");
+      .eq("status", "approved");
 
     if (gymLinks && gymLinks.length > 0) {
       const gymIds = gymLinks.map((gl) => gl.gym_id);
