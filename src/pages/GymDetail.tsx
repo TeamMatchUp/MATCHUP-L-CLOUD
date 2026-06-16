@@ -276,28 +276,25 @@ export default function GymDetail() {
                 </div>
               )}
 
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 md:gap-6 mb-8">
-                <div className="flex items-start gap-4 md:gap-6 min-w-0 flex-1">
+              <div className="flex flex-col gap-4 mb-8 min-w-0">
+                <div className="flex items-start gap-3 md:gap-4 min-w-0">
                   {!gym.banner_image && gym.logo_url ? (
-                    <div className="h-14 w-14 md:h-16 md:w-16 rounded-lg overflow-hidden shrink-0">
+                    <div className="h-12 w-12 md:h-16 md:w-16 rounded-lg overflow-hidden shrink-0">
                       <img src={gym.logo_url} alt={gym.name} className="h-full w-full object-cover" />
                     </div>
                   ) : !gym.banner_image ? (
-                    <div className="h-14 w-14 md:h-16 md:w-16 rounded-lg bg-muted flex items-center justify-center font-heading text-xl text-muted-foreground shrink-0">
+                    <div className="h-12 w-12 md:h-16 md:w-16 rounded-lg bg-muted flex items-center justify-center font-heading text-lg md:text-xl text-muted-foreground shrink-0">
                       {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
                     </div>
                   ) : null}
                   <div className="min-w-0 flex-1">
                     {!gym.banner_image && (
-                      <div className="flex items-center gap-2 min-w-0">
-                        <h1
-                          className="font-heading text-xl md:text-4xl text-foreground truncate min-w-0"
-                          title={gym.name}
-                        >
-                          {gym.name}
-                        </h1>
-                        {gym.verified && <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-primary shrink-0" />}
-                      </div>
+                      <h1
+                        className="font-heading text-base sm:text-lg md:text-4xl text-foreground leading-tight break-words"
+                        title={gym.name}
+                      >
+                        {gym.name}
+                      </h1>
                     )}
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       {gym.claimed ? (
@@ -311,16 +308,18 @@ export default function GymDetail() {
                       )}
                     </div>
                     {gym.location && (
-                      <p className="text-muted-foreground flex items-center gap-2 mt-2 text-sm break-words">
-                        <MapPin className="h-4 w-4 shrink-0" /><span className="min-w-0 break-words">{gym.location}</span>
+                      <p className="text-muted-foreground flex items-start gap-2 mt-2 text-xs md:text-sm break-words">
+                        <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                        <span className="min-w-0 break-words break-all">{gym.location}</span>
                       </p>
                     )}
                   </div>
                 </div>
-                <div className="shrink-0 w-full md:w-auto [&>*]:w-full md:[&>*]:w-auto">
+                <div className="w-full md:w-auto md:self-start [&>*]:w-full md:[&>*]:w-auto">
                   {renderActionButton()}
                 </div>
               </div>
+
 
               {gym.description && (
                 <div className="mb-8">
