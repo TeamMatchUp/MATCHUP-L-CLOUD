@@ -469,6 +469,7 @@ export function DashboardOverview({
   if (isFighter && !isCoachOrOwner) {
     return (
       <div>
+        <StickyHeader quickActionsContent={quickActionsFighter} />
         <div className="space-y-6" style={{ padding: isMobile ? "0 12px 16px" : "0 24px 24px" }}>
           <OverviewHeader />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -487,6 +488,7 @@ export function DashboardOverview({
   if (isCoachOrOwner) {
     return (
       <div>
+        <StickyHeader quickActionsContent={quickActionsCoach} />
         <div className="space-y-6" style={{ padding: isMobile ? "0 12px 16px" : "0 24px 24px" }}>
           <OverviewHeader />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -504,6 +506,7 @@ export function DashboardOverview({
   if (isOrganiser) {
     return (
       <div>
+        <StickyHeader quickActionsContent={quickActionsOrg} />
         <div className="space-y-6" style={{ padding: isMobile ? "0 12px 16px" : "0 24px 24px" }}>
           <OverviewHeader />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

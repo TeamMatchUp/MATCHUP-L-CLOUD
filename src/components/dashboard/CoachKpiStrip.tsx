@@ -176,7 +176,7 @@ export function CoachKpiStrip() {
   const winColor = winRate >= 50 ? "hsl(var(--success))" : "hsl(var(--destructive))";
 
   return (
-    <div className="coach-card" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr" }}>
+    <div className="coach-card grid grid-cols-2 lg:grid-cols-4">
       {/* Panel 1: Total Fighters */}
       <div className="p-5" style={{ minHeight: 140 }}>
         <p className="text-xs text-muted-foreground mb-2">Total Fighters</p>
