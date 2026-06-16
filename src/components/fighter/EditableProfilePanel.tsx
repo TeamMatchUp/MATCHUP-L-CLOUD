@@ -184,9 +184,6 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
       postcode: data.postcode || null,
       available: isAvailable,
     } as any).eq("id", fighterProfile.id);
-      available_days: availableDays,
-      available_times: availableTimes,
-    } as any).eq("id", fighterProfile.id);
     setSaving(false);
     if (error) { toast.error("Failed to update profile"); return; }
     toast.success("Profile updated"); setEditing(false); onRefresh();
