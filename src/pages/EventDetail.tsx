@@ -222,7 +222,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
               }
               return (
                 <button
-                  onClick={() => { handleAddToBasket({ ...t, id: t.id }); setQty(t.id, 1); setDetailsTicket(null); }}
+                  onClick={() => { handleAddToBasket(t, 1); setDetailsTicket(null); }}
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 18px", fontSize: 14, fontWeight: 600,
                     background: "#e8a020", color: "#0d0f12", borderRadius: 8, border: "none", cursor: "pointer",
