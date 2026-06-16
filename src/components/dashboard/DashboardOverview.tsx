@@ -26,6 +26,7 @@ interface DashboardOverviewProps {
   effectiveRoles: string[];
   onNavigateSection: (section: string) => void;
   fighterProfileId?: string | null;
+  onOpenMobileSidebar?: () => void;
 }
 
 /* ── Quick Actions Button ── */
