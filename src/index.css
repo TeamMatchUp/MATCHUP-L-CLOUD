@@ -507,6 +507,21 @@
 .mu-edit-form textarea,
 .mu-edit-form select,
 .mu-edit-form [role="combobox"] {
+  box-sizing: border-box !important;
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+}
+.mu-edit-form input,
+.mu-edit-form [role="combobox"] {
+  height: 2.5rem !important;
+  min-height: 2.5rem !important;
+  max-height: 2.5rem !important;
+  line-height: 1.25rem !important;
+}
+.mu-edit-form .mu-date-input,
+.mu-edit-form .mu-date-input::-webkit-datetime-edit,
+.mu-edit-form [role="combobox"] span {
   font-size: 0.875rem !important;
   font-weight: 400 !important;
   letter-spacing: 0 !important;
@@ -520,9 +535,19 @@
   .mu-edit-form textarea,
   .mu-edit-form [role="combobox"] {
     height: 2.25rem !important;
+    min-height: 2.25rem !important;
+    max-height: 2.25rem !important;
     padding-top: 0.25rem !important;
     padding-bottom: 0.25rem !important;
     font-size: 0.8125rem !important;
+    line-height: 1.1rem !important;
+  }
+  .mu-edit-form .mu-date-input,
+  .mu-edit-form .mu-date-input::-webkit-datetime-edit,
+  .mu-edit-form [role="combobox"] span {
+    font-size: 0.8125rem !important;
+    font-weight: 400 !important;
+    line-height: 1.1rem !important;
   }
   .mu-edit-form textarea {
     height: auto !important;
