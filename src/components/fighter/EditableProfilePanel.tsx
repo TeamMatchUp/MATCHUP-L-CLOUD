@@ -242,7 +242,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
             <h3 className="font-heading text-sm text-muted-foreground mb-3 uppercase tracking-wide">Core Profile</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               <div><Label>Name</Label><Input {...register("name")} /></div>
-              <div><Label>Date of Birth</Label><Input type="date" {...register("date_of_birth")} className="max-w-[180px]" /></div>
+              <div><Label>Date of Birth</Label><Input type="date" {...register("date_of_birth")} /></div>
               <div>
                 <Label>Weight Class</Label>
                 <Select value={watch("weight_class")} onValueChange={(v) => setValue("weight_class", v)}>
