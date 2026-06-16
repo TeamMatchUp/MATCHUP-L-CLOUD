@@ -249,7 +249,9 @@ export function DashboardOverview({
   effectiveRoles,
   onNavigateSection,
   fighterProfileId,
+  onOpenMobileSidebar,
 }: DashboardOverviewProps) {
+  const isMobile = useIsMobile();
   const { user } = useAuth();
   const isCoachOrOwner = effectiveRoles.includes("gym_owner") || effectiveRoles.includes("coach");
   const isOrganiser = effectiveRoles.includes("organiser");
