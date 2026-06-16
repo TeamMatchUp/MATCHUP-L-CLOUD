@@ -130,7 +130,7 @@ export default function Dashboard() {
     interests: "Fighter Interests",
     actions: "Action Centre",
     events: "My Events",
-    analytics: "Analytics Centre",
+    analytics: "Analytics",
     notifications: "Notifications",
     "create-profile": "Create Profile",
   };
