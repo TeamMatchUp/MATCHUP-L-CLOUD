@@ -78,7 +78,7 @@ async function resolveSide(
     .from("fighter_gym_links")
     .select("gym_id, status")
     .eq("fighter_id", fighterId)
-    .eq("status", "approved");
+    .in("status", ["approved","accepted"]);
 
   const gymIds = (links ?? []).map((l) => l.gym_id);
   if (gymIds.length > 0) {
@@ -417,7 +417,7 @@ export async function notifyCancellationForSlot(eventFightSlotId: string) {
       .from("fighter_gym_links")
       .select("gym_id")
       .eq("fighter_id", fid)
-      .eq("status", "approved");
+      .in("status", ["approved","accepted"]);
     const gymIds = (links ?? []).map((l) => l.gym_id);
     if (gymIds.length > 0) {
       const { data: gyms } = await supabase.from("gyms").select("coach_id").in("id", gymIds);
