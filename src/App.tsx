@@ -35,6 +35,7 @@ import Onboarding from "./pages/Onboarding";
 import Explore from "./pages/Explore";
 import Matchmaking from "./pages/Matchmaking";
 import Checkout from "./pages/Checkout";
+import ProposalDetailPage from "./pages/ProposalDetailPage";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -76,6 +77,7 @@ const App = () => (
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
+            <Route path="/proposals/:id" element={<ProtectedRoute><ProposalDetailPage /></ProtectedRoute>} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route
