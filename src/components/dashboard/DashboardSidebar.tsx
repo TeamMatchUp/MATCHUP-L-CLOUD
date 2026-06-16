@@ -17,6 +17,7 @@ import type { Database } from "@/integrations/supabase/types";
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { NetworkModal } from "./NetworkModal";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
