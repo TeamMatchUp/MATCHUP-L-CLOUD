@@ -172,6 +172,7 @@ export default function Dashboard() {
               effectiveRoles={effectiveRoles as string[]}
               onNavigateSection={navigateToSection}
               fighterProfileId={fighterProfile?.id ?? null}
+              onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
             />
           </div>
         );
