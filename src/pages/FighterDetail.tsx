@@ -519,8 +519,8 @@ export default function FighterDetail() {
               </div>
             )}
 
-          </motion.div>
-        </div>
+          </div>
+        </motion.div>
       </main>
       <Footer />
     </div>
