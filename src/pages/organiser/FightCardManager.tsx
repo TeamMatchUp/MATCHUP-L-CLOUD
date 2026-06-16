@@ -18,6 +18,7 @@ import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
 import { AddFightModal } from "@/components/organiser/AddFightModal";
 import { EventKpiStrip } from "@/components/organiser/EventKpiStrip";
 import { ArrowLeft, Globe, Pencil, Plus, Eye, EyeOff, GripVertical, Search, Trash2 } from "lucide-react";
+import { notifyCancellationForSlot } from "@/lib/matchProposal";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
@@ -286,6 +287,7 @@ export default function FightCardManager() {
   };
 
   const handleDelete = async (boutId: string) => {
+    await notifyCancellationForSlot(boutId);
     await supabase.from("event_fight_slots").delete().eq("id", boutId);
     refetchBouts();
     toast({ title: "Slot removed" });
