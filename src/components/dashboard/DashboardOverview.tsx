@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { EventCalendar } from "./EventCalendar";
 import {
   Building2, Plus, Search, Calendar, Inbox, ChevronDown, Eye, EyeOff,
-  User, ToggleRight, Crosshair, CalendarPlus, X, Users, UserMinus,
+  User, ToggleRight, Crosshair, CalendarPlus, X, Users, UserMinus, PanelLeft,
 } from "lucide-react";
 import { CoachKpiStrip } from "./CoachKpiStrip";
 import { CoachUpcomingFights } from "./CoachUpcomingFights";
@@ -17,6 +17,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GymsNearYouWidget } from "@/components/fighter/GymsNearYouWidget";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { NetworkModal } from "./NetworkModal";
 
 interface DashboardOverviewProps {
   calendarEvents: any[];
@@ -24,16 +26,18 @@ interface DashboardOverviewProps {
   effectiveRoles: string[];
   onNavigateSection: (section: string) => void;
   fighterProfileId?: string | null;
+  onOpenMobileSidebar?: () => void;
 }
 
 /* ── Quick Actions Button ── */
-function QuickActionsButton({ showQuickActions, setShowQuickActions, children }: { showQuickActions: boolean; setShowQuickActions: (v: boolean) => void; children: React.ReactNode }) {
+function QuickActionsButton({ showQuickActions, setShowQuickActions, children, compact }: { showQuickActions: boolean; setShowQuickActions: (v: boolean) => void; children: React.ReactNode; compact?: boolean }) {
   return (
     <div className="relative">
       <button
         className="flex items-center gap-2 transition-all duration-150"
         style={{
-          background: "#e8a020", color: "#0d0f12", borderRadius: 8, padding: "8px 18px",
+          background: "#e8a020", color: "#0d0f12", borderRadius: 8,
+          padding: compact ? "8px 10px" : "8px 18px",
           fontSize: 13, fontWeight: 600, letterSpacing: "0.02em",
           boxShadow: "0 0 12px rgba(232,160,32,0.25)", cursor: "pointer",
         }}
@@ -42,8 +46,7 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children }:
         onMouseLeave={(e) => { e.currentTarget.style.background = "#e8a020"; }}
       >
         <Plus style={{ width: 16, height: 16 }} />
-        Quick Actions
-        <ChevronDown style={{ width: 14, height: 14 }} />
+        {!compact && <>Quick Actions<ChevronDown style={{ width: 14, height: 14 }} /></>}
       </button>
       {showQuickActions && (
         <>
@@ -239,105 +242,6 @@ function GlobalSearch() {
   );
 }
 
-/* ── Network Modal ── */
-function NetworkModal({ type, userId, onClose }: { type: "followers" | "following"; userId: string; onClose: () => void }) {
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-
-  const { data: items = [] } = useQuery({
-    queryKey: [type === "followers" ? "overview-followers-list" : "overview-following-list", userId],
-    queryFn: async () => {
-      if (type === "followers") {
-        const { data } = await supabase.from("user_follows").select("follower_id").eq("following_id", userId).order("created_at", { ascending: false });
-        if (!data || data.length === 0) return [];
-        const ids = data.map(d => d.follower_id);
-        const [{ data: profiles }, { data: roles }] = await Promise.all([
-          supabase.from("profiles").select("id, full_name, avatar_url, gym_id").in("id", ids),
-          supabase.from("user_roles").select("user_id, role").in("user_id", ids),
-        ]);
-        const roleMap = new Map((roles ?? []).map(r => [r.user_id, r.role]));
-        return (profiles ?? []).map(p => ({ userId: p.id, name: p.full_name, avatar: p.avatar_url, gym_id: p.gym_id, role: roleMap.get(p.id) }));
-      } else {
-        const { data } = await supabase.from("user_follows").select("following_id").eq("follower_id", userId).order("created_at", { ascending: false });
-        if (!data || data.length === 0) return [];
-        const ids = data.map(d => d.following_id);
-        const [{ data: profiles }, { data: roles }] = await Promise.all([
-          supabase.from("profiles").select("id, full_name, avatar_url, gym_id").in("id", ids),
-          supabase.from("user_roles").select("user_id, role").in("user_id", ids),
-        ]);
-        const roleMap = new Map((roles ?? []).map(r => [r.user_id, r.role]));
-        return (profiles ?? []).map(p => ({ userId: p.id, name: p.full_name, avatar: p.avatar_url, gym_id: p.gym_id, role: roleMap.get(p.id) }));
-      }
-    },
-  });
-
-  const handleUnfollow = async (targetId: string) => {
-    await supabase.from("user_follows").delete().eq("follower_id", userId).eq("following_id", targetId);
-    queryClient.invalidateQueries({ queryKey: ["overview-following-list"] });
-    queryClient.invalidateQueries({ queryKey: ["following-count"] });
-    queryClient.invalidateQueries({ queryKey: ["overview-following-count"] });
-    queryClient.invalidateQueries({ queryKey: ["overview-follower-count"] });
-  };
-
-  const getProfileUrl = (item: any) => {
-    if (item.role === "fighter") return `/fighters/${item.userId}`;
-    if ((item.role === "coach" || item.role === "gym_owner") && item.gym_id) return `/gyms/${item.gym_id}`;
-    if (item.role === "organiser") return `/explore?tab=events`;
-    return `/fighters/${item.userId}`;
-  };
-
-  const handleRowClick = (item: any) => {
-    onClose();
-    navigate(getProfileUrl(item));
-  };
-
-  const ROLE_LABELS: Record<string, string> = { fighter: "Fighter", coach: "Coach", gym_owner: "Coach", organiser: "Organiser", admin: "Admin" };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.7)" }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: "#14171e", borderRadius: 12, width: "min(480px, 95vw)", maxHeight: "70vh", overflowY: "auto", padding: 20, boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
-        <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
-          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>{type === "followers" ? "Followers" : "Following"}</h3>
-          <button onClick={onClose} style={{ color: "#8b909e", cursor: "pointer" }}><X style={{ width: 20, height: 20 }} /></button>
-        </div>
-        {items.length === 0 && (
-          <div className="text-center py-8">
-            <Users style={{ width: 32, height: 32, color: "#555b6b", margin: "0 auto 8px" }} />
-            <p style={{ fontSize: 13, color: "#8b909e" }}>{type === "followers" ? "No followers yet" : "Not following anyone"}</p>
-          </div>
-        )}
-        <div className="space-y-2">
-          {items.map((item: any) => (
-            <div key={item.userId} className="flex items-center gap-3 p-3 rounded-lg transition-all duration-150"
-              style={{ background: "rgba(255,255,255,0.02)", cursor: "pointer" }}
-              onClick={() => handleRowClick(item)}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
-            >
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #e8a020, #c47e10)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600, color: "white", overflow: "hidden", flexShrink: 0 }}>
-                {item.avatar ? <img src={item.avatar} alt="" className="h-full w-full object-cover" /> : (item.name || "?").slice(0, 2).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="block truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{item.name || "Unknown"}</span>
-                {item.role && (
-                  <span style={{ fontSize: 10, fontWeight: 600, color: "#e8a020", background: "rgba(232,160,32,0.1)", borderRadius: 4, padding: "1px 6px" }}>
-                    {ROLE_LABELS[item.role] || item.role}
-                  </span>
-                )}
-              </div>
-              {type === "following" && (
-                <button onClick={(e) => { e.stopPropagation(); handleUnfollow(item.userId); }} style={{ fontSize: 11, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>
-                  Unfollow
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* ── Main Component ── */
 export function DashboardOverview({
   calendarEvents,
@@ -345,7 +249,9 @@ export function DashboardOverview({
   effectiveRoles,
   onNavigateSection,
   fighterProfileId,
+  onOpenMobileSidebar,
 }: DashboardOverviewProps) {
+  const isMobile = useIsMobile();
   const { user } = useAuth();
   const isCoachOrOwner = effectiveRoles.includes("gym_owner") || effectiveRoles.includes("coach");
   const isOrganiser = effectiveRoles.includes("organiser");
@@ -427,12 +333,25 @@ export function DashboardOverview({
       background: scrolled ? "rgba(8,10,13,0.88)" : "#080a0d",
       backdropFilter: scrolled ? "blur(20px) saturate(160%)" : "none",
       boxShadow: scrolled ? "0 4px 24px rgba(0,0,0,0.5)" : "none",
-      padding: "0 24px",
+      padding: isMobile ? "0 10px" : "0 24px",
       transition: "all 0.3s ease",
       display: "flex", alignItems: "center", justifyContent: "space-between",
+      gap: 8,
     }}>
-      {/* LEFT: avatar + username + followers */}
-      <div className="flex items-center gap-3">
+      {/* LEFT: hamburger (mobile) + avatar + username + followers */}
+      <div className="flex items-center" style={{ gap: isMobile ? 8 : 12, minWidth: 0, flex: 1 }}>
+        {isMobile && onOpenMobileSidebar && (
+          <button
+            onClick={onOpenMobileSidebar}
+            aria-label="Open menu"
+            style={{
+              width: 36, height: 36, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+              background: "rgba(255,255,255,0.04)", color: "#8b909e", cursor: "pointer", flexShrink: 0,
+            }}
+          >
+            <PanelLeft style={{ width: 18, height: 18 }} />
+          </button>
+        )}
         <div style={{
           width: 36, height: 36, borderRadius: "50%",
           border: "2px solid rgba(232,160,32,0.4)",
@@ -445,9 +364,9 @@ export function DashboardOverview({
             <span style={{ color: "white", fontSize: 12, fontWeight: 700 }}>{initials}</span>
           )}
         </div>
-        <div>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", lineHeight: 1.2 }}>{profileData?.full_name || "User"}</p>
-          <div className="flex items-center gap-1" style={{ fontSize: 12, color: "#8b909e" }}>
+        <div style={{ minWidth: 0 }}>
+          <p className="truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", lineHeight: 1.2, maxWidth: isMobile ? 140 : 220 }}>{profileData?.full_name || "User"}</p>
+          <div className="flex items-center gap-1" style={{ fontSize: isMobile ? 11 : 12, color: "#8b909e" }}>
             <button onClick={() => setNetworkModal("followers")} style={{ cursor: "pointer" }}
               onMouseEnter={(e) => { e.currentTarget.style.color = "#e8a020"; }}
               onMouseLeave={(e) => { e.currentTarget.style.color = "#8b909e"; }}
@@ -464,15 +383,17 @@ export function DashboardOverview({
           </div>
         </div>
       </div>
-      {/* RIGHT: search + quick actions */}
-      <div className="flex items-center gap-3">
-        <GlobalSearch />
-        <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
+      {/* RIGHT: search (desktop) + quick actions */}
+      <div className="flex items-center gap-3" style={{ flexShrink: 0 }}>
+        {!isMobile && <GlobalSearch />}
+        <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions} compact={isMobile}>
           {quickActionsContent}
         </QuickActionsButton>
       </div>
     </div>
   );
+
+
 
   const quickActionsFighter = (
     <>
@@ -534,7 +455,7 @@ export function DashboardOverview({
       style={{
         background: "#111318",
         borderRadius: 16,
-        padding: 20,
+        padding: isMobile ? 14 : 20,
         minHeight: 320,
         boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
         display: "flex", flexDirection: "column",
@@ -548,7 +469,7 @@ export function DashboardOverview({
   if (isFighter && !isCoachOrOwner) {
     return (
       <div>
-        <div className="space-y-6" style={{ padding: "0 24px 24px" }}>
+        <div className="space-y-6" style={{ padding: isMobile ? "0 12px 16px" : "0 24px 24px" }}>
           <OverviewHeader />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {fighterCardVis.record && <Cell span={2}><FighterRecordHero /></Cell>}
@@ -566,7 +487,7 @@ export function DashboardOverview({
   if (isCoachOrOwner) {
     return (
       <div>
-        <div className="space-y-6" style={{ padding: "0 24px 24px" }}>
+        <div className="space-y-6" style={{ padding: isMobile ? "0 12px 16px" : "0 24px 24px" }}>
           <OverviewHeader />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {coachCardVis.kpis && <Cell span={2}><CoachKpiStrip /></Cell>}
@@ -583,7 +504,7 @@ export function DashboardOverview({
   if (isOrganiser) {
     return (
       <div>
-        <div className="space-y-6" style={{ padding: "0 24px 24px" }}>
+        <div className="space-y-6" style={{ padding: isMobile ? "0 12px 16px" : "0 24px 24px" }}>
           <OverviewHeader />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {orgCardVis.stats && <Cell span={2}><OrganiserOverviewHero /></Cell>}

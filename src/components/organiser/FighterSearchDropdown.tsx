@@ -209,6 +209,7 @@ export function FighterSearchDropdown({
         style={{
           background: "#111318", padding: "8px 0",
           boxShadow: "0 1px 0 rgba(255,255,255,0.04)",
+          position: "sticky", top: 0, zIndex: 20,
         }}
         className="space-y-2"
       >

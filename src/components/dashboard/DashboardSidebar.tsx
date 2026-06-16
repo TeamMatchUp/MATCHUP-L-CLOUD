@@ -17,6 +17,7 @@ import type { Database } from "@/integrations/supabase/types";
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { NetworkModal } from "./NetworkModal";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -45,6 +46,8 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
   const { theme, setTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({});
+  const [networkSheet, setNetworkSheet] = useState<"followers" | "following" | null>(null);
+
 
   const isCoachOrOwner = effectiveRoles.includes("gym_owner" as AppRole) || effectiveRoles.includes("coach" as AppRole);
   const isOrganiser = effectiveRoles.includes("organiser" as AppRole);
@@ -432,12 +435,21 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
                 {user?.email}
               </p>
               <p style={{ fontSize: 10, color: "#8b909e", marginTop: 2, whiteSpace: "nowrap" }}>
-                <span style={{ color: "#e8eaf0", fontWeight: 600 }}>{followerCount}</span> Followers <span style={{ color: "#555b6b" }}>·</span> <span style={{ color: "#e8eaf0", fontWeight: 600 }}>{followingCount}</span> Following
+                <button onClick={() => setNetworkSheet("followers")} style={{ cursor: "pointer" }}>
+                  <span style={{ color: "#e8eaf0", fontWeight: 600 }}>{followerCount}</span> Followers
+                </button>
+                <span style={{ color: "#555b6b", margin: "0 4px" }}>·</span>
+                <button onClick={() => setNetworkSheet("following")} style={{ cursor: "pointer" }}>
+                  <span style={{ color: "#e8eaf0", fontWeight: 600 }}>{followingCount}</span> Following
+                </button>
               </p>
             </div>
           )}
         </div>
       </div>
+      {networkSheet && user && (
+        <NetworkModal type={networkSheet} userId={user.id} onClose={() => setNetworkSheet(null)} />
+      )}
     </div>
   );
 }

@@ -172,6 +172,7 @@ export default function Dashboard() {
               effectiveRoles={effectiveRoles as string[]}
               onNavigateSection={navigateToSection}
               fighterProfileId={fighterProfile?.id ?? null}
+              onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
             />
           </div>
         );
@@ -350,8 +351,8 @@ export default function Dashboard() {
           background: "hsl(var(--bg-page, var(--background)))",
         }}
       >
-        {/* Mobile hamburger */}
-        {isMobile && (
+        {/* Mobile hamburger — hidden on overview (it's inside the sticky header there) */}
+        {isMobile && activeSection !== "overview" && (
           <div className="sticky top-0 z-30 flex items-center h-12 px-3" style={{ background: "hsl(var(--background))" }}>
             <Button
               variant="ghost"
