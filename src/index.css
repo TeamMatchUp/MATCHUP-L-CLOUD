@@ -502,3 +502,34 @@
     padding-right: 1rem !important;
   }
 }
+/* Edit Profile form: compact, proportionate inputs */
+.mu-edit-form input,
+.mu-edit-form textarea,
+.mu-edit-form select,
+.mu-edit-form [role="combobox"] {
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+}
+.mu-edit-form label {
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+}
+@media (max-width: 640px) {
+  .mu-edit-form input,
+  .mu-edit-form textarea,
+  .mu-edit-form [role="combobox"] {
+    height: 2.25rem !important;
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+    font-size: 0.8125rem !important;
+  }
+  .mu-edit-form textarea {
+    height: auto !important;
+    min-height: 4rem !important;
+  }
+  .mu-edit-form label {
+    font-size: 0.7rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+}
