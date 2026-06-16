@@ -797,36 +797,35 @@ export function DashboardActions({
     <div className="space-y-4">
 
       {/* Filter bar */}
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-wrap gap-2">
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-full sm:w-[200px] h-9 text-xs">
+          <SelectTrigger className="w-full sm:w-[180px] h-9 text-xs">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
             {categoryOptions.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
-        <div className="flex gap-1">
-          <Button size="sm" variant={statusFilter === "active" ? "default" : "outline"} className="h-9 text-xs" onClick={() => { setStatusFilter("active"); exitMultiSelect(); }}>
+        <div className="flex flex-wrap gap-1">
+          <Button size="sm" variant={statusFilter === "active" ? "default" : "outline"} className="h-9 px-2 text-[11px]" onClick={() => { setStatusFilter("active"); exitMultiSelect(); }}>
             Active ({activeItems.length})
           </Button>
-          <Button size="sm" variant={statusFilter === "completed" ? "default" : "outline"} className="h-9 text-xs" onClick={() => { setStatusFilter("completed"); exitMultiSelect(); }}>
-            Completed ({completedItems.length})
+          <Button size="sm" variant={statusFilter === "completed" ? "default" : "outline"} className="h-9 px-2 text-[11px]" onClick={() => { setStatusFilter("completed"); exitMultiSelect(); }}>
+            Done ({completedItems.length})
           </Button>
-          <Button size="sm" variant={statusFilter === "bin" ? "default" : "outline"} className="h-9 text-xs gap-1" onClick={() => { setStatusFilter("bin"); exitMultiSelect(); }}>
+          <Button size="sm" variant={statusFilter === "bin" ? "default" : "outline"} className="h-9 px-2 text-[11px] gap-1" onClick={() => { setStatusFilter("bin"); exitMultiSelect(); }}>
             <Trash2 className="h-3 w-3" /> Bin ({validDiscarded.length})
           </Button>
+          <Button size="sm" variant={multiSelectMode ? "default" : "outline"} className="h-9 px-2 text-[11px] gap-1" onClick={() => multiSelectMode ? exitMultiSelect() : setMultiSelectMode(true)}>
+            <CheckSquare className="h-3 w-3" /> Select
+          </Button>
         </div>
-        <div className="flex gap-1 items-center">
-          <Button size="sm" variant={multiSelectMode ? "default" : "outline"} className="h-9 text-xs gap-1" onClick={() => multiSelectMode ? exitMultiSelect() : setMultiSelectMode(true)}>
-              <CheckSquare className="h-3 w-3" /> Select
-            </Button>
-        </div>
-        <div className="relative flex-1">
+        <div className="relative flex-1 min-w-[160px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-          <Input value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} placeholder="Search by name or event..." className="pl-9 h-9 text-xs" />
+          <Input value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} placeholder="Search..." className="pl-9 h-9 text-xs" />
         </div>
       </div>
+
 
       {/* Multi-select bulk action bar */}
       {multiSelectMode && (
