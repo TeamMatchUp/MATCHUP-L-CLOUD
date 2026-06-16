@@ -101,10 +101,20 @@ export default function Explore() {
 
   const [tab, setTab] = useState<TabType>(getInitialTab);
 
+  // Keep the active tab in sync with the URL so sidebar navigation between
+  // /explore/gyms ↔ /explore/events (and browser back/forward) always shows
+  // the right tab — fixes the back-button "swap" issue.
+  useEffect(() => {
+    const next = getInitialTab();
+    setTab((prev) => (prev === next ? prev : next));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
   // Track page view on mount and tab change
   useEffect(() => {
     void track("explore_page_viewed", { category: tab });
   }, [tab]);
+
   const [mapOpen, setMapOpen] = useState(false);
   const [highlightedGymId, setHighlightedGymId] = useState<string | null>(null);
   const [popupItem, setPopupItem] = useState<any>(null);
