@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { EventCalendar } from "./EventCalendar";
 import {
   Building2, Plus, Search, Calendar, Inbox, ChevronDown, Eye, EyeOff,
-  User, ToggleRight, Crosshair, CalendarPlus, X, Users, UserMinus,
+  User, ToggleRight, Crosshair, CalendarPlus, X, Users, UserMinus, PanelLeft,
 } from "lucide-react";
 import { CoachKpiStrip } from "./CoachKpiStrip";
 import { CoachUpcomingFights } from "./CoachUpcomingFights";
@@ -17,6 +17,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { GymsNearYouWidget } from "@/components/fighter/GymsNearYouWidget";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { NetworkModal } from "./NetworkModal";
 
 interface DashboardOverviewProps {
   calendarEvents: any[];
