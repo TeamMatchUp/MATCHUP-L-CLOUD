@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { X, Users } from "lucide-react";
 
@@ -57,8 +58,8 @@ export function NetworkModal({
     navigate(getProfileUrl(item));
   };
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(12px)" }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(12px)" }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background: "#14171e", borderRadius: 12, width: "min(480px, 95vw)", maxHeight: "80vh", overflowY: "auto", padding: 20, boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
         <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
           <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>{type === "followers" ? "Followers" : "Following"}</h3>
@@ -98,6 +99,7 @@ export function NetworkModal({
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
