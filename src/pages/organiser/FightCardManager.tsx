@@ -325,7 +325,7 @@ export default function FightCardManager() {
     return (
       <div className="min-h-screen" style={{ background: "#0d0f12" }}>
         <Header />
-        <main className="pt-16"><div className="container py-16"><div className="animate-pulse" style={{ color: "#8b909e" }}>Loading event...</div></div></main>
+        <main className="pt-16"><div className="container py-6 md:py-10"><div className="animate-pulse" style={{ color: "#8b909e" }}>Loading event...</div></div></main>
       </div>
     );
   }
@@ -334,7 +334,7 @@ export default function FightCardManager() {
     return (
       <div className="min-h-screen" style={{ background: "#0d0f12" }}>
         <Header />
-        <main className="pt-16"><div className="container py-16 text-center">
+        <main className="pt-16"><div className="container py-6 md:py-10 text-center">
           <p style={{ color: "#8b909e" }}>Event not found.</p>
           <Button variant="outline" asChild className="mt-4"><Link to="/organiser/dashboard">Back to Dashboard</Link></Button>
         </div></main>

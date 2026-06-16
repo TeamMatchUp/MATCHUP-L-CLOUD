@@ -48,7 +48,7 @@ export function FighterRecordHero() {
     queryFn: async () => {
       const { data } = await supabase
         .from("fighter_profiles")
-        .select("id, name, record_wins, record_losses, record_draws")
+        .select("id, name, record_wins, record_losses, record_draws, amateur_wins, amateur_losses, amateur_draws")
         .eq("user_id", user!.id)
         .maybeSingle();
       return data;
@@ -76,38 +76,30 @@ export function FighterRecordHero() {
     enabled: !!fighterProfile,
   });
 
-  // Filter fights
+  // Filter fights (used for last-5 + streak)
   const filteredFights = useMemo(() => {
     if (filter === "all") return fights;
     if (filter === "pro") return fights.filter((f) => !f.is_amateur);
     return fights.filter((f) => f.is_amateur);
   }, [fights, filter]);
 
-  // Calculate record from filtered fights
-  const record = useMemo(() => {
-    let wins = 0, losses = 0, draws = 0;
-    filteredFights.forEach((fight) => {
-      if (!fighterProfile) return;
-      const fid = fighterProfile.id;
-      if (fight.winner_id === fid) { wins++; return; }
-      if (fight.winner_id && fight.winner_id !== fid) { losses++; return; }
-      if (fight.result === "draw") { draws++; return; }
-      const isA = fight.fighter_a_id === fid;
-      if (fight.result === "win") { isA ? wins++ : losses++; return; }
-      if (fight.result === "loss") { isA ? losses++ : wins++; return; }
-    });
-    return { wins, losses, draws, total: wins + losses + draws };
-  }, [filteredFights, fighterProfile]);
-
-  // If no fights data, fall back to profile static record
+  // Record numbers come from the authoritative stored counters on the
+  // fighter profile so the filter tabs always change the displayed totals,
+  // even when the fights table hasn't been populated yet.
   const displayRecord = useMemo(() => {
-    if (fights.length > 0) return record;
     if (!fighterProfile) return { wins: 0, losses: 0, draws: 0, total: 0 };
-    const w = fighterProfile.record_wins;
-    const l = fighterProfile.record_losses;
-    const d = fighterProfile.record_draws;
-    return { wins: w, losses: l, draws: d, total: w + l + d };
-  }, [record, fights, fighterProfile]);
+    const pw = fighterProfile.record_wins ?? 0;
+    const pl = fighterProfile.record_losses ?? 0;
+    const pd = fighterProfile.record_draws ?? 0;
+    const aw = fighterProfile.amateur_wins ?? 0;
+    const al = fighterProfile.amateur_losses ?? 0;
+    const ad = fighterProfile.amateur_draws ?? 0;
+    let wins = 0, losses = 0, draws = 0;
+    if (filter === "pro") { wins = pw; losses = pl; draws = pd; }
+    else if (filter === "amateur") { wins = aw; losses = al; draws = ad; }
+    else { wins = pw + aw; losses = pl + al; draws = pd + ad; }
+    return { wins, losses, draws, total: wins + losses + draws };
+  }, [fighterProfile, filter]);
 
   // Donut data
   const donutData = useMemo(() => {

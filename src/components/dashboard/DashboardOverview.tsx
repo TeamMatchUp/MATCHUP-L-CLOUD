@@ -27,6 +27,7 @@ interface DashboardOverviewProps {
   onNavigateSection: (section: string) => void;
   fighterProfileId?: string | null;
   onOpenMobileSidebar?: () => void;
+  underHeaderSlot?: React.ReactNode;
 }
 
 /* ── Quick Actions Button ── */
@@ -250,6 +251,7 @@ export function DashboardOverview({
   onNavigateSection,
   fighterProfileId,
   onOpenMobileSidebar,
+  underHeaderSlot,
 }: DashboardOverviewProps) {
   const isMobile = useIsMobile();
   const { user } = useAuth();
@@ -472,6 +474,7 @@ export function DashboardOverview({
         <StickyHeader quickActionsContent={quickActionsFighter} />
         <div className="space-y-6" style={{ padding: isMobile ? "0 12px 16px" : "0 24px 24px" }}>
           <OverviewHeader />
+          {underHeaderSlot}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {fighterCardVis.record && <Cell span={2}><FighterRecordHero /></Cell>}
             {fighterCardVis.nextFight && <Cell><FighterNextFight /></Cell>}

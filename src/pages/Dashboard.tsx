@@ -163,9 +163,6 @@ export default function Dashboard() {
                 </Button>
               </div>
             )}
-            {isFighter && fighterProfile && (
-              <GymInvitesPanel fighterProfileId={fighterProfile.id} />
-            )}
             <DashboardOverview
               calendarEvents={calendarEvents}
               highlightedDates={highlightedDates}
@@ -173,6 +170,11 @@ export default function Dashboard() {
               onNavigateSection={navigateToSection}
               fighterProfileId={fighterProfile?.id ?? null}
               onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
+              underHeaderSlot={
+                isFighter && fighterProfile ? (
+                  <GymInvitesPanel fighterProfileId={fighterProfile.id} />
+                ) : null
+              }
             />
           </div>
         );
@@ -367,7 +369,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        <main className="flex-1 overflow-y-auto" style={{ paddingTop: 80, minHeight: "100vh" }}>
+        <main className="flex-1 overflow-y-auto" style={{ paddingTop: 64, minHeight: "100vh" }}>
           {sectionTitle !== "Dashboard" && activeSection !== "overview" && (
             <h1 className="font-heading text-2xl md:text-3xl mb-6 px-4 md:px-6" style={{ color: "#e8eaf0" }}>
               {sectionTitle}
