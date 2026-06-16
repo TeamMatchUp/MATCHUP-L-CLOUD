@@ -44,6 +44,11 @@ export default function AccountSettings() {
   // Marketing
   const [marketingOptIn, setMarketingOptIn] = useState(false);
 
+  // Coach fighter profile state
+  const [isCoach, setIsCoach] = useState(false);
+  const [hasFighterProfile, setHasFighterProfile] = useState(false);
+  const [fighterModalOpen, setFighterModalOpen] = useState(false);
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
