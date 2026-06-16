@@ -192,17 +192,19 @@ export function AnalyticsShell({
       className="w-full"
       style={{ background: PAGE_BG, fontFamily: "Inter, sans-serif" }}
     >
-      <h1
-        className="mb-5"
-        style={{
-          fontFamily: "'Bebas Neue', sans-serif",
-          fontSize: 40,
-          letterSpacing: "0.04em",
-          color: "#e8eaf0",
-        }}
-      >
-        {title.toUpperCase()}
-      </h1>
+      {title && (
+        <h1
+          className="mb-5"
+          style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: 40,
+            letterSpacing: "0.04em",
+            color: "#e8eaf0",
+          }}
+        >
+          {title.toUpperCase()}
+        </h1>
+      )}
 
       {kpis.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

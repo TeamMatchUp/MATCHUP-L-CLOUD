@@ -14,9 +14,10 @@ interface OrganiserAnalyticsProps {
   userId: string;
   /** kept for backward compatibility — no longer rendered differently */
   embedded?: boolean;
+  title?: string;
 }
 
-export function OrganiserAnalyticsShared({ userId }: OrganiserAnalyticsProps) {
+export function OrganiserAnalyticsShared({ userId, title = "Analytics" }: OrganiserAnalyticsProps) {
   const now = new Date();
 
   const { data: orgEvents = [] } = useQuery({
@@ -332,7 +333,7 @@ export function OrganiserAnalyticsShared({ userId }: OrganiserAnalyticsProps) {
 
   return (
     <AnalyticsShell
-      title="Analytics"
+      title={title}
       kpis={kpis}
       tabs={[
         { value: "overview", label: "Overview", content: overview },
