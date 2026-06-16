@@ -185,9 +185,12 @@ export default function FighterDetail() {
 
   const handleShare = () => { navigator.clipboard.writeText(window.location.href); toast.success("Profile link copied!"); };
 
-  const displayWins = fights.length > 0 ? stats.wins : fighter.record_wins;
-  const displayLosses = fights.length > 0 ? stats.losses : fighter.record_losses;
-  const displayDraws = fights.length > 0 ? stats.draws : fighter.record_draws;
+  // stats already merges the cached signup record (pro + amateur) with values
+  // computed from the fights table via Math.max — always prefer it so the
+  // signup-collected record shows even when no fights rows exist yet.
+  const displayWins = stats.wins;
+  const displayLosses = stats.losses;
+  const displayDraws = stats.draws;
 
   // Method row component
   const MethodRow = ({ label, count, total: t, color }: { label: string; count: number; total: number; color: string }) => {
