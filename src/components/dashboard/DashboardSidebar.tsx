@@ -46,6 +46,8 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
   const { theme, setTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState("");
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({});
+  const [networkSheet, setNetworkSheet] = useState<"followers" | "following" | null>(null);
+
 
   const isCoachOrOwner = effectiveRoles.includes("gym_owner" as AppRole) || effectiveRoles.includes("coach" as AppRole);
   const isOrganiser = effectiveRoles.includes("organiser" as AppRole);
