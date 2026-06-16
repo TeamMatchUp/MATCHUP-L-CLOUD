@@ -386,7 +386,7 @@ export function DashboardOverview({
       {/* RIGHT: search (desktop) + quick actions */}
       <div className="flex items-center gap-3" style={{ flexShrink: 0 }}>
         {!isMobile && <GlobalSearch />}
-        <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions}>
+        <QuickActionsButton showQuickActions={showQuickActions} setShowQuickActions={setShowQuickActions} compact={isMobile}>
           {quickActionsContent}
         </QuickActionsButton>
       </div>
