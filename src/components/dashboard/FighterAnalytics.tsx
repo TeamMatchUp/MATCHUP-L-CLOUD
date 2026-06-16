@@ -221,7 +221,7 @@ export function FighterAnalyticsV2({ fighterProfile, title = "Analytics" }: { fi
 
   return (
     <AnalyticsShell
-      title="Analytics"
+      title={title}
       kpis={kpis}
       tabs={[
         { value: "overview", label: "Overview", content: overview },
