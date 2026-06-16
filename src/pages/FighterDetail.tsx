@@ -96,8 +96,14 @@ export default function FighterDetail() {
     const w = fights.filter((f: any) => isWin(f, fighter.id));
     const l = fights.filter((f: any) => isLoss(f));
     const d = fights.filter((f: any) => isDraw(f));
+    // Combine cached signup record (pro + amateur) with computed values from fights table
+    const cachedW = (fighter.record_wins ?? 0) + (fighter.amateur_wins ?? 0);
+    const cachedL = (fighter.record_losses ?? 0) + (fighter.amateur_losses ?? 0);
+    const cachedD = (fighter.record_draws ?? 0) + (fighter.amateur_draws ?? 0);
     return {
-      wins: w.length, losses: l.length, draws: d.length,
+      wins: Math.max(w.length, cachedW),
+      losses: Math.max(l.length, cachedL),
+      draws: Math.max(d.length, cachedD),
       kos: w.filter((f: any) => isKO(f.method)).length,
       tkos: w.filter((f: any) => isTKO(f.method)).length,
       subs: w.filter((f: any) => isSub(f.method)).length,
@@ -107,6 +113,7 @@ export default function FighterDetail() {
       lossSubs: l.filter((f: any) => isSub(f.method)).length,
     };
   }, [fights, fighter]);
+
 
   const total = stats.wins + stats.losses + stats.draws;
   const finishRate = stats.wins > 0 ? Math.round(((stats.kos + stats.tkos + stats.subs) / stats.wins) * 100) : 0;
