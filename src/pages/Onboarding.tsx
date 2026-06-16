@@ -415,6 +415,9 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
   const [matchedGym, setMatchedGym] = useState<{ id: string; name: string } | null>(null);
   const [dismissedMatch, setDismissedMatch] = useState(false);
 
+  // Is this coach also an active fighter?
+  const [isFighter, setIsFighter] = useState<"yes" | "no" | null>(null);
+
   // Fighter profile fields (same as FighterForm)
   const [weightClass, setWeightClass] = useState<WeightClass | "">("");
   const [discipline, setDiscipline] = useState("");
@@ -454,7 +457,11 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
       toast({ title: "Please enter your gym name", variant: "destructive" });
       return;
     }
-    if (!weightClass || !discipline) {
+    if (isFighter === null) {
+      toast({ title: "Please answer whether you are also an active fighter", variant: "destructive" });
+      return;
+    }
+    if (isFighter === "yes" && (!weightClass || !discipline)) {
       toast({ title: "Please fill in weight class and discipline", variant: "destructive" });
       return;
     }
@@ -466,44 +473,46 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
       coach_id: user!.id, discipline_tags: gymDisciplines.length > 0 ? gymDisciplines.join(", ") : null,
     });
 
-    // Create fighter profile for the coach
-    const styleValue = discipline === "Wrestling" || discipline === "Other" || discipline === "BJJ"
-      ? null
-      : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]);
+    // Create fighter profile only if coach opted in
+    if (isFighter === "yes") {
+      const styleValue = discipline === "Wrestling" || discipline === "Other" || discipline === "BJJ"
+        ? null
+        : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]);
 
-    const { data: existing } = await supabase.from("fighter_profiles").select("id").eq("user_id", user!.id).maybeSingle();
+      const { data: existing } = await supabase.from("fighter_profiles").select("id").eq("user_id", user!.id).maybeSingle();
 
-    const profileData = {
-      weight_class: weightClass as WeightClass,
-      style: styleValue,
-      stance: stance || null,
-      fighting_substyle: fightingSubstyle || null,
-      discipline,
-      date_of_birth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
-      walk_around_weight_kg: walkAroundWeight ? parseFloat(walkAroundWeight) : null,
-      height: heightCm ? parseInt(heightCm) : null,
-      reach: reachCm ? parseInt(reachCm) : null,
-      amateur_wins: parseInt(amateurWins) || 0,
-      amateur_losses: parseInt(amateurLosses) || 0,
-      amateur_draws: parseInt(amateurDraws) || 0,
-      record_wins: parseInt(proWins) || 0,
-      record_losses: parseInt(proLosses) || 0,
-      record_draws: parseInt(proDraws) || 0,
-      created_by_coach_id: user!.id,
-    };
+      const profileData = {
+        weight_class: weightClass as WeightClass,
+        style: styleValue,
+        stance: stance || null,
+        fighting_substyle: fightingSubstyle || null,
+        discipline,
+        date_of_birth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
+        walk_around_weight_kg: walkAroundWeight ? parseFloat(walkAroundWeight) : null,
+        height: heightCm ? parseInt(heightCm) : null,
+        reach: reachCm ? parseInt(reachCm) : null,
+        amateur_wins: parseInt(amateurWins) || 0,
+        amateur_losses: parseInt(amateurLosses) || 0,
+        amateur_draws: parseInt(amateurDraws) || 0,
+        record_wins: parseInt(proWins) || 0,
+        record_losses: parseInt(proLosses) || 0,
+        record_draws: parseInt(proDraws) || 0,
+        created_by_coach_id: user!.id,
+      };
 
-    if (!existing) {
-      await supabase.from("fighter_profiles").insert({
-        user_id: user!.id,
-        name: user!.user_metadata?.full_name || user!.email || "Coach",
-        ...profileData,
-      });
-    } else {
-      await supabase.from("fighter_profiles").update(profileData).eq("id", existing.id);
+      if (!existing) {
+        await supabase.from("fighter_profiles").insert({
+          user_id: user!.id,
+          name: user!.user_metadata?.full_name || user!.email || "Coach",
+          ...profileData,
+        });
+      } else {
+        await supabase.from("fighter_profiles").update(profileData).eq("id", existing.id);
+      }
     }
 
     await markOnboardingComplete(queryClient);
-    void track("onboarding_completed", { role: "coach" });
+    void track("onboarding_completed", { role: "coach", fighter_profile: isFighter === "yes" });
     setLoading(false);
     onComplete();
   };
@@ -556,7 +565,29 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
         </Select>
       </div>
 
+      {/* Active fighter gate */}
+      <div className="border-t border-border pt-4 mt-4 space-y-3">
+        <Label className="text-base text-foreground">Are you also an active fighter?</Label>
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant={isFighter === "yes" ? "hero" : "outline"}
+            onClick={() => setIsFighter("yes")}
+          >
+            Yes
+          </Button>
+          <Button
+            type="button"
+            variant={isFighter === "no" ? "hero" : "outline"}
+            onClick={() => setIsFighter("no")}
+          >
+            No
+          </Button>
+        </div>
+      </div>
+
       {/* Fighter profile section */}
+      {isFighter === "yes" && (
       <div className="border-t border-border pt-4 mt-4">
         <h4 className="font-heading text-lg text-foreground mb-3">
           YOUR <span className="text-primary">FIGHTER PROFILE</span>
@@ -653,6 +684,7 @@ function CoachForm({ onComplete }: { onComplete: () => void }) {
           </div>
         </div>
       </div>
+      )}
 
       <div className="flex flex-col gap-3 pt-2">
         <Button variant="hero" onClick={handleSubmit} disabled={loading}>

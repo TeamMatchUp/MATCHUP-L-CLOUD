@@ -13,6 +13,8 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { Camera, Loader2, Save, User, Sun, Moon } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CoachFighterProfileForm } from "@/components/onboarding/CoachFighterProfileForm";
 
 export default function AccountSettings() {
   const { user, loading: authLoading } = useAuth();
@@ -42,6 +44,11 @@ export default function AccountSettings() {
   // Marketing
   const [marketingOptIn, setMarketingOptIn] = useState(false);
 
+  // Coach fighter profile state
+  const [isCoach, setIsCoach] = useState(false);
+  const [hasFighterProfile, setHasFighterProfile] = useState(false);
+  const [fighterModalOpen, setFighterModalOpen] = useState(false);
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -68,6 +75,25 @@ export default function AccountSettings() {
       setNotifSystem(data.notification_system ?? true);
       setMarketingOptIn(data.marketing_opt_in ?? false);
     }
+
+    // Check coach/gym_owner role + existing fighter profile
+    const { data: roleRows } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+    const roles = (roleRows ?? []).map((r) => r.role);
+    const coachLike = roles.includes("coach") || roles.includes("gym_owner");
+    setIsCoach(coachLike);
+
+    if (coachLike) {
+      const { data: fp } = await supabase
+        .from("fighter_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setHasFighterProfile(!!fp);
+    }
+
     setLoading(false);
   };
 
@@ -241,6 +267,21 @@ export default function AccountSettings() {
             </div>
           </section>
 
+          {isCoach && !hasFighterProfile && (
+            <>
+              <Separator className="mb-8" />
+              <section className="space-y-4 mb-8">
+                <h2 className="text-lg font-semibold text-foreground">Fighter Profile</h2>
+                <p className="text-sm text-muted-foreground">
+                  Add a fighter profile so you can be put forward for events as an active fighter.
+                </p>
+                <Button variant="hero" onClick={() => setFighterModalOpen(true)}>
+                  Add fighter profile
+                </Button>
+              </section>
+            </>
+          )}
+
           <Separator className="mb-8" />
 
           {/* Password */}
@@ -356,6 +397,25 @@ export default function AccountSettings() {
         </div>
       </main>
       <Footer />
+
+      <Dialog open={fighterModalOpen} onOpenChange={setFighterModalOpen}>
+        <DialogContent className="max-w-[min(90vw,960px)] max-h-[88vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add fighter profile</DialogTitle>
+          </DialogHeader>
+          {user && (
+            <CoachFighterProfileForm
+              userId={user.id}
+              displayName={fullName || user.email || "Coach"}
+              onSaved={() => {
+                setFighterModalOpen(false);
+                setHasFighterProfile(true);
+              }}
+              onCancel={() => setFighterModalOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
