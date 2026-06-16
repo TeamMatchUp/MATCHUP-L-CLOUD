@@ -75,6 +75,25 @@ export default function AccountSettings() {
       setNotifSystem(data.notification_system ?? true);
       setMarketingOptIn(data.marketing_opt_in ?? false);
     }
+
+    // Check coach/gym_owner role + existing fighter profile
+    const { data: roleRows } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id);
+    const roles = (roleRows ?? []).map((r) => r.role);
+    const coachLike = roles.includes("coach") || roles.includes("gym_owner");
+    setIsCoach(coachLike);
+
+    if (coachLike) {
+      const { data: fp } = await supabase
+        .from("fighter_profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setHasFighterProfile(!!fp);
+    }
+
     setLoading(false);
   };
 
