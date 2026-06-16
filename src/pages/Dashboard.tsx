@@ -351,15 +351,16 @@ export default function Dashboard() {
           background: "hsl(var(--bg-page, var(--background)))",
         }}
       >
-        {/* Mobile hamburger — hidden on overview (it's inside the sticky header there) */}
-        {isMobile && activeSection !== "overview" && (
-          <div className="sticky top-0 z-30 flex items-center h-12 px-3" style={{ background: "hsl(var(--background))" }}>
+        {/* Mobile hamburger — always shown on mobile so the sidebar is reachable */}
+        {isMobile && (
+          <div className="sticky top-0 z-40 flex items-center h-12 px-3" style={{ background: "hsl(var(--background))" }}>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setMobileSidebarOpen(true)}
-              className="h-8 w-8"
-              style={{ color: "#8b909e" }}
+              className="h-9 w-9"
+              style={{ color: "#e8eaf0" }}
+              aria-label="Open menu"
             >
               <PanelLeft className="h-5 w-5" />
             </Button>
