@@ -267,6 +267,21 @@ export default function AccountSettings() {
             </div>
           </section>
 
+          {isCoach && !hasFighterProfile && (
+            <>
+              <Separator className="mb-8" />
+              <section className="space-y-4 mb-8">
+                <h2 className="text-lg font-semibold text-foreground">Fighter Profile</h2>
+                <p className="text-sm text-muted-foreground">
+                  Add a fighter profile so you can be put forward for events as an active fighter.
+                </p>
+                <Button variant="hero" onClick={() => setFighterModalOpen(true)}>
+                  Add fighter profile
+                </Button>
+              </section>
+            </>
+          )}
+
           <Separator className="mb-8" />
 
           {/* Password */}
