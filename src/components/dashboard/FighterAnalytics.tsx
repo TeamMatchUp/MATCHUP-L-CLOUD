@@ -10,7 +10,7 @@ import {
   KPI,
 } from "@/components/analytics/AnalyticsShell";
 
-export function FighterAnalyticsV2({ fighterProfile }: { fighterProfile: any }) {
+export function FighterAnalyticsV2({ fighterProfile, title = "Analytics" }: { fighterProfile: any; title?: string }) {
   const fighterId = fighterProfile.id;
 
   const { data: fights = [] } = useQuery({
