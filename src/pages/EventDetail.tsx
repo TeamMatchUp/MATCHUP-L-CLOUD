@@ -235,6 +235,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
 
 export default function EventDetail() {
   const { id } = useParams<{ id: string }>();
+  const { data: activeBoost } = useActiveBoost(id);
   const { user, effectiveRoles } = useAuth();
   const isFighter = effectiveRoles.includes("fighter");
   const isCoach = effectiveRoles.includes("coach");
