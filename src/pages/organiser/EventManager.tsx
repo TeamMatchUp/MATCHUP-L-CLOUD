@@ -304,6 +304,7 @@ export default function EventManager() {
                       letterSpacing: "0.02em",
                     }}>{event.title}</h1>
                     <StatusPill status={event.status} />
+                    {activeBoost && <BoostedBadge size="md" />}
                   </div>
                   <div className="flex items-center gap-4 flex-wrap mb-2" style={{ fontSize: 13, color: TEXT_SEC }}>
                     <span className="inline-flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" />{new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>
@@ -315,12 +316,35 @@ export default function EventManager() {
                   )}
                 </div>
                 <div className="flex gap-2 flex-wrap" style={{ alignSelf: "flex-start" }}>
+                  {event.status === "published" && (
+                    <GoldButton icon={Sparkles} onClick={() => setShowBoost(true)}>
+                      {activeBoost ? "Extend Boost" : "Boost This Event"}
+                    </GoldButton>
+                  )}
                   <GhostButton icon={Eye} href={`/events/${id}?preview=true`}>Preview Public Page</GhostButton>
                   <GhostButton icon={Share2} onClick={() => setShowShare(true)}>Share Event</GhostButton>
                   <GoldButton icon={Pencil} onClick={() => setShowEditEvent(true)}>Edit Event Details</GoldButton>
                 </div>
               </div>
             </div>
+
+            {activeBoost && (
+              <div style={{
+                ...cardStyle, padding: "12px 16px", marginBottom: 20,
+                display: "flex", alignItems: "center", gap: 12,
+                background: "rgba(232,160,32,0.06)",
+                boxShadow: "inset 0 0 0 1px rgba(232,160,32,0.18), 0 2px 8px rgba(0,0,0,0.3)",
+              }}>
+                <Sparkles style={{ color: ACCENT, width: 18, height: 18 }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, color: TEXT, fontWeight: 600 }}>This event is currently boosted</p>
+                  <p style={{ fontSize: 11, color: TEXT_SEC }}>
+                    Boost expires {new Date(activeBoost.expires_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+                <button onClick={() => setShowBoost(true)} style={{ background: "transparent", color: ACCENT, fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none" }}>Extend</button>
+              </div>
+            )}
 
             {/* KPI STRIP */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
