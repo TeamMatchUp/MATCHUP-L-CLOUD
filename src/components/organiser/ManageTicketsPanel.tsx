@@ -158,6 +158,8 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
       sales_start: isoToLocalInput(ticket.sales_start),
       sales_end: isoToLocalInput(ticket.sales_end),
       external_link: ticket.external_link ?? "",
+      description: ticket.description ?? "",
+
     });
     setShowDialog(true);
   };
