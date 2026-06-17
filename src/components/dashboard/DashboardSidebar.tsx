@@ -290,7 +290,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <img src={logoDark} alt="Matchup" style={{ height: 28, width: "auto" }} />
+            <Link to="/" aria-label="Matchup home" style={{ display: "inline-flex" }}><img src={logoDark} alt="Matchup" style={{ height: 28, width: "auto" }} /></Link>
             <button
               onClick={onToggleCollapse}
               className="flex items-center justify-center transition-colors"
