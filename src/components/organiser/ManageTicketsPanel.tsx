@@ -42,6 +42,7 @@ interface TicketForm {
   sales_start: string;
   sales_end: string;
   external_link: string;
+  description: string;
 }
 
 const emptyForm: TicketForm = {
@@ -51,7 +52,9 @@ const emptyForm: TicketForm = {
   sales_start: "",
   sales_end: "",
   external_link: "",
+  description: "",
 };
+
 
 // Convert an ISO timestamp to a value the <input type="datetime-local"> control accepts.
 function isoToLocalInput(iso: string | null | undefined): string {
