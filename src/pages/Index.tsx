@@ -1,25 +1,24 @@
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { HeroSection } from "@/components/landing/HeroSection";
-import { ThreeSidesSection } from "@/components/landing/ThreeSidesSection";
-import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
-import { PlatformStatsStrip } from "@/components/landing/PlatformStatsStrip";
+import "@/components/landing-v2/styles.css";
+import { LandingHeader } from "@/components/landing-v2/LandingHeader";
+import { HeroSection } from "@/components/landing-v2/HeroSection";
+import { ProblemSection } from "@/components/landing-v2/ProblemSection";
+import { WhoItsForSection } from "@/components/landing-v2/WhoItsForSection";
+import { HowItWorksSection } from "@/components/landing-v2/HowItWorksSection";
+import { CtaBand } from "@/components/landing-v2/CtaBand";
+import { LandingFooter } from "@/components/landing-v2/LandingFooter";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="pt-16">
+    <div className="lv2">
+      <LandingHeader />
+      <main>
         <HeroSection />
-        {/* Visual separator */}
-        <div className="container">
-          <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        </div>
-        <ThreeSidesSection />
+        <ProblemSection />
+        <WhoItsForSection />
         <HowItWorksSection />
-        <PlatformStatsStrip />
+        <CtaBand />
       </main>
-      <Footer />
+      <LandingFooter />
     </div>
   );
 };
