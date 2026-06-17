@@ -49,9 +49,11 @@ interface EditEventDialogProps {
   event: EventRow;
   onSuccess: () => void;
   onDelete?: () => void;
+  onPublished?: () => void;
 }
 
-export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete }: EditEventDialogProps) {
+export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete, onPublished }: EditEventDialogProps) {
+  const initialStatus = event.status;
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -118,6 +120,9 @@ export function EditEventDialog({ open, onOpenChange, event, onSuccess, onDelete
       toast({ title: "Event updated" });
       onSuccess();
       onOpenChange(false);
+      if (initialStatus !== "published" && status === "published") {
+        onPublished?.();
+      }
     },
     onError: (e: any) => {
       toast({ title: "Failed to update event", description: e.message, variant: "destructive" });

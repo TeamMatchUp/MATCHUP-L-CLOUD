@@ -17,6 +17,8 @@ import { useState, useMemo } from "react";
 import React from "react";
 import type { Database } from "@/integrations/supabase/types";
 import { usePostcodeSearch, haversineDistance } from "@/hooks/use-postcode-search";
+import { BoostedBadge } from "@/components/BoostedBadge";
+import { isEventBoosted, latestBoostCreatedAt } from "@/hooks/useActiveBoost";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 
@@ -34,7 +36,7 @@ const Events = () => {
     queryFn: async () => {
       let query = supabase
         .from("events")
-        .select("*, fight_slots(*), tickets(*)")
+        .select("*, fight_slots(*), tickets(*), event_boosts(expires_at, payment_status, created_at)")
         .eq("status", "published")
         .gte("date", todayISO)
         .order("date", { ascending: true });
@@ -45,7 +47,16 @@ const Events = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      // Sort boosted events to the top, ordered by most recent boost
+      const list = data ?? [];
+      const boosted: any[] = [];
+      const rest: any[] = [];
+      for (const ev of list) {
+        if (isEventBoosted((ev as any).event_boosts)) boosted.push(ev);
+        else rest.push(ev);
+      }
+      boosted.sort((a, b) => latestBoostCreatedAt(b.event_boosts) - latestBoostCreatedAt(a.event_boosts));
+      return [...boosted, ...rest];
     },
   });
 
@@ -237,7 +248,10 @@ const Events = () => {
                           className="flex flex-col md:flex-row md:items-center justify-between rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block"
                         >
                           <div className="flex-1">
-                            <h3 className="font-heading text-xl text-foreground">{event.title}</h3>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-heading text-xl text-foreground">{event.title}</h3>
+                              {isEventBoosted((event as any).event_boosts) && <BoostedBadge />}
+                            </div>
                             <p className="text-sm text-muted-foreground">{event.promotion_name}</p>
                             <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">

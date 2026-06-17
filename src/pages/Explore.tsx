@@ -34,6 +34,8 @@ import NetworkBackground from "@/components/NetworkBackground";
 import { ExploreBanner } from "@/components/ExploreBanner";
 import { FlagIcon, getCountryDisplayName } from "@/components/FlagIcon";
 import { Award } from "lucide-react";
+import { BoostedBadge } from "@/components/BoostedBadge";
+import { isEventBoosted, latestBoostCreatedAt } from "@/hooks/useActiveBoost";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
@@ -157,10 +159,18 @@ export default function Explore() {
   const { data: events, isLoading: eventsLoading } = useQuery({
     queryKey: ["explore-events", countryFilter, todayISO],
     queryFn: async () => {
-      let q = supabase.from("events").select("*, fight_slots(*), tickets(*), event_fight_slots(id, status, fighter_a_id, fighter_b_id)").eq("status", "published").gte("date", todayISO).order("date", { ascending: true });
+      let q = supabase.from("events").select("*, fight_slots(*), tickets(*), event_fight_slots(id, status, fighter_a_id, fighter_b_id), event_boosts(expires_at, payment_status, created_at)").eq("status", "published").gte("date", todayISO).order("date", { ascending: true });
       if (countryFilter !== "all") q = q.eq("country", countryFilter as CountryCode);
       const { data } = await q;
-      return data ?? [];
+      const list = data ?? [];
+      const boosted: any[] = [];
+      const rest: any[] = [];
+      for (const ev of list) {
+        if (isEventBoosted((ev as any).event_boosts)) boosted.push(ev);
+        else rest.push(ev);
+      }
+      boosted.sort((a, b) => latestBoostCreatedAt(b.event_boosts) - latestBoostCreatedAt(a.event_boosts));
+      return [...boosted, ...rest];
     },
   });
 
@@ -699,7 +709,10 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
                 </div>
                 {/* Body */}
                 <div style={{ padding: 16 }}>
-                  <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: EX.text, textTransform: "uppercase" }}>{event.title}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: EX.text, textTransform: "uppercase" }}>{event.title}</p>
+                    {isEventBoosted((event as any).event_boosts) && <BoostedBadge />}
+                  </div>
                   {event.description && <p style={{ fontSize: 13, color: EX.muted, marginTop: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{event.description}</p>}
                   <div className="space-y-1" style={{ marginTop: 12 }}>
                     <div className="flex items-center gap-2"><Calendar style={{ width: 14, height: 14, color: EX.muted }} /><span style={{ fontSize: 12, color: EX.muted }}>{new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span></div>
