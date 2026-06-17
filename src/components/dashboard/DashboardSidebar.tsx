@@ -277,7 +277,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
       <div style={{ padding: collapsed ? "16px 8px 12px" : "16px", flexShrink: 0 }}>
         {collapsed ? (
           <div className="flex flex-col items-center gap-3">
-            <img src={iconWhite} alt="Matchup" style={{ height: 28, width: "auto" }} />
+            <Link to="/" aria-label="Matchup home" style={{ display: "inline-flex" }}><img src={iconWhite} alt="Matchup" style={{ height: 28, width: "auto" }} /></Link>
             <button
               onClick={onToggleCollapse}
               className="flex items-center justify-center transition-colors"
