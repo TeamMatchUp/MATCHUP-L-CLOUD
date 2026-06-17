@@ -34,6 +34,8 @@ import NetworkBackground from "@/components/NetworkBackground";
 import { ExploreBanner } from "@/components/ExploreBanner";
 import { FlagIcon, getCountryDisplayName } from "@/components/FlagIcon";
 import { Award } from "lucide-react";
+import { BoostedBadge } from "@/components/BoostedBadge";
+import { isEventBoosted, latestBoostCreatedAt } from "@/hooks/useActiveBoost";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
