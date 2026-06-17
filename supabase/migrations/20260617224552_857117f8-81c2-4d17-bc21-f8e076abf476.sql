@@ -1,0 +1,1 @@
+ALTER TABLE public.bout_acceptances ADD COLUMN IF NOT EXISTS decision text NOT NULL DEFAULT 'accepted' CHECK (decision IN ('accepted','declined'));
