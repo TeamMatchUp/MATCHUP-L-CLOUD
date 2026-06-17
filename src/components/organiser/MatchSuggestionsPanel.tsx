@@ -120,6 +120,8 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
   const [narr, setNarr] = useState(50);
   const [settingsChanged, setSettingsChanged] = useState(false);
   const [sortBy, setSortBy] = useState("composite");
+  const [openWhyId, setOpenWhyId] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   // Additional filters
   const [expTiers, setExpTiers] = useState<Set<string>>(new Set(EXP_TIERS));
