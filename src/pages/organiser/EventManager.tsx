@@ -607,10 +607,19 @@ export default function EventManager() {
                 event={event}
                 onSuccess={() => queryClient.invalidateQueries({ queryKey: ["organiser-event", id] })}
                 onDelete={() => navigate("/organiser/dashboard")}
+                onPublished={() => setShowBoost(true)}
               />
             )}
             {showShare && id && (
               <ShareEventModal eventId={id} title={event?.title} onClose={() => setShowShare(false)} />
+            )}
+            {id && (
+              <BoostPurchaseDialog
+                open={showBoost}
+                onOpenChange={setShowBoost}
+                eventId={id}
+                mode={activeBoost ? "manage" : "upsell"}
+              />
             )}
 
           </div>
