@@ -152,6 +152,8 @@ export default function EventManager() {
 
   const [showEditEvent, setShowEditEvent] = useState(false);
   const [showTickets, setShowTickets] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+
 
   useEffect(() => {
     if (id) void track("event_hub_opened", { event_id: id });
