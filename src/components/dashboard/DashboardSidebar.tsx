@@ -96,9 +96,9 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
         { key: "overview", label: "Overview", icon: LayoutDashboard },
         { key: "analytics", label: "Analytics", icon: BarChart3 },
         { key: "manage", label: "Manage", icon: FolderOpen, isAccordion: true, children: [
-          { key: "gyms", label: "My Gyms" }, { key: "events", label: "My Events" }, { key: "my-profile", label: "My Profile" },
+          { key: "roster", label: "My Fighters" }, { key: "gyms", label: "My Gyms" }, { key: "events", label: "My Events" }, { key: "my-profile", label: "My Profile" },
         ]},
-        { key: "roster", label: "Roster", icon: Users },
+
         { key: "interests", label: "Interests", icon: Heart },
         { key: "actions", label: "Actions", icon: Zap, badgeCount: actionsCount },
         { key: "notifications", label: "Notifications", icon: Bell, badgeCount: unreadCount },
