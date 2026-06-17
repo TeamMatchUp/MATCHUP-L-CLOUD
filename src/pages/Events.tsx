@@ -28,13 +28,15 @@ const Events = () => {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const pc = usePostcodeSearch();
 
+  const todayISO = new Date().toISOString().slice(0, 10);
   const { data: events, isLoading } = useQuery({
-    queryKey: ["events", countryFilter],
+    queryKey: ["events", countryFilter, todayISO],
     queryFn: async () => {
       let query = supabase
         .from("events")
         .select("*, fight_slots(*), tickets(*)")
         .eq("status", "published")
+        .gte("date", todayISO)
         .order("date", { ascending: true });
 
       if (countryFilter !== "all") {
@@ -46,6 +48,7 @@ const Events = () => {
       return data;
     },
   });
+
 
   const filteredEvents = useMemo(() => {
     if (!events) return [];

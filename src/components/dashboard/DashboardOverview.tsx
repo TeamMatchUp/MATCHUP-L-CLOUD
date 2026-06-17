@@ -145,7 +145,7 @@ function GlobalSearch() {
       const [{ data: fighters }, { data: gyms }, { data: events }] = await Promise.all([
         supabase.from("fighter_profiles").select("name, id, weight_class").ilike("name", `%${debouncedTerm}%`).limit(5),
         supabase.from("gyms").select("name, id, city").ilike("name", `%${debouncedTerm}%`).limit(5),
-        supabase.from("events").select("title, id, date").ilike("title", `%${debouncedTerm}%`).eq("status", "published").limit(5),
+        supabase.from("events").select("title, id, date").ilike("title", `%${debouncedTerm}%`).eq("status", "published").gte("date", new Date().toISOString().slice(0, 10)).limit(5),
       ]);
       return { pages, fighters: fighters ?? [], gyms: gyms ?? [], events: events ?? [] };
     },

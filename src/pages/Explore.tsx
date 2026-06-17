@@ -153,15 +153,17 @@ export default function Explore() {
   };
 
   // ── Queries ──
+  const todayISO = new Date().toISOString().slice(0, 10);
   const { data: events, isLoading: eventsLoading } = useQuery({
-    queryKey: ["explore-events", countryFilter],
+    queryKey: ["explore-events", countryFilter, todayISO],
     queryFn: async () => {
-      let q = supabase.from("events").select("*, fight_slots(*), tickets(*), event_fight_slots(id, status, fighter_a_id, fighter_b_id)").eq("status", "published").order("date", { ascending: true });
+      let q = supabase.from("events").select("*, fight_slots(*), tickets(*), event_fight_slots(id, status, fighter_a_id, fighter_b_id)").eq("status", "published").gte("date", todayISO).order("date", { ascending: true });
       if (countryFilter !== "all") q = q.eq("country", countryFilter as CountryCode);
       const { data } = await q;
       return data ?? [];
     },
   });
+
 
   const { data: gyms, isLoading: gymsLoading } = useQuery({
     queryKey: ["explore-gyms", countryFilter],

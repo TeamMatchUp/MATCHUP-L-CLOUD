@@ -127,83 +127,121 @@ export default function OrganiserDashboard() {
               <TabsContent value="events">
                 <h2 className="font-heading text-2xl text-foreground mb-4">MY <span className="text-primary">EVENTS</span></h2>
 
-                {events.length === 0 ? (
-                  <div className="rounded-lg border border-border bg-card p-8 text-center">
-                    <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground mb-4">You haven't created any events yet.</p>
-                    <Button asChild size="lg"><Link to="/organiser/create-event">Create Your First Event</Link></Button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {events.map((event) => {
-                      const eventSlots = event.fight_slots || [];
-                      const eventConfirmed = eventSlots.filter((s: any) => s.status === "confirmed").length;
-                      const eventTotal = eventSlots.length;
-                      const pct = eventTotal > 0 ? Math.round((eventConfirmed / eventTotal) * 100) : 0;
-                      const barColor = pct < 50 ? "bg-destructive" : pct < 80 ? "bg-amber-500" : "bg-success";
-                      const bouts = getBoutsForEvent(event.id);
+                {(() => {
+                  const today = new Date().toISOString().slice(0, 10);
+                  const upcoming = events.filter((e: any) => !e.date || String(e.date).slice(0, 10) >= today);
+                  const archive = events.filter((e: any) => e.date && String(e.date).slice(0, 10) < today);
 
-                      return (
-                        <div key={event.id} className="rounded-lg border border-border bg-card p-5">
-                          <div className="flex items-center justify-between gap-4 mb-3">
-                            <Link to={`/organiser/events/${event.id}`} className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <p className="font-medium text-foreground truncate">{event.title}</p>
-                                <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>{event.status}</Badge>
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-1">{event.date} · {event.location} · {eventTotal} slots</p>
-                            </Link>
-                            <div className="flex gap-2 shrink-0">
-                              <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate(`/matchmaking/${event.id}`)}>
-                                <Sparkles className="h-3.5 w-3.5" /> Find Matches
-                              </Button>
-                              <Button size="sm" variant="outline" onClick={() => setPromoteEvent(event)}>
-                                <Megaphone className="h-3.5 w-3.5 mr-1" /> Promote
-                              </Button>
-                              <Button size="sm" variant="ghost" asChild>
-                                <Link to={`/organiser/events/${event.id}`}><ArrowRight className="h-4 w-4" /></Link>
-                              </Button>
+                  const renderCard = (event: any) => {
+                    const eventSlots = event.fight_slots || [];
+                    const eventConfirmed = eventSlots.filter((s: any) => s.status === "confirmed").length;
+                    const eventTotal = eventSlots.length;
+                    const pct = eventTotal > 0 ? Math.round((eventConfirmed / eventTotal) * 100) : 0;
+                    const barColor = pct < 50 ? "bg-destructive" : pct < 80 ? "bg-amber-500" : "bg-success";
+                    const bouts = getBoutsForEvent(event.id);
+
+                    return (
+                      <div key={event.id} className="rounded-lg border border-border bg-card p-5">
+                        <div className="flex items-center justify-between gap-4 mb-3">
+                          <Link to={`/organiser/events/${event.id}`} className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-foreground truncate">{event.title}</p>
+                              <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>{event.status}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">{event.date} · {event.location} · {eventTotal} slots</p>
+                          </Link>
+                          <div className="flex gap-2 shrink-0">
+                            <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate(`/matchmaking/${event.id}`)}>
+                              <Sparkles className="h-3.5 w-3.5" /> Find Matches
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => setPromoteEvent(event)}>
+                              <Megaphone className="h-3.5 w-3.5 mr-1" /> Promote
+                            </Button>
+                            <Button size="sm" variant="ghost" asChild>
+                              <Link to={`/organiser/events/${event.id}`}><ArrowRight className="h-4 w-4" /></Link>
+                            </Button>
+                          </div>
+                        </div>
+
+                        {eventTotal > 0 && (
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                              <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className="text-xs text-muted-foreground tabular-nums">{pct}%</span>
+                          </div>
+                        )}
+
+                        {bouts.length > 0 && (
+                          <div className="border-t border-border pt-3 mt-1">
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Fight Card</p>
+                            <div className="space-y-1.5">
+                              {bouts.map((bout: any) => {
+                                const fA = unwrap(bout.fighter_a);
+                                const fB = unwrap(bout.fighter_b);
+                                return (
+                                  <div key={bout.id} className="flex items-center gap-2 text-sm">
+                                    <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40" />
+                                    <span className="text-foreground">{fA?.name ?? "TBD"}</span>
+                                    <span className="text-primary font-heading text-xs">VS</span>
+                                    <span className="text-foreground">{fB?.name ?? "TBD"}</span>
+                                    {bout.weight_class && <Badge variant="outline" className="text-[10px] ml-auto">{bout.weight_class}</Badge>}
+                                    {bout.bout_type && <Badge variant="secondary" className="text-[10px]">{bout.bout_type}</Badge>}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
+                        )}
+                      </div>
+                    );
+                  };
 
-                          {/* Progress bar */}
-                          {eventTotal > 0 && (
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                                <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${pct}%` }} />
-                              </div>
-                              <span className="text-xs text-muted-foreground tabular-nums">{pct}%</span>
-                            </div>
-                          )}
+                  if (events.length === 0) {
+                    return (
+                      <div className="rounded-lg border border-border bg-card p-8 text-center">
+                        <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                        <p className="text-muted-foreground mb-4">You haven't created any events yet.</p>
+                        <Button asChild size="lg"><Link to="/organiser/create-event">Create Your First Event</Link></Button>
+                      </div>
+                    );
+                  }
 
-                          {/* Confirmed Fight Card */}
-                          {bouts.length > 0 && (
-                            <div className="border-t border-border pt-3 mt-1">
-                              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Fight Card</p>
-                              <div className="space-y-1.5">
-                                {bouts.map((bout: any, idx: number) => {
-                                  const fA = unwrap(bout.fighter_a);
-                                  const fB = unwrap(bout.fighter_b);
-                                  return (
-                                    <div key={bout.id} className="flex items-center gap-2 text-sm">
-                                      <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40" />
-                                      <span className="text-foreground">{fA?.name ?? "TBD"}</span>
-                                      <span className="text-primary font-heading text-xs">VS</span>
-                                      <span className="text-foreground">{fB?.name ?? "TBD"}</span>
-                                      {bout.weight_class && <Badge variant="outline" className="text-[10px] ml-auto">{bout.weight_class}</Badge>}
-                                      {bout.bout_type && <Badge variant="secondary" className="text-[10px]">{bout.bout_type}</Badge>}
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                  return (
+                    <Tabs defaultValue="upcoming" className="space-y-4">
+                      <TabsList>
+                        <TabsTrigger value="upcoming">
+                          Upcoming & Live Events
+                          <span className="ml-2 text-xs text-muted-foreground">({upcoming.length})</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="archive">
+                          Event Archive
+                          <span className="ml-2 text-xs text-muted-foreground">({archive.length})</span>
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="upcoming">
+                        {upcoming.length === 0 ? (
+                          <p className="text-muted-foreground">
+                            {archive.length > 0
+                              ? "No upcoming events. Check your archive or create a new one."
+                              : "No upcoming events."}
+                          </p>
+                        ) : (
+                          <div className="space-y-4">{upcoming.map(renderCard)}</div>
+                        )}
+                      </TabsContent>
+                      <TabsContent value="archive">
+                        {archive.length === 0 ? (
+                          <p className="text-muted-foreground">No archived events yet.</p>
+                        ) : (
+                          <div className="space-y-4">{archive.map(renderCard)}</div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  );
+                })()}
               </TabsContent>
+
 
               <TabsContent value="notifications">
                 <NotificationHistory />
