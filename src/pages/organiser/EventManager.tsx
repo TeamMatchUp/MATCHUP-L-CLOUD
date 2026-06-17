@@ -591,3 +591,113 @@ export default function EventManager() {
     </div>
   );
 }
+
+// ─── Share Event Modal ──────────────────────────────────────
+function ShareEventModal({ eventId, title, onClose }: { eventId: string; title?: string; onClose: () => void }) {
+  const publicUrl = `${window.location.origin}/events/${eventId}`;
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+  }, [onClose]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(publicUrl);
+      setCopied(true);
+      toast.success("Link copied to clipboard");
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("Could not copy link");
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, zIndex: 100,
+        background: "rgba(0,0,0,0.75)", backdropFilter: "blur(12px)",
+        display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: CARD, borderRadius: 16,
+          width: "min(90vw, 960px)", maxHeight: "88vh", overflowY: "auto",
+          padding: 28,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+        }}
+      >
+        <div className="flex items-start justify-between mb-5">
+          <div>
+            <h2 style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: 28, color: TEXT, letterSpacing: "0.04em",
+              textTransform: "uppercase", lineHeight: 1.1,
+            }}>
+              Share Ev<span style={{ color: ACCENT }}>ent</span>
+            </h2>
+            {title && (
+              <p style={{ fontSize: 13, color: TEXT_SEC, marginTop: 4 }} className="truncate">{title}</p>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              width: 36, height: 36, borderRadius: 8, display: "flex",
+              alignItems: "center", justifyContent: "center",
+              background: "rgba(255,255,255,0.04)", color: TEXT_SEC, cursor: "pointer", flexShrink: 0,
+            }}
+          >
+            <X style={{ width: 18, height: 18 }} />
+          </button>
+        </div>
+
+        <div className="flex flex-col items-center" style={{ gap: 18 }}>
+          <div style={{
+            background: "#ffffff", borderRadius: 12, padding: 16,
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
+          }}>
+            <QRCodeSVG value={publicUrl} size={220} bgColor="#ffffff" fgColor="#080a0d" level="M" includeMargin={false} />
+          </div>
+          <p style={{ fontSize: 13, color: TEXT_SEC, textAlign: "center" }}>
+            Scan to open the public event page
+          </p>
+
+          <div className="w-full" style={{ maxWidth: 640 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", color: TEXT_MUTED, textTransform: "uppercase" }}>
+              Public link
+            </label>
+            <div className="flex items-stretch gap-2" style={{ marginTop: 8 }}>
+              <input
+                readOnly
+                value={publicUrl}
+                onFocus={(e) => e.currentTarget.select()}
+                style={{
+                  flex: 1, minWidth: 0,
+                  background: RAISED, color: TEXT,
+                  borderRadius: 8, padding: "10px 12px",
+                  fontSize: 13, fontFamily: "Inter, sans-serif",
+                  outline: "none", border: "none",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
+                }}
+                onFocusCapture={(e) => { e.currentTarget.style.boxShadow = "0 0 0 2px rgba(232,160,32,0.4)"; }}
+                onBlur={(e) => { e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)"; }}
+              />
+              <GoldButton icon={copied ? Check : Copy} onClick={copy}>
+                {copied ? "Copied!" : "Copy Link"}
+              </GoldButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
