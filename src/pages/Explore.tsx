@@ -157,10 +157,18 @@ export default function Explore() {
   const { data: events, isLoading: eventsLoading } = useQuery({
     queryKey: ["explore-events", countryFilter, todayISO],
     queryFn: async () => {
-      let q = supabase.from("events").select("*, fight_slots(*), tickets(*), event_fight_slots(id, status, fighter_a_id, fighter_b_id)").eq("status", "published").gte("date", todayISO).order("date", { ascending: true });
+      let q = supabase.from("events").select("*, fight_slots(*), tickets(*), event_fight_slots(id, status, fighter_a_id, fighter_b_id), event_boosts(expires_at, payment_status, created_at)").eq("status", "published").gte("date", todayISO).order("date", { ascending: true });
       if (countryFilter !== "all") q = q.eq("country", countryFilter as CountryCode);
       const { data } = await q;
-      return data ?? [];
+      const list = data ?? [];
+      const boosted: any[] = [];
+      const rest: any[] = [];
+      for (const ev of list) {
+        if (isEventBoosted((ev as any).event_boosts)) boosted.push(ev);
+        else rest.push(ev);
+      }
+      boosted.sort((a, b) => latestBoostCreatedAt(b.event_boosts) - latestBoostCreatedAt(a.event_boosts));
+      return [...boosted, ...rest];
     },
   });
 
