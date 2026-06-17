@@ -577,13 +577,23 @@ export default function EventDetail() {
                 <div className="mb-8 rounded-xl overflow-hidden relative" style={{ height: 280 }}>
                   <img src={event.banner_image} alt={event.title} className="w-full h-full object-cover" />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(13,15,18,0.95) 100%)" }} />
+                  {activeBoost && (
+                    <div style={{ position: "absolute", top: 12, left: 12 }}>
+                      <BoostedBadge size="md" />
+                    </div>
+                  )}
                   <h1 className="absolute bottom-4 left-4 right-4 font-heading text-foreground truncate" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.5rem, 6vw, 3rem)", lineHeight: 1.05 }}>{event.title}</h1>
                 </div>
               )}
 
               {/* Main info panel */}
               <div className="mb-8">
-                {!event.banner_image && <h1 className="font-heading text-foreground mb-2 truncate" style={{ fontSize: "clamp(1.5rem, 6vw, 3rem)", lineHeight: 1.05 }}>{event.title}</h1>}
+                {!event.banner_image && (
+                  <div className="flex items-center gap-3 flex-wrap mb-2">
+                    <h1 className="font-heading text-foreground truncate" style={{ fontSize: "clamp(1.5rem, 6vw, 3rem)", lineHeight: 1.05 }}>{event.title}</h1>
+                    {activeBoost && <BoostedBadge size="md" />}
+                  </div>
+                )}
                 {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
 
                 {event.description && (
