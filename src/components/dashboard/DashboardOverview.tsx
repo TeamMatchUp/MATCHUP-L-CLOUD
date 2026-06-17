@@ -38,8 +38,8 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children, c
         className="flex items-center gap-2 transition-all duration-150"
         style={{
           background: "#e8a020", color: "#0d0f12", borderRadius: 8,
-          padding: compact ? "8px 10px" : "8px 18px",
-          fontSize: 13, fontWeight: 600, letterSpacing: "0.02em",
+          padding: compact ? "8px 12px" : "8px 18px",
+          fontSize: compact ? 12 : 13, fontWeight: 600, letterSpacing: "0.02em",
           boxShadow: "0 0 12px rgba(232,160,32,0.25)", cursor: "pointer",
         }}
         onClick={() => setShowQuickActions(!showQuickActions)}
@@ -47,7 +47,8 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children, c
         onMouseLeave={(e) => { e.currentTarget.style.background = "#e8a020"; }}
       >
         <Plus style={{ width: 16, height: 16 }} />
-        {!compact && <>Quick Actions<ChevronDown style={{ width: 14, height: 14 }} /></>}
+        {compact ? <>Quick Actions</> : <>Quick Actions<ChevronDown style={{ width: 14, height: 14 }} /></>}
+
       </button>
       {showQuickActions && (
         <>
