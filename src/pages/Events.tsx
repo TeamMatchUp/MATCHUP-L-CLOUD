@@ -248,7 +248,10 @@ const Events = () => {
                           className="flex flex-col md:flex-row md:items-center justify-between rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block"
                         >
                           <div className="flex-1">
-                            <h3 className="font-heading text-xl text-foreground">{event.title}</h3>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-heading text-xl text-foreground">{event.title}</h3>
+                              {isEventBoosted((event as any).event_boosts) && <BoostedBadge />}
+                            </div>
                             <p className="text-sm text-muted-foreground">{event.promotion_name}</p>
                             <div className="flex flex-wrap gap-4 mt-2 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
