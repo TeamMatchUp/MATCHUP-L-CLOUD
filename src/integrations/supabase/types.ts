@@ -83,6 +83,7 @@ export type Database = {
       bout_acceptances: {
         Row: {
           accepted_at: string
+          decision: string
           id: string
           role: string
           slot_id: string
@@ -90,6 +91,7 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string
+          decision?: string
           id?: string
           role: string
           slot_id: string
@@ -97,6 +99,7 @@ export type Database = {
         }
         Update: {
           accepted_at?: string
+          decision?: string
           id?: string
           role?: string
           slot_id?: string

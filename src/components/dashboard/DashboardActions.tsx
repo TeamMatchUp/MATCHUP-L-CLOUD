@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, Search, Trash2, RotateCcw, AlertTriangle, CheckSquare } from "lucide-react";
+import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, Search, Trash2, RotateCcw, AlertTriangle, CheckSquare, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { formatEnum } from "@/lib/format";
@@ -84,6 +84,11 @@ export function DashboardActions({
   const [trialSending, setTrialSending] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState<"active" | "completed" | "bin">("active");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const deepLinkItemId = searchParams.get("actionItem");
+  const deepLinkTab = searchParams.get("actionTab");
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const highlightTimer = useRef<number | null>(null);
   const [searchFilter, setSearchFilter] = useState("");
   const [discardedItems, setDiscardedItems] = useState<DiscardedItem[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -219,77 +224,82 @@ export function DashboardActions({
     enabled: isFighter && !!fighterProfile,
   });
 
-  const { data: boutProposalsActive = [] } = useQuery({
-    queryKey: ["actions-bout-proposals-active", fighterProfile?.id, allFighterIds],
+  // Combined bout-proposal source: partitioned by *my* decision, not the slot's
+  // overall status. Active = I haven't decided yet on a still-open slot.
+  // Done = I have submitted a decision (accepted/declined), or the slot has
+  // already reached a final state with me as a party.
+  const { data: boutProposalsAll = [] } = useQuery({
+    queryKey: ["actions-bout-proposals-all", userId, fighterProfile?.id, allFighterIds],
     queryFn: async () => {
       const ids = fighterProfile ? [fighterProfile.id, ...allFighterIds] : allFighterIds;
       if (ids.length === 0) return [];
       const uniqueIds = [...new Set(ids)];
+      const selectStr = "id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)";
       const { data: asA } = await supabase
         .from("event_fight_slots")
-        .select("id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)")
-        .in("fighter_a_id", uniqueIds).eq("status", "proposed");
+        .select(selectStr)
+        .in("fighter_a_id", uniqueIds)
+        .in("status", ["proposed", "confirmed", "declined"]);
       const { data: asB } = await supabase
         .from("event_fight_slots")
-        .select("id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)")
-        .in("fighter_b_id", uniqueIds).eq("status", "proposed");
+        .select(selectStr)
+        .in("fighter_b_id", uniqueIds)
+        .in("status", ["proposed", "confirmed", "declined"]);
       const map = new Map<string, any>();
       [...(asA ?? []), ...(asB ?? [])].forEach((s) => map.set(s.id, s));
-      let myAcceptances = new Set<string>();
       const slotIds = Array.from(map.keys());
+      let myDecisions = new Map<string, "accepted" | "declined">();
       if (slotIds.length > 0) {
-        const { data: accs } = await supabase.from("bout_acceptances").select("slot_id").eq("user_id", userId).in("slot_id", slotIds);
-        myAcceptances = new Set((accs ?? []).map((a: any) => a.slot_id));
-      }
-      return Array.from(map.values())
-        .filter((s: any) => !myAcceptances.has(s.id))
-        .map((s: any) => {
-          const fA = Array.isArray(s.fighter_a) ? s.fighter_a[0] : s.fighter_a;
-          const fB = Array.isArray(s.fighter_b) ? s.fighter_b[0] : s.fighter_b;
-          const evt = Array.isArray(s.event) ? s.event[0] : s.event;
-          return {
-            id: s.id, type: "bout_proposal" as const,
-            title: `Fight proposal: ${fA?.name ?? "TBA"} vs ${fB?.name ?? "TBA"}`,
-            subtitle: `${evt?.title ?? "Event"} · ${s.bout_type ?? "Undercard"} · ${formatEnum(s.weight_class ?? "")}`,
-            timestamp: s.created_at, status: "proposed",
-            meta: { ...s, eventId: s.event_id, fighterAName: fA?.name, fighterBName: fB?.name, eventTitle: evt?.title },
-          };
+        const { data: accs } = await supabase
+          .from("bout_acceptances")
+          .select("slot_id, decision")
+          .eq("user_id", userId)
+          .in("slot_id", slotIds);
+        (accs ?? []).forEach((a: any) => {
+          myDecisions.set(a.slot_id, (a.decision ?? "accepted") as "accepted" | "declined");
         });
-    },
-    enabled: (isFighter && !!fighterProfile) || (isCoachOrOwner && allFighterIds.length > 0),
-  });
-
-  const { data: boutProposalsCompleted = [] } = useQuery({
-    queryKey: ["actions-bout-proposals-completed", fighterProfile?.id, allFighterIds],
-    queryFn: async () => {
-      const ids = fighterProfile ? [fighterProfile.id, ...allFighterIds] : allFighterIds;
-      if (ids.length === 0) return [];
-      const uniqueIds = [...new Set(ids)];
-      const { data: asA } = await supabase
-        .from("event_fight_slots")
-        .select("id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)")
-        .in("fighter_a_id", uniqueIds).in("status", ["confirmed", "declined"]);
-      const { data: asB } = await supabase
-        .from("event_fight_slots")
-        .select("id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)")
-        .in("fighter_b_id", uniqueIds).in("status", ["confirmed", "declined"]);
-      const map = new Map<string, any>();
-      [...(asA ?? []), ...(asB ?? [])].forEach((s) => map.set(s.id, s));
+      }
       return Array.from(map.values()).map((s: any) => {
         const fA = Array.isArray(s.fighter_a) ? s.fighter_a[0] : s.fighter_a;
         const fB = Array.isArray(s.fighter_b) ? s.fighter_b[0] : s.fighter_b;
         const evt = Array.isArray(s.event) ? s.event[0] : s.event;
+        const myDecision = myDecisions.get(s.id) ?? null;
+        const slotFinal = s.status === "confirmed" || s.status === "declined";
+        const inDone = !!myDecision || slotFinal;
+        let title: string;
+        if (inDone) {
+          const verb = myDecision
+            ? (myDecision === "accepted" ? "Accepted" : "Declined")
+            : (s.status === "confirmed" ? "Confirmed" : "Declined");
+          title = `${fA?.name ?? "TBA"} vs ${fB?.name ?? "TBA"} — ${verb}`;
+        } else {
+          title = `Fight proposal: ${fA?.name ?? "TBA"} vs ${fB?.name ?? "TBA"}`;
+        }
         return {
-          id: s.id, type: "bout_proposal" as const,
-          title: `${fA?.name ?? "TBA"} vs ${fB?.name ?? "TBA"} — ${s.status === "confirmed" ? "Confirmed" : "Declined"}`,
+          id: s.id,
+          type: "bout_proposal" as const,
+          title,
           subtitle: `${evt?.title ?? "Event"} · ${s.bout_type ?? "Undercard"} · ${formatEnum(s.weight_class ?? "")}`,
-          timestamp: s.created_at, status: s.status,
-          meta: { ...s, eventId: s.event_id, fighterAName: fA?.name, fighterBName: fB?.name, eventTitle: evt?.title },
+          timestamp: s.created_at,
+          status: s.status,
+          meta: {
+            ...s,
+            eventId: s.event_id,
+            fighterAName: fA?.name,
+            fighterBName: fB?.name,
+            eventTitle: evt?.title,
+            myDecision,
+            slotStatus: s.status,
+          },
+          __inDone: inDone,
         };
       });
     },
     enabled: (isFighter && !!fighterProfile) || (isCoachOrOwner && allFighterIds.length > 0),
   });
+
+  const boutProposalsActive = boutProposalsAll.filter((b: any) => !b.__inDone);
+  const boutProposalsCompleted = boutProposalsAll.filter((b: any) => b.__inDone);
 
   const { data: eventInterests = [] } = useQuery({
     queryKey: ["actions-event-interests", fighterProfile?.id],
@@ -486,40 +496,91 @@ export function DashboardActions({
     } catch { toast.error("Failed to decline"); } finally { setTrialSending(false); }
   };
 
+  // Shared helper: load all required-party user ids for a slot
+  const loadRequiredPartyIds = async (slotId: string) => {
+    const { data: slotData } = await supabase.from("event_fight_slots")
+      .select("fighter_a_id, fighter_b_id, event_id, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(user_id, created_by_coach_id), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(user_id, created_by_coach_id)")
+      .eq("id", slotId).single();
+    if (!slotData) return { requiredIds: new Set<string>(), slotData: null };
+    const fA = Array.isArray(slotData.fighter_a) ? slotData.fighter_a[0] : slotData.fighter_a;
+    const fB = Array.isArray(slotData.fighter_b) ? slotData.fighter_b[0] : slotData.fighter_b;
+    const requiredIds = new Set<string>();
+    if (fA?.user_id) requiredIds.add(fA.user_id);
+    if (fB?.user_id) requiredIds.add(fB.user_id);
+    if (fA?.created_by_coach_id) requiredIds.add(fA.created_by_coach_id);
+    if (fB?.created_by_coach_id) requiredIds.add(fB.created_by_coach_id);
+    const { data: gymLinks } = await supabase.from("fighter_gym_links")
+      .select("gym:gyms(coach_id)")
+      .in("fighter_id", [slotData.fighter_a_id, slotData.fighter_b_id].filter(Boolean))
+      .eq("status", "approved");
+    (gymLinks ?? []).forEach((l: any) => { const g = Array.isArray(l.gym) ? l.gym[0] : l.gym; if (g?.coach_id) requiredIds.add(g.coach_id); });
+    return { requiredIds, slotData };
+  };
+
+  // Recompute slot status from current bout_acceptances rows.
+  // - All required parties accepted   → status = 'confirmed'
+  // - All required parties declined   → status = 'declined'
+  // - Otherwise                       → status = 'proposed'
+  const recomputeSlotStatus = async (slotId: string, item: ActionItem) => {
+    const { requiredIds, slotData } = await loadRequiredPartyIds(slotId);
+    if (!slotData) return null;
+    const { data: accs } = await supabase
+      .from("bout_acceptances")
+      .select("user_id, decision")
+      .eq("slot_id", slotId);
+    const decisions = new Map<string, "accepted" | "declined">();
+    (accs ?? []).forEach((a: any) => decisions.set(a.user_id, (a.decision ?? "accepted") as "accepted" | "declined"));
+    const allAccepted = requiredIds.size > 0 && Array.from(requiredIds).every((id) => decisions.get(id) === "accepted");
+    const allDeclined = requiredIds.size > 0 && Array.from(requiredIds).every((id) => decisions.get(id) === "declined");
+    const nextStatus = allAccepted ? "confirmed" : allDeclined ? "declined" : "proposed";
+    await supabase.from("event_fight_slots").update({ status: nextStatus }).eq("id", slotId);
+
+    if (nextStatus !== "proposed") {
+      const meta = item.meta;
+      const { data: evt } = await supabase.from("events").select("organiser_id, title").eq("id", slotData.event_id).single();
+      const notifyIds = new Set(requiredIds);
+      if (evt?.organiser_id) notifyIds.add(evt.organiser_id);
+      notifyIds.delete(userId);
+      const matchup = `${meta?.fighterAName ?? "Fighter"} vs ${meta?.fighterBName ?? "Fighter"}`;
+      const evtTitle = evt?.title ?? "an event";
+      for (const nid of notifyIds) {
+        if (nextStatus === "confirmed") {
+          await supabase.rpc("create_notification", { _user_id: nid, _title: "Bout Confirmed", _message: `${matchup} is now confirmed for ${evtTitle}.`, _type: "match_confirmed" as any, _reference_id: slotId });
+        } else {
+          await supabase.rpc("create_notification", { _user_id: nid, _title: "Proposal Declined", _message: `A fight proposal for ${evtTitle} was declined.`, _type: "match_declined" as any, _reference_id: slotId });
+        }
+      }
+    }
+    return nextStatus;
+  };
+
+  const upsertMyBoutDecision = async (slotId: string, decision: "accepted" | "declined") => {
+    const { data: existing } = await supabase
+      .from("bout_acceptances")
+      .select("id")
+      .eq("slot_id", slotId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (existing?.id) {
+      await supabase.from("bout_acceptances").update({ decision }).eq("id", existing.id);
+    } else {
+      await supabase.from("bout_acceptances").insert({
+        slot_id: slotId,
+        user_id: userId,
+        role: isFighter ? "fighter" : "coach",
+        decision,
+      } as any);
+    }
+  };
+
   const handleAcceptBoutProposal = async (item: ActionItem) => {
     try {
-      await supabase.from("bout_acceptances").insert({ slot_id: item.id, user_id: userId, role: isFighter ? "fighter" : "coach" });
-      const { data: accs } = await supabase.from("bout_acceptances").select("user_id").eq("slot_id", item.id);
-      const acceptedIds = new Set((accs ?? []).map((a: any) => a.user_id));
-      const meta = item.meta;
-      const requiredIds = new Set<string>();
-      const { data: slotData } = await supabase.from("event_fight_slots")
-        .select("fighter_a_id, fighter_b_id, event_id, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(user_id, created_by_coach_id), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(user_id, created_by_coach_id)")
-        .eq("id", item.id).single();
-      if (slotData) {
-        const fA = Array.isArray(slotData.fighter_a) ? slotData.fighter_a[0] : slotData.fighter_a;
-        const fB = Array.isArray(slotData.fighter_b) ? slotData.fighter_b[0] : slotData.fighter_b;
-        if (fA?.user_id) requiredIds.add(fA.user_id);
-        if (fB?.user_id) requiredIds.add(fB.user_id);
-        if (fA?.created_by_coach_id) requiredIds.add(fA.created_by_coach_id);
-        if (fB?.created_by_coach_id) requiredIds.add(fB.created_by_coach_id);
-        const { data: gymLinks } = await supabase.from("fighter_gym_links")
-          .select("gym:gyms(coach_id)").in("fighter_id", [slotData.fighter_a_id, slotData.fighter_b_id]).eq("status", "approved");
-        (gymLinks ?? []).forEach((l: any) => { const g = Array.isArray(l.gym) ? l.gym[0] : l.gym; if (g?.coach_id) requiredIds.add(g.coach_id); });
-        const allAccepted = Array.from(requiredIds).every((id) => acceptedIds.has(id));
-        if (allAccepted) {
-          await supabase.from("event_fight_slots").update({ status: "confirmed" }).eq("id", item.id);
-          const { data: evt } = await supabase.from("events").select("organiser_id, title").eq("id", slotData.event_id).single();
-          const notifyIds = new Set(requiredIds);
-          if (evt?.organiser_id) notifyIds.add(evt.organiser_id);
-          notifyIds.delete(userId);
-          for (const nid of notifyIds) {
-            await supabase.rpc("create_notification", { _user_id: nid, _title: "Bout Confirmed", _message: `${meta.fighterAName ?? "Fighter"} vs ${meta.fighterBName ?? "Fighter"} is now confirmed for ${evt?.title ?? "an event"}.`, _type: "match_confirmed" as any, _reference_id: item.id });
-          }
-          toast.success("Bout confirmed — all parties accepted!");
-        } else {
-          toast.success("Accepted — waiting for other parties");
-        }
+      await upsertMyBoutDecision(item.id, "accepted");
+      const nextStatus = await recomputeSlotStatus(item.id, item);
+      if (nextStatus === "confirmed") {
+        toast.success("Bout confirmed — all parties accepted!");
+      } else {
+        toast.success("Accepted — waiting for other parties");
       }
       setRecentActions((prev) => [...prev, { itemId: item.id, action: "accepted", previousStatus: "proposed", at: Date.now() }]);
       invalidate();
@@ -528,18 +589,36 @@ export function DashboardActions({
 
   const handleDeclineBoutProposal = async (item: ActionItem) => {
     try {
-      await supabase.from("event_fight_slots").update({ status: "declined" }).eq("id", item.id);
-      const { data: slotData } = await supabase.from("event_fight_slots").select("event_id").eq("id", item.id).single();
-      if (slotData) {
-        const { data: evt } = await supabase.from("events").select("organiser_id, title").eq("id", slotData.event_id).single();
-        if (evt?.organiser_id) {
-          await supabase.rpc("create_notification", { _user_id: evt.organiser_id, _title: "Proposal Declined", _message: `A fight proposal for ${evt.title} was declined.`, _type: "match_declined" as any, _reference_id: item.id });
-        }
+      await upsertMyBoutDecision(item.id, "declined");
+      const nextStatus = await recomputeSlotStatus(item.id, item);
+      if (nextStatus === "declined") {
+        toast.success("Proposal declined — all parties have declined");
+      } else {
+        toast.success("Decline recorded — waiting for other parties");
       }
       setRecentActions((prev) => [...prev, { itemId: item.id, action: "declined", previousStatus: "proposed", at: Date.now() }]);
-      toast.success("Proposal declined");
       invalidate();
     } catch { toast.error("Failed to decline"); }
+  };
+
+  const handleChangeBoutDecision = async (item: ActionItem) => {
+    // Final overall slot states cannot be changed.
+    if (item.meta?.slotStatus === "confirmed" || item.meta?.slotStatus === "declined") {
+      toast.error("This bout is finalised and can no longer be changed");
+      return;
+    }
+    try {
+      await supabase
+        .from("bout_acceptances")
+        .delete()
+        .eq("slot_id", item.id)
+        .eq("user_id", userId);
+      // Reset slot to proposed since this user's decision was the only thing
+      // potentially holding it at a different status — recompute to be safe.
+      await recomputeSlotStatus(item.id, item);
+      toast.success("Decision reset — choose again in Active");
+      invalidate();
+    } catch { toast.error("Failed to reset decision"); }
   };
 
   const handleUndo = async (ra: RecentAction) => {
@@ -717,25 +796,69 @@ export function DashboardActions({
   const isCompletedView = statusFilter === "completed";
   const isBinView = statusFilter === "bin";
 
+  // Deep-link from a notification click: resolve which tab the target item is
+  // in, switch to it, then scroll + highlight the row for 2s.
+  useEffect(() => {
+    if (!deepLinkItemId) return;
+    const inActive = activeItems.some((i) => i.id === deepLinkItemId);
+    const inCompleted = completedItems.some((i) => i.id === deepLinkItemId);
+    if (!inActive && !inCompleted) return;
+    if (deepLinkTab === "auto" || !deepLinkTab) {
+      setStatusFilter(inActive ? "active" : "completed");
+    }
+    setHighlightedId(deepLinkItemId);
+    const scrollT = window.setTimeout(() => {
+      const el = document.querySelector(`[data-action-id="${deepLinkItemId}"]`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+    if (highlightTimer.current) window.clearTimeout(highlightTimer.current);
+    highlightTimer.current = window.setTimeout(() => {
+      setHighlightedId(null);
+      const next = new URLSearchParams(searchParams);
+      next.delete("actionItem");
+      next.delete("actionTab");
+      setSearchParams(next, { replace: true });
+    }, 2200);
+    return () => {
+      window.clearTimeout(scrollT);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkItemId, activeItems.length, completedItems.length]);
+
   const renderActionButtons = (item: ActionItem) => {
     if (isCompletedView) {
       const ra = recentlyActioned.find((a) => a.itemId === item.id);
-      if (ra) {
-        return (
-          <Button variant="ghost" size="sm" className="gap-1 text-xs text-primary" onClick={() => handleUndo(ra)}>
-            <Undo2 className="h-3 w-3" /> Undo
-          </Button>
-        );
-      }
-      if (item.meta?.eventId) {
-        return (
-          <Button size="sm" variant="outline" className="h-8 px-3 text-xs" asChild>
-            <Link to={`/events/${item.meta.eventId}`}><Eye className="h-3 w-3 mr-1" /> View</Link>
-          </Button>
-        );
-      }
-      return null;
+      const isBoutChangeable =
+        item.type === "bout_proposal" &&
+        !!item.meta?.myDecision &&
+        item.meta?.slotStatus !== "confirmed" &&
+        item.meta?.slotStatus !== "declined";
+      return (
+        <>
+          {isBoutChangeable && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 px-3 text-xs gap-1 border-primary/40 text-primary hover:bg-primary/10"
+              onClick={() => handleChangeBoutDecision(item)}
+            >
+              <RefreshCw className="h-3 w-3" /> Change Decision
+            </Button>
+          )}
+          {ra && (
+            <Button variant="ghost" size="sm" className="gap-1 text-xs text-primary" onClick={() => handleUndo(ra)}>
+              <Undo2 className="h-3 w-3" /> Undo
+            </Button>
+          )}
+          {item.meta?.eventId && (
+            <Button size="sm" variant="outline" className="h-8 px-3 text-xs" asChild>
+              <Link to={`/events/${item.meta.eventId}`}><Eye className="h-3 w-3 mr-1" /> View</Link>
+            </Button>
+          )}
+        </>
+      );
     }
+
 
     const isCoachGymRequest = item.type === "gym_request" && isCoachOrOwner && item.status === "pending";
     const isTrialLead = item.type === "trial_lead" && isCoachOrOwner;
@@ -956,10 +1079,12 @@ export function DashboardActions({
             const Icon = getIcon(item.type);
             const badge = getTypeBadge(item.type);
             const isCompleted = isCompletedView;
+            const isHighlighted = highlightedId === item.id;
             return (
               <div
                 key={item.id}
-                className={`rounded-lg border bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 transition-colors ${isCompleted ? "border-border/50 opacity-60" : "border-border hover:border-primary/20"}`}
+                data-action-id={item.id}
+                className={`rounded-lg border bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 transition-all duration-300 ${isCompleted ? "border-border/50 opacity-60" : "border-border hover:border-primary/20"} ${isHighlighted ? "!border-primary !opacity-100 shadow-[0_0_0_2px_rgba(232,160,32,0.35)]" : ""}`}
               >
                 <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
                   {multiSelectMode && (
@@ -978,7 +1103,16 @@ export function DashboardActions({
                       <Badge variant="outline" className={badge.className + " text-[9px] sm:text-[10px] px-1.5 py-0 leading-tight"}>{badge.label}</Badge>
                       {isCompleted && (
                         <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0 leading-tight bg-muted/50 text-muted-foreground">
-                          {item.status === "approved" || item.status === "confirmed" ? "✓ Resolved" : "✗ Declined"}
+                          {(() => {
+                            if (item.type === "bout_proposal" && item.meta?.myDecision) {
+                              const finalised = item.meta?.slotStatus === "confirmed" || item.meta?.slotStatus === "declined";
+                              const verb = item.meta.myDecision === "accepted" ? "Accepted" : "Declined";
+                              return finalised
+                                ? (item.meta.slotStatus === "confirmed" ? "✓ Confirmed" : "✗ Declined")
+                                : `You ${verb.toLowerCase()} — pending others`;
+                            }
+                            return item.status === "approved" || item.status === "confirmed" ? "✓ Resolved" : "✗ Declined";
+                          })()}
                         </Badge>
                       )}
                       <span className="text-[10px] sm:text-[11px] text-muted-foreground">

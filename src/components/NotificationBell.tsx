@@ -84,12 +84,9 @@ export function NotificationBell() {
     queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
 
     setOpen(false);
-    const proposalTypes = ["match_proposed", "match_accepted", "match_declined", "match_confirmed", "match_withdrawn"];
-    if (proposalTypes.includes(notification.type) && notification.reference_id) {
-      navigate(`/proposals/${notification.reference_id}`);
-    } else {
-      navigate("/dashboard?section=actions");
-    }
+    const { resolveNotificationTarget } = await import("@/lib/notificationRouting");
+    const target = await resolveNotificationTarget(notification);
+    navigate(target);
   };
 
   if (!user) return null;

@@ -1,98 +1,80 @@
-## Heads-up on Stripe
+## Diagnosis — notification routing bug
 
-You said "reuse the existing Stripe checkout pattern already used for ticket purchases", but the current ticket Checkout page (`src/pages/Checkout.tsx`) is a placeholder showing "Payment processing coming soon" — there is no live Stripe integration yet. I'll need to set up Stripe to ship this. Two options:
+The `match_*` notification types are produced by **two different subsystems** that store completely different ids in `reference_id`, but the click handler in `NotificationBell.tsx` and `NotificationHistory.tsx` treats every match-typed notification as if `reference_id` is a `match_proposals.id` and unconditionally routes to `/proposals/:id`.
 
-1. **Lovable's built-in Stripe Payments (recommended)** — no Stripe account/API key needed up front, sandbox works immediately. I'd enable it via the payments tool before building.
-2. **Bring-your-own Stripe key** — you provide `STRIPE_SECRET_KEY` and I wire two edge functions directly.
+Producers found:
 
-Either way, the boost purchase flow becomes the first real payment path, and the same pattern can later be dropped into the ticket checkout. **Please confirm which route to take before I implement.**
+| File | `_type` | `_reference_id` actually stored |
+|---|---|---|
+| `src/components/organiser/ProposeMatchDialog.tsx:147` | `match_proposed` | `match_proposals.id` ✓ |
+| `src/lib/matchProposal.ts` (notify helper, applyOutcome) | `match_accepted` / `match_declined` / `match_confirmed` / `match_withdrawn` | `match_proposals.id` ✓ |
+| `src/components/organiser/AddFightModal.tsx:63` | `match_proposed` | `event_fight_slots.id` ✗ |
+| `src/components/organiser/AddFightManuallyDialog.tsx:55` | `match_proposed` | `event_fight_slots.id` ✗ |
+| `src/components/organiser/EditBoutDialog.tsx:58` | `match_declined` | `event_fight_slots.id` ✗ |
+| `src/components/dashboard/DashboardActions.tsx:517,536` | `match_confirmed` / `match_declined` | `event_fight_slots.id` ✗ |
 
-The rest of the plan assumes Stripe Checkout Sessions (works for both options).
+When the rows marked ✗ are clicked, the handler navigates to `/proposals/<event_fight_slots.id>`, `ProposalDetail` calls `getProposalParties()` which queries `match_proposals` by that id, finds nothing, and renders "Proposal not found." That is the bug.
 
-## Tiers (constants in `src/lib/boostTiers.ts`)
+## Fix #1 — notification routing
 
+Add a small resolver `resolveNotificationTarget(notification)` in `src/lib/notificationRouting.ts`:
+
+```text
+1. If type is one of the match_* types and reference_id is set:
+   a. SELECT id FROM match_proposals WHERE id = reference_id   → /proposals/:id
+   b. else SELECT id FROM event_fight_slots WHERE id = ref_id   → /dashboard?actionItem=<slotId>&actionTab=auto
+   c. else fall back to /dashboard
+2. Other notification types keep their current routing.
 ```
-24h  £7.99   ms = 24*3600*1000
-7d   £44.99
-14d  £69.99
-30d  £99.99
-```
 
-## Shared UI
+Both `NotificationBell.tsx` and `NotificationHistory.tsx` replace their inline `proposalTypes.includes(...) → navigate("/proposals/" + reference_id)` block with `const target = await resolveNotificationTarget(n); navigate(target);` (still awaits, then closes the popover / marks read as before).
 
-`src/components/organiser/BoostTierPicker.tsx` — four selectable gold-accent cards (tier label, duration, price, "Best value" pill on 30d), one CTA "Continue to Payment" and a secondary "Skip for now" / "Cancel" depending on caller.
+`DashboardActions.tsx` reads `actionItem` and `actionTab` from `useSearchParams`; if `actionItem` matches an id in `activeItems` it stays on Active, otherwise switches to Done. The target row is given `data-action-id={item.id}` and on mount it scrolls into view with a brief gold outline highlight (2s). If `actionTab=auto`, this resolves automatically based on which list contains the id.
 
-`src/components/organiser/BoostPurchaseDialog.tsx` — modal wrapper hosting `BoostTierPicker`. On confirm, calls the `create-boost-checkout` edge function with `{ event_id, tier }`, receives `{ url }`, redirects to Stripe Checkout.
+No DB migration. Existing producers keep emitting slot ids — the resolver makes them route correctly without rewriting historical notifications.
 
-## Entry point 1 — at publish time
+## Fix #2 — Active / Done split for proposal items
 
-`src/components/organiser/EditEventDialog.tsx` (Publish button, line ~234): when the status transitions draft → published and the save mutation succeeds, open `BoostPurchaseDialog` with mode `"upsell"` (shows "Skip for now"). Publishing is never blocked — the dialog appears after the event row has already been updated.
+Today the "Active" tab in the action centre hides any bout proposal where I've already submitted an acceptance (`boutProposalsActive` line ~245 filters out `myAcceptances`). The item only resurfaces in "Done" if the **overall slot** flips to confirmed or declined — so if I accept and the other parties haven't, the item vanishes from both views. That's the symptom the user wants fixed.
 
-## Entry point 2 — Manage Event hub
+The split must be driven by *my* decision, not by the slot's terminal state. Changes confined to `src/components/dashboard/DashboardActions.tsx`:
 
-`src/pages/organiser/EventManager.tsx`: add a "Boost This Event" card in the top section (next to the existing status/checklist block), visible only when `event.status === "published"`. Shows current boost state:
-- No active boost → gold CTA opens `BoostPurchaseDialog` (mode `"manage"`).
-- Active boost → shows "Boosted — expires in Xd Yh", with a muted "Extend boost" link that re-opens the picker.
+1. **Reframe the two bout-proposal queries** so both are sourced by my acceptances:
+   - `boutProposalsAll` — single query for `event_fight_slots` where my fighter ids are A or B and `status IN ('proposed','confirmed','declined')`, plus my acceptances + decline records.
+   - Partition in JS:
+     - **Active** = slot.status is `'proposed'` AND I have no row in `bout_acceptances` for it AND I have no decline record. (Mirrors today's "still actionable for me" set, but now the source of truth is *my* decision.)
+     - **Done** = I have a `bout_acceptances` row for it (accepted) OR the slot is `'declined'` and I was a party (declined). Each item carries a `myDecision: 'accepted' | 'declined'` field and the slot's overall `status`.
 
-Active boost is fetched via a small `useActiveBoost(eventId)` hook (single query on `event_boosts` where `event_id = ? and payment_status = 'paid' and expires_at > now()` order by `expires_at desc` limit 1).
+   Note on declines: today `handleDeclineBoutProposal` sets `slot.status = 'declined'` directly (no per-user decline record). To preserve the "Change Decision" rule we need per-user tracking. Two options:
+   - (a) Add a `decision text` column to `bout_acceptances` (currently it just records that a party accepted) and stop writing the slot to `'declined'` on a single party's decline — only flip the slot when all parties have submitted a decline. This is the correct model and matches `confirmations` for match_proposals, but it is a schema change with broader implications.
+   - (b) Minimal change: when I decline, keep writing `bout_acceptances` row with a new `decision='declined'` column, and leave slot `status='proposed'`. (Same column add as (a) but without changing slot-flip semantics for now.) The slot still flips to `declined` when the organiser explicitly removes the fighter via `EditBoutDialog`.
 
-## Payment flow (edge functions)
+   I'd go with **(b)**: minimal `ALTER TABLE bout_acceptances ADD COLUMN decision text NOT NULL DEFAULT 'accepted' CHECK (decision IN ('accepted','declined'))`. Decline handler inserts/updates a `bout_acceptances` row with `decision='declined'` instead of mutating slot status. Slot only flips to `confirmed`/`declined` when **all** required parties have submitted matching decisions (already the rule used for confirm; mirror it for decline).
 
-`supabase/functions/create-boost-checkout/index.ts`
-- Auth: requires logged-in user (JWT validated in code).
-- Validates `{ event_id: uuid, tier: '24h'|'7d'|'14d'|'30d' }` with Zod.
-- Confirms caller owns the event (`events.organiser_id = auth.uid()`).
-- Creates Stripe Checkout Session (mode `payment`, GBP, line item from tier price, `metadata: { event_id, tier, user_id }`, success_url back to `/organiser/events/:id?boost=success`, cancel_url back to same page with `?boost=cancelled`).
-- Returns `{ url }`.
+2. **Render**: Done section items show their `myDecision` badge plus a "Change Decision" button when `slot.status === 'proposed'` (overall not yet finalised). Clicking calls a new `handleChangeBoutDecision(item)`:
+   - `DELETE FROM bout_acceptances WHERE slot_id=? AND user_id=?`
+   - Invalidate the action-centre queries
+   - Toast "Decision reset — choose again in Active"
+   - The item naturally reappears in Active because partition now finds no acceptance row.
+   - Button is hidden / replaced with "Locked" pill when `slot.status` is `confirmed` or `declined` (final state rule).
 
-`supabase/functions/boost-webhook/index.ts` (Stripe webhook, `verify_jwt = false`)
-- Verifies signature with `STRIPE_WEBHOOK_SECRET`.
-- On `checkout.session.completed` with `payment_status = 'paid'`, reads metadata, computes `expires_at = now + tier ms`, inserts into `event_boosts`:
-  ```
-  { event_id, tier, price_paid, starts_at: now(),
-    expires_at, stripe_payment_intent_id: session.payment_intent,
-    payment_status: 'paid', purchased_by: user_id }
-  ```
-- Idempotent on `stripe_payment_intent_id`.
-
-On success-URL return, EventManager shows a toast "Boost activated" and invalidates the boost query.
-
-## Sort logic
-
-Update `src/pages/Explore.tsx` (events query, line 160) and `src/pages/Events.tsx` (line ~40) to:
-1. Fetch all upcoming published events as today + the related boost rows: add `event_boosts(expires_at, payment_status, created_at)` to the select.
-2. After fetch, partition into `boosted` (any row with `payment_status='paid'` and `expires_at > nowISO`) and `rest`. Sort `boosted` by max boost `created_at` DESC; keep `rest` in existing `date ASC` order. Concat and return.
-
-This is done client-side to avoid a stored function; the existing `.order("date")` stays as the base for `rest`.
-
-`DashboardOverview.tsx` global event search keeps current sort (out of scope).
-
-## Visual indicator
-
-`src/components/BoostedBadge.tsx` — small pill: `background: rgba(232,160,32,0.12); color: #e8a020; font: Bebas Neue; padding: 2px 8px; border-radius: 999px;` label "BOOSTED" with a `Sparkles` icon.
-
-Rendered:
-- On every event card in `Explore.tsx` and `Events.tsx` when that event has an active boost (flag computed during the partition above).
-- On `EventDetail.tsx` next to the event title, gated by a one-off query for an active boost row.
+3. **Parallel for match_proposals items** (the other proposal subsystem): match_proposals rows aren't currently sources for the action centre, so the split affects bout_proposal only. The detail page `ProposalDetail.tsx` already allows re-submitting a decision while the proposal is not `confirmed`/`declined`, which is the equivalent behaviour for that subsystem — no change needed.
 
 ## Files touched
 
-- new `src/lib/boostTiers.ts`
-- new `src/components/organiser/BoostTierPicker.tsx`
-- new `src/components/organiser/BoostPurchaseDialog.tsx`
-- new `src/components/BoostedBadge.tsx`
-- new `src/hooks/useActiveBoost.ts`
-- edit `src/components/organiser/EditEventDialog.tsx` (post-publish upsell)
-- edit `src/pages/organiser/EventManager.tsx` (Boost This Event card + success toast)
-- edit `src/pages/Explore.tsx`, `src/pages/Events.tsx` (boosted sort + badge)
-- edit `src/pages/EventDetail.tsx` (badge)
-- new `supabase/functions/create-boost-checkout/index.ts`
-- new `supabase/functions/boost-webhook/index.ts`
-
-No DB schema migration — `event_boosts` already has every column needed. RLS on `event_boosts` is not changed; inserts happen from the webhook using the service role.
+- new `src/lib/notificationRouting.ts`
+- edit `src/components/NotificationBell.tsx` (use resolver)
+- edit `src/components/NotificationHistory.tsx` (use resolver)
+- edit `src/components/dashboard/DashboardActions.tsx`
+  - replace partition logic for bout_proposal items
+  - new `handleChangeBoutDecision`
+  - new "Change Decision" button on Done rows for `bout_proposal`
+  - read `actionItem` / `actionTab` query params; scroll-to + highlight target row
+  - rework `handleDeclineBoutProposal` to insert `bout_acceptances` row with `decision='declined'` and flip slot only when all parties have declined (mirror existing accept logic)
+- migration: `ALTER TABLE public.bout_acceptances ADD COLUMN decision text NOT NULL DEFAULT 'accepted' CHECK (decision IN ('accepted','declined'))`
 
 ## Out of scope
 
-- Refunds / cancelling an active boost.
-- Stacking rules (multiple overlapping boosts simply mean the latest `created_at` wins for ordering).
-- Converting the existing ticket placeholder to real Stripe checkout (separate task; this flow gives us the pattern to reuse).
+- Rewriting historical notifications.
+- Per-user decision tracking on `match_suggestions` (fight_proposal items in Done) — no separate decision rows exist for those; out of scope unless you also want a Change Decision there.
+- Changing the producers in AddFightModal / AddFightManuallyDialog / EditBoutDialog to emit a different `reference_id` — the resolver covers it without source-side churn.
