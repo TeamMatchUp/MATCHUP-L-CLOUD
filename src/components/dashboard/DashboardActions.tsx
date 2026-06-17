@@ -219,77 +219,82 @@ export function DashboardActions({
     enabled: isFighter && !!fighterProfile,
   });
 
-  const { data: boutProposalsActive = [] } = useQuery({
-    queryKey: ["actions-bout-proposals-active", fighterProfile?.id, allFighterIds],
+  // Combined bout-proposal source: partitioned by *my* decision, not the slot's
+  // overall status. Active = I haven't decided yet on a still-open slot.
+  // Done = I have submitted a decision (accepted/declined), or the slot has
+  // already reached a final state with me as a party.
+  const { data: boutProposalsAll = [] } = useQuery({
+    queryKey: ["actions-bout-proposals-all", userId, fighterProfile?.id, allFighterIds],
     queryFn: async () => {
       const ids = fighterProfile ? [fighterProfile.id, ...allFighterIds] : allFighterIds;
       if (ids.length === 0) return [];
       const uniqueIds = [...new Set(ids)];
+      const selectStr = "id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)";
       const { data: asA } = await supabase
         .from("event_fight_slots")
-        .select("id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)")
-        .in("fighter_a_id", uniqueIds).eq("status", "proposed");
+        .select(selectStr)
+        .in("fighter_a_id", uniqueIds)
+        .in("status", ["proposed", "confirmed", "declined"]);
       const { data: asB } = await supabase
         .from("event_fight_slots")
-        .select("id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)")
-        .in("fighter_b_id", uniqueIds).eq("status", "proposed");
+        .select(selectStr)
+        .in("fighter_b_id", uniqueIds)
+        .in("status", ["proposed", "confirmed", "declined"]);
       const map = new Map<string, any>();
       [...(asA ?? []), ...(asB ?? [])].forEach((s) => map.set(s.id, s));
-      let myAcceptances = new Set<string>();
       const slotIds = Array.from(map.keys());
+      let myDecisions = new Map<string, "accepted" | "declined">();
       if (slotIds.length > 0) {
-        const { data: accs } = await supabase.from("bout_acceptances").select("slot_id").eq("user_id", userId).in("slot_id", slotIds);
-        myAcceptances = new Set((accs ?? []).map((a: any) => a.slot_id));
-      }
-      return Array.from(map.values())
-        .filter((s: any) => !myAcceptances.has(s.id))
-        .map((s: any) => {
-          const fA = Array.isArray(s.fighter_a) ? s.fighter_a[0] : s.fighter_a;
-          const fB = Array.isArray(s.fighter_b) ? s.fighter_b[0] : s.fighter_b;
-          const evt = Array.isArray(s.event) ? s.event[0] : s.event;
-          return {
-            id: s.id, type: "bout_proposal" as const,
-            title: `Fight proposal: ${fA?.name ?? "TBA"} vs ${fB?.name ?? "TBA"}`,
-            subtitle: `${evt?.title ?? "Event"} · ${s.bout_type ?? "Undercard"} · ${formatEnum(s.weight_class ?? "")}`,
-            timestamp: s.created_at, status: "proposed",
-            meta: { ...s, eventId: s.event_id, fighterAName: fA?.name, fighterBName: fB?.name, eventTitle: evt?.title },
-          };
+        const { data: accs } = await supabase
+          .from("bout_acceptances")
+          .select("slot_id, decision")
+          .eq("user_id", userId)
+          .in("slot_id", slotIds);
+        (accs ?? []).forEach((a: any) => {
+          myDecisions.set(a.slot_id, (a.decision ?? "accepted") as "accepted" | "declined");
         });
-    },
-    enabled: (isFighter && !!fighterProfile) || (isCoachOrOwner && allFighterIds.length > 0),
-  });
-
-  const { data: boutProposalsCompleted = [] } = useQuery({
-    queryKey: ["actions-bout-proposals-completed", fighterProfile?.id, allFighterIds],
-    queryFn: async () => {
-      const ids = fighterProfile ? [fighterProfile.id, ...allFighterIds] : allFighterIds;
-      if (ids.length === 0) return [];
-      const uniqueIds = [...new Set(ids)];
-      const { data: asA } = await supabase
-        .from("event_fight_slots")
-        .select("id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)")
-        .in("fighter_a_id", uniqueIds).in("status", ["confirmed", "declined"]);
-      const { data: asB } = await supabase
-        .from("event_fight_slots")
-        .select("id, event_id, fighter_a_id, fighter_b_id, weight_class, bout_type, status, created_at, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(name), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(name), event:events!event_fight_slots_event_id_fkey(title, date)")
-        .in("fighter_b_id", uniqueIds).in("status", ["confirmed", "declined"]);
-      const map = new Map<string, any>();
-      [...(asA ?? []), ...(asB ?? [])].forEach((s) => map.set(s.id, s));
+      }
       return Array.from(map.values()).map((s: any) => {
         const fA = Array.isArray(s.fighter_a) ? s.fighter_a[0] : s.fighter_a;
         const fB = Array.isArray(s.fighter_b) ? s.fighter_b[0] : s.fighter_b;
         const evt = Array.isArray(s.event) ? s.event[0] : s.event;
+        const myDecision = myDecisions.get(s.id) ?? null;
+        const slotFinal = s.status === "confirmed" || s.status === "declined";
+        const inDone = !!myDecision || slotFinal;
+        let title: string;
+        if (inDone) {
+          const verb = myDecision
+            ? (myDecision === "accepted" ? "Accepted" : "Declined")
+            : (s.status === "confirmed" ? "Confirmed" : "Declined");
+          title = `${fA?.name ?? "TBA"} vs ${fB?.name ?? "TBA"} — ${verb}`;
+        } else {
+          title = `Fight proposal: ${fA?.name ?? "TBA"} vs ${fB?.name ?? "TBA"}`;
+        }
         return {
-          id: s.id, type: "bout_proposal" as const,
-          title: `${fA?.name ?? "TBA"} vs ${fB?.name ?? "TBA"} — ${s.status === "confirmed" ? "Confirmed" : "Declined"}`,
+          id: s.id,
+          type: "bout_proposal" as const,
+          title,
           subtitle: `${evt?.title ?? "Event"} · ${s.bout_type ?? "Undercard"} · ${formatEnum(s.weight_class ?? "")}`,
-          timestamp: s.created_at, status: s.status,
-          meta: { ...s, eventId: s.event_id, fighterAName: fA?.name, fighterBName: fB?.name, eventTitle: evt?.title },
+          timestamp: s.created_at,
+          status: s.status,
+          meta: {
+            ...s,
+            eventId: s.event_id,
+            fighterAName: fA?.name,
+            fighterBName: fB?.name,
+            eventTitle: evt?.title,
+            myDecision,
+            slotStatus: s.status,
+          },
+          __inDone: inDone,
         };
       });
     },
     enabled: (isFighter && !!fighterProfile) || (isCoachOrOwner && allFighterIds.length > 0),
   });
+
+  const boutProposalsActive = boutProposalsAll.filter((b: any) => !b.__inDone);
+  const boutProposalsCompleted = boutProposalsAll.filter((b: any) => b.__inDone);
 
   const { data: eventInterests = [] } = useQuery({
     queryKey: ["actions-event-interests", fighterProfile?.id],
