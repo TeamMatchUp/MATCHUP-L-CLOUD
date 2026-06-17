@@ -21,6 +21,8 @@ import {
 import { PutForwardFightersDialog } from "@/components/coach/PutForwardFightersDialog";
 import { ClaimEventDialog } from "@/components/organiser/ClaimEventDialog";
 import { Map as PigeonMap, Marker } from "pigeon-maps";
+import { BoostedBadge } from "@/components/BoostedBadge";
+import { useActiveBoost } from "@/hooks/useActiveBoost";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
