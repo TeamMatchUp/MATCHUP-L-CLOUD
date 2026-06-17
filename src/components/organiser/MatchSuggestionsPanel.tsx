@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Sparkles, Check, RefreshCw, Search, ArrowLeft, X, AlertTriangle } from "lucide-react";
+import { Sparkles, Check, RefreshCw, Search, ArrowLeft, X, AlertTriangle, ChevronDown } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { generateSuggestions } from "@/lib/matchSuggestions";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
@@ -119,6 +120,8 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
   const [narr, setNarr] = useState(50);
   const [settingsChanged, setSettingsChanged] = useState(false);
   const [sortBy, setSortBy] = useState("composite");
+  const [openWhyId, setOpenWhyId] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   // Additional filters
   const [expTiers, setExpTiers] = useState<Set<string>>(new Set(EXP_TIERS));
@@ -786,6 +789,159 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                       Elo Δ{eloDelta} · {pair.reason}
                     </p>
                   </div>
+
+                  {/* Why this match disclosure */}
+                  {(() => {
+                    const pairId = `${pair.fighterA.id}-${pair.fighterB.id}`;
+                    const open = openWhyId === pairId;
+                    const a = pair.fighterA;
+                    const b = pair.fighterB;
+                    const totalA = a.record_wins + a.record_losses + a.record_draws;
+                    const totalB = b.record_wins + b.record_losses + b.record_draws;
+                    const winRateA = totalA > 0 ? a.record_wins / totalA : 0.5;
+                    const winRateB = totalB > 0 ? b.record_wins / totalB : 0.5;
+                    const winRateDiff = Math.abs(winRateA - winRateB);
+                    const expDiff = Math.abs(totalA - totalB);
+                    const stylesKnown = !!a.style && !!b.style;
+                    const stylesDiffer = stylesKnown && a.style !== b.style;
+                    const countriesDiffer = !!a.country && !!b.country && a.country !== b.country;
+
+                    const skillMatch = compositeScore;
+                    const excitement = Math.round(
+                      Math.max(0, Math.min(100,
+                        (1 - winRateDiff) * 60 + (stylesDiffer ? 30 : stylesKnown ? 0 : 15) + (expDiff <= 3 ? 10 : 0)
+                      ))
+                    );
+                    const styleClash = stylesKnown ? (stylesDiffer ? 100 : 0) : 40;
+                    const storyPotential = Math.round(
+                      Math.max(0, Math.min(100,
+                        (countriesDiffer ? 50 : 20) + (expDiff > 3 ? 25 : 10) + (stylesDiffer ? 25 : 0)
+                      ))
+                    );
+
+                    let verdict = "A viable matchup worth proposing.";
+                    if (winRateDiff < 0.15 && stylesDiffer) verdict = "Similar skill level and contrasting styles make this an evenly matched, exciting fight.";
+                    else if (winRateDiff < 0.15) verdict = "Evenly matched on skill — expect a technical, closely fought contest.";
+                    else if (stylesDiffer) verdict = "Style contrast adds intrigue, though one fighter holds a clear skill edge.";
+                    else if (countriesDiffer) verdict = "International matchup with strong narrative appeal.";
+
+                    const bars = [
+                      { label: "Skill Match", pct: Math.round(skillMatch), color: SLIDER_COLORS.comp },
+                      { label: "Excitement", pct: excitement, color: SLIDER_COLORS.ent },
+                      { label: "Style Clash", pct: styleClash, color: SLIDER_COLORS.style },
+                      { label: "Story Potential", pct: storyPotential, color: SLIDER_COLORS.narr },
+                    ];
+
+                    const differentGyms = !!a.gym_id && !!b.gym_id && a.gym_id !== b.gym_id;
+                    const tierWithinRange = eloDelta <= 200;
+                    const noRedFlags = differentGyms && tierWithinRange;
+                    const chips = [
+                      differentGyms && "Different gyms",
+                      tierWithinRange && "Tier gap within range",
+                      noRedFlags && "No red flags",
+                    ].filter(Boolean) as string[];
+
+                    return (
+                      <div style={{ marginTop: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => setOpenWhyId(open ? null : pairId)}
+                          style={{
+                            background: "transparent", border: "none", padding: "4px 0",
+                            color: "#e8a020", fontSize: 11, fontWeight: 600,
+                            display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer",
+                          }}
+                          aria-expanded={open}
+                        >
+                          Why this match
+                          <ChevronDown
+                            style={{
+                              width: 14, height: 14,
+                              transform: open ? "rotate(180deg)" : "rotate(0deg)",
+                              transition: "transform 0.2s ease",
+                            }}
+                          />
+                        </button>
+                        <div
+                          style={{
+                            overflow: "hidden",
+                            maxHeight: open ? 600 : 0,
+                            opacity: open ? 1 : 0,
+                            marginTop: open ? 10 : 0,
+                            transition: "max-height 0.35s ease, opacity 0.25s ease, margin-top 0.25s ease",
+                          }}
+                        >
+                          {/* Verdict callout */}
+                          <div style={{
+                            background: "rgba(232,160,32,0.08)",
+                            borderLeft: "3px solid #e8a020",
+                            borderRadius: 6,
+                            padding: "8px 10px",
+                            fontSize: 12,
+                            color: "#e8eaf0",
+                          }}>
+                            {verdict}
+                          </div>
+
+                          {/* Scoring bars */}
+                          <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                            {bars.map((bar) => (
+                              <div key={bar.label}>
+                                <div style={{
+                                  display: "flex",
+                                  flexDirection: isMobile ? "column" : "row",
+                                  alignItems: isMobile ? "flex-start" : "center",
+                                  justifyContent: "space-between",
+                                  gap: isMobile ? 2 : 8,
+                                  marginBottom: 4,
+                                }}>
+                                  <span style={{ fontSize: 10, color: "#8b909e", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
+                                    {bar.label}
+                                  </span>
+                                  <span style={{ fontSize: 11, color: bar.color, fontWeight: 700 }}>
+                                    {bar.pct}%
+                                  </span>
+                                </div>
+                                <div style={{ height: 4, borderRadius: 2, background: "#1e2330", overflow: "hidden" }}>
+                                  <div style={{
+                                    width: `${bar.pct}%`,
+                                    height: "100%",
+                                    borderRadius: 2,
+                                    background: bar.color,
+                                    transition: "width 0.3s",
+                                  }} />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Safety chips */}
+                          {chips.length > 0 && (
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+                              {chips.map((label) => (
+                                <span key={label} style={{
+                                  background: "rgba(34,197,94,0.12)",
+                                  color: "#22c55e",
+                                  fontSize: 10,
+                                  fontWeight: 600,
+                                  padding: "3px 8px",
+                                  borderRadius: 999,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 4,
+                                }}>
+                                  <Check style={{ width: 10, height: 10 }} />
+                                  {label}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+
 
                   {/* Action buttons */}
                   <div className="flex items-center gap-2" style={{ marginTop: 12, justifyContent: "flex-end" }}>
