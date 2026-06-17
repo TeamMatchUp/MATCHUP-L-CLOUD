@@ -104,6 +104,8 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
         sales_start: form.sales_start ? new Date(form.sales_start).toISOString() : null,
         sales_end: form.sales_end ? new Date(form.sales_end).toISOString() : null,
         external_link: form.external_link || null,
+        description: form.description.trim() || null,
+
       };
       if (editingTicket) {
         const { error } = await supabase.from("tickets").update(payload).eq("id", editingTicket.id);
