@@ -37,6 +37,8 @@ interface TicketForm {
   ticket_type: string;
   price: string;
   quantity_available: string;
+  sales_start: string;
+  sales_end: string;
   external_link: string;
 }
 
@@ -44,8 +46,28 @@ const emptyForm: TicketForm = {
   ticket_type: "",
   price: "",
   quantity_available: "",
+  sales_start: "",
+  sales_end: "",
   external_link: "",
 };
+
+// Convert an ISO timestamp to a value the <input type="datetime-local"> control accepts.
+function isoToLocalInput(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function formatSalesWindow(start: string | null, end: string | null): string | null {
+  if (!start && !end) return null;
+  const fmt = (s: string) =>
+    new Date(s).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  if (start && end) return `On sale ${fmt(start)} – ${fmt(end)}`;
+  if (start) return `On sale from ${fmt(start)}`;
+  return `On sale until ${fmt(end!)}`;
+}
 
 export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
   const { toast } = useToast();
@@ -74,6 +96,8 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
         ticket_type: form.ticket_type,
         price: form.price ? parseFloat(form.price) : null,
         quantity_available: form.quantity_available ? parseInt(form.quantity_available) : null,
+        sales_start: form.sales_start ? new Date(form.sales_start).toISOString() : null,
+        sales_end: form.sales_end ? new Date(form.sales_end).toISOString() : null,
         external_link: form.external_link || null,
       };
       if (editingTicket) {
@@ -86,6 +110,8 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["event-tickets", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["organiser-event", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
       toast({ title: editingTicket ? "Ticket updated" : "Ticket added" });
       closeDialog();
     },
@@ -101,6 +127,8 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["event-tickets", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["organiser-event", eventId] });
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
       toast({ title: "Ticket deleted" });
     },
     onError: (e: any) => {
@@ -120,6 +148,8 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
       ticket_type: ticket.ticket_type,
       price: ticket.price?.toString() ?? "",
       quantity_available: ticket.quantity_available?.toString() ?? "",
+      sales_start: isoToLocalInput(ticket.sales_start),
+      sales_end: isoToLocalInput(ticket.sales_end),
       external_link: ticket.external_link ?? "",
     });
     setShowDialog(true);
@@ -148,63 +178,71 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
         </p>
       ) : (
         <div className="space-y-3">
-          {tickets.map((ticket) => (
-            <div
-              key={ticket.id}
-              className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
-            >
-              <div className="flex items-center gap-4 flex-wrap">
-                <Badge variant="outline" className="text-xs">{ticket.ticket_type}</Badge>
-                {ticket.price != null && (
-                  <span className="text-sm font-medium text-foreground">
-                    £{Number(ticket.price).toFixed(2)}
-                  </span>
-                )}
-                {ticket.quantity_available != null && (
-                  <span className="text-xs text-muted-foreground">
-                    {ticket.quantity_available} available
-                  </span>
-                )}
-                {ticket.external_link && (
-                  <a
-                    href={ticket.external_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline flex items-center gap-1"
-                  >
-                    <ExternalLink className="h-3 w-3" /> Link
-                  </a>
-                )}
-              </div>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="sm" onClick={() => openEdit(ticket)}>
-                  <Pencil className="h-3 w-3" />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="sm">
-                      <Trash2 className="h-3 w-3 text-destructive" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete this ticket?</AlertDialogTitle>
-                      <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => deleteMutation.mutate(ticket.id)}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          {tickets.map((ticket) => {
+            const salesWindow = formatSalesWindow(ticket.sales_start, ticket.sales_end);
+            return (
+              <div
+                key={ticket.id}
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-lg border border-border bg-card p-4"
+              >
+                <div className="flex flex-col gap-1.5 min-w-0">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Badge variant="outline" className="text-xs">{ticket.ticket_type}</Badge>
+                    {ticket.price != null && (
+                      <span className="text-sm font-medium text-foreground">
+                        £{Number(ticket.price).toFixed(2)}
+                      </span>
+                    )}
+                    {ticket.quantity_available != null && (
+                      <span className="text-xs text-muted-foreground">
+                        {ticket.quantity_available} available
+                      </span>
+                    )}
+                    {ticket.external_link && (
+                      <a
+                        href={ticket.external_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline flex items-center gap-1"
                       >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                        <ExternalLink className="h-3 w-3" /> Link
+                      </a>
+                    )}
+                  </div>
+                  {salesWindow && (
+                    <span className="text-xs text-muted-foreground">{salesWindow}</span>
+                  )}
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <Button variant="outline" size="sm" className="gap-1" onClick={() => openEdit(ticket)}>
+                    <Pencil className="h-3 w-3" /> Edit
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="sm" aria-label="Delete ticket">
+                        <Trash2 className="h-3 w-3 text-destructive" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this ticket?</AlertDialogTitle>
+                        <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteMutation.mutate(ticket.id)}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -246,6 +284,26 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
                   value={form.quantity_available}
                   onChange={(e) => setForm({ ...form, quantity_available: e.target.value })}
                   placeholder="100"
+                  className="text-sm"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs sm:text-sm">Sales Start (optional)</Label>
+                <Input
+                  type="datetime-local"
+                  value={form.sales_start}
+                  onChange={(e) => setForm({ ...form, sales_start: e.target.value })}
+                  className="text-sm"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs sm:text-sm">Sales End (optional)</Label>
+                <Input
+                  type="datetime-local"
+                  value={form.sales_end}
+                  onChange={(e) => setForm({ ...form, sales_end: e.target.value })}
                   className="text-sm"
                 />
               </div>

@@ -1,29 +1,31 @@
-# Fix Share Event on Organiser Manage Event hub
+# Fix ticket editing on Organiser Manage Event hub
 
-**File:** `src/pages/organiser/EventManager.tsx`
+**File:** `src/components/organiser/ManageTicketsPanel.tsx`
 
-Currently the "Share Event" button (line 309) silently copies the URL to clipboard with no visible feedback — appears broken.
+The panel already supports editing existing tickets via an `upsertMutation`, but the edit form is missing two fields (`sales_start`, `sales_end`), and the Edit button is icon-only with no label so it's not discoverable.
+
+Edits already go live immediately on the public event page — `src/pages/EventDetail.tsx` reads from the `tickets` table directly (no draft/publish step). No additional plumbing is required for that. No schema changes needed.
 
 ## Changes
 
-1. **Install** `qrcode.react` (no QR lib currently in `package.json`).
+1. **Extend `TicketForm` and `emptyForm`** to include `sales_start` and `sales_end` (both `string`, treated as datetime-local values).
 
-2. **Add a `ShareEventModal` component** rendered inside `EventManager`, controlled by new state `const [showShare, setShowShare] = useState(false)`.
+2. **Update `upsertMutation` payload** to include:
+   ```
+   sales_start: form.sales_start ? new Date(form.sales_start).toISOString() : null,
+   sales_end:   form.sales_end   ? new Date(form.sales_end).toISOString()   : null,
+   ```
 
-3. **Wire the button**: change the `Share Event` `GhostButton`'s `onClick` to `() => setShowShare(true)` (remove the silent clipboard call).
+3. **`openEdit` prefill** — convert existing ISO timestamps to the `datetime-local` format `YYYY-MM-DDTHH:mm` (slice the ISO string). Pre-fill all six fields: ticket_type, price, quantity_available, sales_start, sales_end, external_link.
 
-4. **Modal contents** (entirely client-rendered):
-   - Header: "Share Event" title + close (X) button.
-   - Centred QR code via `<QRCodeSVG value={publicUrl} size={220} bgColor="#111318" fgColor="#e8eaf0" level="M" includeMargin={false} />` where `publicUrl = ${window.location.origin}/events/${id}`.
-   - Helper text: "Scan to open the public event page".
-   - Read-only input pre-filled with `publicUrl` + a "Copy Link" button next to it. Clicking copies via `navigator.clipboard.writeText`, swaps button label to "Copied!" for ~1.5s, and shows a toast (existing `useToast` is already imported in the file if available — otherwise use sonner which is used elsewhere).
+4. **Form UI** — add a two-column row (`grid-cols-1 sm:grid-cols-2`) with `<Input type="datetime-local">` for **Sales Start** and **Sales End**, placed between the Qty row and the External Link field. Mark them optional in helper copy.
 
-5. **Styling — matches existing modal pattern in this codebase:**
-   - Fixed overlay: `background: rgba(0,0,0,0.75)`, `backdropFilter: blur(12px)`, click-to-close.
-   - Modal panel: `background: #111318`, `borderRadius: 16`, `width: min(90vw, 960px)`, `maxHeight: 88vh`, `overflowY: auto`, `padding: 28`, **no border**, shadow `0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)`.
-   - QR wrapper: white-on-dark works fine, optionally wrap QR in a `#181c24` rounded inset card (`borderRadius: 12, padding: 16`) for contrast.
-   - Title: Bebas Neue, gold accent on second word ("Share Ev<span gold>ent</span>") consistent with the rest of the dashboard.
-   - Input/button: gold focus glow on input (no border default); Copy button uses the existing `GoldButton` component already in this file.
+5. **Edit button** — change the icon-only ghost button to a labeled outline button: `<Pencil /> Edit`, matching the styling of the existing "Add Ticket" button. Keep the trash icon button unchanged.
+
+6. **Row layout** — make the row use `flex-col sm:flex-row` so the labeled Edit/Delete buttons don't crowd the badge/price row on mobile.
+
+7. **Optional display** — show sales window under the row when set: `"On sale {dd MMM} – {dd MMM}"` in muted text, so organisers can see at a glance what was saved.
 
 ## Out of scope
-No backend, no routing changes, no changes to the public `/events/:id` page.
+- No RLS or schema changes (`sales_start` / `sales_end` columns already exist).
+- No changes to `EventDetail.tsx` — it already filters tickets by `sales_start`/`sales_end` and reads live data.
