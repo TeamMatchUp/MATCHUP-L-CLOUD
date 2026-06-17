@@ -181,6 +181,53 @@ export type Database = {
           },
         ]
       }
+      event_boosts: {
+        Row: {
+          created_at: string
+          event_id: string
+          expires_at: string
+          id: string
+          payment_status: string
+          price_paid: number
+          purchased_by: string | null
+          starts_at: string
+          stripe_payment_intent_id: string | null
+          tier: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          expires_at: string
+          id?: string
+          payment_status?: string
+          price_paid: number
+          purchased_by?: string | null
+          starts_at?: string
+          stripe_payment_intent_id?: string | null
+          tier: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          expires_at?: string
+          id?: string
+          payment_status?: string
+          price_paid?: number
+          purchased_by?: string | null
+          starts_at?: string
+          stripe_payment_intent_id?: string | null
+          tier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_boosts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_claims: {
         Row: {
           claimant_email: string
@@ -1491,6 +1538,7 @@ export type Database = {
       tickets: {
         Row: {
           created_at: string
+          description: string | null
           event_id: string
           external_link: string | null
           id: string
@@ -1503,6 +1551,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          description?: string | null
           event_id: string
           external_link?: string | null
           id?: string
@@ -1515,6 +1564,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          description?: string | null
           event_id?: string
           external_link?: string | null
           id?: string
