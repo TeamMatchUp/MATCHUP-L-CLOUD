@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, Search, Trash2, RotateCcw, AlertTriangle, CheckSquare } from "lucide-react";
+import { Check, X, Eye, Undo2, Clock, Swords, Building2, Send, Calendar, Users, Search, Trash2, RotateCcw, AlertTriangle, CheckSquare, RefreshCw } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { formatEnum } from "@/lib/format";
