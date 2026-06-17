@@ -1,74 +1,98 @@
-# Plan — "Why this match" disclosure on Suggested Fights cards
+## Heads-up on Stripe
 
-Display-only enhancement to pair-mode cards in `MatchSuggestionsPanel.tsx`. No scoring/algorithm changes.
+You said "reuse the existing Stripe checkout pattern already used for ticket purchases", but the current ticket Checkout page (`src/pages/Checkout.tsx`) is a placeholder showing "Payment processing coming soon" — there is no live Stripe integration yet. I'll need to set up Stripe to ship this. Two options:
 
-## Scope
+1. **Lovable's built-in Stripe Payments (recommended)** — no Stripe account/API key needed up front, sandbox works immediately. I'd enable it via the payments tool before building.
+2. **Bring-your-own Stripe key** — you provide `STRIPE_SECRET_KEY` and I wire two edge functions directly.
 
-- File: `src/components/organiser/MatchSuggestionsPanel.tsx`
-- Target: the pair-mode card render block (~lines 740–833), specifically between the "Compatibility" summary line (`Elo Δ{eloDelta} · {pair.reason}`, line 786) and the action button row (line 791).
-- Single-fighter mode cards are out of scope (no View A/B/Accept row).
+Either way, the boost purchase flow becomes the first real payment path, and the same pattern can later be dropped into the ticket checkout. **Please confirm which route to take before I implement.**
 
-## Behaviour
+The rest of the plan assumes Stripe Checkout Sessions (works for both options).
 
-1. Add accordion state at panel level:
-   ```ts
-   const [openWhyId, setOpenWhyId] = useState<string | null>(null);
-   ```
-   Card id = `${pair.fighterA.id}-${pair.fighterB.id}`. Opening one closes any other.
+## Tiers (constants in `src/lib/boostTiers.ts`)
 
-2. Toggle row directly under the existing summary line:
-   - Gold (`#e8a020`) text button "Why this match" + `ChevronDown` icon, `transform: rotate(180deg)` when open, `transition: transform 0.2s ease`.
-   - `background: transparent`, no border, font-size 11, font-weight 600, padding 4px 0.
+```
+24h  £7.99   ms = 24*3600*1000
+7d   £44.99
+14d  £69.99
+30d  £99.99
+```
 
-3. Panel container uses max-height transition (no layout jump):
-   - Wrapper `div` with `overflow: hidden`, `maxHeight: open ? 600 : 0`, `opacity: open ? 1 : 0`, `transition: max-height 0.35s ease, opacity 0.25s ease`, `marginTop: open ? 10 : 0`.
-   - Action button row stays in its existing place in the DOM — only the disclosure wrapper grows above it.
+## Shared UI
 
-## Disclosure contents (in order)
+`src/components/organiser/BoostTierPicker.tsx` — four selectable gold-accent cards (tier label, duration, price, "Best value" pill on 30d), one CTA "Continue to Payment" and a secondary "Skip for now" / "Cancel" depending on caller.
 
-### a. Plain-language verdict callout
-- Background `rgba(232,160,32,0.08)`, `borderLeft: 3px solid #e8a020`, `borderRadius: 6`, padding `8px 10px`, font-size 12, colour `#e8eaf0`.
-- Sentence assembled from existing per-pair signals (winRateDiff, expDiff, style match, country) — same inputs that already produce `pair.reason`. Examples:
-  - Both close skill + style differ → "Similar skill level and contrasting styles make this an evenly matched, exciting fight."
-  - Skill close, same style → "Evenly matched on skill — expect a technical, closely fought contest."
-  - Skill gap, style differs → "Style contrast adds intrigue, though one fighter holds a clear skill edge."
-  - Fallback → "A viable matchup worth proposing."
+`src/components/organiser/BoostPurchaseDialog.tsx` — modal wrapper hosting `BoostTierPicker`. On confirm, calls the `create-boost-checkout` edge function with `{ event_id, tier }`, receives `{ url }`, redirects to Stripe Checkout.
 
-### b. Four scoring bars (reuse `SLIDER_COLORS`)
-- Labels → key → colour:
-  - "Skill Match" → comp → `SLIDER_COLORS.comp` (#e8a020)
-  - "Excitement" → ent → `SLIDER_COLORS.ent` (#22c55e — existing slider dot colour; spec requested "teal" but instruction also says colours must match sidebar dots → sidebar dots win)
-  - "Style Clash" → style → `SLIDER_COLORS.style` (#3b82f6)
-  - "Story Potential" → narr → `SLIDER_COLORS.narr` (#a855f7)
-- Per bar: label left, percentage right (desktop). Track height 4px, `background: #1e2330`, fill `width: ${pct}%`, `background: <color>`, transition `width 0.3s`.
-- Values: reuse the existing per-pair signals already computed for `compositeScore` and `pair.reason` — derive 0–100 per dimension from the same inputs (no new algorithm):
-  - Skill Match = `compositeScore` (already computed from eloDelta)
-  - Excitement = derived from winRate spread + style difference flags already in scope
-  - Style Clash = 100 if styles differ, ~40 if unknown, 0 if same
-  - Story Potential = derived from country difference / experience gap flags already in scope
-  These are display-side mappings of existing signals — no change to `scorePairForAnchor` or any DB-side scoring.
+## Entry point 1 — at publish time
 
-- Mobile (`@media (max-width: 640px)`): label on its own line, percentage on the next line below (not beside). Implemented with a `useIsMobile` hook check or a CSS class toggling `flex-direction: column` on the label/value row. Bar itself is full-width in both.
+`src/components/organiser/EditEventDialog.tsx` (Publish button, line ~234): when the status transitions draft → published and the save mutation succeeds, open `BoostPurchaseDialog` with mode `"upsell"` (shows "Skip for now"). Publishing is never blocked — the dialog appears after the event row has already been updated.
 
-### c. Safety chips row
-- Small pill chips, only render if true for the pair:
-  - "Different gyms" — if `fighterA.gym_id !== fighterB.gym_id` (or either missing → omit)
-  - "Tier gap within range" — if `eloDelta <= 200`
-  - "No red flags" — always shown as final chip if neither fighter has `verified === false`-style block (using available fields; if no such field exists, only render when the prior two checks both passed)
-- Chip style: `background: rgba(34,197,94,0.12)`, colour `#22c55e`, font-size 10, font-weight 600, padding `3px 8px`, `borderRadius: 999`, inline-flex with `Check` icon (10px) + label, gap 4. Row uses `display: flex, flex-wrap: wrap, gap: 6, marginTop: 10`.
+## Entry point 2 — Manage Event hub
 
-## Technical notes
+`src/pages/organiser/EventManager.tsx`: add a "Boost This Event" card in the top section (next to the existing status/checklist block), visible only when `event.status === "published"`. Shows current boost state:
+- No active boost → gold CTA opens `BoostPurchaseDialog` (mode `"manage"`).
+- Active boost → shows "Boosted — expires in Xd Yh", with a muted "Extend boost" link that re-opens the picker.
 
-- `ChevronDown` and `Check` are already imported from `lucide-react` in this file.
-- Accordion behaviour: clicking the toggle calls `setOpenWhyId(prev => prev === id ? null : id)`. No external state, no prop drilling.
-- No changes to: `scorePairForAnchor`, sidebar sliders, action button row markup/position, single-fighter cards, ticket/event/RLS code.
-- No new dependencies, no new routes, no schema changes.
+Active boost is fetched via a small `useActiveBoost(eventId)` hook (single query on `event_boosts` where `event_id = ? and payment_status = 'paid' and expires_at > now()` order by `expires_at desc` limit 1).
 
-## Acceptance
+## Payment flow (edge functions)
 
-- Toggle appears under the `Elo Δ … · …` line on every pair card.
-- Opening one card auto-closes any other open card.
-- View A / View B / Accept row stays at the same Y-position relative to the card bottom whether the panel is open or closed (panel grows above it; max-height transition prevents jump).
-- Bar colours match the existing slider dot colours in the sidebar weighting controls.
-- Chips only render when their condition is true.
-- Mobile (≤640px): bar label and percentage stack; bar still full-width.
+`supabase/functions/create-boost-checkout/index.ts`
+- Auth: requires logged-in user (JWT validated in code).
+- Validates `{ event_id: uuid, tier: '24h'|'7d'|'14d'|'30d' }` with Zod.
+- Confirms caller owns the event (`events.organiser_id = auth.uid()`).
+- Creates Stripe Checkout Session (mode `payment`, GBP, line item from tier price, `metadata: { event_id, tier, user_id }`, success_url back to `/organiser/events/:id?boost=success`, cancel_url back to same page with `?boost=cancelled`).
+- Returns `{ url }`.
+
+`supabase/functions/boost-webhook/index.ts` (Stripe webhook, `verify_jwt = false`)
+- Verifies signature with `STRIPE_WEBHOOK_SECRET`.
+- On `checkout.session.completed` with `payment_status = 'paid'`, reads metadata, computes `expires_at = now + tier ms`, inserts into `event_boosts`:
+  ```
+  { event_id, tier, price_paid, starts_at: now(),
+    expires_at, stripe_payment_intent_id: session.payment_intent,
+    payment_status: 'paid', purchased_by: user_id }
+  ```
+- Idempotent on `stripe_payment_intent_id`.
+
+On success-URL return, EventManager shows a toast "Boost activated" and invalidates the boost query.
+
+## Sort logic
+
+Update `src/pages/Explore.tsx` (events query, line 160) and `src/pages/Events.tsx` (line ~40) to:
+1. Fetch all upcoming published events as today + the related boost rows: add `event_boosts(expires_at, payment_status, created_at)` to the select.
+2. After fetch, partition into `boosted` (any row with `payment_status='paid'` and `expires_at > nowISO`) and `rest`. Sort `boosted` by max boost `created_at` DESC; keep `rest` in existing `date ASC` order. Concat and return.
+
+This is done client-side to avoid a stored function; the existing `.order("date")` stays as the base for `rest`.
+
+`DashboardOverview.tsx` global event search keeps current sort (out of scope).
+
+## Visual indicator
+
+`src/components/BoostedBadge.tsx` — small pill: `background: rgba(232,160,32,0.12); color: #e8a020; font: Bebas Neue; padding: 2px 8px; border-radius: 999px;` label "BOOSTED" with a `Sparkles` icon.
+
+Rendered:
+- On every event card in `Explore.tsx` and `Events.tsx` when that event has an active boost (flag computed during the partition above).
+- On `EventDetail.tsx` next to the event title, gated by a one-off query for an active boost row.
+
+## Files touched
+
+- new `src/lib/boostTiers.ts`
+- new `src/components/organiser/BoostTierPicker.tsx`
+- new `src/components/organiser/BoostPurchaseDialog.tsx`
+- new `src/components/BoostedBadge.tsx`
+- new `src/hooks/useActiveBoost.ts`
+- edit `src/components/organiser/EditEventDialog.tsx` (post-publish upsell)
+- edit `src/pages/organiser/EventManager.tsx` (Boost This Event card + success toast)
+- edit `src/pages/Explore.tsx`, `src/pages/Events.tsx` (boosted sort + badge)
+- edit `src/pages/EventDetail.tsx` (badge)
+- new `supabase/functions/create-boost-checkout/index.ts`
+- new `supabase/functions/boost-webhook/index.ts`
+
+No DB schema migration — `event_boosts` already has every column needed. RLS on `event_boosts` is not changed; inserts happen from the webhook using the service role.
+
+## Out of scope
+
+- Refunds / cancelling an active boost.
+- Stacking rules (multiple overlapping boosts simply mean the latest `created_at` wins for ordering).
+- Converting the existing ticket placeholder to real Stripe checkout (separate task; this flow gives us the pattern to reuse).
