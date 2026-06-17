@@ -1,7 +1,7 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Plus, Phone, Globe, Mail, ShoppingCart, Map as MapIcon, Settings } from "lucide-react";
+import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Plus, Phone, Globe, Mail, ShoppingCart, Map as MapIcon, Settings, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +38,8 @@ function unwrap<T>(val: T | T[] | null | undefined): T | null {
 function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event: any; purchaseUrl: string | null }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
 
   const setQty = (ticketId: string, val: number) => {
     setQuantities((prev) => ({ ...prev, [ticketId]: val }));
@@ -81,95 +83,148 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
             }
           };
 
+          const hasExpandable = ticket.quantity_available != null || !!ticket.description;
+          const isExpanded = expandedId === ticket.id;
+
           return (
             <div
               key={ticket.id}
               onClick={handleRowClick}
-              className="grid items-center gap-3 cursor-pointer transition-all duration-150"
+              className="cursor-pointer transition-all duration-150"
               style={{
-                gridTemplateColumns: "minmax(0,1fr) auto auto",
                 background: "#181c24",
                 borderRadius: 10,
                 padding: "10px 14px",
-                minHeight: 56,
                 transform: isSelected ? "scale(1.01)" : "scale(1)",
                 boxShadow: isSelected
                   ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,160,32,0.45)"
                   : "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
               }}
             >
-              {/* Title + availability (col 1) */}
-              <div className="min-w-0">
-                <span className="block truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", lineHeight: 1.2 }}>{ticket.ticket_type}</span>
+              <div
+                className="grid items-center gap-3"
+                style={{ gridTemplateColumns: "minmax(0,1fr) auto auto", minHeight: 36 }}
+              >
+                {/* Title + availability (col 1) */}
+                <div className="min-w-0 flex items-center gap-2">
+                  {hasExpandable && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setExpandedId(isExpanded ? null : ticket.id); }}
+                      aria-label={isExpanded ? "Hide details" : "Show details"}
+                      aria-expanded={isExpanded}
+                      style={{
+                        width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+                        background: "rgba(255,255,255,0.04)", color: "#8b909e",
+                        border: "none", cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}
+                    >
+                      <ChevronDown
+                        style={{
+                          width: 14, height: 14,
+                          transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.15s ease",
+                        }}
+                      />
+                    </button>
+                  )}
+                  <div className="min-w-0">
+                    <span className="block truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", lineHeight: 1.2 }}>{ticket.ticket_type}</span>
+                    {soldOut ? (
+                      <span style={{ fontSize: 11, color: "#ef4444" }}>Sold Out</span>
+                    ) : ticket.quantity_available != null && ticket.quantity_available < 20 ? (
+                      <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} left</span>
+                    ) : (
+                      <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Price (col 2) */}
+                <div style={{ minWidth: 60, textAlign: "right" }}>
+                  {ticket.price != null && (
+                    <span style={{ fontSize: 16, fontWeight: 700, color: "#e8a020", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
+                  )}
+                </div>
+
+                {/* Qty + CTA (col 3) */}
                 {soldOut ? (
-                  <span style={{ fontSize: 11, color: "#ef4444" }}>Sold Out</span>
-                ) : ticket.quantity_available != null && ticket.quantity_available < 20 ? (
-                  <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} left</span>
-                ) : (
-                  <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
-                )}
-              </div>
-
-              {/* Price (col 2) */}
-              <div style={{ minWidth: 60, textAlign: "right" }}>
-                {ticket.price != null && (
-                  <span style={{ fontSize: 16, fontWeight: 700, color: "#e8a020", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
-                )}
-              </div>
-
-              {/* Qty + CTA (col 3) */}
-              {soldOut ? (
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#ef4444" }}>Sold Out</span>
-              ) : ticketUrl ? (
-                <a
-                  href={ticketUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
-                    background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none",
-                  }}
-                >
-                  <ShoppingCart style={{ width: 14, height: 14 }} /> Buy
-                </a>
-              ) : (
-                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                  <button
-                    onClick={() => setQty(ticket.id, Math.max(0, qty - 1))}
-                    disabled={qty <= 0}
-                    style={{
-                      width: 26, height: 26, borderRadius: "50%", border: "none", cursor: qty <= 0 ? "not-allowed" : "pointer",
-                      background: "rgba(255,255,255,0.06)", color: qty <= 0 ? "#555b6b" : "#e8eaf0", fontSize: 14, fontWeight: 700,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}
-                  >−</button>
-                  <span style={{ width: 20, textAlign: "center", fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{qty}</span>
-                  <button
-                    onClick={() => setQty(ticket.id, Math.min(maxQty, qty + 1))}
-                    disabled={qty >= maxQty}
-                    style={{
-                      width: 26, height: 26, borderRadius: "50%", border: "none", cursor: qty >= maxQty ? "not-allowed" : "pointer",
-                      background: "rgba(255,255,255,0.06)", color: qty >= maxQty ? "#555b6b" : "#e8eaf0", fontSize: 14, fontWeight: 700,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}
-                  >+</button>
-                  <button
-                    onClick={() => handleAddToBasket(ticket)}
-                    disabled={qty <= 0}
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#ef4444" }}>Sold Out</span>
+                ) : ticketUrl ? (
+                  <a
+                    href={ticketUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
-                      background: qty <= 0 ? "rgba(232,160,32,0.3)" : "#e8a020", color: "#0d0f12", borderRadius: 8, border: "none",
-                      cursor: qty <= 0 ? "not-allowed" : "pointer", marginLeft: 4,
+                      background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none",
                     }}
                   >
                     <ShoppingCart style={{ width: 14, height: 14 }} /> Buy
-                  </button>
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => setQty(ticket.id, Math.max(0, qty - 1))}
+                      disabled={qty <= 0}
+                      style={{
+                        width: 26, height: 26, borderRadius: "50%", border: "none", cursor: qty <= 0 ? "not-allowed" : "pointer",
+                        background: "rgba(255,255,255,0.06)", color: qty <= 0 ? "#555b6b" : "#e8eaf0", fontSize: 14, fontWeight: 700,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}
+                    >−</button>
+                    <span style={{ width: 20, textAlign: "center", fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{qty}</span>
+                    <button
+                      onClick={() => setQty(ticket.id, Math.min(maxQty, qty + 1))}
+                      disabled={qty >= maxQty}
+                      style={{
+                        width: 26, height: 26, borderRadius: "50%", border: "none", cursor: qty >= maxQty ? "not-allowed" : "pointer",
+                        background: "rgba(255,255,255,0.06)", color: qty >= maxQty ? "#555b6b" : "#e8eaf0", fontSize: 14, fontWeight: 700,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}
+                    >+</button>
+                    <button
+                      onClick={() => handleAddToBasket(ticket)}
+                      disabled={qty <= 0}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
+                        background: qty <= 0 ? "rgba(232,160,32,0.3)" : "#e8a020", color: "#0d0f12", borderRadius: 8, border: "none",
+                        cursor: qty <= 0 ? "not-allowed" : "pointer", marginLeft: 4,
+                      }}
+                    >
+                      <ShoppingCart style={{ width: 14, height: 14 }} /> Buy
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {hasExpandable && isExpanded && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    marginTop: 10,
+                    paddingTop: 10,
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+                    display: "flex", flexDirection: "column", gap: 6,
+                  }}
+                >
+                  {ticket.quantity_available != null && (
+                    <span style={{ fontSize: 12, color: "#8b909e", fontWeight: 600 }}>
+                      {ticket.quantity_available} tickets available
+                    </span>
+                  )}
+                  {ticket.description && (
+                    <p style={{ whiteSpace: "pre-wrap", fontSize: 13, color: "#8b909e", lineHeight: 1.5, margin: 0 }}>
+                      {ticket.description}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
           );
         })}
+
       </div>
     </div>
   );

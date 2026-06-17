@@ -1,31 +1,31 @@
-# Fix ticket editing on Organiser Manage Event hub
+# Ticket description: organiser input + public expandable row
 
-**File:** `src/components/organiser/ManageTicketsPanel.tsx`
+The `tickets.description` column already exists (text, nullable). No schema migration needed.
 
-The panel already supports editing existing tickets via an `upsertMutation`, but the edit form is missing two fields (`sales_start`, `sales_end`), and the Edit button is icon-only with no label so it's not discoverable.
+## 1. Organiser form — `src/components/organiser/ManageTicketsPanel.tsx`
 
-Edits already go live immediately on the public event page — `src/pages/EventDetail.tsx` reads from the `tickets` table directly (no draft/publish step). No additional plumbing is required for that. No schema changes needed.
+- Add `description: string` to `TicketForm` and `emptyForm`.
+- In `openEdit`, prefill `description: ticket.description ?? ""`.
+- In `upsertMutation`'s payload, include `description: form.description.trim() || null`.
+- In the dialog, add a `<Textarea>` (shadcn) below "External Purchase Link" labelled **"Description"** with helper text "What's included with this ticket (optional)" and a 3–4 row default. Add the missing `import { Textarea } from "@/components/ui/textarea";`.
 
-## Changes
+## 2. Public event page — `src/pages/EventDetail.tsx` (`TicketSection`, lines 38–176)
 
-1. **Extend `TicketForm` and `emptyForm`** to include `sales_start` and `sales_end` (both `string`, treated as datetime-local values).
+Goal: add a chevron toggle on each ticket row that reveals `quantity_available` and `description` when expanded, **without breaking** the existing 3-column grid (`minmax(0,1fr) auto auto`) that aligns title / price / qty+Buy.
 
-2. **Update `upsertMutation` payload** to include:
-   ```
-   sales_start: form.sales_start ? new Date(form.sales_start).toISOString() : null,
-   sales_end:   form.sales_end   ? new Date(form.sales_end).toISOString()   : null,
-   ```
-
-3. **`openEdit` prefill** — convert existing ISO timestamps to the `datetime-local` format `YYYY-MM-DDTHH:mm` (slice the ISO string). Pre-fill all six fields: ticket_type, price, quantity_available, sales_start, sales_end, external_link.
-
-4. **Form UI** — add a two-column row (`grid-cols-1 sm:grid-cols-2`) with `<Input type="datetime-local">` for **Sales Start** and **Sales End**, placed between the Qty row and the External Link field. Mark them optional in helper copy.
-
-5. **Edit button** — change the icon-only ghost button to a labeled outline button: `<Pencil /> Edit`, matching the styling of the existing "Add Ticket" button. Keep the trash icon button unchanged.
-
-6. **Row layout** — make the row use `flex-col sm:flex-row` so the labeled Edit/Delete buttons don't crowd the badge/price row on mobile.
-
-7. **Optional display** — show sales window under the row when set: `"On sale {dd MMM} – {dd MMM}"` in muted text, so organisers can see at a glance what was saved.
+- Add per-row state `expandedId: string | null` (single-open) alongside the existing `selectedId`.
+- Restructure each ticket from a single grid `<div>` to a vertical container (still rounded `#181c24`, same padding/shadows). Inside it:
+  - **Top row** — the existing 3-column grid wrapped in its own `<div>` so the price/Buy alignment is unchanged. Add a small chevron button as the **first cell** of column 1 (inside the title block, left of the type name) so it lives within the title cell and does not shift columns 2/3.
+    - Show chevron only when expandable content exists (`ticket.quantity_available != null || !!ticket.description`).
+    - `<ChevronDown>` rotated 180° when expanded, 16px, muted colour, `onClick` stops propagation, toggles `expandedId`.
+  - **Expanded panel** — sibling below the top row, conditionally rendered. Adds `marginTop: 10`, `paddingTop: 10`, inset top border via `boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)"` (no real border per design rules). Contains:
+    - Quantity line: `"<n> tickets available"` in `#8b909e` when `quantity_available != null`.
+    - Description paragraph: `whiteSpace: "pre-wrap"`, `fontSize: 13`, `color: "#8b909e"`, `lineHeight: 1.5` when `description` is set.
+  - Wrap with simple CSS transition (`maxHeight` + `opacity`) or just conditional render — start with conditional render for simplicity.
+- Collapsed by default (initial `expandedId = null`).
+- Click on the chevron must NOT trigger `handleRowClick` selection — use `e.stopPropagation()`.
+- The existing row click (select + bump qty to 1) behaviour is preserved.
 
 ## Out of scope
-- No RLS or schema changes (`sales_start` / `sales_end` columns already exist).
-- No changes to `EventDetail.tsx` — it already filters tickets by `sales_start`/`sales_end` and reads live data.
+- No schema migration (column already exists).
+- No changes to basket logic, sales-window filtering, or organiser dashboard ticket list.

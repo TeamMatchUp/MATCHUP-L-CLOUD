@@ -3,8 +3,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+
 import {
   Dialog,
   DialogContent,
@@ -40,6 +42,7 @@ interface TicketForm {
   sales_start: string;
   sales_end: string;
   external_link: string;
+  description: string;
 }
 
 const emptyForm: TicketForm = {
@@ -49,7 +52,9 @@ const emptyForm: TicketForm = {
   sales_start: "",
   sales_end: "",
   external_link: "",
+  description: "",
 };
+
 
 // Convert an ISO timestamp to a value the <input type="datetime-local"> control accepts.
 function isoToLocalInput(iso: string | null | undefined): string {
@@ -99,6 +104,8 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
         sales_start: form.sales_start ? new Date(form.sales_start).toISOString() : null,
         sales_end: form.sales_end ? new Date(form.sales_end).toISOString() : null,
         external_link: form.external_link || null,
+        description: form.description.trim() || null,
+
       };
       if (editingTicket) {
         const { error } = await supabase.from("tickets").update(payload).eq("id", editingTicket.id);
@@ -151,6 +158,8 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
       sales_start: isoToLocalInput(ticket.sales_start),
       sales_end: isoToLocalInput(ticket.sales_end),
       external_link: ticket.external_link ?? "",
+      description: ticket.description ?? "",
+
     });
     setShowDialog(true);
   };
@@ -318,7 +327,18 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
                 className="text-sm"
               />
             </div>
+            <div className="space-y-1">
+              <Label className="text-xs sm:text-sm">Description</Label>
+              <Textarea
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="What's included with this ticket (optional)"
+                rows={4}
+                className="text-sm"
+              />
+            </div>
           </div>
+
           <DialogFooter className="pt-2">
             <Button
               onClick={() => upsertMutation.mutate()}
