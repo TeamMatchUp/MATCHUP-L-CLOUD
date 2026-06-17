@@ -7,12 +7,15 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { EditEventDialog } from "@/components/organiser/EditEventDialog";
 import { ManageTicketsPanel } from "@/components/organiser/ManageTicketsPanel";
+import { QRCodeSVG } from "qrcode.react";
+import { toast } from "sonner";
 import {
   ArrowLeft, Pencil, Eye, Share2, Calendar, MapPin, Building2,
   CheckCircle2, Circle, Ticket, TrendingUp, Users, AlertCircle,
-  ChevronRight, Plus, Trophy, PoundSterling,
+  ChevronRight, Plus, Trophy, PoundSterling, X, Copy, Check,
 } from "lucide-react";
 import { formatEnum } from "@/lib/format";
+
 
 // ─── Design tokens ──────────────────────────────────────────
 const PAGE_BG = "#080a0d";
