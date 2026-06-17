@@ -156,6 +156,8 @@ export default function EventManager() {
   const [showEditEvent, setShowEditEvent] = useState(false);
   const [showTickets, setShowTickets] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [showBoost, setShowBoost] = useState(false);
+  const { data: activeBoost } = useActiveBoost(id);
 
 
   useEffect(() => {
