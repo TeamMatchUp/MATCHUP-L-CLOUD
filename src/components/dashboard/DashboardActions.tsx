@@ -491,40 +491,91 @@ export function DashboardActions({
     } catch { toast.error("Failed to decline"); } finally { setTrialSending(false); }
   };
 
+  // Shared helper: load all required-party user ids for a slot
+  const loadRequiredPartyIds = async (slotId: string) => {
+    const { data: slotData } = await supabase.from("event_fight_slots")
+      .select("fighter_a_id, fighter_b_id, event_id, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(user_id, created_by_coach_id), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(user_id, created_by_coach_id)")
+      .eq("id", slotId).single();
+    if (!slotData) return { requiredIds: new Set<string>(), slotData: null };
+    const fA = Array.isArray(slotData.fighter_a) ? slotData.fighter_a[0] : slotData.fighter_a;
+    const fB = Array.isArray(slotData.fighter_b) ? slotData.fighter_b[0] : slotData.fighter_b;
+    const requiredIds = new Set<string>();
+    if (fA?.user_id) requiredIds.add(fA.user_id);
+    if (fB?.user_id) requiredIds.add(fB.user_id);
+    if (fA?.created_by_coach_id) requiredIds.add(fA.created_by_coach_id);
+    if (fB?.created_by_coach_id) requiredIds.add(fB.created_by_coach_id);
+    const { data: gymLinks } = await supabase.from("fighter_gym_links")
+      .select("gym:gyms(coach_id)")
+      .in("fighter_id", [slotData.fighter_a_id, slotData.fighter_b_id].filter(Boolean))
+      .eq("status", "approved");
+    (gymLinks ?? []).forEach((l: any) => { const g = Array.isArray(l.gym) ? l.gym[0] : l.gym; if (g?.coach_id) requiredIds.add(g.coach_id); });
+    return { requiredIds, slotData };
+  };
+
+  // Recompute slot status from current bout_acceptances rows.
+  // - All required parties accepted   → status = 'confirmed'
+  // - All required parties declined   → status = 'declined'
+  // - Otherwise                       → status = 'proposed'
+  const recomputeSlotStatus = async (slotId: string, item: ActionItem) => {
+    const { requiredIds, slotData } = await loadRequiredPartyIds(slotId);
+    if (!slotData) return null;
+    const { data: accs } = await supabase
+      .from("bout_acceptances")
+      .select("user_id, decision")
+      .eq("slot_id", slotId);
+    const decisions = new Map<string, "accepted" | "declined">();
+    (accs ?? []).forEach((a: any) => decisions.set(a.user_id, (a.decision ?? "accepted") as "accepted" | "declined"));
+    const allAccepted = requiredIds.size > 0 && Array.from(requiredIds).every((id) => decisions.get(id) === "accepted");
+    const allDeclined = requiredIds.size > 0 && Array.from(requiredIds).every((id) => decisions.get(id) === "declined");
+    const nextStatus = allAccepted ? "confirmed" : allDeclined ? "declined" : "proposed";
+    await supabase.from("event_fight_slots").update({ status: nextStatus }).eq("id", slotId);
+
+    if (nextStatus !== "proposed") {
+      const meta = item.meta;
+      const { data: evt } = await supabase.from("events").select("organiser_id, title").eq("id", slotData.event_id).single();
+      const notifyIds = new Set(requiredIds);
+      if (evt?.organiser_id) notifyIds.add(evt.organiser_id);
+      notifyIds.delete(userId);
+      const matchup = `${meta?.fighterAName ?? "Fighter"} vs ${meta?.fighterBName ?? "Fighter"}`;
+      const evtTitle = evt?.title ?? "an event";
+      for (const nid of notifyIds) {
+        if (nextStatus === "confirmed") {
+          await supabase.rpc("create_notification", { _user_id: nid, _title: "Bout Confirmed", _message: `${matchup} is now confirmed for ${evtTitle}.`, _type: "match_confirmed" as any, _reference_id: slotId });
+        } else {
+          await supabase.rpc("create_notification", { _user_id: nid, _title: "Proposal Declined", _message: `A fight proposal for ${evtTitle} was declined.`, _type: "match_declined" as any, _reference_id: slotId });
+        }
+      }
+    }
+    return nextStatus;
+  };
+
+  const upsertMyBoutDecision = async (slotId: string, decision: "accepted" | "declined") => {
+    const { data: existing } = await supabase
+      .from("bout_acceptances")
+      .select("id")
+      .eq("slot_id", slotId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (existing?.id) {
+      await supabase.from("bout_acceptances").update({ decision }).eq("id", existing.id);
+    } else {
+      await supabase.from("bout_acceptances").insert({
+        slot_id: slotId,
+        user_id: userId,
+        role: isFighter ? "fighter" : "coach",
+        decision,
+      } as any);
+    }
+  };
+
   const handleAcceptBoutProposal = async (item: ActionItem) => {
     try {
-      await supabase.from("bout_acceptances").insert({ slot_id: item.id, user_id: userId, role: isFighter ? "fighter" : "coach" });
-      const { data: accs } = await supabase.from("bout_acceptances").select("user_id").eq("slot_id", item.id);
-      const acceptedIds = new Set((accs ?? []).map((a: any) => a.user_id));
-      const meta = item.meta;
-      const requiredIds = new Set<string>();
-      const { data: slotData } = await supabase.from("event_fight_slots")
-        .select("fighter_a_id, fighter_b_id, event_id, fighter_a:fighter_profiles!event_fight_slots_fighter_a_id_fkey(user_id, created_by_coach_id), fighter_b:fighter_profiles!event_fight_slots_fighter_b_id_fkey(user_id, created_by_coach_id)")
-        .eq("id", item.id).single();
-      if (slotData) {
-        const fA = Array.isArray(slotData.fighter_a) ? slotData.fighter_a[0] : slotData.fighter_a;
-        const fB = Array.isArray(slotData.fighter_b) ? slotData.fighter_b[0] : slotData.fighter_b;
-        if (fA?.user_id) requiredIds.add(fA.user_id);
-        if (fB?.user_id) requiredIds.add(fB.user_id);
-        if (fA?.created_by_coach_id) requiredIds.add(fA.created_by_coach_id);
-        if (fB?.created_by_coach_id) requiredIds.add(fB.created_by_coach_id);
-        const { data: gymLinks } = await supabase.from("fighter_gym_links")
-          .select("gym:gyms(coach_id)").in("fighter_id", [slotData.fighter_a_id, slotData.fighter_b_id]).eq("status", "approved");
-        (gymLinks ?? []).forEach((l: any) => { const g = Array.isArray(l.gym) ? l.gym[0] : l.gym; if (g?.coach_id) requiredIds.add(g.coach_id); });
-        const allAccepted = Array.from(requiredIds).every((id) => acceptedIds.has(id));
-        if (allAccepted) {
-          await supabase.from("event_fight_slots").update({ status: "confirmed" }).eq("id", item.id);
-          const { data: evt } = await supabase.from("events").select("organiser_id, title").eq("id", slotData.event_id).single();
-          const notifyIds = new Set(requiredIds);
-          if (evt?.organiser_id) notifyIds.add(evt.organiser_id);
-          notifyIds.delete(userId);
-          for (const nid of notifyIds) {
-            await supabase.rpc("create_notification", { _user_id: nid, _title: "Bout Confirmed", _message: `${meta.fighterAName ?? "Fighter"} vs ${meta.fighterBName ?? "Fighter"} is now confirmed for ${evt?.title ?? "an event"}.`, _type: "match_confirmed" as any, _reference_id: item.id });
-          }
-          toast.success("Bout confirmed — all parties accepted!");
-        } else {
-          toast.success("Accepted — waiting for other parties");
-        }
+      await upsertMyBoutDecision(item.id, "accepted");
+      const nextStatus = await recomputeSlotStatus(item.id, item);
+      if (nextStatus === "confirmed") {
+        toast.success("Bout confirmed — all parties accepted!");
+      } else {
+        toast.success("Accepted — waiting for other parties");
       }
       setRecentActions((prev) => [...prev, { itemId: item.id, action: "accepted", previousStatus: "proposed", at: Date.now() }]);
       invalidate();
@@ -533,18 +584,36 @@ export function DashboardActions({
 
   const handleDeclineBoutProposal = async (item: ActionItem) => {
     try {
-      await supabase.from("event_fight_slots").update({ status: "declined" }).eq("id", item.id);
-      const { data: slotData } = await supabase.from("event_fight_slots").select("event_id").eq("id", item.id).single();
-      if (slotData) {
-        const { data: evt } = await supabase.from("events").select("organiser_id, title").eq("id", slotData.event_id).single();
-        if (evt?.organiser_id) {
-          await supabase.rpc("create_notification", { _user_id: evt.organiser_id, _title: "Proposal Declined", _message: `A fight proposal for ${evt.title} was declined.`, _type: "match_declined" as any, _reference_id: item.id });
-        }
+      await upsertMyBoutDecision(item.id, "declined");
+      const nextStatus = await recomputeSlotStatus(item.id, item);
+      if (nextStatus === "declined") {
+        toast.success("Proposal declined — all parties have declined");
+      } else {
+        toast.success("Decline recorded — waiting for other parties");
       }
       setRecentActions((prev) => [...prev, { itemId: item.id, action: "declined", previousStatus: "proposed", at: Date.now() }]);
-      toast.success("Proposal declined");
       invalidate();
     } catch { toast.error("Failed to decline"); }
+  };
+
+  const handleChangeBoutDecision = async (item: ActionItem) => {
+    // Final overall slot states cannot be changed.
+    if (item.meta?.slotStatus === "confirmed" || item.meta?.slotStatus === "declined") {
+      toast.error("This bout is finalised and can no longer be changed");
+      return;
+    }
+    try {
+      await supabase
+        .from("bout_acceptances")
+        .delete()
+        .eq("slot_id", item.id)
+        .eq("user_id", userId);
+      // Reset slot to proposed since this user's decision was the only thing
+      // potentially holding it at a different status — recompute to be safe.
+      await recomputeSlotStatus(item.id, item);
+      toast.success("Decision reset — choose again in Active");
+      invalidate();
+    } catch { toast.error("Failed to reset decision"); }
   };
 
   const handleUndo = async (ra: RecentAction) => {
