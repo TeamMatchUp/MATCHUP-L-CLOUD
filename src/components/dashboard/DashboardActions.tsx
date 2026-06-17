@@ -84,6 +84,11 @@ export function DashboardActions({
   const [trialSending, setTrialSending] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState<"active" | "completed" | "bin">("active");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const deepLinkItemId = searchParams.get("actionItem");
+  const deepLinkTab = searchParams.get("actionTab");
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const highlightTimer = useRef<number | null>(null);
   const [searchFilter, setSearchFilter] = useState("");
   const [discardedItems, setDiscardedItems] = useState<DiscardedItem[]>([]);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
