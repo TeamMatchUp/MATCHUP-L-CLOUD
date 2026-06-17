@@ -709,7 +709,10 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
                 </div>
                 {/* Body */}
                 <div style={{ padding: 16 }}>
-                  <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: EX.text, textTransform: "uppercase" }}>{event.title}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: EX.text, textTransform: "uppercase" }}>{event.title}</p>
+                    {isEventBoosted((event as any).event_boosts) && <BoostedBadge />}
+                  </div>
                   {event.description && <p style={{ fontSize: 13, color: EX.muted, marginTop: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{event.description}</p>}
                   <div className="space-y-1" style={{ marginTop: 12 }}>
                     <div className="flex items-center gap-2"><Calendar style={{ width: 14, height: 14, color: EX.muted }} /><span style={{ fontSize: 12, color: EX.muted }}>{new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span></div>
