@@ -96,9 +96,9 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
         { key: "overview", label: "Overview", icon: LayoutDashboard },
         { key: "analytics", label: "Analytics", icon: BarChart3 },
         { key: "manage", label: "Manage", icon: FolderOpen, isAccordion: true, children: [
-          { key: "gyms", label: "My Gyms" }, { key: "events", label: "My Events" }, { key: "my-profile", label: "My Profile" },
+          { key: "roster", label: "My Fighters" }, { key: "gyms", label: "My Gyms" }, { key: "events", label: "My Events" }, { key: "my-profile", label: "My Profile" },
         ]},
-        { key: "roster", label: "Roster", icon: Users },
+
         { key: "interests", label: "Interests", icon: Heart },
         { key: "actions", label: "Actions", icon: Zap, badgeCount: actionsCount },
         { key: "notifications", label: "Notifications", icon: Bell, badgeCount: unreadCount },
@@ -277,7 +277,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
       <div style={{ padding: collapsed ? "16px 8px 12px" : "16px", flexShrink: 0 }}>
         {collapsed ? (
           <div className="flex flex-col items-center gap-3">
-            <img src={iconWhite} alt="Matchup" style={{ height: 28, width: "auto" }} />
+            <Link to="/" aria-label="Matchup home" style={{ display: "inline-flex" }}><img src={iconWhite} alt="Matchup" style={{ height: 28, width: "auto" }} /></Link>
             <button
               onClick={onToggleCollapse}
               className="flex items-center justify-center transition-colors"
@@ -290,7 +290,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <img src={logoDark} alt="Matchup" style={{ height: 28, width: "auto" }} />
+            <Link to="/" aria-label="Matchup home" style={{ display: "inline-flex" }}><img src={logoDark} alt="Matchup" style={{ height: 28, width: "auto" }} /></Link>
             <button
               onClick={onToggleCollapse}
               className="flex items-center justify-center transition-colors"

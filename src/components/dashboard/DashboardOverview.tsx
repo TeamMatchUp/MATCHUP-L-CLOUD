@@ -38,8 +38,8 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children, c
         className="flex items-center gap-2 transition-all duration-150"
         style={{
           background: "#e8a020", color: "#0d0f12", borderRadius: 8,
-          padding: compact ? "8px 10px" : "8px 18px",
-          fontSize: 13, fontWeight: 600, letterSpacing: "0.02em",
+          padding: compact ? "8px 12px" : "8px 18px",
+          fontSize: compact ? 12 : 13, fontWeight: 600, letterSpacing: "0.02em",
           boxShadow: "0 0 12px rgba(232,160,32,0.25)", cursor: "pointer",
         }}
         onClick={() => setShowQuickActions(!showQuickActions)}
@@ -47,7 +47,8 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children, c
         onMouseLeave={(e) => { e.currentTarget.style.background = "#e8a020"; }}
       >
         <Plus style={{ width: 16, height: 16 }} />
-        {!compact && <>Quick Actions<ChevronDown style={{ width: 14, height: 14 }} /></>}
+        {compact ? <>Quick Actions</> : <>Quick Actions<ChevronDown style={{ width: 14, height: 14 }} /></>}
+
       </button>
       {showQuickActions && (
         <>
@@ -340,7 +341,7 @@ export function DashboardOverview({
       display: "flex", alignItems: "center", justifyContent: "space-between",
       gap: 8,
     }}>
-      {/* LEFT: hamburger (mobile) + avatar + username + followers */}
+      {/* LEFT: hamburger only (mobile). Profile lives in the sidebar card. */}
       <div className="flex items-center" style={{ gap: isMobile ? 8 : 12, minWidth: 0, flex: 1 }}>
         {isMobile && onOpenMobileSidebar && (
           <button
@@ -354,37 +355,8 @@ export function DashboardOverview({
             <PanelLeft style={{ width: 18, height: 18 }} />
           </button>
         )}
-        <div style={{
-          width: 36, height: 36, borderRadius: "50%",
-          border: "2px solid rgba(232,160,32,0.4)",
-          overflow: "hidden", background: "linear-gradient(135deg, #e8a020, #c47e10)",
-          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-        }}>
-          {profileData?.avatar_url ? (
-            <img src={profileData.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          ) : (
-            <span style={{ color: "white", fontSize: 12, fontWeight: 700 }}>{initials}</span>
-          )}
-        </div>
-        <div style={{ minWidth: 0 }}>
-          <p className="truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", lineHeight: 1.2, maxWidth: isMobile ? 140 : 220 }}>{profileData?.full_name || "User"}</p>
-          <div className="flex items-center gap-1" style={{ fontSize: isMobile ? 11 : 12, color: "#8b909e" }}>
-            <button onClick={() => setNetworkModal("followers")} style={{ cursor: "pointer" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "#e8a020"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "#8b909e"; }}
-            >
-              <span style={{ fontWeight: 700, color: "#e8eaf0" }}>{followerCount}</span> Followers
-            </button>
-            <span style={{ color: "#555b6b" }}>·</span>
-            <button onClick={() => setNetworkModal("following")} style={{ cursor: "pointer" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "#e8a020"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "#8b909e"; }}
-            >
-              <span style={{ fontWeight: 700, color: "#e8eaf0" }}>{followingCount}</span> Following
-            </button>
-          </div>
-        </div>
       </div>
+
       {/* RIGHT: search (desktop) + quick actions */}
       <div className="flex items-center gap-3" style={{ flexShrink: 0 }}>
         {!isMobile && <GlobalSearch />}

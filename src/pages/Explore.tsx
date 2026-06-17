@@ -421,15 +421,19 @@ export default function Explore() {
                 <button
                   onClick={() => { setMapOpen(!mapOpen); setPopupItem(null); setHighlightedGymId(null); }}
                   style={{
-                    width: 40, height: 40, borderRadius: 8, flexShrink: 0,
+                    height: 40, width: isMobile ? 40 : "auto", padding: isMobile ? 0 : "0 14px",
+                    borderRadius: 8, flexShrink: 0,
                     background: mapOpen ? EX.goldDim : "rgba(255,255,255,0.04)",
                     border: `1px solid ${mapOpen ? EX.goldBorder : EX.border}`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                     color: mapOpen ? EX.gold : EX.muted, cursor: "pointer", transition: "all 0.2s",
+                    fontSize: 13, fontWeight: 600,
                   }}
                 >
                   <MapPin style={{ width: 16, height: 16 }} />
+                  {!isMobile && <span>Map</span>}
                 </button>
+
               )}
             </div>
 
