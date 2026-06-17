@@ -39,7 +39,7 @@ export function TwoSidedSection() {
     queryKey: ["platform-counts"],
     queryFn: async () => {
       const [events, fighters, gyms] = await Promise.all([
-        supabase.from("events").select("id", { count: "exact", head: true }).eq("status", "published"),
+        supabase.from("events").select("id", { count: "exact", head: true }).eq("status", "published").gte("date", new Date().toISOString().slice(0, 10)),
         supabase.from("fighter_profiles").select("id", { count: "exact", head: true }),
         supabase.from("gyms").select("id", { count: "exact", head: true }),
       ]);
