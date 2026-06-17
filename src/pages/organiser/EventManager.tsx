@@ -311,7 +311,7 @@ export default function EventManager() {
                 </div>
                 <div className="flex gap-2 flex-wrap" style={{ alignSelf: "flex-start" }}>
                   <GhostButton icon={Eye} href={`/events/${id}?preview=true`}>Preview Public Page</GhostButton>
-                  <GhostButton icon={Share2} onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/events/${id}`); }}>Share Event</GhostButton>
+                  <GhostButton icon={Share2} onClick={() => setShowShare(true)}>Share Event</GhostButton>
                   <GoldButton icon={Pencil} onClick={() => setShowEditEvent(true)}>Edit Event Details</GoldButton>
                 </div>
               </div>
