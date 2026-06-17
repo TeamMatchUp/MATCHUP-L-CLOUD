@@ -794,22 +794,37 @@ export function DashboardActions({
   const renderActionButtons = (item: ActionItem) => {
     if (isCompletedView) {
       const ra = recentlyActioned.find((a) => a.itemId === item.id);
-      if (ra) {
-        return (
-          <Button variant="ghost" size="sm" className="gap-1 text-xs text-primary" onClick={() => handleUndo(ra)}>
-            <Undo2 className="h-3 w-3" /> Undo
-          </Button>
-        );
-      }
-      if (item.meta?.eventId) {
-        return (
-          <Button size="sm" variant="outline" className="h-8 px-3 text-xs" asChild>
-            <Link to={`/events/${item.meta.eventId}`}><Eye className="h-3 w-3 mr-1" /> View</Link>
-          </Button>
-        );
-      }
-      return null;
+      const isBoutChangeable =
+        item.type === "bout_proposal" &&
+        !!item.meta?.myDecision &&
+        item.meta?.slotStatus !== "confirmed" &&
+        item.meta?.slotStatus !== "declined";
+      return (
+        <>
+          {isBoutChangeable && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 px-3 text-xs gap-1 border-primary/40 text-primary hover:bg-primary/10"
+              onClick={() => handleChangeBoutDecision(item)}
+            >
+              <RefreshCw className="h-3 w-3" /> Change Decision
+            </Button>
+          )}
+          {ra && (
+            <Button variant="ghost" size="sm" className="gap-1 text-xs text-primary" onClick={() => handleUndo(ra)}>
+              <Undo2 className="h-3 w-3" /> Undo
+            </Button>
+          )}
+          {item.meta?.eventId && (
+            <Button size="sm" variant="outline" className="h-8 px-3 text-xs" asChild>
+              <Link to={`/events/${item.meta.eventId}`}><Eye className="h-3 w-3 mr-1" /> View</Link>
+            </Button>
+          )}
+        </>
+      );
     }
+
 
     const isCoachGymRequest = item.type === "gym_request" && isCoachOrOwner && item.status === "pending";
     const isTrialLead = item.type === "trial_lead" && isCoachOrOwner;
