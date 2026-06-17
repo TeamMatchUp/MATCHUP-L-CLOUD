@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Sparkles, Check, RefreshCw, Search, ArrowLeft, X, AlertTriangle } from "lucide-react";
+import { Sparkles, Check, RefreshCw, Search, ArrowLeft, X, AlertTriangle, ChevronDown } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { generateSuggestions } from "@/lib/matchSuggestions";
 import type { Database } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
