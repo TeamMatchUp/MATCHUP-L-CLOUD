@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Calendar, ArrowRight, ArrowLeft, Search } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Calendar, ArrowRight, Search } from "lucide-react";
 import { InterestedEventsPanel } from "@/components/fighter/InterestedEventsPanel";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -22,6 +23,10 @@ interface DashboardEventsProps {
   fighterProfileId?: string;
 }
 
+function startOfTodayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export function DashboardEvents({
   isCoachOrOwner,
   isOrganiser,
@@ -30,6 +35,7 @@ export function DashboardEvents({
   fighterProfileId,
 }: DashboardEventsProps) {
   const [eventSearch, setEventSearch] = useState("");
+  const [tab, setTab] = useState<"upcoming" | "archive">("upcoming");
   const { user } = useAuth();
   const currentUserId = user?.id;
 
@@ -42,16 +48,73 @@ export function DashboardEvents({
     );
   }
 
-  // Organiser / Coach view - created events
+  const { upcoming, archive } = useMemo(() => {
+    const today = startOfTodayISO();
+    const up: any[] = [];
+    const ar: any[] = [];
+    for (const e of events) {
+      if (!e?.date) { up.push(e); continue; }
+      const d = String(e.date).slice(0, 10);
+      if (d >= today) up.push(e); else ar.push(e);
+    }
+    return { upcoming: up, archive: ar };
+  }, [events]);
+
   const q = eventSearch.toLowerCase().trim();
-  const filtered = q
-    ? events.filter(
-        (e: any) =>
-          e.title?.toLowerCase().includes(q) ||
-          e.location?.toLowerCase().includes(q) ||
-          e.promotion_name?.toLowerCase().includes(q)
-      )
-    : events;
+  const applySearch = (list: any[]) =>
+    q
+      ? list.filter(
+          (e: any) =>
+            e.title?.toLowerCase().includes(q) ||
+            e.location?.toLowerCase().includes(q) ||
+            e.promotion_name?.toLowerCase().includes(q)
+        )
+      : list;
+
+  const renderList = (list: any[], emptyNode: React.ReactNode) => {
+    if (list.length === 0) return emptyNode;
+    return (
+      <div className="space-y-3">
+        {list.map((event: any) => {
+          const eventSlots = event.fight_slots ?? [];
+          const openSlots = eventSlots.filter((s: any) => s.status === "open").length;
+          return (
+            <Link
+              key={event.id}
+              to={event.organiser_id === currentUserId ? `/organiser/events/${event.id}` : `/events/${event.id}`}
+              className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors"
+            >
+              <div>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-foreground">{event.title}</p>
+                  <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>
+                    {event.status}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {event.date} · {event.location} · {eventSlots.length} slots ({openSlots} open)
+                </p>
+              </div>
+              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+            </Link>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const emptyAll = (
+    <div className="rounded-lg border border-border bg-card p-8 text-center">
+      <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+      <p className="text-muted-foreground mb-4">You haven't created any events yet.</p>
+      <Button asChild>
+        <Link to="/organiser/create-event?from=my-events">Create Your First Event</Link>
+      </Button>
+    </div>
+  );
+
+  const filteredUpcoming = applySearch(upcoming);
+  const filteredArchive = applySearch(archive);
 
   return (
     <div>
@@ -70,56 +133,50 @@ export function DashboardEvents({
         </div>
       </div>
 
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search events by title or location..."
-          value={eventSearch}
-          onChange={(e) => setEventSearch(e.target.value)}
-          className="pl-9"
-        />
-      </div>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as "upcoming" | "archive")} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="upcoming">
+            Upcoming & Live Events
+            <span className="ml-2 text-xs text-muted-foreground">({upcoming.length})</span>
+          </TabsTrigger>
+          <TabsTrigger value="archive">
+            Event Archive
+            <span className="ml-2 text-xs text-muted-foreground">({archive.length})</span>
+          </TabsTrigger>
+        </TabsList>
 
-      {filtered.length === 0 ? (
-        events.length === 0 ? (
-          <div className="rounded-lg border border-border bg-card p-8 text-center">
-            <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground mb-4">You haven't created any events yet.</p>
-            <Button asChild>
-              <Link to="/organiser/create-event?from=my-events">Create Your First Event</Link>
-            </Button>
-          </div>
-        ) : (
-          <p className="text-muted-foreground">No events match your search.</p>
-        )
-      ) : (
-        <div className="space-y-3">
-          {filtered.map((event: any) => {
-            const eventSlots = event.fight_slots ?? [];
-            const openSlots = eventSlots.filter((s: any) => s.status === "open").length;
-            return (
-              <Link
-                key={event.id}
-                to={event.organiser_id === currentUserId ? `/organiser/events/${event.id}` : `/events/${event.id}`}
-                className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-foreground">{event.title}</p>
-                    <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>
-                      {event.status}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {event.date} · {event.location} · {eventSlots.length} slots ({openSlots} open)
-                  </p>
-                </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-              </Link>
-            );
-          })}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search events by title or location..."
+            value={eventSearch}
+            onChange={(e) => setEventSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
-      )}
+
+        <TabsContent value="upcoming">
+          {renderList(
+            filteredUpcoming,
+            events.length === 0
+              ? emptyAll
+              : q
+              ? <p className="text-muted-foreground">No upcoming events match your search.</p>
+              : archive.length > 0
+              ? <p className="text-muted-foreground">No upcoming events. Check your archive or create a new one.</p>
+              : <p className="text-muted-foreground">No upcoming events.</p>
+          )}
+        </TabsContent>
+
+        <TabsContent value="archive">
+          {renderList(
+            filteredArchive,
+            q
+              ? <p className="text-muted-foreground">No archived events match your search.</p>
+              : <p className="text-muted-foreground">No archived events yet.</p>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
