@@ -38,6 +38,8 @@ function unwrap<T>(val: T | T[] | null | undefined): T | null {
 function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event: any; purchaseUrl: string | null }) {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
 
   const setQty = (ticketId: string, val: number) => {
     setQuantities((prev) => ({ ...prev, [ticketId]: val }));
