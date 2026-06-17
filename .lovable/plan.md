@@ -1,70 +1,74 @@
-# Plan — New MATCHUP landing page (Obsidian Gold)
+# Plan — "Why this match" disclosure on Suggested Fights cards
 
-Replace the current home page entirely with a single new page composed of self-contained section components. No routing changes, no auth/algorithm changes.
+Display-only enhancement to pair-mode cards in `MatchSuggestionsPanel.tsx`. No scoring/algorithm changes.
 
-## File changes
+## Scope
 
-**Replace contents of:**
-- `src/pages/Index.tsx` — render only the new `LandingHeader` + new sections + new `LandingFooter`. Do not reuse the existing `<Header>` or `<Footer>` so the landing page can have its own transparent-on-load header and its own footer markup without affecting authenticated app pages.
+- File: `src/components/organiser/MatchSuggestionsPanel.tsx`
+- Target: the pair-mode card render block (~lines 740–833), specifically between the "Compatibility" summary line (`Elo Δ{eloDelta} · {pair.reason}`, line 786) and the action button row (line 791).
+- Single-fighter mode cards are out of scope (no View A/B/Accept row).
 
-**New files (all under `src/components/landing-v2/`** to avoid touching the old `src/components/landing/` files still used elsewhere if any):
-- `LandingHeader.tsx` — fixed header (transparent → blurred dark after 40px scroll), logo left, Log In + Get Started right, hamburger + full-screen overlay below 900px.
-- `HeroSection.tsx` — full viewport height, constellation `<canvas>` background + radial fade overlay, badge, two-line animated headline ("The right match." white / "Every time." gold), subtext, two buttons, caption.
-- `ConstellationCanvas.tsx` — standalone canvas component. Explicitly `width: 100%; height: 100%` in CSS, internal `canvas.width/height = parent rect * devicePixelRatio` on mount + resize, requestAnimationFrame draw loop. Honours `prefers-reduced-motion`: renders one static frame, skips RAF.
-- `ProblemSection.tsx` — gold label, heading ("Combat sports" white + "deserves better." muted), subtext, four hairline-bordered rows (icon box · title · vertical divider · description), one placeholder screenshot block with `{/* TODO: replace with real app screenshot */}` comment.
-- `WhoItsForSection.tsx` — gold label, heading "Smarter matches. Better fights.", four pill tabs (Fighters/Coaches/Gyms/Promoters), single content panel (charcoal card, two-column → single column <900px) with icon+heading+description left and three feature rows right, plus placeholder screenshot block + TODO comment in each panel.
-- `HowItWorksSection.tsx` — gold label, heading, subtext, vertical accordion of six numbered steps. Only one open at a time, step 1 open by default. Chevron rotates 180° via CSS transition. Expansion uses max-height transition (no layout jump). Content matches spec exactly.
-- `CtaBand.tsx` — centred rounded card, gold-tinted gradient + soft gold glow shadow, heading ("Every fight starts here." — first part white, second muted), subtext, gold pill button "Create Your Free Account" → `/auth?mode=signup`.
-- `LandingFooter.tsx` — hairline top border, 4 cols (collapse 2 then 1), bottom centred copyright.
-- `useScrollReveal.ts` (hook) — IntersectionObserver-based reveal. Adds `data-revealed="true"` when in view; CSS handles fade + translateY. Disabled when `prefers-reduced-motion: reduce`.
+## Behaviour
 
-## Routing wiring
+1. Add accordion state at panel level:
+   ```ts
+   const [openWhyId, setOpenWhyId] = useState<string | null>(null);
+   ```
+   Card id = `${pair.fighterA.id}-${pair.fighterB.id}`. Opening one closes any other.
 
-- Logo, "Log In" → `/auth`
-- "Get Started", "Start Matching", "Create Your Free Account" → `/auth?mode=signup`
-- "See how it works" → smooth scroll to `#how-it-works` anchor on the HowItWorks section
-- Footer links: Events → `/events`, Fighters → `/fighters`, Gyms → `/gyms`, Register Gym → `/register-gym`, Create Event → `/organiser/create-event`, Terms → `/terms`, Privacy → `/privacy`, Contact → `/contact`
+2. Toggle row directly under the existing summary line:
+   - Gold (`#e8a020`) text button "Why this match" + `ChevronDown` icon, `transform: rotate(180deg)` when open, `transition: transform 0.2s ease`.
+   - `background: transparent`, no border, font-size 11, font-weight 600, padding 4px 0.
 
-All via React Router `<Link>` (internal). No new routes added.
+3. Panel container uses max-height transition (no layout jump):
+   - Wrapper `div` with `overflow: hidden`, `maxHeight: open ? 600 : 0`, `opacity: open ? 1 : 0`, `transition: max-height 0.35s ease, opacity 0.25s ease`, `marginTop: open ? 10 : 0`.
+   - Action button row stays in its existing place in the DOM — only the disclosure wrapper grows above it.
 
-## Design system compliance
+## Disclosure contents (in order)
 
-- Page bg `#080a0d`, card surface `#111318`, raised `#181c24`, hover `#1e2330`
-- Gold accent `#e8a020` only — never orange
-- Text `#e8eaf0` / secondary `#8b909e` / muted `#555b6b`
-- Headings Bebas Neue (already loaded in project), body Inter
-- No borders on cards/inputs in default state — hairlines only where the spec explicitly calls for them (problem rows, accordion rows, footer top, inactive tab pills). Hairline = `1px solid rgba(255,255,255,0.06)` or `rgba(232,160,32,0.18)` for gold-tinted.
-- Depth via shadows per project spec.
+### a. Plain-language verdict callout
+- Background `rgba(232,160,32,0.08)`, `borderLeft: 3px solid #e8a020`, `borderRadius: 6`, padding `8px 10px`, font-size 12, colour `#e8eaf0`.
+- Sentence assembled from existing per-pair signals (winRateDiff, expDiff, style match, country) — same inputs that already produce `pair.reason`. Examples:
+  - Both close skill + style differ → "Similar skill level and contrasting styles make this an evenly matched, exciting fight."
+  - Skill close, same style → "Evenly matched on skill — expect a technical, closely fought contest."
+  - Skill gap, style differs → "Style contrast adds intrigue, though one fighter holds a clear skill edge."
+  - Fallback → "A viable matchup worth proposing."
 
-## Animations
+### b. Four scoring bars (reuse `SLIDER_COLORS`)
+- Labels → key → colour:
+  - "Skill Match" → comp → `SLIDER_COLORS.comp` (#e8a020)
+  - "Excitement" → ent → `SLIDER_COLORS.ent` (#22c55e — existing slider dot colour; spec requested "teal" but instruction also says colours must match sidebar dots → sidebar dots win)
+  - "Style Clash" → style → `SLIDER_COLORS.style` (#3b82f6)
+  - "Story Potential" → narr → `SLIDER_COLORS.narr` (#a855f7)
+- Per bar: label left, percentage right (desktop). Track height 4px, `background: #1e2330`, fill `width: ${pct}%`, `background: <color>`, transition `width 0.3s`.
+- Values: reuse the existing per-pair signals already computed for `compositeScore` and `pair.reason` — derive 0–100 per dimension from the same inputs (no new algorithm):
+  - Skill Match = `compositeScore` (already computed from eloDelta)
+  - Excitement = derived from winRate spread + style difference flags already in scope
+  - Style Clash = 100 if styles differ, ~40 if unknown, 0 if same
+  - Story Potential = derived from country difference / experience gap flags already in scope
+  These are display-side mappings of existing signals — no change to `scorePairForAnchor` or any DB-side scoring.
 
-- Headline lines: CSS keyframes, mask-clip + translateY, staggered delays (0ms / 120ms). Subtext fades at 350ms, buttons at 500ms.
-- Scroll reveals: `opacity 0 → 1`, `translateY(16px → 0)`, `0.6s ease-out`, triggered by `useScrollReveal`.
-- Accordion: `max-height` + `opacity` transition (0.3s ease), chevron `rotate(180deg)` transition (0.2s ease).
-- Header bg: `transition: background 0.25s ease, backdrop-filter 0.25s ease, box-shadow 0.25s ease`.
-- All transforms/animations gated by a single `prefers-reduced-motion` media query in section-level CSS; canvas component skips RAF entirely under reduced motion.
+- Mobile (`@media (max-width: 640px)`): label on its own line, percentage on the next line below (not beside). Implemented with a `useIsMobile` hook check or a CSS class toggling `flex-direction: column` on the label/value row. Bar itself is full-width in both.
 
-## Responsiveness
+### c. Safety chips row
+- Small pill chips, only render if true for the pair:
+  - "Different gyms" — if `fighterA.gym_id !== fighterB.gym_id` (or either missing → omit)
+  - "Tier gap within range" — if `eloDelta <= 200`
+  - "No red flags" — always shown as final chip if neither fighter has `verified === false`-style block (using available fields; if no such field exists, only render when the prior two checks both passed)
+- Chip style: `background: rgba(34,197,94,0.12)`, colour `#22c55e`, font-size 10, font-weight 600, padding `3px 8px`, `borderRadius: 999`, inline-flex with `Check` icon (10px) + label, gap 4. Row uses `display: flex, flex-wrap: wrap, gap: 6, marginTop: 10`.
 
-- Sections max-width `1200px` default; `@media (min-width: 1600px)` bumps to `1440px`.
-- Single-column collapse at `<900px` for: header right side (hamburger replaces "Log In"), Who It's For two-column panel, footer column grid, problem rows (icon stays inline, description wraps).
-- `html, body { overflow-x: hidden; }` confirmed in global CSS; section containers use `padding-inline` not negative margins to guarantee zero horizontal scroll at 375/390px.
-- Hamburger overlay: `position: fixed; inset: 0; background: #080a0d; z-index: 60;`, X button top-right, stacked centred Log In + Get Started.
+## Technical notes
 
-## Out of scope
-
-- No changes to existing `src/components/landing/*` files (left in place, just unused by `/`).
-- No changes to `src/components/Header.tsx` / `Footer.tsx` (still used by other pages).
-- No route additions, no auth changes, no schema/RLS work.
-- Real product screenshots not added — placeholder blocks with TODO comments only.
+- `ChevronDown` and `Check` are already imported from `lucide-react` in this file.
+- Accordion behaviour: clicking the toggle calls `setOpenWhyId(prev => prev === id ? null : id)`. No external state, no prop drilling.
+- No changes to: `scorePairForAnchor`, sidebar sliders, action button row markup/position, single-fighter cards, ticket/event/RLS code.
+- No new dependencies, no new routes, no schema changes.
 
 ## Acceptance
 
-- `/` renders the new landing page; no references to "AI-Powered" or "Three Sides. One Platform." anywhere on it.
-- Header transparent at top, blurs + hairline after 40px scroll; hamburger only below 900px.
-- Hero canvas visibly fills the hero (verified by inspection — `width:100%; height:100%` set).
-- Four tabs swap content instantly without scroll jump.
-- Accordion: only one step open, step 1 default open, chevron rotates.
-- All four CTAs route correctly (`/auth` or `/auth?mode=signup`).
-- No horizontal scroll at 375px and 390px viewports.
-- Reduced-motion users see static canvas frame and no entrance transforms.
+- Toggle appears under the `Elo Δ … · …` line on every pair card.
+- Opening one card auto-closes any other open card.
+- View A / View B / Accept row stays at the same Y-position relative to the card bottom whether the panel is open or closed (panel grows above it; max-height transition prevents jump).
+- Bar colours match the existing slider dot colours in the sidebar weighting controls.
+- Chips only render when their condition is true.
+- Mobile (≤640px): bar label and percentage stack; bar still full-width.
