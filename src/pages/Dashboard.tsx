@@ -126,7 +126,7 @@ export default function Dashboard() {
     overview: "Dashboard",
     "my-profile": "My Profile",
     gyms: "My Gyms",
-    roster: "Fighter Roster",
+    roster: "My Fighters",
     interests: "Fighter Interests",
     actions: "Action Centre",
     events: "My Events",
