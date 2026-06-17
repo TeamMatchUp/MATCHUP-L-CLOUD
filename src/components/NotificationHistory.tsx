@@ -60,12 +60,9 @@ export function NotificationHistory() {
     queryClient.invalidateQueries({ queryKey: ["notification-history-all"] });
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
     queryClient.invalidateQueries({ queryKey: ["notifications-unread-count"] });
-    const proposalTypes = ["match_proposed", "match_accepted", "match_declined", "match_confirmed", "match_withdrawn"];
-    if (proposalTypes.includes(notification.type) && notification.reference_id) {
-      navigate(`/proposals/${notification.reference_id}`);
-    } else {
-      navigate("/dashboard?section=actions");
-    }
+    const { resolveNotificationTarget } = await import("@/lib/notificationRouting");
+    const target = await resolveNotificationTarget(notification);
+    navigate(target);
   };
 
   const toggleRead = async (notification: any) => {
