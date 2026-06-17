@@ -1103,7 +1103,16 @@ export function DashboardActions({
                       <Badge variant="outline" className={badge.className + " text-[9px] sm:text-[10px] px-1.5 py-0 leading-tight"}>{badge.label}</Badge>
                       {isCompleted && (
                         <Badge variant="outline" className="text-[9px] sm:text-[10px] px-1.5 py-0 leading-tight bg-muted/50 text-muted-foreground">
-                          {item.status === "approved" || item.status === "confirmed" ? "✓ Resolved" : "✗ Declined"}
+                          {(() => {
+                            if (item.type === "bout_proposal" && item.meta?.myDecision) {
+                              const finalised = item.meta?.slotStatus === "confirmed" || item.meta?.slotStatus === "declined";
+                              const verb = item.meta.myDecision === "accepted" ? "Accepted" : "Declined";
+                              return finalised
+                                ? (item.meta.slotStatus === "confirmed" ? "✓ Confirmed" : "✗ Declined")
+                                : `You ${verb.toLowerCase()} — pending others`;
+                            }
+                            return item.status === "approved" || item.status === "confirmed" ? "✓ Resolved" : "✗ Declined";
+                          })()}
                         </Badge>
                       )}
                       <span className="text-[10px] sm:text-[11px] text-muted-foreground">
