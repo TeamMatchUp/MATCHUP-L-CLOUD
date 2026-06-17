@@ -796,6 +796,35 @@ export function DashboardActions({
   const isCompletedView = statusFilter === "completed";
   const isBinView = statusFilter === "bin";
 
+  // Deep-link from a notification click: resolve which tab the target item is
+  // in, switch to it, then scroll + highlight the row for 2s.
+  useEffect(() => {
+    if (!deepLinkItemId) return;
+    const inActive = activeItems.some((i) => i.id === deepLinkItemId);
+    const inCompleted = completedItems.some((i) => i.id === deepLinkItemId);
+    if (!inActive && !inCompleted) return;
+    if (deepLinkTab === "auto" || !deepLinkTab) {
+      setStatusFilter(inActive ? "active" : "completed");
+    }
+    setHighlightedId(deepLinkItemId);
+    const scrollT = window.setTimeout(() => {
+      const el = document.querySelector(`[data-action-id="${deepLinkItemId}"]`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+    if (highlightTimer.current) window.clearTimeout(highlightTimer.current);
+    highlightTimer.current = window.setTimeout(() => {
+      setHighlightedId(null);
+      const next = new URLSearchParams(searchParams);
+      next.delete("actionItem");
+      next.delete("actionTab");
+      setSearchParams(next, { replace: true });
+    }, 2200);
+    return () => {
+      window.clearTimeout(scrollT);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkItemId, activeItems.length, completedItems.length]);
+
   const renderActionButtons = (item: ActionItem) => {
     if (isCompletedView) {
       const ra = recentlyActioned.find((a) => a.itemId === item.id);
@@ -1050,10 +1079,12 @@ export function DashboardActions({
             const Icon = getIcon(item.type);
             const badge = getTypeBadge(item.type);
             const isCompleted = isCompletedView;
+            const isHighlighted = highlightedId === item.id;
             return (
               <div
                 key={item.id}
-                className={`rounded-lg border bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 transition-colors ${isCompleted ? "border-border/50 opacity-60" : "border-border hover:border-primary/20"}`}
+                data-action-id={item.id}
+                className={`rounded-lg border bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 transition-all duration-300 ${isCompleted ? "border-border/50 opacity-60" : "border-border hover:border-primary/20"} ${isHighlighted ? "!border-primary !opacity-100 shadow-[0_0_0_2px_rgba(232,160,32,0.35)]" : ""}`}
               >
                 <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
                   {multiSelectMode && (
