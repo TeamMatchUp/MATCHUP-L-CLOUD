@@ -327,7 +327,18 @@ export function ManageTicketsPanel({ eventId }: ManageTicketsPanelProps) {
                 className="text-sm"
               />
             </div>
+            <div className="space-y-1">
+              <Label className="text-xs sm:text-sm">Description</Label>
+              <Textarea
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="What's included with this ticket (optional)"
+                rows={4}
+                className="text-sm"
+              />
+            </div>
           </div>
+
           <DialogFooter className="pt-2">
             <Button
               onClick={() => upsertMutation.mutate()}
