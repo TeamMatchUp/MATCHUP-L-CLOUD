@@ -1,56 +1,29 @@
-# Five small UI/nav fixes
+# Fix Share Event on Organiser Manage Event hub
 
-All changes are presentation-only — no business logic, no routing additions, no schema changes.
+**File:** `src/pages/organiser/EventManager.tsx`
 
-## 1. Remove duplicated profile from Dashboard Overview
-**File:** `src/components/dashboard/DashboardOverview.tsx`
+Currently the "Share Event" button (line 309) silently copies the URL to clipboard with no visible feedback — appears broken.
 
-The `StickyHeader` (lines ~331–396) currently renders avatar + username + follower/following counts inside the Overview content area, duplicating the sidebar profile card.
+## Changes
 
-- Remove the LEFT block (avatar, name, follower/following buttons).
-- Keep the mobile hamburger button (so mobile users can still open the sidebar).
-- Keep the RIGHT block (search + Quick Actions).
-- Remove now-unused `profileData`, `followerCount`, `followingCount`, `initials`, and `networkModal` state/queries if no longer referenced elsewhere in the file. (`profileData?.full_name` is still used in `OverviewHeader`'s welcome line — keep that query, just drop the avatar/counts UI.)
+1. **Install** `qrcode.react` (no QR lib currently in `package.json`).
 
-## 2. "Quick Actions" label visible on mobile
-**File:** `src/components/dashboard/DashboardOverview.tsx` (`QuickActionsButton`, line ~50)
+2. **Add a `ShareEventModal` component** rendered inside `EventManager`, controlled by new state `const [showShare, setShowShare] = useState(false)`.
 
-Currently when `compact` (mobile) the button renders icon-only. Update so the text "Quick Actions" (or a shortened "Actions") shows next to the icon on mobile as well, matching desktop styling at a smaller font size.
+3. **Wire the button**: change the `Share Event` `GhostButton`'s `onClick` to `() => setShowShare(true)` (remove the silent clipboard call).
 
-## 3. Logo click-through to homepage
-**File:** `src/components/dashboard/DashboardSidebar.tsx` (lines ~280 and ~293)
+4. **Modal contents** (entirely client-rendered):
+   - Header: "Share Event" title + close (X) button.
+   - Centred QR code via `<QRCodeSVG value={publicUrl} size={220} bgColor="#111318" fgColor="#e8eaf0" level="M" includeMargin={false} />` where `publicUrl = ${window.location.origin}/events/${id}`.
+   - Helper text: "Scan to open the public event page".
+   - Read-only input pre-filled with `publicUrl` + a "Copy Link" button next to it. Clicking copies via `navigator.clipboard.writeText`, swaps button label to "Copied!" for ~1.5s, and shows a toast (existing `useToast` is already imported in the file if available — otherwise use sonner which is used elsewhere).
 
-Wrap both `<img src={iconWhite}>` (collapsed) and `<img src={logoDark}>` (expanded) in a `<Link to="/">` from `react-router-dom`. Preserve existing sizing and layout.
+5. **Styling — matches existing modal pattern in this codebase:**
+   - Fixed overlay: `background: rgba(0,0,0,0.75)`, `backdropFilter: blur(12px)`, click-to-close.
+   - Modal panel: `background: #111318`, `borderRadius: 16`, `width: min(90vw, 960px)`, `maxHeight: 88vh`, `overflowY: auto`, `padding: 28`, **no border**, shadow `0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)`.
+   - QR wrapper: white-on-dark works fine, optionally wrap QR in a `#181c24` rounded inset card (`borderRadius: 12, padding: 16`) for contrast.
+   - Title: Bebas Neue, gold accent on second word ("Share Ev<span gold>ent</span>") consistent with the rest of the dashboard.
+   - Input/button: gold focus glow on input (no border default); Copy button uses the existing `GoldButton` component already in this file.
 
-## 4. Rename Roster → "My Fighters" and move into Manage accordion
-**File:** `src/components/dashboard/DashboardSidebar.tsx` (lines ~94–110, coach/owner menu)
-
-Change:
-```
-{ key: "manage", ... children: [
-  { key: "gyms", label: "My Gyms" },
-  { key: "events", label: "My Events" },
-  { key: "my-profile", label: "My Profile" },
-]},
-{ key: "roster", label: "Roster", icon: Users },
-```
-to:
-```
-{ key: "manage", ... children: [
-  { key: "roster", label: "My Fighters" },
-  { key: "gyms", label: "My Gyms" },
-  { key: "events", label: "My Events" },
-  { key: "my-profile", label: "My Profile" },
-]},
-```
-The `roster` section key is unchanged so existing routing/rendering in `Dashboard.tsx` still works. Update the section title map in `Dashboard.tsx` (line 129: `roster: "Fighter Roster"`) to `"My Fighters"` for consistency.
-
-## 5. Explore Map button label on desktop only
-**File:** `src/pages/Explore.tsx` (lines ~420–433)
-
-Update the Map toggle button so on desktop it shows the `MapPin` icon plus the text "Map", and on mobile it stays icon-only. Widen the button from fixed `width: 40` to `width: auto` with horizontal padding when desktop, keep 40×40 square on mobile. Use the existing `isMobile`/responsive check used elsewhere in the file.
-
----
-
-### Out of scope
-No changes to data fetching, RLS, routes, or matchmaking logic.
+## Out of scope
+No backend, no routing changes, no changes to the public `/events/:id` page.
