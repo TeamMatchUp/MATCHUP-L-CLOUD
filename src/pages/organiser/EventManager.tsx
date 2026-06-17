@@ -580,6 +580,10 @@ export default function EventManager() {
                 onDelete={() => navigate("/organiser/dashboard")}
               />
             )}
+            {showShare && id && (
+              <ShareEventModal eventId={id} title={event?.title} onClose={() => setShowShare(false)} />
+            )}
+
           </div>
         </section>
       </main>
