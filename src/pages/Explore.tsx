@@ -208,32 +208,40 @@ export default function Explore() {
       [...(fightsA || []), ...(fightsB || [])].forEach((f) => fightMap.set(f.id, f));
       const allFights = Array.from(fightMap.values());
 
-      const recordMap = new Map<string, { wins: number; losses: number; draws: number }>();
+      const recordMap = new Map<string, { wins: number; losses: number; draws: number; stated: boolean }>();
       (data ?? []).forEach((fighter) => {
-        let wins = 0, losses = 0, draws = 0;
+        let wins = 0, losses = 0, draws = 0, rows = 0;
         allFights.forEach((fight) => {
           const isA = fight.fighter_a_id === fighter.id;
           const isB = fight.fighter_b_id === fighter.id;
           if (!isA && !isB) return;
-          if (fight.fighter_a_id === fight.fighter_b_id && !fight.opponent_name) return;
-          const isSelfRef = fight.fighter_a_id === fight.fighter_b_id;
-          if (fight.winner_id) {
-            if (fight.winner_id === fighter.id) wins++; else losses++;
-          } else if (fight.result === "draw") {
+          rows++;
+          if (fight.result === "draw") {
             draws++;
+          } else if (fight.winner_id) {
+            if (fight.winner_id === fighter.id) wins++; else losses++;
           } else if (fight.result === "win") {
-            if (isSelfRef || isA) wins++; else losses++;
+            if (isA) wins++; else losses++;
           } else if (fight.result === "loss") {
-            if (isSelfRef || isA) losses++; else wins++;
+            if (isA) losses++; else wins++;
           }
         });
-        recordMap.set(fighter.id, { wins, losses, draws });
+        if (rows === 0) {
+          recordMap.set(fighter.id, {
+            wins: fighter.record_wins ?? 0,
+            losses: fighter.record_losses ?? 0,
+            draws: fighter.record_draws ?? 0,
+            stated: true,
+          });
+        } else {
+          recordMap.set(fighter.id, { wins, losses, draws, stated: false });
+        }
       });
 
       return (data ?? []).map((f) => ({
         ...f,
         _avatar: f.profile_image || (f.user_id ? avatarMap.get(f.user_id) : null) || null,
-        _record: recordMap.get(f.id) || { wins: 0, losses: 0, draws: 0 },
+        _record: recordMap.get(f.id) || { wins: 0, losses: 0, draws: 0, stated: false },
       }));
     },
   });
