@@ -379,30 +379,51 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
                 {/* Pro / Amateur / Total toggle + W / L / D / Win% boxes */}
                 {(() => {
                   const [recordFilter, setRecordFilter] = [heroRecordFilter, setHeroRecordFilter];
-                  const filtered = recordFilter === "pro" ? fights.filter((f: any) => !f.is_amateur) : recordFilter === "amateur" ? fights.filter((f: any) => f.is_amateur) : fights;
-                  let w = filtered.filter((f: any) => f.result === "win").length;
-                  let l = filtered.filter((f: any) => f.result === "loss").length;
-                  let d = filtered.filter((f: any) => f.result === "draw").length;
-                  // Merge with cached signup record so it always shows
-                  const proW = p.record_wins ?? 0, proL = p.record_losses ?? 0, proD = p.record_draws ?? 0;
-                  const amW = p.amateur_wins ?? 0, amL = p.amateur_losses ?? 0, amD = p.amateur_draws ?? 0;
-                  if (recordFilter === "pro") {
-                    w = Math.max(w, proW); l = Math.max(l, proL); d = Math.max(d, proD);
-                  } else if (recordFilter === "amateur") {
-                    w = Math.max(w, amW); l = Math.max(l, amL); d = Math.max(d, amD);
+                  const fid = p.id;
+                  const hasFights = fights.length > 0;
+                  let w = 0, l = 0, d = 0;
+                  let stated = false;
+
+                  if (hasFights) {
+                    const filtered = recordFilter === "pro"
+                      ? fights.filter((f: any) => !f.is_amateur)
+                      : recordFilter === "amateur"
+                        ? fights.filter((f: any) => f.is_amateur)
+                        : fights;
+                    filtered.forEach((f: any) => {
+                      const result = String(f.result ?? "").toLowerCase();
+                      const isA = f.fighter_a_id === fid;
+                      if (result === "draw") { d++; return; }
+                      if (f.winner_id) {
+                        if (f.winner_id === fid) w++; else l++;
+                        return;
+                      }
+                      if (result === "win") { if (isA) w++; else l++; }
+                      else if (result === "loss") { if (isA) l++; else w++; }
+                    });
                   } else {
-                    w = Math.max(w, proW + amW); l = Math.max(l, proL + amL); d = Math.max(d, proD + amD);
+                    stated = true;
+                    const proW = p.record_wins ?? 0, proL = p.record_losses ?? 0, proD = p.record_draws ?? 0;
+                    const amW = p.amateur_wins ?? 0, amL = p.amateur_losses ?? 0, amD = p.amateur_draws ?? 0;
+                    if (recordFilter === "pro") { w = proW; l = proL; d = proD; }
+                    else if (recordFilter === "amateur") { w = amW; l = amL; d = amD; }
+                    else { w = proW + amW; l = proL + amL; d = proD + amD; }
                   }
                   const total = w + l + d;
                   const wp = total > 0 ? Math.round((w / total) * 100) : 0;
                   return (
                     <>
-                      <div className="flex gap-1 mt-4 mb-2">
-                        {(["pro", "amateur", "total"] as const).map((opt) => (
-                          <button key={opt} onClick={() => setRecordFilter(opt)} className={`px-3 py-1 text-xs rounded-md font-medium transition-colors ${recordFilter === opt ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
-                            {opt.charAt(0).toUpperCase() + opt.slice(1)}
-                          </button>
-                        ))}
+                      <div className="flex items-center gap-2 mt-4 mb-2">
+                        <div className="flex gap-1">
+                          {(["pro", "amateur", "total"] as const).map((opt) => (
+                            <button key={opt} onClick={() => setRecordFilter(opt)} className={`px-3 py-1 text-xs rounded-md font-medium transition-colors ${recordFilter === opt ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
+                              {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                            </button>
+                          ))}
+                        </div>
+                        {stated && (
+                          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Stated Record</span>
+                        )}
                       </div>
                       <div className="grid grid-cols-4 gap-3">
                         <div className="rounded-lg bg-primary p-3 text-center">

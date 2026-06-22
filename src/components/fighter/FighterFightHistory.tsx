@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Trophy, Target, Award, Flame, Shield, Star, Pencil } from "lucide-react";
+import { Plus, Trophy, Target, Award, Flame, Shield, Star, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -188,6 +188,17 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
     setEventName(fight.event_name || "");
     setIsAmateur(fight.is_amateur || false);
     setOpen(true);
+  };
+
+  const handleDelete = async (fightId: string) => {
+    if (!window.confirm("Are you sure you want to delete this fight record? This cannot be undone.")) return;
+    const { error } = await supabase.from("fights").delete().eq("id", fightId);
+    if (error) { toast.error("Failed to delete fight"); return; }
+    toast.success("Fight deleted");
+    queryClient.invalidateQueries({ queryKey: ["fighter-fights", fighterId] });
+    queryClient.invalidateQueries({ queryKey: ["fighter-record-fights", fighterId] });
+    queryClient.invalidateQueries({ queryKey: ["fighter-hero-fights", fighterId] });
+    queryClient.invalidateQueries({ queryKey: ["fa-fights", fighterId] });
   };
 
   const getResultForFighter = (fight: any) => {
@@ -390,9 +401,14 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
                     </TableCell>
                     {isOwner && (
                       <TableCell>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(fight)}>
-                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(fight)}>
+                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(fight.id)}>
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     )}
                   </TableRow>
