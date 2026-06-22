@@ -14,6 +14,7 @@ import { ProfileCompletionBar } from "@/components/fighter/ProfileCompletionBar"
 import { GymsNearYouWidget } from "@/components/fighter/GymsNearYouWidget";
 import { MyRequestsPanel } from "@/components/fighter/MyRequestsPanel";
 import { EditableProfilePanel } from "@/components/fighter/EditableProfilePanel";
+import { LogFightDialog } from "@/components/fighter/LogFightDialog";
 import { EventCalendar } from "@/components/dashboard/EventCalendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, Inbox, Bell, Star, User, Send, Calendar, Search, Plus } from "lucide-react";
