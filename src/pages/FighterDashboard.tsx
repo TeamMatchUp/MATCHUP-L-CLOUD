@@ -185,7 +185,13 @@ export default function FighterDashboard() {
                     <div>
                       <p className="font-heading text-2xl text-foreground">{fighterProfile.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        {fighterProfile.record_wins}W-{fighterProfile.record_losses}L-{fighterProfile.record_draws}D ·{" "}
+                        {(() => {
+                          const hasFights = (recordFromFights?.count ?? 0) > 0;
+                          const w = hasFights ? recordFromFights!.wins : (fighterProfile.record_wins ?? 0);
+                          const l = hasFights ? recordFromFights!.losses : (fighterProfile.record_losses ?? 0);
+                          const d = hasFights ? recordFromFights!.draws : (fighterProfile.record_draws ?? 0);
+                          return <>{w}W-{l}L-{d}D{!hasFights && " (Stated Record)"} · </>;
+                        })()}
                         {formatEnum(fighterProfile.weight_class)} · {fighterProfile.country}
                         {fighterProfile.style && ` · ${formatEnum(fighterProfile.style)}`}
                         {gymLinks.filter((gl: any) => gl.status === "approved").map((gl: any) => (
