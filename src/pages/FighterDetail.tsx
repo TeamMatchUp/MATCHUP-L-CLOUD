@@ -322,7 +322,7 @@ export default function FighterDetail() {
                   margin: "16px 16px 0", background: "#111318", borderRadius: 12, padding: "16px 20px",
                   boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
                 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#8b909e", textTransform: "uppercase", letterSpacing: "0.08em" }}>PRO RECORD SUMMARY</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#8b909e", textTransform: "uppercase", letterSpacing: "0.08em" }}>{stats.stated ? "STATED RECORD" : "PRO RECORD SUMMARY"}</span>
                   <div className="flex items-center justify-between" style={{ marginTop: 10 }}>
                     <span style={{ fontSize: 30, fontWeight: 800, color: "#e8eaf0" }}>{displayWins}-{displayLosses}-{displayDraws}</span>
                     {stats.wins > 0 && (
