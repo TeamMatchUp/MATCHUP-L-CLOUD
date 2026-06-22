@@ -401,9 +401,14 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
                     </TableCell>
                     {isOwner && (
                       <TableCell>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(fight)}>
-                          <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(fight)}>
+                            <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(fight.id)}>
+                            <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     )}
                   </TableRow>
