@@ -924,7 +924,7 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
           <div className="flex items-baseline gap-3 sm:gap-4 flex-wrap" style={{ marginTop: 10 }}>
             <div>
               <span style={{ fontSize: "clamp(1rem, 4.4vw, 1.25rem)", fontWeight: 700, color: EX.text }}>{record.wins}-{record.losses}-{record.draws}</span>
-              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>W-L-D</span>
+              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>{record.stated ? "Stated Record" : "W-L-D"}</span>
             </div>
             <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.06)", alignSelf: "center" }} />
             <div>
