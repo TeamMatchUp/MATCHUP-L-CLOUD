@@ -181,7 +181,7 @@ export default function FighterDashboard() {
 
                 {/* Profile Summary */}
                 <div className="rounded-lg border border-border bg-card p-5 mb-8">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-heading text-2xl text-foreground">{fighterProfile.name}</p>
                       <p className="text-sm text-muted-foreground">
@@ -204,6 +204,7 @@ export default function FighterDashboard() {
                         ))}
                       </p>
                     </div>
+                    <LogFightDialog fighterId={fighterProfile.id} />
                   </div>
                 </div>
 
