@@ -186,7 +186,12 @@ export function FighterRecordHero() {
       {/* LEFT: Donut Chart */}
       <div className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-heading text-lg text-foreground">Fight Record</h3>
+          <h3 className="font-heading text-lg text-foreground">
+            Fight Record
+            {displayRecord.stated && (
+              <span className="ml-2 text-[10px] uppercase tracking-wider text-muted-foreground">Stated Record</span>
+            )}
+          </h3>
           <div className="relative">
             <button
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-transparent border border-border hover:bg-accent/50 transition-colors"
