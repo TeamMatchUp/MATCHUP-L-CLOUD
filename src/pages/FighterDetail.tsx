@@ -92,18 +92,15 @@ export default function FighterDetail() {
 
   // Stats
   const stats = useMemo(() => {
-    if (!fighter) return { wins: 0, losses: 0, draws: 0, kos: 0, tkos: 0, subs: 0, decs: 0, lossKos: 0, lossDecs: 0, lossSubs: 0 };
+    if (!fighter) return { wins: 0, losses: 0, draws: 0, kos: 0, tkos: 0, subs: 0, decs: 0, lossKos: 0, lossDecs: 0, lossSubs: 0, stated: false };
     const w = fights.filter((f: any) => isWin(f, fighter.id));
     const l = fights.filter((f: any) => isLoss(f));
     const d = fights.filter((f: any) => isDraw(f));
-    // Combine cached signup record (pro + amateur) with computed values from fights table
-    const cachedW = (fighter.record_wins ?? 0) + (fighter.amateur_wins ?? 0);
-    const cachedL = (fighter.record_losses ?? 0) + (fighter.amateur_losses ?? 0);
-    const cachedD = (fighter.record_draws ?? 0) + (fighter.amateur_draws ?? 0);
+    const hasFights = fights.length > 0;
     return {
-      wins: Math.max(w.length, cachedW),
-      losses: Math.max(l.length, cachedL),
-      draws: Math.max(d.length, cachedD),
+      wins: hasFights ? w.length : ((fighter.record_wins ?? 0) + (fighter.amateur_wins ?? 0)),
+      losses: hasFights ? l.length : ((fighter.record_losses ?? 0) + (fighter.amateur_losses ?? 0)),
+      draws: hasFights ? d.length : ((fighter.record_draws ?? 0) + (fighter.amateur_draws ?? 0)),
       kos: w.filter((f: any) => isKO(f.method)).length,
       tkos: w.filter((f: any) => isTKO(f.method)).length,
       subs: w.filter((f: any) => isSub(f.method)).length,
@@ -111,6 +108,7 @@ export default function FighterDetail() {
       lossKos: l.filter((f: any) => isKO(f.method) || isTKO(f.method)).length,
       lossDecs: l.filter((f: any) => isDec(f.method)).length,
       lossSubs: l.filter((f: any) => isSub(f.method)).length,
+      stated: !hasFights,
     };
   }, [fights, fighter]);
 
