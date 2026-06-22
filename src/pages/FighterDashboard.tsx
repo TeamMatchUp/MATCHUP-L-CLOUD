@@ -58,14 +58,14 @@ export default function FighterDashboard() {
       if (!fighterProfile) return null;
       const { data: asA } = await supabase
         .from("fights")
-        .select("result, winner_id, fighter_a_id, fighter_b_id")
+        .select("id, result, winner_id, fighter_a_id, fighter_b_id")
         .eq("fighter_a_id", fighterProfile.id);
       const { data: asB } = await supabase
         .from("fights")
-        .select("result, winner_id, fighter_a_id, fighter_b_id")
+        .select("id, result, winner_id, fighter_a_id, fighter_b_id")
         .eq("fighter_b_id", fighterProfile.id);
       const map = new Map<string, any>();
-      [...(asA || []), ...(asB || [])].forEach((f: any, idx) => map.set(`${f.fighter_a_id}-${f.fighter_b_id}-${f.result}-${f.winner_id}-${idx}`, f));
+      [...(asA || []), ...(asB || [])].forEach((f: any) => map.set(f.id, f));
       const rows = Array.from(map.values());
       let wins = 0, losses = 0, draws = 0;
       rows.forEach((f: any) => {
