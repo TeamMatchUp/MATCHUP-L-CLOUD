@@ -83,11 +83,35 @@ export function FighterRecordHero() {
     return fights.filter((f) => f.is_amateur);
   }, [fights, filter]);
 
-  // Record numbers come from the authoritative stored counters on the
-  // fighter profile so the filter tabs always change the displayed totals,
-  // even when the fights table hasn't been populated yet.
+  // Authoritative source: the fights table. If the fighter has zero rows in
+  // fights we fall back to the stored counters on fighter_profiles and mark
+  // the record as "Stated".
   const displayRecord = useMemo(() => {
-    if (!fighterProfile) return { wins: 0, losses: 0, draws: 0, total: 0 };
+    if (!fighterProfile) return { wins: 0, losses: 0, draws: 0, total: 0, stated: false };
+    const fid = fighterProfile.id;
+
+    if (fights.length > 0) {
+      const scoped = filter === "all"
+        ? fights
+        : filter === "pro"
+          ? fights.filter((f) => !f.is_amateur)
+          : fights.filter((f) => f.is_amateur);
+      let wins = 0, losses = 0, draws = 0;
+      scoped.forEach((f) => {
+        const result = String(f.result ?? "").toLowerCase();
+        if (result === "draw") { draws++; return; }
+        if (f.winner_id) {
+          if (f.winner_id === fid) wins++; else losses++;
+          return;
+        }
+        const isA = f.fighter_a_id === fid;
+        if (result === "win") { if (isA) wins++; else losses++; }
+        else if (result === "loss") { if (isA) losses++; else wins++; }
+      });
+      return { wins, losses, draws, total: wins + losses + draws, stated: false };
+    }
+
+    // Fallback: stored counters on fighter_profiles
     const pw = fighterProfile.record_wins ?? 0;
     const pl = fighterProfile.record_losses ?? 0;
     const pd = fighterProfile.record_draws ?? 0;
@@ -98,8 +122,8 @@ export function FighterRecordHero() {
     if (filter === "pro") { wins = pw; losses = pl; draws = pd; }
     else if (filter === "amateur") { wins = aw; losses = al; draws = ad; }
     else { wins = pw + aw; losses = pl + al; draws = pd + ad; }
-    return { wins, losses, draws, total: wins + losses + draws };
-  }, [fighterProfile, filter]);
+    return { wins, losses, draws, total: wins + losses + draws, stated: true };
+  }, [fighterProfile, fights, filter]);
 
   // Donut data
   const donutData = useMemo(() => {
@@ -162,7 +186,12 @@ export function FighterRecordHero() {
       {/* LEFT: Donut Chart */}
       <div className="p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-heading text-lg text-foreground">Fight Record</h3>
+          <h3 className="font-heading text-lg text-foreground">
+            Fight Record
+            {displayRecord.stated && (
+              <span className="ml-2 text-[10px] uppercase tracking-wider text-muted-foreground">Stated Record</span>
+            )}
+          </h3>
           <div className="relative">
             <button
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground bg-transparent border border-border hover:bg-accent/50 transition-colors"
