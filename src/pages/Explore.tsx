@@ -208,32 +208,40 @@ export default function Explore() {
       [...(fightsA || []), ...(fightsB || [])].forEach((f) => fightMap.set(f.id, f));
       const allFights = Array.from(fightMap.values());
 
-      const recordMap = new Map<string, { wins: number; losses: number; draws: number }>();
+      const recordMap = new Map<string, { wins: number; losses: number; draws: number; stated: boolean }>();
       (data ?? []).forEach((fighter) => {
-        let wins = 0, losses = 0, draws = 0;
+        let wins = 0, losses = 0, draws = 0, rows = 0;
         allFights.forEach((fight) => {
           const isA = fight.fighter_a_id === fighter.id;
           const isB = fight.fighter_b_id === fighter.id;
           if (!isA && !isB) return;
-          if (fight.fighter_a_id === fight.fighter_b_id && !fight.opponent_name) return;
-          const isSelfRef = fight.fighter_a_id === fight.fighter_b_id;
-          if (fight.winner_id) {
-            if (fight.winner_id === fighter.id) wins++; else losses++;
-          } else if (fight.result === "draw") {
+          rows++;
+          if (fight.result === "draw") {
             draws++;
+          } else if (fight.winner_id) {
+            if (fight.winner_id === fighter.id) wins++; else losses++;
           } else if (fight.result === "win") {
-            if (isSelfRef || isA) wins++; else losses++;
+            if (isA) wins++; else losses++;
           } else if (fight.result === "loss") {
-            if (isSelfRef || isA) losses++; else wins++;
+            if (isA) losses++; else wins++;
           }
         });
-        recordMap.set(fighter.id, { wins, losses, draws });
+        if (rows === 0) {
+          recordMap.set(fighter.id, {
+            wins: fighter.record_wins ?? 0,
+            losses: fighter.record_losses ?? 0,
+            draws: fighter.record_draws ?? 0,
+            stated: true,
+          });
+        } else {
+          recordMap.set(fighter.id, { wins, losses, draws, stated: false });
+        }
       });
 
       return (data ?? []).map((f) => ({
         ...f,
         _avatar: f.profile_image || (f.user_id ? avatarMap.get(f.user_id) : null) || null,
-        _record: recordMap.get(f.id) || { wins: 0, losses: 0, draws: 0 },
+        _record: recordMap.get(f.id) || { wins: 0, losses: 0, draws: 0, stated: false },
       }));
     },
   });
@@ -916,7 +924,7 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
           <div className="flex items-baseline gap-3 sm:gap-4 flex-wrap" style={{ marginTop: 10 }}>
             <div>
               <span style={{ fontSize: "clamp(1rem, 4.4vw, 1.25rem)", fontWeight: 700, color: EX.text }}>{record.wins}-{record.losses}-{record.draws}</span>
-              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>W-L-D</span>
+              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>{record.stated ? "Stated Record" : "W-L-D"}</span>
             </div>
             <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.06)", alignSelf: "center" }} />
             <div>
