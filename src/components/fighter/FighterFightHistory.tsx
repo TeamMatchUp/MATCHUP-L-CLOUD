@@ -190,6 +190,17 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
     setOpen(true);
   };
 
+  const handleDelete = async (fightId: string) => {
+    if (!window.confirm("Are you sure you want to delete this fight record? This cannot be undone.")) return;
+    const { error } = await supabase.from("fights").delete().eq("id", fightId);
+    if (error) { toast.error("Failed to delete fight"); return; }
+    toast.success("Fight deleted");
+    queryClient.invalidateQueries({ queryKey: ["fighter-fights", fighterId] });
+    queryClient.invalidateQueries({ queryKey: ["fighter-record-fights", fighterId] });
+    queryClient.invalidateQueries({ queryKey: ["fighter-hero-fights", fighterId] });
+    queryClient.invalidateQueries({ queryKey: ["fa-fights", fighterId] });
+  };
+
   const getResultForFighter = (fight: any) => {
     if (fight.result === "draw") return "D";
     if (fight.winner_id === fighterId) return "W";
