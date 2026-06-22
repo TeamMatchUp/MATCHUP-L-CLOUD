@@ -14,6 +14,7 @@ import { ProfileCompletionBar } from "@/components/fighter/ProfileCompletionBar"
 import { GymsNearYouWidget } from "@/components/fighter/GymsNearYouWidget";
 import { MyRequestsPanel } from "@/components/fighter/MyRequestsPanel";
 import { EditableProfilePanel } from "@/components/fighter/EditableProfilePanel";
+import { LogFightDialog } from "@/components/fighter/LogFightDialog";
 import { EventCalendar } from "@/components/dashboard/EventCalendar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Building2, Inbox, Bell, Star, User, Send, Calendar, Search, Plus } from "lucide-react";
@@ -181,7 +182,7 @@ export default function FighterDashboard() {
 
                 {/* Profile Summary */}
                 <div className="rounded-lg border border-border bg-card p-5 mb-8">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-heading text-2xl text-foreground">{fighterProfile.name}</p>
                       <p className="text-sm text-muted-foreground">
@@ -204,6 +205,7 @@ export default function FighterDashboard() {
                         ))}
                       </p>
                     </div>
+                    <LogFightDialog fighterId={fighterProfile.id} />
                   </div>
                 </div>
 
