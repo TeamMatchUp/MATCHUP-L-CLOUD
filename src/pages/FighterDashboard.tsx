@@ -52,6 +52,34 @@ export default function FighterDashboard() {
     enabled: !!fighterProfile,
   });
 
+  const { data: recordFromFights } = useQuery({
+    queryKey: ["fighter-record-fights", fighterProfile?.id],
+    queryFn: async () => {
+      if (!fighterProfile) return null;
+      const { data: asA } = await supabase
+        .from("fights")
+        .select("result, winner_id, fighter_a_id, fighter_b_id")
+        .eq("fighter_a_id", fighterProfile.id);
+      const { data: asB } = await supabase
+        .from("fights")
+        .select("result, winner_id, fighter_a_id, fighter_b_id")
+        .eq("fighter_b_id", fighterProfile.id);
+      const map = new Map<string, any>();
+      [...(asA || []), ...(asB || [])].forEach((f: any, idx) => map.set(`${f.fighter_a_id}-${f.fighter_b_id}-${f.result}-${f.winner_id}-${idx}`, f));
+      const rows = Array.from(map.values());
+      let wins = 0, losses = 0, draws = 0;
+      rows.forEach((f: any) => {
+        const isA = f.fighter_a_id === fighterProfile.id;
+        if (f.result === "draw") draws++;
+        else if (f.winner_id) { if (f.winner_id === fighterProfile.id) wins++; else losses++; }
+        else if (f.result === "win") { if (isA) wins++; else losses++; }
+        else if (f.result === "loss") { if (isA) losses++; else wins++; }
+      });
+      return { wins, losses, draws, count: rows.length };
+    },
+    enabled: !!fighterProfile,
+  });
+
   const { data: proposals = [] } = useQuery({
     queryKey: ["fighter-proposals", fighterProfile?.id],
     queryFn: async () => {
