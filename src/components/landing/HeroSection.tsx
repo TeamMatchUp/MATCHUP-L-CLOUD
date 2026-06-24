@@ -22,8 +22,8 @@ export function HeroSection() {
             className="font-heading leading-[0.85] mb-3 sm:mb-6 w-full"
             style={{ fontWeight: 800, letterSpacing: "0.01em" }}
           >
-            <span className="block whitespace-nowrap text-foreground" style={{ fontSize: "clamp(3.25rem, 17vw, 13rem)", lineHeight: 0.9 }}>MATCH EASY,</span>
-            <span className="block whitespace-nowrap text-primary text-gold-glow" style={{ fontSize: "clamp(3.25rem, 17vw, 13rem)", lineHeight: 0.9 }}>FIGHT HARD</span>
+            <span className="block whitespace-nowrap text-foreground" style={{ fontSize: "clamp(2.25rem, 11vw, 8rem)", lineHeight: 0.9 }}>MATCH EASY,</span>
+            <span className="block whitespace-nowrap text-primary text-gold-glow" style={{ fontSize: "clamp(2.25rem, 11vw, 8rem)", lineHeight: 0.9 }}>FIGHT HARD</span>
           </h1>
 
           <p className="text-foreground text-sm sm:text-base md:text-lg max-w-md mt-3 sm:mt-4">
@@ -33,20 +33,19 @@ export function HeroSection() {
           <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-3">
             {user ? (
               <Button asChild variant="hero" size="lg" className="rounded-full px-8">
-                <Link to="/explore">Explore the platform</Link>
+                <Link to="/explore">Explore MatchUp</Link>
               </Button>
             ) : (
               <>
                 <Button variant="hero" size="lg" className="rounded-full px-8" onClick={() => open("signup")}>
-                  Get started
+                  Create free account
                 </Button>
                 <Button
-                  variant="outline"
+                  asChild
                   size="lg"
-                  className="rounded-full px-8 bg-transparent"
-                  onClick={() => open("signin")}
+                  className="rounded-full px-8 bg-white text-black hover:bg-white/90"
                 >
-                  Sign in
+                  <Link to="/explore">Explore MatchUp</Link>
                 </Button>
               </>
             )}
