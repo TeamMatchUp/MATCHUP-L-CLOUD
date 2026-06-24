@@ -141,7 +141,7 @@ export default function OrganiserDashboard() {
                     const bouts = getBoutsForEvent(event.id);
 
                     return (
-                      <div key={event.id} className="rounded-lg border border-border bg-card p-5">
+                      <div key={event.id} className="rounded-lg bg-card p-5 shadow-[0_2px_8px_rgba(0,0,0,0.4),0_8px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)]">
                         <div className="flex items-center justify-between gap-4 mb-3">
                           <Link to={`/organiser/events/${event.id}`} className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
