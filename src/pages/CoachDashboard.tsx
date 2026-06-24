@@ -10,6 +10,9 @@ import { AddFightResultDialog } from "@/components/coach/AddFightResultDialog";
 import { FighterRosterPanel } from "@/components/coach/FighterRosterPanel";
 import { GymRequestsPanel } from "@/components/coach/GymRequestsPanel";
 import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
+import { EventCalendar } from "@/components/dashboard/EventCalendar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LayoutDashboard, Calendar as CalendarIcon } from "lucide-react";
 
 export default function CoachDashboard() {
   const { user } = useAuth();
