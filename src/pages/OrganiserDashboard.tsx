@@ -244,6 +244,19 @@ export default function OrganiserDashboard() {
               </TabsContent>
 
 
+              <TabsContent value="calendar">
+                <EventCalendar
+                  events={events.map((e: any) => ({
+                    id: e.id,
+                    title: e.title,
+                    date: String(e.date ?? "").slice(0, 10),
+                    location: e.location ?? e.city ?? "",
+                    status: e.status,
+                  })).filter((e) => e.date)}
+                  highlightedDates={events.filter((e: any) => e.status === "published").map((e: any) => String(e.date ?? "").slice(0, 10)).filter(Boolean)}
+                />
+              </TabsContent>
+
               <TabsContent value="notifications">
                 <NotificationHistory />
               </TabsContent>
