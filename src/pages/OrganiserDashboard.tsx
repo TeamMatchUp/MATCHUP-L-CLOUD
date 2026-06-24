@@ -121,6 +121,7 @@ export default function OrganiserDashboard() {
             <Tabs defaultValue={searchParams.get("tab") || "events"} className="space-y-6">
               <TabsList className="bg-transparent p-0 h-auto gap-1 rounded-none border-b border-white/5 w-full justify-start">
                 <TabsTrigger value="events" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2"><Calendar className="h-4 w-4 mr-1" /> Events</TabsTrigger>
+                <TabsTrigger value="calendar" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2"><Calendar className="h-4 w-4 mr-1" /> Calendar</TabsTrigger>
                 <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2"><Bell className="h-4 w-4 mr-1" /> Notifications</TabsTrigger>
               </TabsList>
 
