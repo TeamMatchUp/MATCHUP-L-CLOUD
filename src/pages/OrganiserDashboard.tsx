@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Calendar, ArrowRight, Bell, Megaphone, Sparkles, GripVertical } from "lucide-react";
 import { NotificationHistory } from "@/components/NotificationHistory";
 import { PromoteEventDialog } from "@/components/organiser/PromoteEventDialog";
+import { EventCalendar } from "@/components/dashboard/EventCalendar";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
