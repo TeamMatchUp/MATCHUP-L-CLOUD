@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Calendar, ArrowRight, Bell, Megaphone, Sparkles, GripVertical } from "lucide-react";
 import { NotificationHistory } from "@/components/NotificationHistory";
 import { PromoteEventDialog } from "@/components/organiser/PromoteEventDialog";
+import { EventCalendar } from "@/components/dashboard/EventCalendar";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -121,6 +122,7 @@ export default function OrganiserDashboard() {
             <Tabs defaultValue={searchParams.get("tab") || "events"} className="space-y-6">
               <TabsList className="bg-transparent p-0 h-auto gap-1 rounded-none border-b border-white/5 w-full justify-start">
                 <TabsTrigger value="events" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2"><Calendar className="h-4 w-4 mr-1" /> Events</TabsTrigger>
+                <TabsTrigger value="calendar" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2"><Calendar className="h-4 w-4 mr-1" /> Calendar</TabsTrigger>
                 <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2"><Bell className="h-4 w-4 mr-1" /> Notifications</TabsTrigger>
               </TabsList>
 
@@ -242,6 +244,19 @@ export default function OrganiserDashboard() {
                 })()}
               </TabsContent>
 
+
+              <TabsContent value="calendar">
+                <EventCalendar
+                  events={events.map((e: any) => ({
+                    id: e.id,
+                    title: e.title,
+                    date: String(e.date ?? "").slice(0, 10),
+                    location: e.location ?? e.city ?? "",
+                    status: e.status,
+                  })).filter((e) => e.date)}
+                  highlightedDates={events.filter((e: any) => e.status === "published").map((e: any) => String(e.date ?? "").slice(0, 10)).filter(Boolean)}
+                />
+              </TabsContent>
 
               <TabsContent value="notifications">
                 <NotificationHistory />
