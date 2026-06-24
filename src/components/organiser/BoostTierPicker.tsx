@@ -39,7 +39,7 @@ export function BoostTierPicker({
               onClick={() => setSelected(tier.id)}
               style={{
                 position: "relative",
-                background: active ? "rgba(232,160,32,0.12)" : "#181c24",
+                background: active ? "rgba(239,68,68,0.12)" : "#181c24",
                 color: "#e8eaf0",
                 borderRadius: 12,
                 padding: "16px 14px",
@@ -47,7 +47,7 @@ export function BoostTierPicker({
                 cursor: "pointer",
                 border: "none",
                 boxShadow: active
-                  ? "inset 0 0 0 2px #e8a020, 0 0 18px rgba(232,160,32,0.18)"
+                  ? "inset 0 0 0 2px #e8a020, 0 0 18px rgba(239,68,68,0.18)"
                   : "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
                 transition: "all 0.15s ease",
               }}
@@ -159,7 +159,7 @@ export function BoostTierPicker({
             fontWeight: 700,
             cursor: "pointer",
             border: "none",
-            boxShadow: "0 0 14px rgba(232,160,32,0.3)",
+            boxShadow: "0 0 14px rgba(239,68,68,0.3)",
             display: "inline-flex",
             alignItems: "center",
             gap: 6,

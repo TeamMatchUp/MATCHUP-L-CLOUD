@@ -143,7 +143,7 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
           disabled={uploading}
           style={{
             width: "100%", aspectRatio: "16/9", borderRadius: 8, cursor: uploading ? "wait" : "pointer",
-            border: "2px dashed rgba(232,160,32,0.3)", background: "rgba(232,160,32,0.04)",
+            border: "2px dashed rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.04)",
             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
             gap: 8, color: "#8b909e", fontSize: 13,
           }}
@@ -225,7 +225,7 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
                   style={{
                     padding: "10px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
                     background: "#e8a020", color: "#0d0f12", cursor: uploading ? "wait" : "pointer",
-                    boxShadow: "0 0 12px rgba(232,160,32,0.25)",
+                    boxShadow: "0 0 12px rgba(239,68,68,0.25)",
                   }}
                 >
                   {uploading ? <Loader2 className="h-4 w-4 animate-spin inline mr-2" /> : null}

@@ -1084,7 +1084,7 @@ export function DashboardActions({
               <div
                 key={item.id}
                 data-action-id={item.id}
-                className={`rounded-lg border bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 transition-all duration-300 ${isCompleted ? "border-border/50 opacity-60" : "border-border hover:border-primary/20"} ${isHighlighted ? "!border-primary !opacity-100 shadow-[0_0_0_2px_rgba(232,160,32,0.35)]" : ""}`}
+                className={`rounded-lg border bg-card p-3 sm:p-4 flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 transition-all duration-300 ${isCompleted ? "border-border/50 opacity-60" : "border-border hover:border-primary/20"} ${isHighlighted ? "!border-primary !opacity-100 shadow-[0_0_0_2px_rgba(239,68,68,0.35)]" : ""}`}
               >
                 <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
                   {multiSelectMode && (

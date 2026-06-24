@@ -87,7 +87,7 @@ export function ManageFighterTitles({ fighterId, fighterName }: ManageFighterTit
           onClick={() => setShowAdd(!showAdd)}
           style={{
             fontSize: 12, fontWeight: 600, color: "#e8a020", background: "none",
-            border: "1px solid rgba(232,160,32,0.3)", borderRadius: 6,
+            border: "1px solid rgba(239,68,68,0.3)", borderRadius: 6,
             padding: "4px 12px", cursor: "pointer",
           }}
         >

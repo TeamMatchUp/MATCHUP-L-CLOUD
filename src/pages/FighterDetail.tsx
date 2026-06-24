@@ -257,7 +257,7 @@ export default function FighterDetail() {
               {showFollow && (
                 <button onClick={toggleFollow} disabled={followLoading} style={{
                   position: "absolute", top: 16, right: 56, zIndex: 5, borderRadius: 20, padding: "6px 16px", fontSize: 12, fontWeight: 600,
-                  background: isFollowing ? "rgba(232,160,32,0.15)" : "#e8a020", color: isFollowing ? "#e8a020" : "#080a0d",
+                  background: isFollowing ? "rgba(239,68,68,0.15)" : "#e8a020", color: isFollowing ? "#e8a020" : "#080a0d",
                   border: isFollowing ? "1px solid #e8a020" : "none", cursor: "pointer", backdropFilter: "blur(8px)",
                 }}>
                   {isFollowing ? "Following" : "Follow"}
@@ -266,10 +266,10 @@ export default function FighterDetail() {
               {/* Fighter identity */}
               <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 20px 20px", display: "flex", alignItems: "flex-end", gap: 14 }}>
                 <div style={{
-                  width: 72, height: 72, borderRadius: "50%", border: "2px solid rgba(232,160,32,0.5)",
-                  boxShadow: "0 0 20px rgba(232,160,32,0.2)", overflow: "hidden", flexShrink: 0,
+                  width: 72, height: 72, borderRadius: "50%", border: "2px solid rgba(239,68,68,0.5)",
+                  boxShadow: "0 0 20px rgba(239,68,68,0.2)", overflow: "hidden", flexShrink: 0,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  background: fighter._avatar ? "transparent" : "linear-gradient(135deg, rgba(232,160,32,0.25), rgba(232,160,32,0.08))",
+                  background: fighter._avatar ? "transparent" : "linear-gradient(135deg, rgba(239,68,68,0.25), rgba(239,68,68,0.08))",
                 }}>
                   {fighter._avatar ? (
                     <img src={fighter._avatar} alt={fighter.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -287,7 +287,7 @@ export default function FighterDetail() {
                     <div className="flex gap-2 flex-wrap" style={{ marginTop: 4 }}>
                       {titles.slice(0, 3).map((t: any) => (
                         <span key={t.id} className="flex items-center gap-1" style={{
-                          background: "rgba(232,160,32,0.1)", borderRadius: 9999, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#e8a020",
+                          background: "rgba(239,68,68,0.1)", borderRadius: 9999, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#e8a020",
                         }}>
                           <Award style={{ width: 10, height: 10 }} />
                           {t.title}{t.organisation ? ` · ${t.organisation}` : ""}
@@ -450,7 +450,7 @@ export default function FighterDetail() {
                     <RadarChart data={radarData} outerRadius="58%" margin={{ top: 40, right: 70, bottom: 40, left: 70 }}>
                       <PolarGrid stroke="rgba(255,255,255,0.06)" />
                       <PolarAngleAxis dataKey="subject" tick={{ fill: "#8b909e", fontSize: 11 }} tickSize={14} />
-                      <Radar name="fighter" dataKey="value" stroke="#e8a020" fill="rgba(232,160,32,0.3)" fillOpacity={1} dot={{ fill: "#e8a020", r: 4 } as any} />
+                      <Radar name="fighter" dataKey="value" stroke="#e8a020" fill="rgba(239,68,68,0.3)" fillOpacity={1} dot={{ fill: "#e8a020", r: 4 } as any} />
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>

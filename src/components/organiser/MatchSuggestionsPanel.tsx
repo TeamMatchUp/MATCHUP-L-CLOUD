@@ -345,7 +345,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
             fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none",
             backdropFilter: "blur(8px)",
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.18)"; e.currentTarget.style.color = "#e8a020"; }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.18)"; e.currentTarget.style.color = "#e8a020"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#e8eaf0"; }}
         >
           <X style={{ width: 14, height: 14 }} /> Close
@@ -371,7 +371,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
         {/* Anchor fighter summary card */}
         {anchorFighter && (
           <div style={{
-            background: "rgba(232,160,32,0.06)", borderRadius: 8, padding: "12px 16px",
+            background: "rgba(239,68,68,0.06)", borderRadius: 8, padding: "12px 16px",
           }}>
             <p style={{ fontSize: 9, color: "#e8a020", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
               Anchor fighter
@@ -408,7 +408,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                 key={key}
                 onClick={() => applyPreset(key)}
                 style={{
-                  background: selectedPreset === key ? "rgba(232,160,32,0.12)" : "#181c24",
+                  background: selectedPreset === key ? "rgba(239,68,68,0.12)" : "#181c24",
                   color: selectedPreset === key ? "#e8a020" : "#8b909e",
                   borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, border: "none",
                   boxShadow: selectedPreset === key ? "inset 3px 0 0 #e8a020" : "none",
@@ -523,7 +523,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                   key={t}
                   onClick={() => toggleExpTier(t)}
                   style={{
-                    background: expTiers.has(t) ? "rgba(232,160,32,0.12)" : "#181c24",
+                    background: expTiers.has(t) ? "rgba(239,68,68,0.12)" : "#181c24",
                     color: expTiers.has(t) ? "#e8a020" : "#8b909e",
                     borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, border: "none",
                     cursor: "pointer", transition: "all 0.15s",
@@ -591,10 +591,10 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
             disabled={allZero}
             style={{
               width: "100%", padding: "12px 0", borderRadius: 8, border: "none",
-              background: allZero ? "rgba(232,160,32,0.3)" : "#e8a020",
+              background: allZero ? "rgba(239,68,68,0.3)" : "#e8a020",
               color: "#0d0f12", fontSize: 14, fontWeight: 600, cursor: allZero ? "not-allowed" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              boxShadow: allZero ? "none" : "0 0 12px rgba(232,160,32,0.25)",
+              boxShadow: allZero ? "none" : "0 0 12px rgba(239,68,68,0.25)",
             }}
           >
             <RefreshCw style={{ width: 16, height: 16 }} />
@@ -682,7 +682,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
                     transition: "all 0.2s ease", cursor: "default",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2330"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3), 0 0 0 1px rgba(232,160,32,0.08)"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2330"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3), 0 0 0 1px rgba(239,68,68,0.08)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "#181c24"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)"; }}
                 >
                   {/* Fighter name */}
@@ -722,13 +722,13 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                       onClick={() => handleSelect(f, anchorFighter)}
                       disabled={allZero}
                       style={{
-                        background: "rgba(232,160,32,0.12)", color: "#e8a020", borderRadius: 6,
+                        background: "rgba(239,68,68,0.12)", color: "#e8a020", borderRadius: 6,
                         padding: "5px 14px", fontSize: 12, fontWeight: 600, border: "none",
                         cursor: allZero ? "not-allowed" : "pointer", transition: "all 0.15s",
                         display: "flex", alignItems: "center", gap: 4,
                       }}
-                      onMouseEnter={(e) => { if (!allZero) e.currentTarget.style.background = "rgba(232,160,32,0.2)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.12)"; }}
+                      onMouseEnter={(e) => { if (!allZero) e.currentTarget.style.background = "rgba(239,68,68,0.2)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.12)"; }}
                     >
                       <Check style={{ width: 12, height: 12 }} /> Select as opponent
                     </button>
@@ -873,7 +873,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                         >
                           {/* Verdict callout */}
                           <div style={{
-                            background: "rgba(232,160,32,0.08)",
+                            background: "rgba(239,68,68,0.08)",
                             borderLeft: "3px solid #e8a020",
                             borderRadius: 6,
                             padding: "8px 10px",
@@ -975,7 +975,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                       onClick={() => handleSelect(pair.fighterA, pair.fighterB)}
                       disabled={allZero}
                       style={{
-                        background: allZero ? "rgba(232,160,32,0.3)" : "#e8a020",
+                        background: allZero ? "rgba(239,68,68,0.3)" : "#e8a020",
                         color: "#0d0f12", borderRadius: 6,
                         padding: "6px 16px", fontSize: 12, fontWeight: 700, border: "none",
                         cursor: allZero ? "not-allowed" : "pointer", transition: "all 0.15s",

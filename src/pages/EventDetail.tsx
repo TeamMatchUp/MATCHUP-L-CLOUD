@@ -99,7 +99,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                 padding: "10px 14px",
                 transform: isSelected ? "scale(1.01)" : "scale(1)",
                 boxShadow: isSelected
-                  ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,160,32,0.45)"
+                  ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(239,68,68,0.45)"
                   : "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
               }}
             >
@@ -191,7 +191,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                       disabled={qty <= 0}
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
-                        background: qty <= 0 ? "rgba(232,160,32,0.3)" : "#e8a020", color: "#0d0f12", borderRadius: 8, border: "none",
+                        background: qty <= 0 ? "rgba(239,68,68,0.3)" : "#e8a020", color: "#0d0f12", borderRadius: 8, border: "none",
                         cursor: qty <= 0 ? "not-allowed" : "pointer", marginLeft: 4,
                       }}
                     >
@@ -524,9 +524,9 @@ export default function EventDetail() {
         <div
           style={{
             position: "sticky", top: 60, zIndex: 28,
-            background: "rgba(232,160,32,0.12)",
+            background: "rgba(239,68,68,0.12)",
             backdropFilter: "blur(12px)",
-            boxShadow: "inset 0 -1px 0 rgba(232,160,32,0.25)",
+            boxShadow: "inset 0 -1px 0 rgba(239,68,68,0.25)",
             padding: "10px 16px",
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
           }}
@@ -614,7 +614,7 @@ export default function EventDetail() {
                       onClick={() => setMapOpen((v) => !v)}
                       className="inline-flex items-center gap-2 transition-colors"
                       style={{
-                        background: mapOpen ? "rgba(232,160,32,0.12)" : "rgba(255,255,255,0.04)",
+                        background: mapOpen ? "rgba(239,68,68,0.12)" : "rgba(255,255,255,0.04)",
                         color: mapOpen ? "#e8a020" : "#8b909e",
                         borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
                       }}

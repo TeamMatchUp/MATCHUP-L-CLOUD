@@ -25,7 +25,7 @@ const PAGE_BG = "#080a0d";
 const CARD = "#111318";
 const RAISED = "#181c24";
 const ACCENT = "#e8a020";
-const ACCENT_DIM = "rgba(232,160,32,0.12)";
+const ACCENT_DIM = "rgba(239,68,68,0.12)";
 const TEXT = "#e8eaf0";
 const TEXT_SEC = "#8b909e";
 const TEXT_MUTED = "#555b6b";
@@ -135,7 +135,7 @@ function GoldButton({ children, onClick, icon: Icon, size = "md" }: {
     padding: size === "sm" ? "7px 12px" : "9px 14px",
     fontSize: size === "sm" ? 12 : 13, fontWeight: 700, borderRadius: 10,
     background: ACCENT, color: "#0d0f12", border: "none", cursor: "pointer",
-    boxShadow: "0 0 16px rgba(232,160,32,0.25)", transition: "background 0.15s",
+    boxShadow: "0 0 16px rgba(239,68,68,0.25)", transition: "background 0.15s",
   };
   return (
     <button onClick={onClick} style={style}
@@ -332,8 +332,8 @@ export default function EventManager() {
               <div style={{
                 ...cardStyle, padding: "12px 16px", marginBottom: 20,
                 display: "flex", alignItems: "center", gap: 12,
-                background: "rgba(232,160,32,0.06)",
-                boxShadow: "inset 0 0 0 1px rgba(232,160,32,0.18), 0 2px 8px rgba(0,0,0,0.3)",
+                background: "rgba(239,68,68,0.06)",
+                boxShadow: "inset 0 0 0 1px rgba(239,68,68,0.18), 0 2px 8px rgba(0,0,0,0.3)",
               }}>
                 <Sparkles style={{ color: ACCENT, width: 18, height: 18 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -725,7 +725,7 @@ function ShareEventModal({ eventId, title, onClose }: { eventId: string; title?:
                   outline: "none", border: "none",
                   boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
                 }}
-                onFocusCapture={(e) => { e.currentTarget.style.boxShadow = "0 0 0 2px rgba(232,160,32,0.4)"; }}
+                onFocusCapture={(e) => { e.currentTarget.style.boxShadow = "0 0 0 2px rgba(239,68,68,0.4)"; }}
                 onBlur={(e) => { e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)"; }}
               />
               <GoldButton icon={copied ? Check : Copy} onClick={copy}>

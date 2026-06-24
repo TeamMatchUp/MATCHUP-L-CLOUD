@@ -91,8 +91,8 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
     transition: "all 0.2s ease",
   };
   if (isConfirmed) {
-    cardStyle.background = "rgba(232,160,32,0.08)";
-    cardStyle.border = "1px solid rgba(232,160,32,0.3)";
+    cardStyle.background = "rgba(239,68,68,0.08)";
+    cardStyle.border = "1px solid rgba(239,68,68,0.3)";
   } else if (isDeclined) {
     cardStyle.border = "2px dashed rgba(239,68,68,0.5)";
     cardStyle.background = "rgba(239,68,68,0.04)";
@@ -191,14 +191,14 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
               fontWeight: 600,
               color: "#e8a020",
               background: "transparent",
-              border: "1px solid rgba(232,160,32,0.3)",
+              border: "1px solid rgba(239,68,68,0.3)",
               borderRadius: 6,
               padding: "3px 8px",
               cursor: "pointer",
               whiteSpace: "nowrap",
               transition: "all 0.15s",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.1)"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
           >
             {findLabel}
@@ -356,7 +356,7 @@ export default function FightCardManager() {
   const sectionContainer = (isMain: boolean, children: React.ReactNode, sectionBouts: any[]) => (
     <div style={{
       background: "#14171e",
-      border: isMain ? "1px solid rgba(232,160,32,0.2)" : "1px solid rgba(255,255,255,0.08)",
+      border: isMain ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(255,255,255,0.08)",
       borderRadius: 12,
       padding: 20,
       marginBottom: 16,
@@ -380,13 +380,13 @@ export default function FightCardManager() {
             cursor: "pointer",
             transition: "all 0.2s",
             ...(isMain
-              ? { background: "#e8a020", color: "#0d0f12", border: "none", boxShadow: "0 0 12px rgba(232,160,32,0.25)" }
+              ? { background: "#e8a020", color: "#0d0f12", border: "none", boxShadow: "0 0 12px rgba(239,68,68,0.25)" }
               : { background: "transparent", color: "#e8eaf0", border: "1px solid rgba(255,255,255,0.1)" }
             ),
           }}
           onMouseEnter={(e) => {
             if (isMain) e.currentTarget.style.background = "#c47e10";
-            else e.currentTarget.style.borderColor = "rgba(232,160,32,0.3)";
+            else e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)";
           }}
           onMouseLeave={(e) => {
             if (isMain) e.currentTarget.style.background = "#e8a020";
@@ -435,10 +435,10 @@ export default function FightCardManager() {
               <div className="flex gap-2 flex-wrap">
                 <button onClick={() => setShowEditEvent(true)} style={{
                   padding: "8px 16px", fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: "pointer",
-                  background: "transparent", border: "1px solid rgba(232,160,32,0.4)", color: "#e8a020",
+                  background: "transparent", border: "1px solid rgba(239,68,68,0.4)", color: "#e8a020",
                   transition: "all 0.2s",
                 }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.1)"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                 >
                   <Pencil className="h-3 w-3 inline mr-1" /> Edit Event Details
@@ -449,7 +449,7 @@ export default function FightCardManager() {
                   background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#8b909e",
                   textDecoration: "none", transition: "all 0.2s",
                 }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(232,160,32,0.4)"; e.currentTarget.style.color = "#e8a020"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; e.currentTarget.style.color = "#e8a020"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#8b909e"; }}
                 >
                   <Eye className="h-3.5 w-3.5" /> Preview public page

@@ -104,7 +104,7 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
             className="flex items-center gap-3 transition-colors"
             style={{ background: "#181c24", borderRadius: 8, padding: "10px 12px" }}
           >
-            <div style={{ height: 36, width: 36, borderRadius: 8, background: "rgba(232,160,32,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div style={{ height: 36, width: 36, borderRadius: 8, background: "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               <MapPin style={{ width: 16, height: 16, color: "#e8a020" }} />
             </div>
             <div className="flex-1 min-w-0">

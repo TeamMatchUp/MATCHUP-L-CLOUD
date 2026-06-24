@@ -85,7 +85,7 @@ export function NetworkModal({
               <div className="flex-1 min-w-0">
                 <span className="block truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{item.name || "Unknown"}</span>
                 {item.role && (
-                  <span style={{ fontSize: 10, fontWeight: 600, color: "#e8a020", background: "rgba(232,160,32,0.1)", borderRadius: 4, padding: "1px 6px", display: "inline-block", marginTop: 2 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "#e8a020", background: "rgba(239,68,68,0.1)", borderRadius: 4, padding: "1px 6px", display: "inline-block", marginTop: 2 }}>
                     {ROLE_LABELS[item.role] || item.role}
                   </span>
                 )}

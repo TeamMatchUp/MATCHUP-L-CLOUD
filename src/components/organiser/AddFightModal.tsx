@@ -379,7 +379,7 @@ export function AddFightModal({
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = "#222736";
-        e.currentTarget.style.borderColor = "rgba(232,160,32,0.2)";
+        e.currentTarget.style.borderColor = "rgba(239,68,68,0.2)";
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.background = "#1a1e28";
@@ -577,7 +577,7 @@ export function AddFightModal({
             {/* Anchor fighter context for Scenario A */}
             {scenario === "oneTBA" && anchorFighter && (
               <div style={{
-                background: "rgba(232,160,32,0.06)", borderRadius: 8, padding: "12px 16px", marginTop: 8, marginBottom: 4,
+                background: "rgba(239,68,68,0.06)", borderRadius: 8, padding: "12px 16px", marginTop: 8, marginBottom: 4,
               }}>
                 <p style={{ fontSize: 9, color: "#e8a020", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
                   Anchor fighter

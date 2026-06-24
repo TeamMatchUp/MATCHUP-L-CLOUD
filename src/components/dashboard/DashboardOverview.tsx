@@ -40,7 +40,7 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children, c
           background: "#e8a020", color: "#0d0f12", borderRadius: 8,
           padding: compact ? "8px 12px" : "8px 18px",
           fontSize: compact ? 12 : 13, fontWeight: 600, letterSpacing: "0.02em",
-          boxShadow: "0 0 12px rgba(232,160,32,0.25)", cursor: "pointer",
+          boxShadow: "0 0 12px rgba(239,68,68,0.25)", cursor: "pointer",
         }}
         onClick={() => setShowQuickActions(!showQuickActions)}
         onMouseEnter={(e) => { e.currentTarget.style.background = "#c47e10"; }}

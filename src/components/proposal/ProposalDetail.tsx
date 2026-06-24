@@ -332,7 +332,7 @@ function FighterCard({
   const card: React.CSSProperties = {
     background: "#111318",
     boxShadow: isViewer
-      ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px rgba(232,160,32,0.25), 0 8px 24px rgba(0,0,0,0.3)"
+      ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 0 0 1px rgba(239,68,68,0.25), 0 8px 24px rgba(0,0,0,0.3)"
       : "inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.4)",
   };
 

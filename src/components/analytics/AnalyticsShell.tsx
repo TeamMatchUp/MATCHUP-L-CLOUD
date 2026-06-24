@@ -25,7 +25,7 @@ interface AnalyticsShellProps {
 const CARD_BG = "#111318";
 const PAGE_BG = "#080a0d";
 const GOLD = "#e8a020";
-const GOLD_DIM = "rgba(232,160,32,0.12)";
+const GOLD_DIM = "rgba(239,68,68,0.12)";
 const TEXT_MUTED = "#8b909e";
 const RAISED = "#181c24";
 
@@ -229,7 +229,7 @@ export function AnalyticsShell({
                   fontFamily: "Inter, sans-serif",
                   letterSpacing: "0.04em",
                   boxShadow: isActive
-                    ? "0 2px 8px rgba(232,160,32,0.25)"
+                    ? "0 2px 8px rgba(239,68,68,0.25)"
                     : "inset 0 1px 0 rgba(255,255,255,0.03)",
                 }}
               >

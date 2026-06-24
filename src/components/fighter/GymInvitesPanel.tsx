@@ -50,7 +50,7 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
               <div className="flex items-center gap-3 min-w-0">
                 <div
                   className="flex items-center justify-center shrink-0"
-                  style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(232,160,32,0.12)" }}
+                  style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(239,68,68,0.12)" }}
                 >
                   <Building2 className="h-4 w-4" style={{ color: "#e8a020" }} />
                 </div>
@@ -71,7 +71,7 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
                   letterSpacing: "0.06em",
                   textTransform: "uppercase",
                   color: "#e8a020",
-                  background: "rgba(232,160,32,0.12)",
+                  background: "rgba(239,68,68,0.12)",
                   padding: "4px 8px",
                   borderRadius: 6,
                 }}

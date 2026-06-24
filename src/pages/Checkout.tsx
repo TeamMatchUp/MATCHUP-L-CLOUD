@@ -112,7 +112,7 @@ export default function Checkout() {
                     width: "100%", marginTop: 16, padding: "14px 0",
                     background: "#e8a020", color: "#0d0f12", fontWeight: 700, fontSize: 15,
                     borderRadius: 8, cursor: "pointer", border: "none",
-                    boxShadow: "0 0 12px rgba(232,160,32,0.25)",
+                    boxShadow: "0 0 12px rgba(239,68,68,0.25)",
                   }}
                 >
                   Proceed to Payment

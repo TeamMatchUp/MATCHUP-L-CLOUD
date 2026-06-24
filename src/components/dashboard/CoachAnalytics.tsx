@@ -468,7 +468,7 @@ export function CoachAnalyticsV2({ userId, title = "Analytics" }: { userId: stri
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: axisColor, fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-              <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(232,160,32,0.06)" }} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(239,68,68,0.06)" }} />
               <Legend wrapperStyle={{ color: axisColor, fontSize: 11 }} />
               <Bar dataKey="Wins" stackId="r" fill={ANALYTICS_TOKENS.GOLD} radius={[0, 0, 0, 0]} />
               <Bar dataKey="Losses" stackId="r" fill="#555b6b" />
@@ -489,7 +489,7 @@ export function CoachAnalyticsV2({ userId, title = "Analytics" }: { userId: stri
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="name" tick={{ fill: axisColor, fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: axisColor, fontSize: 11 }} axisLine={false} tickLine={false} domain={[0, 100]} />
-              <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(232,160,32,0.06)" }} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(239,68,68,0.06)" }} />
               <Bar dataKey="Finish %" fill={ANALYTICS_TOKENS.GOLD} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

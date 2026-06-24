@@ -174,7 +174,7 @@ export function DashboardNetwork() {
                     <span
                       style={{
                         fontSize: 10, fontWeight: 600, color: "#e8a020",
-                        background: "rgba(232,160,32,0.1)",
+                        background: "rgba(239,68,68,0.1)",
                         borderRadius: 4, padding: "2px 6px",
                       }}
                     >
@@ -205,7 +205,7 @@ export function DashboardNetwork() {
   return (
     <>
       <div className="coach-card">
-        <div style={{ height: 3, background: "linear-gradient(90deg, #e8a020, rgba(232,160,32,0.3))", borderRadius: "12px 12px 0 0" }} />
+        <div style={{ height: 3, background: "linear-gradient(90deg, #e8a020, rgba(239,68,68,0.3))", borderRadius: "12px 12px 0 0" }} />
         <div className="p-5">
           <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8eaf0", marginBottom: 16 }}>
             Your Network
