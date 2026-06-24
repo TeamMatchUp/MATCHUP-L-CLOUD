@@ -9,13 +9,13 @@ export function HeroSection() {
   const { user } = useAuth();
 
   return (
-    <section className="relative min-h-[78vh] flex items-center overflow-hidden">
+    <section className="relative min-h-[68vh] flex items-center overflow-hidden">
       <div className="container relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] gap-8 md:gap-12 items-center">
+        <div className="mx-auto max-w-5xl grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 md:gap-10 items-center">
           {/* Shield mark */}
           <div className="flex justify-center md:justify-end">
             <AppIcon
-              className="h-[clamp(110px,16vw,220px)] w-auto opacity-95 drop-shadow-[0_0_60px_rgba(255,255,255,0.08)]"
+              className="h-[clamp(96px,12vw,168px)] w-auto opacity-95 drop-shadow-[0_0_60px_rgba(255,255,255,0.08)]"
               alt="MatchUp shield"
             />
           </div>
@@ -28,25 +28,26 @@ export function HeroSection() {
             >
               <span
                 className="block text-foreground"
-                style={{ fontSize: "clamp(2.5rem, 7.5vw, 5.75rem)", lineHeight: 0.95 }}
+                style={{ fontSize: "clamp(1.75rem, 4.4vw, 3.25rem)", lineHeight: 0.95 }}
               >
                 MATCH EASY
               </span>
               <span
                 className="block text-primary text-gold-glow"
-                style={{ fontSize: "clamp(2.5rem, 7.5vw, 5.75rem)", lineHeight: 0.95 }}
+                style={{ fontSize: "clamp(1.75rem, 4.4vw, 3.25rem)", lineHeight: 0.95 }}
               >
                 FIGHT HARD
               </span>
             </h1>
 
             <p
-              className="text-foreground/80 mt-5 max-w-md"
-              style={{ fontSize: "clamp(0.875rem, 1.1vw, 1rem)", letterSpacing: "0.08em" }}
+              className="text-foreground/80 mt-4 max-w-md"
+              style={{ fontSize: "clamp(0.75rem, 0.85vw, 0.875rem)", letterSpacing: "0.08em" }}
             >
               UNITING ALL CORNERS OF MARTIAL ARTS.<br />
               SIGN UP, MATCHUP, PROMOTE, DONE...
             </p>
+
 
             <div className="mt-7 flex flex-wrap items-center justify-center md:justify-start gap-3">
               {user ? (

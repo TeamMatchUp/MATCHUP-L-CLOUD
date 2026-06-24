@@ -684,7 +684,7 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
                   ) : (
                     <>
                       <NetworkBackground />
-                      <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 80, opacity: 0.12, pointerEvents: "none" }} />
+                      <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 110, opacity: 0.12, pointerEvents: "none" }} />
                     </>
                   )}
                   {(() => {
@@ -738,7 +738,7 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
                   );
                 })()}
                 {/* Footer */}
-                <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+                <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "none" }}>
                   <span style={{ fontSize: 13, color: EX.gold }}>View Event</span>
                   <div style={{ width: 32, height: 32, borderRadius: "50%", background: EX.goldDim, border: `1px solid ${EX.goldBorder}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <ChevronRight style={{ width: 14, height: 14, color: EX.gold }} />
@@ -787,7 +787,7 @@ function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymI
                 ) : (
                   <>
                     <NetworkBackground />
-                    <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 80, opacity: 0.12, pointerEvents: "none" }} />
+                    <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 110, opacity: 0.12, pointerEvents: "none" }} />
                   </>
                 )}
                 {tags.length > 0 && (
@@ -816,7 +816,7 @@ function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymI
                 </div>
               </div>
               {/* Footer */}
-              <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+              <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "none" }}>
                 <span style={{ fontSize: 13, color: EX.gold }}>View Details</span>
                 <div style={{ width: 32, height: 32, borderRadius: "50%", background: EX.goldDim, border: `1px solid ${EX.goldBorder}`, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }}>
                   <ChevronRight style={{ width: 14, height: 14, color: EX.gold }} />
@@ -880,7 +880,7 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
         {/* Top area */}
         <div style={{ height: 200, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <NetworkBackground />
-          <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 120, opacity: 0.10, pointerEvents: "none" }} />
+          <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 150, opacity: 0.12, pointerEvents: "none" }} />
           <div style={{
             width: 96, height: 96, borderRadius: "50%", border: "2px solid rgba(239,68,68,0.5)", overflow: "hidden", boxShadow: "0 0 20px rgba(239,68,68,0.2)",
             display: "flex", alignItems: "center", justifyContent: "center", position: "relative", zIndex: 1,
@@ -946,7 +946,7 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
           )}
         </div>
         {/* Footer */}
-        <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "1px solid rgba(255,255,255,0.04)" }}>
+        <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "none" }}>
           <span style={{ fontSize: 13, color: EX.gold }}>View Profile</span>
           <div style={{ width: 32, height: 32, borderRadius: "50%", background: EX.goldDim, border: `1px solid ${EX.goldBorder}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <ChevronRight style={{ width: 14, height: 14, color: EX.gold }} />
