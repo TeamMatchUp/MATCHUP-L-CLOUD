@@ -36,7 +36,7 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
         className="font-heading text-foreground mb-4"
         style={{ fontSize: 18, letterSpacing: "0.04em", textTransform: "uppercase" }}
       >
-        GYM <span style={{ color: "#e8a020" }}>REQUESTS</span>
+        GYM <span style={{ color: "#ef4444" }}>REQUESTS</span>
       </h3>
       <div className="space-y-2">
         {pendingLinks.map((link: any) => {
@@ -52,7 +52,7 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
                   className="flex items-center justify-center shrink-0"
                   style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(239,68,68,0.12)" }}
                 >
-                  <Building2 className="h-4 w-4" style={{ color: "#e8a020" }} />
+                  <Building2 className="h-4 w-4" style={{ color: "#ef4444" }} />
                 </div>
                 <div className="min-w-0">
                   <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>
@@ -70,7 +70,7 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
                   fontWeight: 600,
                   letterSpacing: "0.06em",
                   textTransform: "uppercase",
-                  color: "#e8a020",
+                  color: "#ef4444",
                   background: "rgba(239,68,68,0.12)",
                   padding: "4px 8px",
                   borderRadius: 6,

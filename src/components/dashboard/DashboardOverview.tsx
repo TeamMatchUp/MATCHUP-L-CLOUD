@@ -37,14 +37,14 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children, c
       <button
         className="flex items-center gap-2 transition-all duration-150"
         style={{
-          background: "#e8a020", color: "#0d0f12", borderRadius: 8,
+          background: "#ef4444", color: "#0d0f12", borderRadius: 8,
           padding: compact ? "8px 12px" : "8px 18px",
           fontSize: compact ? 12 : 13, fontWeight: 600, letterSpacing: "0.02em",
           boxShadow: "0 0 12px rgba(239,68,68,0.25)", cursor: "pointer",
         }}
         onClick={() => setShowQuickActions(!showQuickActions)}
         onMouseEnter={(e) => { e.currentTarget.style.background = "#c47e10"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "#e8a020"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "#ef4444"; }}
       >
         <Plus style={{ width: 16, height: 16 }} />
         {compact ? <>Quick Actions</> : <>Quick Actions<ChevronDown style={{ width: 14, height: 14 }} /></>}
@@ -85,7 +85,7 @@ function VisibilityToggle({ label, visible, onToggle }: { label: string; visible
     <button className="w-full flex items-center justify-between rounded-md transition-colors" style={{ padding: "10px 12px", fontSize: 13, color: "#8b909e" }} onClick={onToggle}
       onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-    >{label}{visible ? <Eye style={{ width: 14, height: 14, color: "#e8a020" }} /> : <EyeOff style={{ width: 14, height: 14 }} />}</button>
+    >{label}{visible ? <Eye style={{ width: 14, height: 14, color: "#ef4444" }} /> : <EyeOff style={{ width: 14, height: 14 }} />}</button>
   );
 }
 
@@ -414,7 +414,7 @@ export function DashboardOverview({
         letterSpacing: "0.04em", textTransform: "uppercase",
         lineHeight: 1.1,
       }}>
-        Over<span style={{ color: "#e8a020" }}>view</span>
+        Over<span style={{ color: "#ef4444" }}>view</span>
       </h1>
       <p style={{ fontSize: 13, color: "#8b909e", marginTop: 4 }}>
         Welcome back, {profileData?.full_name || "User"}.
@@ -502,7 +502,7 @@ export function DashboardOverview({
         <div className="lg:col-span-2"><EventCalendar events={calendarEvents} highlightedDates={highlightedDates} /></div>
         <div className="space-y-4">
           <div className="coach-card p-4">
-            <h3 className="font-heading text-lg text-foreground mb-3">QUICK <span style={{ color: "#e8a020" }}>ACTIONS</span></h3>
+            <h3 className="font-heading text-lg text-foreground mb-3">QUICK <span style={{ color: "#ef4444" }}>ACTIONS</span></h3>
             <div className="grid grid-cols-1 gap-2">
               <Button variant="outline" className="justify-start gap-2 h-10" asChild><Link to="/explore?tab=events"><Search className="h-4 w-4 text-primary" />Browse Events</Link></Button>
               <Button variant="outline" className="justify-start gap-2 h-10" onClick={() => onNavigateSection("actions")}><Inbox className="h-4 w-4 text-primary" />View Actions</Button>

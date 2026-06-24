@@ -176,7 +176,7 @@ export function FighterSearchDropdown({
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
           <span style={{
-            display: "inline-block", fontSize: 10, fontWeight: 600, color: "#e8a020",
+            display: "inline-block", fontSize: 10, fontWeight: 600, color: "#ef4444",
             background: "rgba(239,68,68,0.1)", borderRadius: 4, padding: "2px 8px",
           }}>
             {formatEnum(f.weight_class)}
@@ -191,8 +191,8 @@ export function FighterSearchDropdown({
 
   const SectionDivider = ({ icon: Icon, label, count }: { icon: any; label: string; count: number }) => (
     <div className="flex items-center gap-2" style={{ padding: "4px 0" }}>
-      <Icon style={{ width: 12, height: 12, color: "#e8a020" }} />
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#e8a020" }}>
+      <Icon style={{ width: 12, height: 12, color: "#ef4444" }} />
+      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#ef4444" }}>
         {label}
       </span>
       <span style={{ fontSize: 10, color: "#555b6b" }}>· {count}</span>

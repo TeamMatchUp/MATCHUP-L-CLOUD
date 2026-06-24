@@ -80,13 +80,13 @@ export function ManageFighterTitles({ fighterId, fighterName }: ManageFighterTit
     <div style={{ marginTop: 16 }}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Award style={{ width: 14, height: 14, color: "#e8a020" }} />
+          <Award style={{ width: 14, height: 14, color: "#ef4444" }} />
           <span style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>Championship Titles</span>
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}
           style={{
-            fontSize: 12, fontWeight: 600, color: "#e8a020", background: "none",
+            fontSize: 12, fontWeight: 600, color: "#ef4444", background: "none",
             border: "1px solid rgba(239,68,68,0.3)", borderRadius: 6,
             padding: "4px 12px", cursor: "pointer",
           }}
@@ -130,7 +130,7 @@ export function ManageFighterTitles({ fighterId, fighterName }: ManageFighterTit
               <Label style={{ fontSize: 12, color: "#8b909e" }}>Current Title</Label>
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleAdd} disabled={!titleName.trim() || saving} size="sm" style={{ background: "#e8a020", color: "#080a0d" }}>
+              <Button onClick={handleAdd} disabled={!titleName.trim() || saving} size="sm" style={{ background: "#ef4444", color: "#080a0d" }}>
                 {saving ? "Adding..." : "Add Title"}
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setShowAdd(false)}>Cancel</Button>
@@ -148,7 +148,7 @@ export function ManageFighterTitles({ fighterId, fighterName }: ManageFighterTit
             }}>
               <div>
                 <div className="flex items-center gap-2">
-                  <Award style={{ width: 12, height: 12, color: "#e8a020" }} />
+                  <Award style={{ width: 12, height: 12, color: "#ef4444" }} />
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{t.title}</span>
                   {t.is_current ? (
                     <span style={{ fontSize: 10, fontWeight: 600, color: "#22c55e", background: "rgba(34,197,94,0.12)", borderRadius: 4, padding: "1px 6px" }}>Current</span>

@@ -36,7 +36,7 @@ export function EventKpiStrip({ eventId, confirmedCount, openSlotCount }: Props)
     {
       label: "Tickets Available",
       value: ticketData ? String(ticketData.totalCapacity) : "—",
-      color: "#e8a020",
+      color: "#ef4444",
     },
     {
       label: "Est. Revenue",

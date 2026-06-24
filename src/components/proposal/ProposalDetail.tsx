@@ -140,7 +140,7 @@ export function ProposalDetail({ proposalId }: ProposalDetailProps) {
       <div className="rounded-lg p-5" style={card}>
         <p
           className="text-[10px] uppercase tracking-[0.12em] mb-1"
-          style={{ color: "#e8a020", fontFamily: "Inter" }}
+          style={{ color: "#ef4444", fontFamily: "Inter" }}
         >
           Match Proposal
         </p>
@@ -178,7 +178,7 @@ export function ProposalDetail({ proposalId }: ProposalDetailProps) {
         <div className="flex md:flex-col items-center justify-center">
           <span
             className="text-2xl"
-            style={{ fontFamily: "Bebas Neue", letterSpacing: "0.08em", color: "#e8a020" }}
+            style={{ fontFamily: "Bebas Neue", letterSpacing: "0.08em", color: "#ef4444" }}
           >
             VS
           </span>
@@ -270,7 +270,7 @@ export function ProposalDetail({ proposalId }: ProposalDetailProps) {
               onClick={() => handleDecision("accepted")}
               disabled={busy}
               className="gap-1"
-              style={{ background: "#e8a020", color: "#0d0f12" }}
+              style={{ background: "#ef4444", color: "#0d0f12" }}
             >
               <Check className="h-4 w-4" />
               {myConfirmation?.decision === "accepted" ? "Re-confirm Accept" : "Accept Bout"}
@@ -350,7 +350,7 @@ function FighterCard({
         {isViewer && (
           <p
             className="text-[10px] uppercase tracking-[0.1em] mb-1"
-            style={{ color: "#e8a020", fontFamily: "Inter" }}
+            style={{ color: "#ef4444", fontFamily: "Inter" }}
           >
             Your Side
           </p>

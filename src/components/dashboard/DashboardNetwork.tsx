@@ -173,7 +173,7 @@ export function DashboardNetwork() {
                   {item.role && (
                     <span
                       style={{
-                        fontSize: 10, fontWeight: 600, color: "#e8a020",
+                        fontSize: 10, fontWeight: 600, color: "#ef4444",
                         background: "rgba(239,68,68,0.1)",
                         borderRadius: 4, padding: "2px 6px",
                       }}
@@ -205,7 +205,7 @@ export function DashboardNetwork() {
   return (
     <>
       <div className="coach-card">
-        <div style={{ height: 3, background: "linear-gradient(90deg, #e8a020, rgba(239,68,68,0.3))", borderRadius: "12px 12px 0 0" }} />
+        <div style={{ height: 3, background: "linear-gradient(90deg, #ef4444, rgba(239,68,68,0.3))", borderRadius: "12px 12px 0 0" }} />
         <div className="p-5">
           <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8eaf0", marginBottom: 16 }}>
             Your Network
@@ -216,7 +216,7 @@ export function DashboardNetwork() {
               className="text-left rounded-lg p-4 transition-all"
               style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}
             >
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#e8a020" }}>
+              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#ef4444" }}>
                 {followerCount}
               </span>
               <p style={{ fontSize: 12, color: "#8b909e", marginTop: 2 }}>Followers</p>
@@ -226,7 +226,7 @@ export function DashboardNetwork() {
               className="text-left rounded-lg p-4 transition-all"
               style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}
             >
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#e8a020" }}>
+              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#ef4444" }}>
                 {followingCount}
               </span>
               <p style={{ fontSize: 12, color: "#8b909e", marginTop: 2 }}>Following</p>

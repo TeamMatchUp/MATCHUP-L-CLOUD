@@ -352,7 +352,7 @@ export function FighterRecordHero() {
                   className="font-bold transition-colors duration-150"
                   style={{
                     fontSize: 28,
-                    color: hoveredStat === stat.key ? "#e8a020" : "#e8eaf0",
+                    color: hoveredStat === stat.key ? "#ef4444" : "#e8eaf0",
                   }}
                 >
                   {stat.value}

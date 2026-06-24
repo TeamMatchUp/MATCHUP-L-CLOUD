@@ -60,7 +60,7 @@ const EX = {
   raised: "#181c24",
   border: "transparent",
   borderMid: "transparent",
-  gold: "#e8a020",
+  gold: "#ef4444",
   goldDim: "rgba(239,68,68,0.12)",
   goldBorder: "rgba(239,68,68,0.25)",
   text: "#e8eaf0",

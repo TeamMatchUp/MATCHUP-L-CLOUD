@@ -133,7 +133,7 @@ export function Header() {
                 <ShoppingCart style={{ width: 20, height: 20 }} />
                 <span style={{
                   position: "absolute", top: -6, right: -8,
-                  background: "#e8a020", color: "#0d0f12",
+                  background: "#ef4444", color: "#0d0f12",
                   fontSize: 10, fontWeight: 700, borderRadius: 9999,
                   width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
                 }}>{basketCount}</span>
@@ -209,7 +209,7 @@ export function Header() {
               <ShoppingCart style={{ width: 20, height: 20 }} />
               <span style={{
                 position: "absolute", top: -6, right: -8,
-                background: "#e8a020", color: "#0d0f12",
+                background: "#ef4444", color: "#0d0f12",
                 fontSize: 10, fontWeight: 700, borderRadius: 9999,
                 width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
               }}>{basketCount}</span>
@@ -285,7 +285,7 @@ export function Header() {
                 <Link
                   to="/auth?mode=signup"
                   onClick={() => setMobileOpen(false)}
-                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#e8a020", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#ef4444", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   CREATE ACCOUNT
                 </Link>

@@ -24,7 +24,7 @@ interface AnalyticsShellProps {
 
 const CARD_BG = "#111318";
 const PAGE_BG = "#080a0d";
-const GOLD = "#e8a020";
+const GOLD = "#ef4444";
 const GOLD_DIM = "rgba(239,68,68,0.12)";
 const TEXT_MUTED = "#8b909e";
 const RAISED = "#181c24";

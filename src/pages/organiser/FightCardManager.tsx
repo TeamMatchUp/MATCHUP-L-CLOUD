@@ -160,7 +160,7 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
         {/* Fighters row */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {fighterBlock(fA, "a", "left")}
-          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8a020", flexShrink: 0 }}>VS</span>
+          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#ef4444", flexShrink: 0 }}>VS</span>
           {fighterBlock(fB, "b", "right")}
         </div>
 
@@ -189,7 +189,7 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
             style={{
               fontSize: 10,
               fontWeight: 600,
-              color: "#e8a020",
+              color: "#ef4444",
               background: "transparent",
               border: "1px solid rgba(239,68,68,0.3)",
               borderRadius: 6,
@@ -365,7 +365,7 @@ export default function FightCardManager() {
         <h2 style={{
           fontFamily: "'Bebas Neue', sans-serif",
           fontSize: 18,
-          color: isMain ? "#e8a020" : "#e8eaf0",
+          color: isMain ? "#ef4444" : "#e8eaf0",
           letterSpacing: "0.04em",
         }}>
           {isMain ? "MAIN CARD" : "UNDERCARD"}
@@ -380,7 +380,7 @@ export default function FightCardManager() {
             cursor: "pointer",
             transition: "all 0.2s",
             ...(isMain
-              ? { background: "#e8a020", color: "#0d0f12", border: "none", boxShadow: "0 0 12px rgba(239,68,68,0.25)" }
+              ? { background: "#ef4444", color: "#0d0f12", border: "none", boxShadow: "0 0 12px rgba(239,68,68,0.25)" }
               : { background: "transparent", color: "#e8eaf0", border: "1px solid rgba(255,255,255,0.1)" }
             ),
           }}
@@ -389,7 +389,7 @@ export default function FightCardManager() {
             else e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)";
           }}
           onMouseLeave={(e) => {
-            if (isMain) e.currentTarget.style.background = "#e8a020";
+            if (isMain) e.currentTarget.style.background = "#ef4444";
             else e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
           }}
         >
@@ -435,7 +435,7 @@ export default function FightCardManager() {
               <div className="flex gap-2 flex-wrap">
                 <button onClick={() => setShowEditEvent(true)} style={{
                   padding: "8px 16px", fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: "pointer",
-                  background: "transparent", border: "1px solid rgba(239,68,68,0.4)", color: "#e8a020",
+                  background: "transparent", border: "1px solid rgba(239,68,68,0.4)", color: "#ef4444",
                   transition: "all 0.2s",
                 }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
@@ -449,7 +449,7 @@ export default function FightCardManager() {
                   background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#8b909e",
                   textDecoration: "none", transition: "all 0.2s",
                 }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; e.currentTarget.style.color = "#e8a020"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; e.currentTarget.style.color = "#ef4444"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#8b909e"; }}
                 >
                   <Eye className="h-3.5 w-3.5" /> Preview public page

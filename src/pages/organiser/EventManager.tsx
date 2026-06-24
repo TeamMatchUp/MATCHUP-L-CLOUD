@@ -24,7 +24,7 @@ import { formatEnum } from "@/lib/format";
 const PAGE_BG = "#080a0d";
 const CARD = "#111318";
 const RAISED = "#181c24";
-const ACCENT = "#e8a020";
+const ACCENT = "#ef4444";
 const ACCENT_DIM = "rgba(239,68,68,0.12)";
 const TEXT = "#e8eaf0";
 const TEXT_SEC = "#8b909e";

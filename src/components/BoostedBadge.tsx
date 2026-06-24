@@ -10,7 +10,7 @@ export function BoostedBadge({ size = "sm", style }: { size?: "sm" | "md"; style
         alignItems: "center",
         gap: 4,
         background: "rgba(239,68,68,0.12)",
-        color: "#e8a020",
+        color: "#ef4444",
         fontFamily: "'Bebas Neue', sans-serif",
         letterSpacing: "0.08em",
         fontSize: fs,

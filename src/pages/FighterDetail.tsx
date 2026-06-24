@@ -257,8 +257,8 @@ export default function FighterDetail() {
               {showFollow && (
                 <button onClick={toggleFollow} disabled={followLoading} style={{
                   position: "absolute", top: 16, right: 56, zIndex: 5, borderRadius: 20, padding: "6px 16px", fontSize: 12, fontWeight: 600,
-                  background: isFollowing ? "rgba(239,68,68,0.15)" : "#e8a020", color: isFollowing ? "#e8a020" : "#080a0d",
-                  border: isFollowing ? "1px solid #e8a020" : "none", cursor: "pointer", backdropFilter: "blur(8px)",
+                  background: isFollowing ? "rgba(239,68,68,0.15)" : "#ef4444", color: isFollowing ? "#ef4444" : "#080a0d",
+                  border: isFollowing ? "1px solid #ef4444" : "none", cursor: "pointer", backdropFilter: "blur(8px)",
                 }}>
                   {isFollowing ? "Following" : "Follow"}
                 </button>
@@ -274,7 +274,7 @@ export default function FighterDetail() {
                   {fighter._avatar ? (
                     <img src={fighter._avatar} alt={fighter.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : (
-                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#e8a020" }}>{initials}</span>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#ef4444" }}>{initials}</span>
                   )}
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -287,7 +287,7 @@ export default function FighterDetail() {
                     <div className="flex gap-2 flex-wrap" style={{ marginTop: 4 }}>
                       {titles.slice(0, 3).map((t: any) => (
                         <span key={t.id} className="flex items-center gap-1" style={{
-                          background: "rgba(239,68,68,0.1)", borderRadius: 9999, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#e8a020",
+                          background: "rgba(239,68,68,0.1)", borderRadius: 9999, padding: "3px 10px", fontSize: 11, fontWeight: 600, color: "#ef4444",
                         }}>
                           <Award style={{ width: 10, height: 10 }} />
                           {t.title}{t.organisation ? ` · ${t.organisation}` : ""}
@@ -450,7 +450,7 @@ export default function FighterDetail() {
                     <RadarChart data={radarData} outerRadius="58%" margin={{ top: 40, right: 70, bottom: 40, left: 70 }}>
                       <PolarGrid stroke="rgba(255,255,255,0.06)" />
                       <PolarAngleAxis dataKey="subject" tick={{ fill: "#8b909e", fontSize: 11 }} tickSize={14} />
-                      <Radar name="fighter" dataKey="value" stroke="#e8a020" fill="rgba(239,68,68,0.3)" fillOpacity={1} dot={{ fill: "#e8a020", r: 4 } as any} />
+                      <Radar name="fighter" dataKey="value" stroke="#ef4444" fill="rgba(239,68,68,0.3)" fillOpacity={1} dot={{ fill: "#ef4444", r: 4 } as any} />
                     </RadarChart>
                   </ResponsiveContainer>
                 </div>
@@ -513,7 +513,7 @@ export default function FighterDetail() {
                         <p style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{link.gyms?.name}</p>
                         {link.gyms?.location && <p style={{ fontSize: 12, color: "#8b909e", marginTop: 2 }}>{link.gyms.location}</p>}
                       </div>
-                      {link.is_primary && <span style={{ fontSize: 12, fontWeight: 500, color: "#e8a020" }}>Primary</span>}
+                      {link.is_primary && <span style={{ fontSize: 12, fontWeight: 500, color: "#ef4444" }}>Primary</span>}
                     </Link>
                   ))}
                 </div>

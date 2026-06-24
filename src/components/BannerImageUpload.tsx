@@ -130,7 +130,7 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
             className="absolute bottom-2 right-2"
             style={{
               padding: "6px 14px", borderRadius: 8, background: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(8px)", color: "#e8a020", fontSize: 12, fontWeight: 600,
+              backdropFilter: "blur(8px)", color: "#ef4444", fontSize: 12, fontWeight: 600,
               cursor: uploading ? "wait" : "pointer",
             }}
           >
@@ -149,10 +149,10 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
           }}
         >
           {uploading ? (
-            <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#e8a020" }} />
+            <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#ef4444" }} />
           ) : (
             <>
-              <Upload style={{ width: 24, height: 24, color: "#e8a020" }} />
+              <Upload style={{ width: 24, height: 24, color: "#ef4444" }} />
               <span>Upload banner image</span>
               <span style={{ fontSize: 11 }}>JPEG, PNG, or WebP · Max 5MB</span>
             </>
@@ -205,7 +205,7 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
                   value={zoom}
                   onChange={(e) => setZoom(Number(e.target.value))}
                   className="flex-1"
-                  style={{ accentColor: "#e8a020" }}
+                  style={{ accentColor: "#ef4444" }}
                 />
                 <ZoomIn style={{ width: 16, height: 16, color: "#8b909e" }} />
               </div>
@@ -224,7 +224,7 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
                   disabled={uploading}
                   style={{
                     padding: "10px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-                    background: "#e8a020", color: "#0d0f12", cursor: uploading ? "wait" : "pointer",
+                    background: "#ef4444", color: "#0d0f12", cursor: uploading ? "wait" : "pointer",
                     boxShadow: "0 0 12px rgba(239,68,68,0.25)",
                   }}
                 >
