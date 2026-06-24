@@ -174,6 +174,33 @@ export default function CoachDashboard() {
   const incomingProposals = proposals.filter((p) =>
     p.status === "pending"
   );
+
+  // Calendar: upcoming events that include any of this coach's fighters
+  const { data: coachCalendarEvents = [] } = useQuery({
+    queryKey: ["coach-calendar-events", coachFighterIds],
+    queryFn: async () => {
+      if (coachFighterIds.length === 0) return [];
+      const today = new Date().toISOString().split("T")[0];
+      const { data: slotsA } = await supabase
+        .from("event_fight_slots")
+        .select("event_id")
+        .in("fighter_a_id", coachFighterIds);
+      const { data: slotsB } = await supabase
+        .from("event_fight_slots")
+        .select("event_id")
+        .in("fighter_b_id", coachFighterIds);
+      const eventIds = [...new Set([...(slotsA ?? []), ...(slotsB ?? [])].map((s: any) => s.event_id))];
+      if (eventIds.length === 0) return [];
+      const { data } = await supabase
+        .from("events")
+        .select("id, title, date, location, status")
+        .in("id", eventIds)
+        .gte("date", today)
+        .order("date", { ascending: true });
+      return data ?? [];
+    },
+    enabled: coachFighterIds.length > 0,
+  });
   const awaitingFighters = proposals.filter((p) =>
     ["pending_fighter_a", "pending_fighter_b"].includes(p.status)
   );
