@@ -199,7 +199,7 @@ export default function OrganiserDashboard() {
 
                   if (events.length === 0) {
                     return (
-                      <div className="rounded-lg border border-border bg-card p-8 text-center">
+                      <div className="rounded-lg bg-card p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.4),0_8px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)]">
                         <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                         <p className="text-muted-foreground mb-4">You haven't created any events yet.</p>
                         <Button asChild size="lg"><Link to="/organiser/create-event">Create Your First Event</Link></Button>
