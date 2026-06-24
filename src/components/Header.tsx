@@ -4,7 +4,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ChevronDown, LogOut, User, Menu, X, Settings, ShoppingCart } from "lucide-react";
 import { AppLogo } from "@/components/AppLogo";
 import { NotificationBell } from "@/components/NotificationBell";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBasket } from "@/pages/Checkout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
@@ -42,6 +42,7 @@ const navLinks: { label: string; to: string }[] = [];
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { user, roles, activeRole, setActiveRole, signOut } = useAuth();
   const { open: openAuthModal } = useAuthModal();
   const basket = useBasket();
@@ -49,6 +50,13 @@ export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const isLanding = location.pathname === "/";
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const { data: profile } = useQuery({
     queryKey: ["header-profile", user?.id],
@@ -94,7 +102,19 @@ export function Header() {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50" style={{ background: "var(--glass-header, rgba(8,10,13,0.88))", backdropFilter: "blur(20px) saturate(160%)", WebkitBackdropFilter: "blur(20px) saturate(160%)" }}>
+    <header
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+      style={
+        scrolled || mobileOpen
+          ? {
+              background: "rgba(8,10,13,0.55)",
+              backdropFilter: "blur(22px) saturate(180%)",
+              WebkitBackdropFilter: "blur(22px) saturate(180%)",
+              boxShadow: "0 1px 0 rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.25)",
+            }
+          : { background: "transparent", backdropFilter: "none", WebkitBackdropFilter: "none" }
+      }
+    >
       <div className="container flex h-16 items-center justify-between relative">
         <Link to="/" className="flex items-center gap-2">
           <AppLogo className="h-10" />
