@@ -1,80 +1,76 @@
-## Diagnosis — notification routing bug
+# Site Redesign — Staged Rollout
 
-The `match_*` notification types are produced by **two different subsystems** that store completely different ids in `reference_id`, but the click handler in `NotificationBell.tsx` and `NotificationHistory.tsx` treats every match-typed notification as if `reference_id` is a `match_proposals.id` and unconditionally routes to `/proposals/:id`.
+Adopts the layout/UX from the three dashboard screenshots and MatchUp.html, while keeping all routes, permissions, RLS, matchmaking logic, and data sources intact.
 
-Producers found:
+## Global decisions
 
-| File | `_type` | `_reference_id` actually stored |
-|---|---|---|
-| `src/components/organiser/ProposeMatchDialog.tsx:147` | `match_proposed` | `match_proposals.id` ✓ |
-| `src/lib/matchProposal.ts` (notify helper, applyOutcome) | `match_accepted` / `match_declined` / `match_confirmed` / `match_withdrawn` | `match_proposals.id` ✓ |
-| `src/components/organiser/AddFightModal.tsx:63` | `match_proposed` | `event_fight_slots.id` ✗ |
-| `src/components/organiser/AddFightManuallyDialog.tsx:55` | `match_proposed` | `event_fight_slots.id` ✗ |
-| `src/components/organiser/EditBoutDialog.tsx:58` | `match_declined` | `event_fight_slots.id` ✗ |
-| `src/components/dashboard/DashboardActions.tsx:517,536` | `match_confirmed` / `match_declined` | `event_fight_slots.id` ✗ |
+- **Accent**: replace gold `#e8a020` with coral red `#ef4444` (active), `#dc2626` (hover), `rgba(239,68,68,0.12)` (dim fill). Greens/warning/destructive unchanged.
+- **Surfaces unchanged**: page `#080a0d`, card `#111318`, raised `#181c24`, hover `#1e2330`. Bebas Neue headings, Inter body. No borders on cards/inputs. Existing shadow spec retained.
+- **Sidebar + header shell stays.** Only addition is a Calendar tab inside each dashboard.
+- **Auth modal** (frosted, in-place) over the current route; `/auth` kept as deep-link fallback for password-reset emails.
 
-When the rows marked ✗ are clicked, the handler navigates to `/proposals/<event_fight_slots.id>`, `ProposalDetail` calls `getProposalParties()` which queries `match_proposals` by that id, finds nothing, and renders "Proposal not found." That is the bug.
+Ships in 4 stages, each previewed before the next.
 
-## Fix #1 — notification routing
+---
 
-Add a small resolver `resolveNotificationTarget(notification)` in `src/lib/notificationRouting.ts`:
+## Stage 1 — Token swap + landing + auth modal
 
-```text
-1. If type is one of the match_* types and reference_id is set:
-   a. SELECT id FROM match_proposals WHERE id = reference_id   → /proposals/:id
-   b. else SELECT id FROM event_fight_slots WHERE id = ref_id   → /dashboard?actionItem=<slotId>&actionTab=auto
-   c. else fall back to /dashboard
-2. Other notification types keep their current routing.
-```
+**Tokens**: update `src/index.css` (`--primary`, `--ring`, `--accent`, gradient/shadow tokens) and `tailwind.config.ts`. Sweep components for `#e8a020` / `rgba(232,160,32,*)` hex literals and replace.
 
-Both `NotificationBell.tsx` and `NotificationHistory.tsx` replace their inline `proposalTypes.includes(...) → navigate("/proposals/" + reference_id)` block with `const target = await resolveNotificationTarget(n); navigate(target);` (still awaits, then closes the popover / marks read as before).
+**Landing** (`src/pages/Index.tsx`, `src/components/landing/*`):
+- Keep three existing sections (How it works, KPIs, role pitch) and copy.
+- Add hero CTA (“Get started” → opens auth modal in Sign Up mode; secondary “Sign in”).
+- Refresh visual treatment to match dashboard screenshots — charcoal card stack, red accent KPIs, Bebas Neue numerals, existing `NetworkBackground`.
 
-`DashboardActions.tsx` reads `actionItem` and `actionTab` from `useSearchParams`; if `actionItem` matches an id in `activeItems` it stays on Active, otherwise switches to Done. The target row is given `data-action-id={item.id}` and on mount it scrolls into view with a brief gold outline highlight (2s). If `actionTab=auto`, this resolves automatically based on which list contains the id.
+**Auth modal** (new `src/components/auth/AuthModal.tsx` + provider):
+- Frosted backdrop (`rgba(0,0,0,0.6)` + blur), card spec matches modal tokens, no border.
+- Reuses **every existing field, validation, and Supabase call** from `Auth.tsx` + onboarding — no signup logic rewrite.
+- Renders the existing multi-step signup as a click-through **progress bar** inside the modal; form state persists across steps; closes and routes to `/onboarding` (or wherever the current flow hands off) on success.
+- `openAuthModal('signin'|'signup')` context wraps `App.tsx`; header + landing CTAs trigger it.
 
-No DB migration. Existing producers keep emitting slot ids — the resolver makes them route correctly without rewriting historical notifications.
+## Stage 2 — Explore + Public fighter profile
 
-## Fix #2 — Active / Done split for proposal items
+**Explore cards** (`src/pages/Explore.tsx`, card components):
+- Re-proportion per design rules (96px fighter avatar, Win Rate inline in stat row, no overlay badge, MU watermark sizing, no borders).
+- Search, filters, map, pagination, sort, and queries untouched.
 
-Today the "Active" tab in the action centre hides any bout proposal where I've already submitted an acceptance (`boutProposalsActive` line ~245 filters out `myAcceptances`). The item only resurfaces in "Done" if the **overall slot** flips to confirmed or declined — so if I accept and the other parties haven't, the item vanishes from both views. That's the symptom the user wants fixed.
+**Public fighter profile** (`src/pages/FighterDetail.tsx`):
+- New layout: header strip with avatar + record, KPI row (Pro Record, Win Rate, KO%, recent form), fight history grouped by year, titles section.
+- Data sources unchanged (existing `fights` / `fighter_profiles` / `fighter_records` logic).
 
-The split must be driven by *my* decision, not by the slot's terminal state. Changes confined to `src/components/dashboard/DashboardActions.tsx`:
+## Stage 3 — Dashboards (Fighter / Coach / Organiser)
 
-1. **Reframe the two bout-proposal queries** so both are sourced by my acceptances:
-   - `boutProposalsAll` — single query for `event_fight_slots` where my fighter ids are A or B and `status IN ('proposed','confirmed','declined')`, plus my acceptances + decline records.
-   - Partition in JS:
-     - **Active** = slot.status is `'proposed'` AND I have no row in `bout_acceptances` for it AND I have no decline record. (Mirrors today's "still actionable for me" set, but now the source of truth is *my* decision.)
-     - **Done** = I have a `bout_acceptances` row for it (accepted) OR the slot is `'declined'` and I was a party (declined). Each item carries a `myDecision: 'accepted' | 'declined'` field and the slot's overall `status`.
+Apply screenshot layout to each dashboard. No data/RLS/permission changes.
 
-   Note on declines: today `handleDeclineBoutProposal` sets `slot.status = 'declined'` directly (no per-user decline record). To preserve the "Change Decision" rule we need per-user tracking. Two options:
-   - (a) Add a `decision text` column to `bout_acceptances` (currently it just records that a party accepted) and stop writing the slot to `'declined'` on a single party's decline — only flip the slot when all parties have submitted a decline. This is the correct model and matches `confirmations` for match_proposals, but it is a schema change with broader implications.
-   - (b) Minimal change: when I decline, keep writing `bout_acceptances` row with a new `decision='declined'` column, and leave slot `status='proposed'`. (Same column add as (a) but without changing slot-flip semantics for now.) The slot still flips to `declined` when the organiser explicitly removes the fighter via `EditBoutDialog`.
+- `FighterDashboard.tsx` → KPI row + Overview (Next Fight, Quick Actions, Recent Fights, Notifications).
+- `CoachDashboard.tsx` → KPI row + Overview (Fighter Performance, Upcoming Fights, Recent Activity).
+- `OrganiserDashboard.tsx` → KPI row + Overview (Upcoming Events, Sales chart, Notifications).
+- Quick Actions right-rail using the fighter screenshot pattern.
+- Tab strip under KPIs with red active underline.
 
-   I'd go with **(b)**: minimal `ALTER TABLE bout_acceptances ADD COLUMN decision text NOT NULL DEFAULT 'accepted' CHECK (decision IN ('accepted','declined'))`. Decline handler inserts/updates a `bout_acceptances` row with `decision='declined'` instead of mutating slot status. Slot only flips to `confirmed`/`declined` when **all** required parties have submitted matching decisions (already the rule used for confirm; mirror it for decline).
+## Stage 4 — Create Event wizard + Calendar
 
-2. **Render**: Done section items show their `myDecision` badge plus a "Change Decision" button when `slot.status === 'proposed'` (overall not yet finalised). Clicking calls a new `handleChangeBoutDecision(item)`:
-   - `DELETE FROM bout_acceptances WHERE slot_id=? AND user_id=?`
-   - Invalidate the action-centre queries
-   - Toast "Decision reset — choose again in Active"
-   - The item naturally reappears in Active because partition now finds no acceptance row.
-   - Button is hidden / replaced with "Locked" pill when `slot.status` is `confirmed` or `declined` (final state rule).
+**Create Event**: convert to single-page stepper with click-through progress bar (Details → Venue → Bouts → Tickets → Review). All fields, validation, inserts, ticket logic, and matchmaking slider rules preserved.
 
-3. **Parallel for match_proposals items** (the other proposal subsystem): match_proposals rows aren't currently sources for the action centre, so the split affects bout_proposal only. The detail page `ProposalDetail.tsx` already allows re-submitting a decision while the proposal is not `confirmed`/`declined`, which is the equivalent behaviour for that subsystem — no change needed.
+**Calendar tab** inside each dashboard (not a sidebar route):
+- Fighter: their fights. Coach: roster fights. Organiser: their events.
+- shadcn `Calendar` (`pointer-events-auto`), month view + agenda list, popovers link to existing detail pages.
+- Uses existing `fights` / `events` queries; no new tables.
 
-## Files touched
-
-- new `src/lib/notificationRouting.ts`
-- edit `src/components/NotificationBell.tsx` (use resolver)
-- edit `src/components/NotificationHistory.tsx` (use resolver)
-- edit `src/components/dashboard/DashboardActions.tsx`
-  - replace partition logic for bout_proposal items
-  - new `handleChangeBoutDecision`
-  - new "Change Decision" button on Done rows for `bout_proposal`
-  - read `actionItem` / `actionTab` query params; scroll-to + highlight target row
-  - rework `handleDeclineBoutProposal` to insert `bout_acceptances` row with `decision='declined'` and flip slot only when all parties have declined (mirror existing accept logic)
-- migration: `ALTER TABLE public.bout_acceptances ADD COLUMN decision text NOT NULL DEFAULT 'accepted' CHECK (decision IN ('accepted','declined'))`
+---
 
 ## Out of scope
 
-- Rewriting historical notifications.
-- Per-user decision tracking on `match_suggestions` (fight_proposal items in Done) — no separate decision rows exist for those; out of scope unless you also want a Change Decision there.
-- Changing the producers in AddFightModal / AddFightManuallyDialog / EditBoutDialog to emit a different `reference_id` — the resolver covers it without source-side churn.
+- Matchmaking scoring + slider math.
+- RLS, grants, edge functions, DB schema.
+- Route additions/removals beyond keeping `/auth` fallback.
+- Role assignment / `user_roles`.
+- Stripe/ticketing logic, fight history queries, record calculation logic.
+
+## Technical notes
+
+- All colour changes via CSS variables; no `text-red-*` literals in components.
+- Auth modal context wraps `App.tsx`; signup flow internals untouched.
+- Each stage ends with a preview check.
+
+Starting with **Stage 1** on approval.
