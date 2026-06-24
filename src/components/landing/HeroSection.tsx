@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useAuth } from "@/contexts/AuthContext";
+import { AppIcon } from "@/components/AppIcon";
 import { Link } from "react-router-dom";
 
 export function HeroSection() {
@@ -8,47 +9,70 @@ export function HeroSection() {
   const { user } = useAuth();
 
   return (
-    <section className="relative min-h-[60vh] sm:min-h-[75vh] flex items-center justify-center overflow-hidden -mt-8">
-      {/* Giant watermark text */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-        <span className="font-heading text-[20vw] leading-none tracking-tighter text-foreground/[0.03] whitespace-nowrap">
-          MATCHUP
-        </span>
-      </div>
-
+    <section className="relative min-h-[78vh] flex items-center overflow-hidden">
       <div className="container relative z-10">
-        <div className="flex flex-col items-center text-center">
-          <h1
-            className="font-heading leading-[0.85] mb-3 sm:mb-6 w-full"
-            style={{ fontWeight: 800, letterSpacing: "0.01em" }}
-          >
-            <span className="block whitespace-nowrap text-foreground" style={{ fontSize: "clamp(2.25rem, 11vw, 8rem)", lineHeight: 0.9 }}>MATCH EASY,</span>
-            <span className="block whitespace-nowrap text-primary text-gold-glow" style={{ fontSize: "clamp(2.25rem, 11vw, 8rem)", lineHeight: 0.9 }}>FIGHT HARD</span>
-          </h1>
+        <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] gap-8 md:gap-12 items-center">
+          {/* Shield mark */}
+          <div className="flex justify-center md:justify-end">
+            <AppIcon
+              className="h-[clamp(180px,30vw,420px)] w-auto opacity-95 drop-shadow-[0_0_60px_rgba(255,255,255,0.08)]"
+              alt="MatchUp shield"
+            />
+          </div>
 
-          <p className="text-foreground text-sm sm:text-base md:text-lg max-w-md mt-3 sm:mt-4">
-            PROMOTE, MATCHUP, DONE. IT'S THAT SIMPLE...
-          </p>
+          {/* Copy */}
+          <div className="flex flex-col items-center md:items-start text-center md:text-left">
+            <h1
+              className="font-heading leading-[0.9] tracking-tight"
+              style={{ fontWeight: 800, letterSpacing: "0.01em" }}
+            >
+              <span
+                className="block text-foreground"
+                style={{ fontSize: "clamp(2.5rem, 7.5vw, 5.75rem)", lineHeight: 0.95 }}
+              >
+                MATCH EASY
+              </span>
+              <span
+                className="block text-primary text-gold-glow"
+                style={{ fontSize: "clamp(2.5rem, 7.5vw, 5.75rem)", lineHeight: 0.95 }}
+              >
+                FIGHT HARD
+              </span>
+            </h1>
 
-          <div className="mt-6 sm:mt-8 flex flex-wrap items-center justify-center gap-3">
-            {user ? (
-              <Button asChild variant="hero" size="lg" className="rounded-full px-8">
-                <Link to="/explore">Explore MatchUp</Link>
-              </Button>
-            ) : (
-              <>
-                <Button variant="hero" size="lg" className="rounded-full px-8" onClick={() => open("signup")}>
-                  Create free account
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  className="rounded-full px-8 bg-white text-black hover:bg-white/90"
-                >
+            <p
+              className="text-foreground/80 mt-5 max-w-md"
+              style={{ fontSize: "clamp(0.875rem, 1.1vw, 1rem)", letterSpacing: "0.08em" }}
+            >
+              UNITING ALL CORNERS OF MARTIAL ARTS.<br />
+              SIGN UP, MATCHUP, PROMOTE, DONE...
+            </p>
+
+            <div className="mt-7 flex flex-wrap items-center justify-center md:justify-start gap-3">
+              {user ? (
+                <Button asChild variant="hero" size="lg" className="rounded-full px-8">
                   <Link to="/explore">Explore MatchUp</Link>
                 </Button>
-              </>
-            )}
+              ) : (
+                <>
+                  <Button
+                    variant="hero"
+                    size="lg"
+                    className="rounded-full px-8"
+                    onClick={() => open("signup")}
+                  >
+                    Create your free account
+                  </Button>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="rounded-full px-8 bg-white text-black hover:bg-white/90"
+                  >
+                    <Link to="/explore">Explore MatchUp</Link>
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
