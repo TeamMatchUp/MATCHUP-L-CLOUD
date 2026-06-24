@@ -110,18 +110,18 @@ export default function OrganiserDashboard() {
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
               {stats.map((card) => (
-                <div key={card.label} className="rounded-lg border border-border bg-card p-5">
-                  <p className="text-sm text-muted-foreground">{card.label}</p>
-                  <p className="font-heading text-3xl text-foreground mt-1">{card.value}</p>
+                <div key={card.label} className="rounded-lg bg-card p-5 shadow-[0_2px_8px_rgba(0,0,0,0.4),0_8px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">{card.label}</p>
+                  <p className="font-heading text-4xl text-foreground mt-2 tracking-wide">{card.value}</p>
                   <p className="text-xs text-muted-foreground mt-2">{card.sub}</p>
                 </div>
               ))}
             </div>
 
             <Tabs defaultValue={searchParams.get("tab") || "events"} className="space-y-6">
-              <TabsList className="bg-card border border-border">
-                <TabsTrigger value="events"><Calendar className="h-4 w-4 mr-1" /> Events</TabsTrigger>
-                <TabsTrigger value="notifications"><Bell className="h-4 w-4 mr-1" /> Notifications</TabsTrigger>
+              <TabsList className="bg-transparent p-0 h-auto gap-1 rounded-none border-b border-white/5 w-full justify-start">
+                <TabsTrigger value="events" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2"><Calendar className="h-4 w-4 mr-1" /> Events</TabsTrigger>
+                <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2"><Bell className="h-4 w-4 mr-1" /> Notifications</TabsTrigger>
               </TabsList>
 
               <TabsContent value="events">
@@ -141,7 +141,7 @@ export default function OrganiserDashboard() {
                     const bouts = getBoutsForEvent(event.id);
 
                     return (
-                      <div key={event.id} className="rounded-lg border border-border bg-card p-5">
+                      <div key={event.id} className="rounded-lg bg-card p-5 shadow-[0_2px_8px_rgba(0,0,0,0.4),0_8px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)]">
                         <div className="flex items-center justify-between gap-4 mb-3">
                           <Link to={`/organiser/events/${event.id}`} className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ export default function OrganiserDashboard() {
                         )}
 
                         {bouts.length > 0 && (
-                          <div className="border-t border-border pt-3 mt-1">
+                          <div className="border-t border-white/5 pt-3 mt-1">
                             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Fight Card</p>
                             <div className="space-y-1.5">
                               {bouts.map((bout: any) => {
@@ -199,7 +199,7 @@ export default function OrganiserDashboard() {
 
                   if (events.length === 0) {
                     return (
-                      <div className="rounded-lg border border-border bg-card p-8 text-center">
+                      <div className="rounded-lg bg-card p-8 text-center shadow-[0_2px_8px_rgba(0,0,0,0.4),0_8px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)]">
                         <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
                         <p className="text-muted-foreground mb-4">You haven't created any events yet.</p>
                         <Button asChild size="lg"><Link to="/organiser/create-event">Create Your First Event</Link></Button>

@@ -181,10 +181,10 @@ export default function FighterDashboard() {
                 <GymInvitesPanel fighterProfileId={fighterProfile.id} />
 
                 {/* Profile Summary */}
-                <div className="rounded-lg border border-border bg-card p-5 mb-8">
+                <div className="rounded-lg bg-card p-5 mb-8 shadow-[0_2px_8px_rgba(0,0,0,0.4),0_8px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)]">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="font-heading text-2xl text-foreground">{fighterProfile.name}</p>
+                      <p className="font-heading text-2xl text-foreground tracking-wide">{fighterProfile.name}</p>
                       <p className="text-sm text-muted-foreground">
                         {(() => {
                           const hasFights = (recordFromFights?.count ?? 0) > 0;
@@ -212,9 +212,9 @@ export default function FighterDashboard() {
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
                   {stats.map((card) => (
-                    <div key={card.label} className="rounded-lg border border-border bg-card p-5">
-                      <p className="text-sm text-muted-foreground">{card.label}</p>
-                      <p className="font-heading text-3xl text-foreground mt-1">{card.value}</p>
+                    <div key={card.label} className="rounded-lg bg-card p-5 shadow-[0_2px_8px_rgba(0,0,0,0.4),0_8px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)]">
+                      <p className="text-xs uppercase tracking-wider text-muted-foreground">{card.label}</p>
+                      <p className="font-heading text-4xl text-foreground mt-2 tracking-wide">{card.value}</p>
                       <p className="text-xs text-muted-foreground mt-2">{card.sub}</p>
                     </div>
                   ))}
@@ -231,21 +231,21 @@ export default function FighterDashboard() {
                 </div>
 
                 {/* Quick Actions — below calendar, full width */}
-                <div className="rounded-lg border border-border bg-card p-4 mb-10">
-                  <h3 className="font-heading text-lg text-foreground mb-3">
+                <div className="rounded-lg bg-card p-4 mb-10 shadow-[0_2px_8px_rgba(0,0,0,0.4),0_8px_24px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)]">
+                  <h3 className="font-heading text-lg text-foreground mb-3 tracking-wide">
                     QUICK <span className="text-primary">ACTIONS</span>
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <Button variant="outline" className="justify-start gap-2 h-10" asChild>
+                    <Button variant="outline" className="justify-start gap-2 h-10 border-0 bg-[hsl(var(--bg-raised))]" asChild>
                       <Link to="/explore?tab=events"><Search className="h-4 w-4 text-primary" /> Browse Events</Link>
                     </Button>
-                    <Button variant="outline" className="justify-start gap-2 h-10" asChild>
+                    <Button variant="outline" className="justify-start gap-2 h-10 border-0 bg-[hsl(var(--bg-raised))]" asChild>
                       <Link to="/explore?tab=gyms"><Building2 className="h-4 w-4 text-primary" /> Find Gyms</Link>
                     </Button>
-                    <Button variant="outline" className="justify-start gap-2 h-10" asChild>
+                    <Button variant="outline" className="justify-start gap-2 h-10 border-0 bg-[hsl(var(--bg-raised))]" asChild>
                       <Link to="/explore?tab=fighters"><User className="h-4 w-4 text-primary" /> Explore Fighters</Link>
                     </Button>
-                    <Button variant="outline" className="justify-start gap-2 h-10" asChild>
+                    <Button variant="outline" className="justify-start gap-2 h-10 border-0 bg-[hsl(var(--bg-raised))]" asChild>
                       <Link to={`/fighters/${fighterProfile.id}`}><Star className="h-4 w-4 text-primary" /> View Public Profile</Link>
                     </Button>
                   </div>
@@ -253,8 +253,8 @@ export default function FighterDashboard() {
 
                 {/* View Selector */}
                 <Tabs defaultValue={searchParams.get("tab") || "profile"} className="space-y-6">
-                  <TabsList className="bg-card border border-border">
-                    <TabsTrigger value="profile">
+                  <TabsList className="bg-transparent p-0 h-auto gap-1 rounded-none border-b border-white/5 w-full justify-start">
+                    <TabsTrigger value="profile" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2">
                       <User className="h-4 w-4 mr-1" /> My Profile
                       {(() => {
                         const mandatoryFields = ["date_of_birth", "walk_around_weight_kg", "height", "reach", "stance", "discipline", "weight_class"] as const;
@@ -262,19 +262,19 @@ export default function FighterDashboard() {
                         return hasIncomplete ? <span className="h-2 w-2 rounded-full bg-primary ml-1.5 animate-pulse" /> : null;
                       })()}
                     </TabsTrigger>
-                    <TabsTrigger value="gyms">
+                    <TabsTrigger value="gyms" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2">
                       <Building2 className="h-4 w-4 mr-1" /> Gyms
                     </TabsTrigger>
-                    <TabsTrigger value="proposals">
+                    <TabsTrigger value="proposals" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2">
                       <Inbox className="h-4 w-4 mr-1" /> Proposals
                     </TabsTrigger>
-                    <TabsTrigger value="requests">
+                    <TabsTrigger value="requests" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2">
                       <Send className="h-4 w-4 mr-1" /> My Requests
                     </TabsTrigger>
-                    <TabsTrigger value="interests">
+                    <TabsTrigger value="interests" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2">
                       <Star className="h-4 w-4 mr-1" /> Interested Events
                     </TabsTrigger>
-                    <TabsTrigger value="notifications">
+                    <TabsTrigger value="notifications" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2">
                       <Bell className="h-4 w-4 mr-1" /> Notifications
                     </TabsTrigger>
                   </TabsList>
