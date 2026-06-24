@@ -7,6 +7,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { useState } from "react";
 import { useBasket } from "@/pages/Checkout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -42,6 +43,7 @@ const navLinks: { label: string; to: string }[] = [];
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, roles, activeRole, setActiveRole, signOut } = useAuth();
+  const { open: openAuthModal } = useAuthModal();
   const basket = useBasket();
   const basketCount = basket.reduce((sum, i) => sum + i.quantity, 0);
   const navigate = useNavigate();
@@ -189,14 +191,14 @@ export function Header() {
             </>
           ) : (
             <>
-              <Link
-                to="/auth?mode=signup"
+              <button
+                onClick={() => openAuthModal("signup")}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground hover:shadow-[0_0_12px_hsl(var(--foreground)/0.15)] transition-all duration-200 px-4 py-1.5 rounded-full"
               >
                 CREATE ACCOUNT
-              </Link>
-              <Button variant="hero" size="sm" className="rounded-full px-6" asChild>
-                <Link to="/auth">log in</Link>
+              </button>
+              <Button variant="hero" size="sm" className="rounded-full px-6" onClick={() => openAuthModal("signin")}>
+                log in
               </Button>
             </>
           )}
@@ -275,20 +277,20 @@ export function Header() {
 
             {!user && (
               <>
-                <Link
-                  to="/auth"
-                  onClick={() => setMobileOpen(false)}
+                <button
+                  onClick={() => { openAuthModal("signin"); setMobileOpen(false); }}
+                  className="text-left"
                   style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   LOG IN
-                </Link>
-                <Link
-                  to="/auth?mode=signup"
-                  onClick={() => setMobileOpen(false)}
+                </button>
+                <button
+                  onClick={() => { openAuthModal("signup"); setMobileOpen(false); }}
+                  className="text-left"
                   style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#ef4444", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   CREATE ACCOUNT
-                </Link>
+                </button>
               </>
             )}
 
