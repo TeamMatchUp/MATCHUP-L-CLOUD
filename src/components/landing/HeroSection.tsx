@@ -15,7 +15,7 @@ export function HeroSection() {
           {/* Shield mark */}
           <div className="flex justify-center md:justify-end">
             <AppIcon
-              className="opacity-95"
+              className="h-[clamp(180px,30vw,420px)] w-auto opacity-95 drop-shadow-[0_0_60px_rgba(255,255,255,0.08)]"
               alt="MatchUp shield"
             />
           </div>
