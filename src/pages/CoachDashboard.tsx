@@ -243,40 +243,66 @@ export default function CoachDashboard() {
               ))}
             </div>
 
-            {/* Gym Join Requests */}
-            <GymRequestsPanel gymIds={myGyms.map((g) => g.id)} coachId={user!.id} />
+            <Tabs defaultValue="overview" className="space-y-6">
+              <TabsList className="bg-transparent p-0 h-auto gap-1 rounded-none border-b border-white/5 w-full justify-start">
+                <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2">
+                  <LayoutDashboard className="h-4 w-4 mr-1" /> Overview
+                </TabsTrigger>
+                <TabsTrigger value="calendar" className="rounded-none border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-primary data-[state=active]:text-primary px-3 py-2">
+                  <CalendarIcon className="h-4 w-4 mr-1" /> Calendar
+                </TabsTrigger>
+              </TabsList>
 
-            {/* Fighter Roster with search & gym filter */}
-            <FighterRosterPanel
-              fighters={allFighters}
-              gyms={myGyms}
-              fighterGymLinks={fighterGymLinks}
-              fighterRecords={fighterRecords}
-              onAddFighter={() => setShowAddFighter(true)}
-              onAddFightResult={(fighter) => setFightResultFighter(fighter)}
-              onImportFighters={myGym ? () => setShowImport(true) : undefined}
-            />
+              <TabsContent value="overview">
+                {/* Gym Join Requests */}
+                <GymRequestsPanel gymIds={myGyms.map((g) => g.id)} coachId={user!.id} />
 
-            {/* Incoming Proposals */}
-            <h2 className="font-heading text-2xl text-foreground mb-4">
-              INCOMING <span className="text-primary">PROPOSALS</span>
-            </h2>
-            {incomingProposals.length === 0 ? (
-              <p className="text-muted-foreground mb-8">No proposals requiring your review.</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                {incomingProposals.map((p) => (
-                  <ProposalCard
-                    key={p.id}
-                    proposal={p}
-                    userId={user!.id}
-                    userRole="coach"
-                    coachFighterIds={coachFighterIds}
-                    onActionComplete={handleRefresh}
-                  />
-                ))}
-              </div>
-            )}
+                {/* Fighter Roster with search & gym filter */}
+                <FighterRosterPanel
+                  fighters={allFighters}
+                  gyms={myGyms}
+                  fighterGymLinks={fighterGymLinks}
+                  fighterRecords={fighterRecords}
+                  onAddFighter={() => setShowAddFighter(true)}
+                  onAddFightResult={(fighter) => setFightResultFighter(fighter)}
+                  onImportFighters={myGym ? () => setShowImport(true) : undefined}
+                />
+
+                {/* Incoming Proposals */}
+                <h2 className="font-heading text-2xl text-foreground mb-4 mt-8 tracking-wide">
+                  INCOMING <span className="text-primary">PROPOSALS</span>
+                </h2>
+                {incomingProposals.length === 0 ? (
+                  <p className="text-muted-foreground mb-8">No proposals requiring your review.</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    {incomingProposals.map((p) => (
+                      <ProposalCard
+                        key={p.id}
+                        proposal={p}
+                        userId={user!.id}
+                        userRole="coach"
+                        coachFighterIds={coachFighterIds}
+                        onActionComplete={handleRefresh}
+                      />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="calendar">
+                <EventCalendar
+                  events={coachCalendarEvents.map((e: any) => ({
+                    id: e.id,
+                    title: e.title,
+                    date: String(e.date ?? "").slice(0, 10),
+                    location: e.location ?? "",
+                    status: e.status,
+                  })).filter((e) => e.date)}
+                  highlightedDates={coachCalendarEvents.map((e: any) => String(e.date ?? "").slice(0, 10)).filter(Boolean)}
+                />
+              </TabsContent>
+            </Tabs>
 
             {/* Add Fighter Dialog */}
             {user && (
