@@ -684,7 +684,7 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
                   ) : (
                     <>
                       <NetworkBackground />
-                      <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 80, opacity: 0.12, pointerEvents: "none" }} />
+                      <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 110, opacity: 0.12, pointerEvents: "none" }} />
                     </>
                   )}
                   {(() => {
@@ -787,7 +787,7 @@ function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymI
                 ) : (
                   <>
                     <NetworkBackground />
-                    <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 80, opacity: 0.12, pointerEvents: "none" }} />
+                    <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 110, opacity: 0.12, pointerEvents: "none" }} />
                   </>
                 )}
                 {tags.length > 0 && (
@@ -880,7 +880,7 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
         {/* Top area */}
         <div style={{ height: 200, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <NetworkBackground />
-          <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 120, opacity: 0.10, pointerEvents: "none" }} />
+          <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 150, opacity: 0.12, pointerEvents: "none" }} />
           <div style={{
             width: 96, height: 96, borderRadius: "50%", border: "2px solid rgba(239,68,68,0.5)", overflow: "hidden", boxShadow: "0 0 20px rgba(239,68,68,0.2)",
             display: "flex", alignItems: "center", justifyContent: "center", position: "relative", zIndex: 1,
