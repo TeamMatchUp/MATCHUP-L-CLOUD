@@ -49,7 +49,7 @@ export function BoostPurchaseDialog({ open, onOpenChange, eventId, mode }: Props
               gap: 8,
             }}
           >
-            <Sparkles style={{ color: "#e8a020", width: 22, height: 22 }} />
+            <Sparkles style={{ color: "#ef4444", width: 22, height: 22 }} />
             {mode === "upsell" ? "Boost this event to reach more fans" : "Boost this event"}
           </DialogTitle>
           <DialogDescription style={{ color: "#8b909e", fontSize: 13 }}>

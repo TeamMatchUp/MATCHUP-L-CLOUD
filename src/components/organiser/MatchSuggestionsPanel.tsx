@@ -102,7 +102,7 @@ function scorePairForAnchor(anchor: FighterProfile, opponent: FighterProfile): {
 }
 
 const SLIDER_COLORS = {
-  comp: "#e8a020",
+  comp: "#ef4444",
   ent: "#22c55e",
   style: "#3b82f6",
   narr: "#a855f7",
@@ -345,7 +345,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
             fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none",
             backdropFilter: "blur(8px)",
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.18)"; e.currentTarget.style.color = "#e8a020"; }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.18)"; e.currentTarget.style.color = "#ef4444"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "#e8eaf0"; }}
         >
           <X style={{ width: 14, height: 14 }} /> Close
@@ -362,18 +362,18 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
         {/* Header */}
         <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, color: "#e8eaf0", letterSpacing: "0.04em" }}>
           {anchorFighter ? (
-            <>SUGGESTED <span style={{ color: "#e8a020" }}>MATCHES</span></>
+            <>SUGGESTED <span style={{ color: "#ef4444" }}>MATCHES</span></>
           ) : (
-            <>SUGGESTED <span style={{ color: "#e8a020" }}>FIGHTS</span></>
+            <>SUGGESTED <span style={{ color: "#ef4444" }}>FIGHTS</span></>
           )}
         </h2>
 
         {/* Anchor fighter summary card */}
         {anchorFighter && (
           <div style={{
-            background: "rgba(232,160,32,0.06)", borderRadius: 8, padding: "12px 16px",
+            background: "rgba(239,68,68,0.06)", borderRadius: 8, padding: "12px 16px",
           }}>
-            <p style={{ fontSize: 9, color: "#e8a020", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
+            <p style={{ fontSize: 9, color: "#ef4444", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
               Anchor fighter
             </p>
             <p style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>
@@ -388,7 +388,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
 
         {effectiveWeightClass && (
           <p style={{ fontSize: 12, color: "#8b909e" }}>
-            Filtering for <span style={{ color: "#e8a020", fontWeight: 600 }}>{formatEnum(effectiveWeightClass)}</span>
+            Filtering for <span style={{ color: "#ef4444", fontWeight: 600 }}>{formatEnum(effectiveWeightClass)}</span>
           </p>
         )}
 
@@ -408,10 +408,10 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                 key={key}
                 onClick={() => applyPreset(key)}
                 style={{
-                  background: selectedPreset === key ? "rgba(232,160,32,0.12)" : "#181c24",
-                  color: selectedPreset === key ? "#e8a020" : "#8b909e",
+                  background: selectedPreset === key ? "rgba(239,68,68,0.12)" : "#181c24",
+                  color: selectedPreset === key ? "#ef4444" : "#8b909e",
                   borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, border: "none",
-                  boxShadow: selectedPreset === key ? "inset 3px 0 0 #e8a020" : "none",
+                  boxShadow: selectedPreset === key ? "inset 3px 0 0 #ef4444" : "none",
                   cursor: "pointer", transition: "all 0.15s",
                 }}
                 onMouseEnter={(e) => { if (selectedPreset !== key) e.currentTarget.style.background = "#1e2330"; }}
@@ -523,8 +523,8 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                   key={t}
                   onClick={() => toggleExpTier(t)}
                   style={{
-                    background: expTiers.has(t) ? "rgba(232,160,32,0.12)" : "#181c24",
-                    color: expTiers.has(t) ? "#e8a020" : "#8b909e",
+                    background: expTiers.has(t) ? "rgba(239,68,68,0.12)" : "#181c24",
+                    color: expTiers.has(t) ? "#ef4444" : "#8b909e",
                     borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, border: "none",
                     cursor: "pointer", transition: "all 0.15s",
                   }}
@@ -564,7 +564,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
           <div style={{ marginBottom: 10 }}>
             <div className="flex justify-between" style={{ fontSize: 11, marginBottom: 4 }}>
               <span style={{ color: "#8b909e" }}>Min Finish Rate</span>
-              <span style={{ color: "#e8a020", fontWeight: 600 }}>{minFinishRate}%</span>
+              <span style={{ color: "#ef4444", fontWeight: 600 }}>{minFinishRate}%</span>
             </div>
             <Slider value={[minFinishRate]} min={0} max={100} step={5} onValueChange={([v]) => { setMinFinishRate(v); setSettingsChanged(true); }} />
           </div>
@@ -591,10 +591,10 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
             disabled={allZero}
             style={{
               width: "100%", padding: "12px 0", borderRadius: 8, border: "none",
-              background: allZero ? "rgba(232,160,32,0.3)" : "#e8a020",
+              background: allZero ? "rgba(239,68,68,0.3)" : "#ef4444",
               color: "#0d0f12", fontSize: 14, fontWeight: 600, cursor: allZero ? "not-allowed" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              boxShadow: allZero ? "none" : "0 0 12px rgba(232,160,32,0.25)",
+              boxShadow: allZero ? "none" : "0 0 12px rgba(239,68,68,0.25)",
             }}
           >
             <RefreshCw style={{ width: 16, height: 16 }} />
@@ -617,7 +617,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
 
         {anchorFighter && (
           <p style={{ fontSize: 12, color: "#8b909e", marginBottom: 12 }}>
-            Suggested opponents for <span style={{ color: "#e8a020", fontWeight: 600 }}>{anchorFighter.name}</span>
+            Suggested opponents for <span style={{ color: "#ef4444", fontWeight: 600 }}>{anchorFighter.name}</span>
           </p>
         )}
 
@@ -682,7 +682,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
                     transition: "all 0.2s ease", cursor: "default",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2330"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3), 0 0 0 1px rgba(232,160,32,0.08)"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2330"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3), 0 0 0 1px rgba(239,68,68,0.08)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "#181c24"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)"; }}
                 >
                   {/* Fighter name */}
@@ -694,10 +694,10 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                   <div style={{ marginTop: 10 }}>
                     <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
                       <span style={{ fontSize: 9, color: "#555b6b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Match Score vs {anchorFighter.name}</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#e8a020" }}>{compositeScore.toFixed(0)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#ef4444" }}>{compositeScore.toFixed(0)}</span>
                     </div>
                     <div style={{ height: 3, borderRadius: 2, background: "#1e2330" }}>
-                      <div style={{ width: `${compositeScore}%`, height: "100%", borderRadius: 2, background: "#e8a020", transition: "width 0.3s" }} />
+                      <div style={{ width: `${compositeScore}%`, height: "100%", borderRadius: 2, background: "#ef4444", transition: "width 0.3s" }} />
                     </div>
                   </div>
 
@@ -722,13 +722,13 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                       onClick={() => handleSelect(f, anchorFighter)}
                       disabled={allZero}
                       style={{
-                        background: "rgba(232,160,32,0.12)", color: "#e8a020", borderRadius: 6,
+                        background: "rgba(239,68,68,0.12)", color: "#ef4444", borderRadius: 6,
                         padding: "5px 14px", fontSize: 12, fontWeight: 600, border: "none",
                         cursor: allZero ? "not-allowed" : "pointer", transition: "all 0.15s",
                         display: "flex", alignItems: "center", gap: 4,
                       }}
-                      onMouseEnter={(e) => { if (!allZero) e.currentTarget.style.background = "rgba(232,160,32,0.2)"; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(232,160,32,0.12)"; }}
+                      onMouseEnter={(e) => { if (!allZero) e.currentTarget.style.background = "rgba(239,68,68,0.2)"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.12)"; }}
                     >
                       <Check style={{ width: 12, height: 12 }} /> Select as opponent
                     </button>
@@ -768,22 +768,22 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                           {formatEnum(fighter.weight_class)}
                           {fighter.style && ` · ${formatEnum(fighter.style)}`}
                         </p>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: "#e8a020", marginTop: 6 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: "#ef4444", marginTop: 6 }}>
                           {fighter.record_wins}-{fighter.record_losses}-{fighter.record_draws}
                         </p>
                       </div>
                     ))}
-                    <span style={{ order: 2, fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#e8a020", textAlign: "center" }}>VS</span>
+                    <span style={{ order: 2, fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#ef4444", textAlign: "center" }}>VS</span>
                   </div>
 
                   {/* Compatibility score bar */}
                   <div style={{ marginTop: 12 }}>
                     <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
                       <span style={{ fontSize: 9, color: "#555b6b", textTransform: "uppercase", letterSpacing: "0.05em" }}>Compatibility</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#e8a020" }}>{compositeScore.toFixed(0)} / 100</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#ef4444" }}>{compositeScore.toFixed(0)} / 100</span>
                     </div>
                     <div style={{ height: 4, borderRadius: 2, background: "#1e2330" }}>
-                      <div style={{ width: `${compositeScore}%`, height: "100%", borderRadius: 2, background: "#e8a020", transition: "width 0.3s" }} />
+                      <div style={{ width: `${compositeScore}%`, height: "100%", borderRadius: 2, background: "#ef4444", transition: "width 0.3s" }} />
                     </div>
                     <p style={{ fontSize: 10, color: "#8b909e", marginTop: 6 }}>
                       Elo Δ{eloDelta} · {pair.reason}
@@ -848,7 +848,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                           onClick={() => setOpenWhyId(open ? null : pairId)}
                           style={{
                             background: "transparent", border: "none", padding: "4px 0",
-                            color: "#e8a020", fontSize: 11, fontWeight: 600,
+                            color: "#ef4444", fontSize: 11, fontWeight: 600,
                             display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer",
                           }}
                           aria-expanded={open}
@@ -873,8 +873,8 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                         >
                           {/* Verdict callout */}
                           <div style={{
-                            background: "rgba(232,160,32,0.08)",
-                            borderLeft: "3px solid #e8a020",
+                            background: "rgba(239,68,68,0.08)",
+                            borderLeft: "3px solid #ef4444",
                             borderRadius: 6,
                             padding: "8px 10px",
                             fontSize: 12,
@@ -975,7 +975,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                       onClick={() => handleSelect(pair.fighterA, pair.fighterB)}
                       disabled={allZero}
                       style={{
-                        background: allZero ? "rgba(232,160,32,0.3)" : "#e8a020",
+                        background: allZero ? "rgba(239,68,68,0.3)" : "#ef4444",
                         color: "#0d0f12", borderRadius: 6,
                         padding: "6px 16px", fontSize: 12, fontWeight: 700, border: "none",
                         cursor: allZero ? "not-allowed" : "pointer", transition: "all 0.15s",

@@ -15,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 213 33% 12%;
 
-    --primary: 46 93% 48%;
+    --primary: 0 72% 51%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 173 60% 40%;
@@ -35,7 +35,7 @@
 
     --border: 0 0% 100% / 0;
     --input: 210 18% 82%;
-    --ring: 46 93% 48%;
+    --ring: 0 72% 51%;
 
     --radius: 0.5rem;
 
@@ -46,12 +46,12 @@
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 210 12% 40%;
-    --sidebar-primary: 46 93% 48%;
+    --sidebar-primary: 0 72% 51%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 20% 93%;
     --sidebar-accent-foreground: 213 33% 12%;
     --sidebar-border: 210 18% 82%;
-    --sidebar-ring: 46 93% 48%;
+    --sidebar-ring: 0 72% 51%;
 
     --font-heading: 'Bebas Neue', sans-serif;
     --font-body: 'Inter', sans-serif;
@@ -67,8 +67,8 @@
     --popover: 216 22% 10%;
     --popover-foreground: 225 14% 93%;
 
-    --primary: 37 82% 52%;
-    --primary-foreground: 220 20% 4%;
+    --primary: 0 84% 60%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 173 60% 54%;
     --secondary-foreground: 220 20% 4%;
@@ -87,7 +87,7 @@
 
     --border: 0 0% 100% / 0;
     --input: 220 10% 14%;
-    --ring: 37 82% 52%;
+    --ring: 0 84% 60%;
 
     --nav-background: 220 18% 8%;
 
@@ -96,12 +96,12 @@
 
     --sidebar-background: 220 20% 5%;
     --sidebar-foreground: 222 10% 64%;
-    --sidebar-primary: 37 82% 52%;
-    --sidebar-primary-foreground: 220 20% 4%;
+    --sidebar-primary: 0 84% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 216 22% 10%;
     --sidebar-accent-foreground: 225 14% 93%;
     --sidebar-border: 220 10% 14%;
-    --sidebar-ring: 37 82% 52%;
+    --sidebar-ring: 0 84% 60%;
 
     /* Depth system tokens */
     --bg-base: 240 14% 4%;
@@ -110,8 +110,8 @@
     --bg-raised: 222 16% 13%;
     --bg-overlay: 224 16% 15%;
 
-    --gold: 37 82% 52%;
-    --gold-dim: 33 86% 41%;
+    --gold: 0 84% 60%;
+    --gold-dim: 0 72% 51%;
 
     --coach-green: 142 71% 45%;
     --coach-red: 0 84% 60%;
@@ -119,7 +119,7 @@
     --coach-purple: 263 83% 78%;
 
     --shadow-card: 0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
-    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
+    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(239,68,68,0.10), inset 0 1px 0 rgba(255,255,255,0.06);
     --shadow-modal: 0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
     --shadow-raised: inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3);
 
@@ -140,7 +140,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 10%;
 
-    --primary: 37 82% 52%;
+    --primary: 0 72% 51%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 173 60% 40%;
@@ -160,7 +160,7 @@
 
     --border: 0 0% 100% / 0;
     --input: 220 10% 90%;
-    --ring: 37 82% 52%;
+    --ring: 0 72% 51%;
 
     --nav-background: 220 10% 97%;
 
@@ -169,12 +169,12 @@
 
     --sidebar-background: 220 10% 97%;
     --sidebar-foreground: 220 10% 35%;
-    --sidebar-primary: 37 82% 52%;
+    --sidebar-primary: 0 72% 51%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 10% 94%;
     --sidebar-accent-foreground: 220 20% 10%;
     --sidebar-border: 220 10% 90%;
-    --sidebar-ring: 37 82% 52%;
+    --sidebar-ring: 0 72% 51%;
 
     --bg-base: 220 10% 95%;
     --bg-page: 220 10% 95%;
@@ -182,8 +182,8 @@
     --bg-raised: 220 10% 96%;
     --bg-overlay: 220 10% 93%;
 
-    --gold: 37 82% 52%;
-    --gold-dim: 37 82% 42%;
+    --gold: 0 72% 51%;
+    --gold-dim: 0 72% 42%;
 
     --coach-green: 142 71% 40%;
     --coach-red: 0 84% 50%;
@@ -191,7 +191,7 @@
     --coach-purple: 263 83% 60%;
 
     --shadow-card: 0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8);
-    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.12), 0 12px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(232,160,32,0.15);
+    --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.12), 0 12px 40px rgba(0,0,0,0.08), 0 0 0 1px rgba(239,68,68,0.18);
     --shadow-modal: 0 8px 32px rgba(0,0,0,0.15), 0 24px 64px rgba(0,0,0,0.1);
     --shadow-raised: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 6px rgba(0,0,0,0.08);
 
@@ -246,7 +246,7 @@
 
 @layer utilities {
   .text-gold-glow {
-    text-shadow: 0 0 20px hsl(46 93% 61% / 0.3);
+    text-shadow: 0 0 20px hsl(var(--primary) / 0.35);
   }
 
   .card-elevated {
@@ -254,15 +254,15 @@
   }
 
   .gold-border-subtle {
-    border-color: hsl(46 93% 61% / 0.2);
+    border-color: hsl(var(--primary) / 0.2);
   }
 
   .gold-glow {
-    box-shadow: 0 0 20px hsl(46 93% 61% / 0.15), 0 0 40px hsl(46 93% 61% / 0.05);
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.18), 0 0 40px hsl(var(--primary) / 0.06);
   }
 
   .gold-glow-hover:hover {
-    box-shadow: 0 0 24px hsl(46 93% 61% / 0.25), 0 0 48px hsl(46 93% 61% / 0.08);
+    box-shadow: 0 0 24px hsl(var(--primary) / 0.28), 0 0 48px hsl(var(--primary) / 0.09);
   }
 
   /* Glass pill sidebar nav items */
@@ -337,7 +337,7 @@
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
   }
   .depth-card:hover {
-    box-shadow: 0 4px 24px -4px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,160,32,0.12), 0 0 20px rgba(232,160,32,0.08);
+    box-shadow: 0 4px 24px -4px rgba(0,0,0,0.5), 0 0 0 1px rgba(239,68,68,0.14), 0 0 20px rgba(239,68,68,0.09);
   }
   .depth-raised {
     background: #1a1e28;
@@ -356,7 +356,7 @@
     color: #555b6b;
   }
   .depth-input:focus {
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 0 0 3px rgba(232,160,32,0.1) !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2), 0 0 0 3px rgba(239,68,68,0.18) !important;
     outline: none !important;
   }
   .depth-modal {
@@ -373,7 +373,7 @@
   }
   .explore-card-hover:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 40px -4px rgba(0,0,0,0.6), 0 0 0 1px rgba(232,160,32,0.1), 0 0 24px rgba(232,160,32,0.06), inset 0 1px 0 rgba(255,255,255,0.06);
+    box-shadow: 0 12px 40px -4px rgba(0,0,0,0.6), 0 0 0 1px rgba(239,68,68,0.14), 0 0 24px rgba(239,68,68,0.08), inset 0 1px 0 rgba(255,255,255,0.06);
   }
 
   /* ═══ MU Material System ═══ */
@@ -412,7 +412,7 @@
     color: hsl(var(--text-muted, var(--muted-foreground)));
   }
   .mu-input:focus {
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 2px rgba(232,160,32,0.25) !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3), 0 0 0 2px rgba(239,68,68,0.28) !important;
     outline: none !important;
   }
   .mu-glass-dropdown {
@@ -429,7 +429,7 @@
   box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
 }
 .light .mu-input:focus {
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06), 0 0 0 2px rgba(232,160,32,0.3) !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06), 0 0 0 2px rgba(239,68,68,0.32) !important;
 }
 .light .glass-badge {
   background: rgba(255,255,255,0.75);

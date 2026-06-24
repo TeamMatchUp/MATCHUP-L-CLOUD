@@ -99,7 +99,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                 padding: "10px 14px",
                 transform: isSelected ? "scale(1.01)" : "scale(1)",
                 boxShadow: isSelected
-                  ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,160,32,0.45)"
+                  ? "inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(239,68,68,0.45)"
                   : "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
               }}
             >
@@ -145,7 +145,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                 {/* Price (col 2) */}
                 <div style={{ minWidth: 60, textAlign: "right" }}>
                   {ticket.price != null && (
-                    <span style={{ fontSize: 16, fontWeight: 700, color: "#e8a020", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: "#ef4444", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
                   )}
                 </div>
 
@@ -160,7 +160,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                     onClick={(e) => e.stopPropagation()}
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
-                      background: "#e8a020", color: "#0d0f12", borderRadius: 8, textDecoration: "none",
+                      background: "#ef4444", color: "#0d0f12", borderRadius: 8, textDecoration: "none",
                     }}
                   >
                     <ShoppingCart style={{ width: 14, height: 14 }} /> Buy
@@ -191,7 +191,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                       disabled={qty <= 0}
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
-                        background: qty <= 0 ? "rgba(232,160,32,0.3)" : "#e8a020", color: "#0d0f12", borderRadius: 8, border: "none",
+                        background: qty <= 0 ? "rgba(239,68,68,0.3)" : "#ef4444", color: "#0d0f12", borderRadius: 8, border: "none",
                         cursor: qty <= 0 ? "not-allowed" : "pointer", marginLeft: 4,
                       }}
                     >
@@ -524,9 +524,9 @@ export default function EventDetail() {
         <div
           style={{
             position: "sticky", top: 60, zIndex: 28,
-            background: "rgba(232,160,32,0.12)",
+            background: "rgba(239,68,68,0.12)",
             backdropFilter: "blur(12px)",
-            boxShadow: "inset 0 -1px 0 rgba(232,160,32,0.25)",
+            boxShadow: "inset 0 -1px 0 rgba(239,68,68,0.25)",
             padding: "10px 16px",
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
           }}
@@ -538,7 +538,7 @@ export default function EventDetail() {
             onClick={() => navigate(`/organiser/events/${id}`)}
             style={{
               display: "inline-flex", alignItems: "center", gap: 6,
-              background: "#e8a020", color: "#0d0f12",
+              background: "#ef4444", color: "#0d0f12",
               fontSize: 12, fontWeight: 700, borderRadius: 8,
               padding: "6px 12px", border: "none", cursor: "pointer", whiteSpace: "nowrap",
             }}
@@ -553,7 +553,7 @@ export default function EventDetail() {
           style={{
             position: "fixed", top: 72, right: 16, zIndex: 28,
             display: "inline-flex", alignItems: "center", gap: 6,
-            background: "#e8a020", color: "#0d0f12",
+            background: "#ef4444", color: "#0d0f12",
             fontSize: 12, fontWeight: 700, borderRadius: 999,
             padding: "6px 14px", border: "none", cursor: "pointer", whiteSpace: "nowrap",
             boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
@@ -614,8 +614,8 @@ export default function EventDetail() {
                       onClick={() => setMapOpen((v) => !v)}
                       className="inline-flex items-center gap-2 transition-colors"
                       style={{
-                        background: mapOpen ? "rgba(232,160,32,0.12)" : "rgba(255,255,255,0.04)",
-                        color: mapOpen ? "#e8a020" : "#8b909e",
+                        background: mapOpen ? "rgba(239,68,68,0.12)" : "rgba(255,255,255,0.04)",
+                        color: mapOpen ? "#ef4444" : "#8b909e",
                         borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
                       }}
                     >

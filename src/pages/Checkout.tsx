@@ -64,7 +64,7 @@ export default function Checkout() {
           </Button>
 
           <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#e8eaf0", marginBottom: 24 }}>
-            YOUR <span style={{ color: "#e8a020" }}>BASKET</span>
+            YOUR <span style={{ color: "#ef4444" }}>BASKET</span>
           </h1>
 
           {basket.length === 0 ? (
@@ -86,7 +86,7 @@ export default function Checkout() {
                       <p style={{ fontSize: 12, color: "#8b909e", marginTop: 2 }}>Qty: {item.quantity}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span style={{ fontSize: 18, fontWeight: 700, color: "#e8a020" }}>£{(item.price * item.quantity).toFixed(2)}</span>
+                      <span style={{ fontSize: 18, fontWeight: 700, color: "#ef4444" }}>£{(item.price * item.quantity).toFixed(2)}</span>
                       <button onClick={() => removeItem(i)} style={{ color: "#ef4444", cursor: "pointer" }}>
                         <Trash2 style={{ width: 16, height: 16 }} />
                       </button>
@@ -97,7 +97,7 @@ export default function Checkout() {
 
               <div className="flex items-center justify-between" style={{ marginTop: 20, padding: "16px 0", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                 <span style={{ fontSize: 16, fontWeight: 600, color: "#e8eaf0" }}>Total</span>
-                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#e8a020" }}>£{total.toFixed(2)}</span>
+                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#ef4444" }}>£{total.toFixed(2)}</span>
               </div>
 
               {showPayment ? (
@@ -110,9 +110,9 @@ export default function Checkout() {
                   onClick={() => setShowPayment(true)}
                   style={{
                     width: "100%", marginTop: 16, padding: "14px 0",
-                    background: "#e8a020", color: "#0d0f12", fontWeight: 700, fontSize: 15,
+                    background: "#ef4444", color: "#0d0f12", fontWeight: 700, fontSize: 15,
                     borderRadius: 8, cursor: "pointer", border: "none",
-                    boxShadow: "0 0 12px rgba(232,160,32,0.25)",
+                    boxShadow: "0 0 12px rgba(239,68,68,0.25)",
                   }}
                 >
                   Proceed to Payment

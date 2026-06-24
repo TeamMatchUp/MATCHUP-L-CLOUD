@@ -165,7 +165,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
               <TooltipTrigger asChild>
                 <button
                   className="w-full flex items-center justify-center rounded-lg transition-all duration-150"
-                  style={{ padding: "7px 0", margin: "1px 0", color: childActive ? "#e8a020" : "#8b909e", background: childActive ? "rgba(232,160,32,0.12)" : "transparent" }}
+                  style={{ padding: "7px 0", margin: "1px 0", color: childActive ? "#ef4444" : "#8b909e", background: childActive ? "rgba(239,68,68,0.12)" : "transparent" }}
                   onClick={() => toggleAccordion(item.key)}
                 >
                   <item.icon style={{ width: 16, height: 16 }} />
@@ -183,7 +183,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
         <div key={item.key}>
           <button
             className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
-            style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: childActive ? 600 : 500, color: childActive ? "#e8a020" : "#8b909e", background: childActive ? "rgba(232,160,32,0.12)" : "transparent" }}
+            style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: childActive ? 600 : 500, color: childActive ? "#ef4444" : "#8b909e", background: childActive ? "rgba(239,68,68,0.12)" : "transparent" }}
             onClick={() => toggleAccordion(item.key)}
           >
             <item.icon style={{ width: 16, height: 16 }} />
@@ -196,18 +196,18 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
               if (child.to) {
                 return (
                   <Link key={child.key} to={child.to} className="block transition-colors duration-150"
-                    style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: isActive ? "#e8a020" : "#8b909e", borderRadius: 8 }}
+                    style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: isActive ? "#ef4444" : "#8b909e", borderRadius: 8 }}
                     onMouseEnter={(e) => { e.currentTarget.style.color = "#e8eaf0"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = isActive ? "#e8a020" : "#8b909e"; e.currentTarget.style.background = "transparent"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = isActive ? "#ef4444" : "#8b909e"; e.currentTarget.style.background = "transparent"; }}
                   >{child.label}</Link>
                 );
               }
               return (
                 <button key={child.key} className="w-full text-left transition-colors duration-150"
-                  style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: isActive ? "#e8a020" : "#8b909e", borderRadius: 8 }}
+                  style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: isActive ? "#ef4444" : "#8b909e", borderRadius: 8 }}
                   onClick={() => handleNav(child.key)}
                   onMouseEnter={(e) => { e.currentTarget.style.color = "#e8eaf0"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = isActive ? "#e8a020" : "#8b909e"; e.currentTarget.style.background = "transparent"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = isActive ? "#ef4444" : "#8b909e"; e.currentTarget.style.background = "transparent"; }}
                 >{child.label}</button>
               );
             })}
@@ -225,7 +225,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
             <TooltipTrigger asChild>
               <button
                 className="w-full flex items-center justify-center rounded-lg transition-all duration-150 relative"
-                style={{ padding: "7px 0", margin: "1px 0", color: isActive ? "#e8a020" : "#8b909e", background: isActive ? "rgba(232,160,32,0.12)" : "transparent" }}
+                style={{ padding: "7px 0", margin: "1px 0", color: isActive ? "#ef4444" : "#8b909e", background: isActive ? "rgba(239,68,68,0.12)" : "transparent" }}
                 onClick={() => handleNav(item.key)}
               >
                 <item.icon style={{ width: 16, height: 16 }} />
@@ -246,7 +246,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
 
     return (
       <button key={item.key} className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
-        style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: isActive ? 600 : 500, color: isActive ? "#e8a020" : "#8b909e", background: isActive ? "rgba(232,160,32,0.12)" : "transparent" }}
+        style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: isActive ? 600 : 500, color: isActive ? "#ef4444" : "#8b909e", background: isActive ? "rgba(239,68,68,0.12)" : "transparent" }}
         onClick={() => handleNav(item.key)}
         onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#e8eaf0"; } }}
         onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8b909e"; } }}
@@ -420,9 +420,9 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
       {/* User Profile at BOTTOM */}
       <div style={{ position: "sticky", bottom: 0, background: "inherit", padding: collapsed ? "12px 8px" : "12px 16px", flexShrink: 0, boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)" }}>
         <div className="flex items-center" style={{ gap: collapsed ? 0 : 10, justifyContent: collapsed ? "center" : "flex-start" }}>
-          <Avatar className="h-8 w-8 shrink-0" style={{ boxShadow: "0 0 0 1px rgba(232,160,32,0.3)" }}>
+          <Avatar className="h-8 w-8 shrink-0" style={{ boxShadow: "0 0 0 1px rgba(239,68,68,0.3)" }}>
             {profile?.avatar_url && <AvatarImage src={profile.avatar_url} className="object-cover" />}
-            <AvatarFallback className="text-xs font-medium" style={{ background: "linear-gradient(135deg, #e8a020, #c47e10)", color: "white" }}>
+            <AvatarFallback className="text-xs font-medium" style={{ background: "linear-gradient(135deg, #ef4444, #c47e10)", color: "white" }}>
               {initials}
             </AvatarFallback>
           </Avatar>

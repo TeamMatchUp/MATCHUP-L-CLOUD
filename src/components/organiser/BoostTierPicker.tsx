@@ -39,7 +39,7 @@ export function BoostTierPicker({
               onClick={() => setSelected(tier.id)}
               style={{
                 position: "relative",
-                background: active ? "rgba(232,160,32,0.12)" : "#181c24",
+                background: active ? "rgba(239,68,68,0.12)" : "#181c24",
                 color: "#e8eaf0",
                 borderRadius: 12,
                 padding: "16px 14px",
@@ -47,7 +47,7 @@ export function BoostTierPicker({
                 cursor: "pointer",
                 border: "none",
                 boxShadow: active
-                  ? "inset 0 0 0 2px #e8a020, 0 0 18px rgba(232,160,32,0.18)"
+                  ? "inset 0 0 0 2px #ef4444, 0 0 18px rgba(239,68,68,0.18)"
                   : "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
                 transition: "all 0.15s ease",
               }}
@@ -61,7 +61,7 @@ export function BoostTierPicker({
                     fontSize: 9,
                     fontWeight: 700,
                     color: "#0d0f12",
-                    background: "#e8a020",
+                    background: "#ef4444",
                     padding: "2px 6px",
                     borderRadius: 999,
                     letterSpacing: "0.05em",
@@ -80,7 +80,7 @@ export function BoostTierPicker({
                     width: 18,
                     height: 18,
                     borderRadius: "50%",
-                    background: "#e8a020",
+                    background: "#ef4444",
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -108,7 +108,7 @@ export function BoostTierPicker({
                   marginTop: 14,
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontSize: 28,
-                  color: "#e8a020",
+                  color: "#ef4444",
                   lineHeight: 1,
                   letterSpacing: "0.02em",
                 }}
@@ -151,7 +151,7 @@ export function BoostTierPicker({
           onClick={() => onConfirm(selected)}
           disabled={isSubmitting}
           style={{
-            background: "#e8a020",
+            background: "#ef4444",
             color: "#0d0f12",
             padding: "10px 22px",
             borderRadius: 8,
@@ -159,7 +159,7 @@ export function BoostTierPicker({
             fontWeight: 700,
             cursor: "pointer",
             border: "none",
-            boxShadow: "0 0 14px rgba(232,160,32,0.3)",
+            boxShadow: "0 0 14px rgba(239,68,68,0.3)",
             display: "inline-flex",
             alignItems: "center",
             gap: 6,

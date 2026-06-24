@@ -73,7 +73,7 @@ export function MatchProposalCard({ proposal, fighterProfileId }: MatchProposalC
         size="sm"
         onClick={() => navigate(`/proposals/${proposal.id}`)}
         className="gap-1"
-        style={{ background: "#e8a020", color: "#0d0f12" }}
+        style={{ background: "#ef4444", color: "#0d0f12" }}
       >
         View proposal <ArrowRight className="h-3 w-3" />
       </Button>

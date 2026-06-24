@@ -60,9 +60,9 @@ const EX = {
   raised: "#181c24",
   border: "transparent",
   borderMid: "transparent",
-  gold: "#e8a020",
-  goldDim: "rgba(232,160,32,0.12)",
-  goldBorder: "rgba(232,160,32,0.25)",
+  gold: "#ef4444",
+  goldDim: "rgba(239,68,68,0.12)",
+  goldBorder: "rgba(239,68,68,0.25)",
   text: "#e8eaf0",
   muted: "#8b909e",
   dimmed: "#555b6b",
@@ -396,7 +396,7 @@ export default function Explore() {
                     fontWeight: 600,
                     letterSpacing: "0.02em",
                     cursor: "pointer",
-                    boxShadow: isActive ? "inset 0 0 0 1px rgba(232,160,32,0.35)" : "inset 0 1px 0 rgba(255,255,255,0.03)",
+                    boxShadow: isActive ? "inset 0 0 0 1px rgba(239,68,68,0.35)" : "inset 0 1px 0 rgba(255,255,255,0.03)",
                   }}
                 >
                   <cat.icon style={{ width: 14, height: 14 }} />
@@ -421,7 +421,7 @@ export default function Explore() {
                     background: "rgba(255,255,255,0.04)", border: `1px solid ${EX.border}`,
                     color: EX.text, fontSize: 13,
                   }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(232,160,32,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(232,160,32,0.08)"; }}
+                  onFocus={(e) => { e.currentTarget.style.borderColor = "rgba(239,68,68,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(239,68,68,0.08)"; }}
                   onBlur={(e) => { e.currentTarget.style.borderColor = EX.border; e.currentTarget.style.boxShadow = "none"; }}
                 />
               </div>
@@ -674,7 +674,7 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
                 className="block transition-all duration-200"
                 onClick={() => void track("event_card_clicked", { event_id: event.id })}
                 style={{ background: EX.card, border: `1px solid ${EX.border}`, borderRadius: 12, overflow: "hidden", cursor: "pointer" }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = EX.goldBorder; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08)"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = EX.goldBorder; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(239,68,68,0.08)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = EX.border; e.currentTarget.style.boxShadow = "none"; }}
               >
                 {/* Hero area */}
@@ -777,7 +777,7 @@ function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymI
               className="block transition-all duration-200"
               onClick={() => void track("gym_card_clicked", { gym_id: gym.id })}
               style={{ background: EX.card, border: "none", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)" }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(239,68,68,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
             >
               {/* Hero */}
@@ -874,7 +874,7 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
         className="block transition-all duration-200"
         onClick={() => void trackAnalytics("fighter_card_clicked", { fighter_id: fighter.id })}
         style={{ background: EX.card, border: "none", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)" }}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,160,32,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(239,68,68,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
         onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
       >
         {/* Top area */}
@@ -882,9 +882,9 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
           <NetworkBackground />
           <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 120, opacity: 0.10, pointerEvents: "none" }} />
           <div style={{
-            width: 96, height: 96, borderRadius: "50%", border: "2px solid rgba(232,160,32,0.5)", overflow: "hidden", boxShadow: "0 0 20px rgba(232,160,32,0.2)",
+            width: 96, height: 96, borderRadius: "50%", border: "2px solid rgba(239,68,68,0.5)", overflow: "hidden", boxShadow: "0 0 20px rgba(239,68,68,0.2)",
             display: "flex", alignItems: "center", justifyContent: "center", position: "relative", zIndex: 1,
-            background: fighter._avatar ? "transparent" : "linear-gradient(135deg, rgba(232,160,32,0.25), rgba(232,160,32,0.08))",
+            background: fighter._avatar ? "transparent" : "linear-gradient(135deg, rgba(239,68,68,0.25), rgba(239,68,68,0.08))",
           }}>
             {fighter._avatar ? (
               <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" />
@@ -900,8 +900,8 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
               onMouseLeave={() => setFollowHover(false)}
               disabled={followLoading}
               style={{
-                background: isFollowing ? "rgba(232,160,32,0.15)" : "rgba(0,0,0,0.65)",
-                border: `1px solid ${isFollowing ? (followHover ? "rgba(239,68,68,0.5)" : EX.gold) : "rgba(232,160,32,0.4)"}`,
+                background: isFollowing ? "rgba(239,68,68,0.15)" : "rgba(0,0,0,0.65)",
+                border: `1px solid ${isFollowing ? (followHover ? "rgba(239,68,68,0.5)" : EX.gold) : "rgba(239,68,68,0.4)"}`,
                 color: isFollowing ? (followHover ? "#ef4444" : EX.gold) : EX.gold,
                 borderRadius: 20, padding: "4px 12px", fontSize: 12, fontWeight: 600,
                 backdropFilter: "blur(6px)", cursor: "pointer", transition: "all 0.2s",

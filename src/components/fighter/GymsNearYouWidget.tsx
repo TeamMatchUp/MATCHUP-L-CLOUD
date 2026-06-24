@@ -54,7 +54,7 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
 
   const heading = (
     <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.125rem, 4.5vw, 1.25rem)", color: "#e8eaf0", letterSpacing: "0.04em", marginBottom: 12, lineHeight: 1.1 }}>
-      GYMS <span style={{ color: "#e8a020" }}>NEAR YOU</span>
+      GYMS <span style={{ color: "#ef4444" }}>NEAR YOU</span>
     </h3>
   );
 
@@ -104,17 +104,17 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
             className="flex items-center gap-3 transition-colors"
             style={{ background: "#181c24", borderRadius: 8, padding: "10px 12px" }}
           >
-            <div style={{ height: 36, width: 36, borderRadius: 8, background: "rgba(232,160,32,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <MapPin style={{ width: 16, height: 16, color: "#e8a020" }} />
+            <div style={{ height: 36, width: 36, borderRadius: 8, background: "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <MapPin style={{ width: 16, height: 16, color: "#ef4444" }} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{gym.name}</p>
-                {gym.listing_tier === "featured" && <Star style={{ width: 12, height: 12, color: "#e8a020", fill: "#e8a020", flexShrink: 0 }} />}
+                {gym.listing_tier === "featured" && <Star style={{ width: 12, height: 12, color: "#ef4444", fill: "#ef4444", flexShrink: 0 }} />}
               </div>
               <div className="flex items-center gap-2 mt-0.5">
                 <p style={{ fontSize: 11, color: "#8b909e" }}>{gym.city ?? gym.country}</p>
-                <span style={{ fontSize: 11, color: "#e8a020", fontWeight: 600 }}>{gym.distance.toFixed(1)} mi</span>
+                <span style={{ fontSize: 11, color: "#ef4444", fontWeight: 600 }}>{gym.distance.toFixed(1)} mi</span>
               </div>
             </div>
           </Link>

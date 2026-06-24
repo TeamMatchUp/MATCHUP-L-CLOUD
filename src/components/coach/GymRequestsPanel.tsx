@@ -124,7 +124,7 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
         className="font-heading text-foreground mb-4"
         style={{ fontSize: 18, letterSpacing: "0.04em", textTransform: "uppercase" }}
       >
-        GYM <span style={{ color: "#e8a020" }}>REQUESTS</span>
+        GYM <span style={{ color: "#ef4444" }}>REQUESTS</span>
       </h3>
       <div className="space-y-2">
         {pendingLinks.map((link: any) => {

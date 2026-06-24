@@ -79,13 +79,13 @@ export function NetworkModal({
               onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.02)"; }}
             >
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #e8a020, #c47e10)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600, color: "white", overflow: "hidden", flexShrink: 0 }}>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg, #ef4444, #c47e10)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 600, color: "white", overflow: "hidden", flexShrink: 0 }}>
                 {item.avatar ? <img src={item.avatar} alt="" className="h-full w-full object-cover" /> : (item.name || "?").slice(0, 2).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <span className="block truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{item.name || "Unknown"}</span>
                 {item.role && (
-                  <span style={{ fontSize: 10, fontWeight: 600, color: "#e8a020", background: "rgba(232,160,32,0.1)", borderRadius: 4, padding: "1px 6px", display: "inline-block", marginTop: 2 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)", borderRadius: 4, padding: "1px 6px", display: "inline-block", marginTop: 2 }}>
                     {ROLE_LABELS[item.role] || item.role}
                   </span>
                 )}
