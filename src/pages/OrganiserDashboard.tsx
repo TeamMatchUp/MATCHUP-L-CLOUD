@@ -173,7 +173,7 @@ export default function OrganiserDashboard() {
                         )}
 
                         {bouts.length > 0 && (
-                          <div className="border-t border-border pt-3 mt-1">
+                          <div className="border-t border-white/5 pt-3 mt-1">
                             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Fight Card</p>
                             <div className="space-y-1.5">
                               {bouts.map((bout: any) => {
