@@ -24,7 +24,6 @@ export function UpcomingFightsTicker() {
         .eq("is_public", true)
         .gte("events.date", today)
         .eq("events.status", "published")
-        .order("events(date)", { ascending: true })
         .limit(8);
       return data ?? [];
     },
