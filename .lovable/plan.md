@@ -1,83 +1,91 @@
-# Fighter Detail Page Redesign
+# Landing Page Redesign — Final Copy Locked
 
-The current `/fighters/[id]` page is a narrow mobile single-column with a dark blurred banner. The references show a wide two-column desktop layout. The references are rendered in light mode (white bg / blue accent) — **the project stays in dark mode with the gold accent**. I'll port the *composition* from the references onto the existing dark palette.
+## 1. HeroSection (`HeroSection.tsx`)
+- Eyebrow: `AI-DRIVEN MATCHMAKING · VERIFIED FIGHTER DATABASE · FIGHT CARD BUILDER`
+- Headline: **MATCH EASY, / FIGHT HARD** (gold glow on line 2)
+- Sub-tagline: `PROMOTE. MATCHUP. DONE. IT'S THAT SIMPLE…`
+- Primary CTA: `CREATE FREE ACCOUNT` (gold pill, dominant)
+- Secondary: `Explore MatchUp` as low-weight text link
+- Social proof strip: `JOIN 850+ FIGHTERS · 340+ COACHES · 96% MATCH RATE` + 5–6 grayscale partner name placeholders
+- Trust microcopy: `🔒 Your fighter data is private by default · GDPR compliant · You control visibility`
+- Mobile: CTA full-width, ≥48px, stacked
 
-## Colour rules (non-negotiable)
-- Page bg `#080a0d`, card surface `#111318`, inset surface `#181c24`, hover `#1e2330`.
-- Single accent = gold `#e8a020` (replaces every blue in the mockups). Never orange, never blue.
-- Text primary `#e8eaf0`, secondary `#8b909e`, muted `#555b6b`.
-- Success `#22c55e` (wins / green bars), destructive `#ef4444` (losses / red bars), warning `#f59e0b`.
-- No borders on cards, panels, inputs. Depth via the design-system shadow spec only.
-- Bebas Neue for headings/numbers, Inter for body.
+## 2. UpcomingFightsTicker (new)
+- Two rows autoscrolling left via CSS keyframes (60s / 90s), pause on hover, respects `prefers-reduced-motion`
+- Row 1: next 8 `event_fight_slots` joined with `events` as pill chips
+- Row 2: 6–8 static sponsor name placeholders
 
-## Layout
+## 3. FeatureShowcase (new `FeatureShowcase.tsx`) — scroll-animated, alternating layout, browser-framed screenshots with hover-lift
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ ← Back to Fighters                                          │
-├─────────────────────────────────────────────────────────────┤
-│ HERO CARD (#111318, network constellation watermark)        │
-│  [Avatar 140px]  "THE SPECIALIST" (gold italic)  [+ FOLLOW] │
-│                  JORDAN COLE  (Bebas ~56px)                 │
-│                  🇬🇧 GB · Lightweight · MMA                  │
-│                  [14 W][2 L][0 D][8 KOs][88% WIN%] pills    │
-│                  🏆 Bamma LW Champion  🏆 Cage Warriors…    │
-│                  ──────────────────────────────────────     │
-│                  HT 5'10"  RCH 72"  WT 155  STANCE …  GYM … │
-│                  [IG][TW][YT][TT][…]                        │
-├──────────────────────────────────┬──────────────────────────┤
-│ [TOTAL] [PRO] [AMATEUR]          │  PERFORMANCE ANALYTICS   │
-│                                  │  [Overview|Striking|     │
-│ ┌──────┬──────┬──────┬────────┐ │   Activity|Radar]        │
-│ │ 14   │  2   │  0   │   8    │ │  (tab-specific content)  │
-│ │ WINS │LOSSES│DRAWS │KO+TKO  │ │                          │
-│ └──────┴──────┴──────┴────────┘ │                          │
-│                                  │                          │
-│ PRO RECORD SUMMARY  [Finish 36%] │  FIGHTER PROFILE         │
-│        14 · 2 · 0                │  ┌────────┬────────┐    │
-│  Wins by method | Losses by …    │  │ Height │ Weight │    │
-│                                  │  │ Reach  │ Stance │    │
-│ [ALL][KOs][SUBS][DECS]           │  │ Age    │ Nat.   │    │
-│ 2026 ───────────────── 1W-0L     │  └────────┴────────┘    │
-│  ▸ Rashid Khan … KO R2           │                          │
-│ 2025 ───────────────── 3W-0L     │                          │
-└──────────────────────────────────┴──────────────────────────┤
-│ RELATED FIGHTERS                                            │
-│ [card][card][card][card]                                    │
-└─────────────────────────────────────────────────────────────┘
-```
+Intro heading (kept from existing `ThreeSidesSection` styling, no cards): **THREE SIDES. ONE PLATFORM.**
 
-Collapses to single column under `lg` (1024px).
+### Section A — FOR FIGHTERS
+**YOUR CAREER, ONE COMMAND CENTRE.**
+> Every offer, callout and contract lands in your Action Centre. Accept a bout in two taps, keep your record verified, and match efficiently from the Matchup network.
 
-## Hero card
-- Card surface `#111318`, rounded 16px, padded 32px, design-system card shadow, MU watermark + faint constellation bg at low opacity.
-- Avatar 140px circle with gold ring `rgba(232,160,32,0.5)` + soft gold glow.
-- Nickname: gold `#e8a020` italic uppercase small, above name.
-- Name: Bebas Neue ~56px `#e8eaf0`.
-- Stat pills row (5 chips, inset `#181c24`, no border): W (green), L (red), D (muted), KOs (gold-tint), WIN% (gold-tint). Bebas number ~28px + 10px uppercase label.
-- Title pills: gold-tint fill `rgba(232,160,32,0.12)`, gold text, Award icon.
-- Divider, meta row: HT / RCH / WT / STANCE / AGE / GYM as `LABEL value` pairs.
-- Social icons row (existing wiring).
-- `+ FOLLOW` top-right: outline gold default, filled gold when following — reuses existing follow logic.
+- Verified record & fight history with live automated analytics
+- Match offers straight to your inbox
+- Availability toggle — one switch
 
-## Left column
-- `Total / Pro / Amateur` segmented control, gold active fill `rgba(232,160,32,0.12)` with `#e8a020` text.
-- 4 KPI cards: Wins / Losses / Draws / KO+TKO. `#111318` surface, Bebas Neue value, uppercase label, no border.
-- Pro Record Summary: big `W · L · D` centered, Finish Rate gold-tint pill top-right, two-column Wins/Losses breakdown with thin bars (green for wins, red for losses) — reuses existing `MethodRow`.
-- Fight filter chips `[ALL][KOs][SUBS][DECS]` — gold active.
-- Fight history grouped by year, year header + `wW-lL` right-aligned, rows collapsible (existing behaviour preserved).
+CTA: `Explore fighters →`
+Screenshot: fighter dashboard (Action Centre)
 
-## Right column
-- Analytics card with 4 inline tabs (Overview / Striking / Activity / Radar), **gold active underline**.
-  - Overview: 3 large tiles (Win Rate, Finish Rate, Decision Rate) + 4 small tiles (KOs / TKOs / SUBs / DECs) + Last 8 Results row (W/L circles, green/red).
-  - Striking: Wins-by-method green bars + Losses-by-method red bars + Avg Finish Round + KO Rate tiles.
-  - Activity: Fights-per-year bar chart (gold bars) + Career Fights / Years Active tiles + Record by Promotion list.
-  - Radar: existing recharts radar, stroke/fill in gold.
-- Fighter Profile card below: 2-col grid for Height / Weight / Reach / Stance / Age / Nationality. Each cell inset `#181c24`, label uppercase muted, value Inter semibold `#e8eaf0`.
+### Section B — FOR COACHES
+**RUN THE GYM. / GROW THE ROSTER.**
+> Find new members authentically. Approve join requests, track roster analytics and gym views, and manage every fighter's calendar from a single overview. Your fighters deserve better than WhatsApp and Facebook to grow their career.
 
-## Related fighters
-Existing query/section rendered as a 4-card row under the main grid using current explore-card styling.
+- Advertise to the whole Matchup network
+- All-in-one fighter matchmaking
+- Fighter performance analytics
+- Integrated events calendar
 
-## Files
-- `src/pages/FighterDetail.tsx` — rebuild markup/layout; keep all existing data fetching, follow logic, analytics tracking, profile completion bar, and titles query untouched.
-- No schema, route, or RLS changes.
+CTA: `Explore gyms →`
+Screenshot: coach roster / gym dashboard
+
+### Section C — FOR ORGANISERS
+**BUILD CARDS / THAT SELL OUT.**
+> The old saying of "who you know" just got a whole lot easier — search the entire Matchup network of verified fighters either manually or with SmartMatchup. Send and track offers, confirm bouts and publish your event cards to the platform.
+
+- Effortless matchmaking with detailed analytics
+- Fight proposal tracker
+- One-click event publishing
+- Ticket sales integration
+
+CTA: `Explore events →`
+Screenshot: fight card builder
+
+Each showcase uses `<BrowserFrame>` (traffic-light dots, subtle border, drop shadow), Framer Motion `whileInView` with staggered children, hover lift `translateY(-6px) scale(1.01)` + gold-tinted glow.
+
+## 4. "Top fighters actively seeking a match" strip
+- Rename existing "fighters looking for a dance partner" section heading to **TOP FIGHTERS ACTIVELY SEEKING A MATCH**
+- No other structural changes to that block
+
+## 5. PlatformStatsStrip — unchanged, subline updated
+- New subline under stats: `Be a part of our network today.`
+
+## 6. HowItWorksSection — unchanged
+
+## 7. FinalCtaSection (new)
+- Headline: `YOUR NEXT FIGHT IS THREE CLICKS AWAY.`
+- Single glowing gold CTA: `CREATE FREE ACCOUNT`
+
+## 8. `src/pages/Index.tsx` assembly order
+1. HeroSection
+2. UpcomingFightsTicker
+3. FeatureShowcase (intro + 3 sections)
+4. Top Fighters Actively Seeking a Match strip
+5. PlatformStatsStrip (with new subline)
+6. HowItWorksSection
+7. FinalCtaSection
+8. `<Footer />`
+
+## Technical notes
+- No new dependencies (framer-motion already present)
+- No backend / RLS / schema / route changes
+- Ticker reads existing `event_fight_slots` + `events`
+- Screenshots captured with Playwright at 1280×800, saved to `src/assets/landing/`, imported as ES6
+- Verify with Playwright at 1280×1800 and 390×2000
+
+## Out of scope
+- Header, routing, auth
+- Real sponsor logos, testimonials, Verified-Athlete badge (deferred until assets provided)
