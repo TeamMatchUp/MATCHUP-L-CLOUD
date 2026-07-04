@@ -84,6 +84,9 @@ export function PlatformStatsStrip() {
             <StatCard key={c.key} value={data?.[c.key] ?? 0} label={c.label} icon={c.icon} inView={inView} delay={i * 0.06} suffix={c.suffix} href={c.href} />
           ))}
         </div>
+        <p className="text-center text-muted-foreground text-sm mt-6 tracking-wide">
+          Be a part of our network today.
+        </p>
       </div>
     </section>
   );

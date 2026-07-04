@@ -1,9 +1,12 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { HeroSection } from "@/components/landing/HeroSection";
-import { ThreeSidesSection } from "@/components/landing/ThreeSidesSection";
+import { UpcomingFightsTicker } from "@/components/landing/UpcomingFightsTicker";
+import { FeatureShowcase } from "@/components/landing/FeatureShowcase";
+import { TopFightersSeekingSection } from "@/components/landing/TopFightersSeekingSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { PlatformStatsStrip } from "@/components/landing/PlatformStatsStrip";
+import { FinalCtaSection } from "@/components/landing/FinalCtaSection";
 
 const Index = () => {
   return (
@@ -11,13 +14,12 @@ const Index = () => {
       <Header />
       <main className="pt-16">
         <HeroSection />
-        {/* Visual separator */}
-        <div className="container">
-          <div className="h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        </div>
-        <ThreeSidesSection />
-        <HowItWorksSection />
+        <UpcomingFightsTicker />
+        <FeatureShowcase />
+        <TopFightersSeekingSection />
         <PlatformStatsStrip />
+        <HowItWorksSection />
+        <FinalCtaSection />
       </main>
       <Footer />
     </div>
