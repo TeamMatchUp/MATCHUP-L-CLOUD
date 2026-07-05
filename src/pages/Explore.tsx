@@ -32,6 +32,7 @@ import logoWhite from "@/assets/logo-full-white.svg";
 import iconWhite from "@/assets/icon-white.svg";
 import NetworkBackground from "@/components/NetworkBackground";
 import { ExploreBanner } from "@/components/ExploreBanner";
+import { HazePlaceholder } from "@/components/HazePlaceholder";
 import { FlagIcon, getCountryDisplayName } from "@/components/FlagIcon";
 import { Award } from "lucide-react";
 import { BoostedBadge } from "@/components/BoostedBadge";
