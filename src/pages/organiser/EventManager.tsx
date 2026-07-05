@@ -15,9 +15,12 @@ import { toast } from "sonner";
 import {
   ArrowLeft, Pencil, Eye, Share2, Calendar, MapPin, Building2,
   CheckCircle2, Circle, Ticket, TrendingUp, Users, AlertCircle,
-  ChevronRight, Plus, Trophy, PoundSterling, X, Copy, Check, Sparkles,
+  ChevronRight, Plus, Trophy, PoundSterling, X, Copy, Check, Sparkles, Globe, Trash2,
 } from "lucide-react";
 import { formatEnum } from "@/lib/format";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 
 // ─── Design tokens ──────────────────────────────────────────
