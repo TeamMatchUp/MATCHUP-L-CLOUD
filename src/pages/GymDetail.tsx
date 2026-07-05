@@ -12,6 +12,7 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { JoinGymButton } from "@/components/gym/JoinGymButton";
 import { GymContactCTA } from "@/components/gym/GymContactCTA";
+import { GymKpiStrip } from "@/components/gym/GymKpiStrip";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { useToast } from "@/hooks/use-toast";
 import { EditGymDialog } from "@/components/gym/EditGymDialog";
@@ -250,16 +251,33 @@ export default function GymDetail() {
     return <JoinGymButton gymId={gym.id} />;
   };
 
+  const approvedFighters = ((gym as any).fighter_gym_links ?? [])
+    .filter((l: any) => l.status === "approved")
+    .map((l: any) => l.fighter_profiles)
+    .filter(Boolean);
+
+  const initials = gym.name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n: string) => n[0]?.toUpperCase())
+    .join("");
+
+  const disciplineTags: string[] = Array.isArray((gym as any).discipline_tags) ? (gym as any).discipline_tags : [];
+
   return (
     <div className="min-h-screen" style={{ background: "#0d0f12" }}>
       <Header />
       <main className="pt-16">
         <section style={{ padding: "10px 0" }}>
-          <div className="container max-w-3xl">
+          <div className="container max-w-6xl">
             <div className="pt-2">
-              <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
-                <ArrowLeft className="h-4 w-4 mr-2" />Back
-              </Button>
+              <Link
+                to="/explore?tab=gyms"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+              >
+                <ArrowLeft className="h-4 w-4" /> All gyms
+              </Link>
             </div>
 
             <motion.div
@@ -267,73 +285,114 @@ export default function GymDetail() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Banner hero */}
-              {gym.banner_image && (
-                <div className="mb-8 rounded-xl overflow-hidden relative" style={{ height: 280 }}>
-                  <img src={gym.banner_image} alt={gym.name} className="w-full h-full object-cover" />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(13,15,18,0.95) 100%)" }} />
-                  <h1 className="absolute bottom-6 left-6" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, color: "#e8eaf0" }}>{gym.name}</h1>
-                </div>
-              )}
-
-              <div className="flex flex-col gap-4 mb-8 min-w-0">
-                <div className="flex items-start gap-3 md:gap-4 min-w-0">
-                  {!gym.banner_image && gym.logo_url ? (
-                    <div className="h-12 w-12 md:h-16 md:w-16 rounded-lg overflow-hidden shrink-0">
-                      <img src={gym.logo_url} alt={gym.name} className="h-full w-full object-cover" />
-                    </div>
-                  ) : !gym.banner_image ? (
-                    <div className="h-12 w-12 md:h-16 md:w-16 rounded-lg bg-muted flex items-center justify-center font-heading text-lg md:text-xl text-muted-foreground shrink-0">
-                      {gym.name.split(" ").map((n: string) => n[0]).join("").slice(0, 2)}
-                    </div>
-                  ) : null}
-                  <div className="min-w-0 flex-1">
-                    {!gym.banner_image && (
-                      <h1
-                        className="font-heading text-base sm:text-lg md:text-4xl text-foreground leading-tight break-words"
-                        title={gym.name}
+              {/* Hero row */}
+              <div className="flex items-center gap-4 md:gap-6 flex-wrap mb-6">
+                {gym.logo_url ? (
+                  <div
+                    className="rounded-full overflow-hidden shrink-0"
+                    style={{
+                      width: 92,
+                      height: 92,
+                      boxShadow: "inset 0 0 0 3px hsl(var(--primary) / 0.6)",
+                    }}
+                  >
+                    <img src={gym.logo_url} alt={gym.name} className="h-full w-full object-cover" />
+                  </div>
+                ) : (
+                  <div
+                    className="rounded-full flex items-center justify-center shrink-0"
+                    style={{
+                      width: 92,
+                      height: 92,
+                      background: "hsl(var(--muted))",
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      fontSize: 30,
+                      color: "hsl(var(--foreground))",
+                      boxShadow: "inset 0 0 0 3px hsl(var(--primary) / 0.6)",
+                    }}
+                  >
+                    {initials}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h1
+                      className="font-heading text-foreground break-words"
+                      style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: "clamp(1.75rem, 5vw, 3.25rem)",
+                        lineHeight: 1,
+                        letterSpacing: "0.01em",
+                      }}
+                    >
+                      {gym.name}
+                    </h1>
+                    {gym.claimed && (
+                      <span
+                        className="inline-flex items-center gap-1 text-xs font-semibold uppercase"
+                        style={{
+                          background: "hsl(var(--primary) / 0.15)",
+                          color: "hsl(var(--primary))",
+                          padding: "3px 10px",
+                          borderRadius: 999,
+                          letterSpacing: "0.08em",
+                        }}
                       >
-                        {gym.name}
-                      </h1>
-                    )}
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      {gym.claimed ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 px-2 py-0.5 text-[10px] md:text-xs font-semibold whitespace-nowrap">
-                          <ShieldCheck className="h-3 w-3" /> Verified
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-muted text-muted-foreground border border-border px-2 py-0.5 text-[10px] md:text-xs font-semibold whitespace-nowrap">
-                          Unclaimed
-                        </span>
-                      )}
-                    </div>
-                    {gym.location && (
-                      <p className="text-muted-foreground flex items-start gap-2 mt-2 text-xs md:text-sm break-words">
-                        <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
-                        <span className="min-w-0 break-words break-all">{gym.location}</span>
-                      </p>
+                        <ShieldCheck className="h-3 w-3" /> Verified
+                      </span>
                     )}
                   </div>
+                  <p className="mt-2 text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                    {gym.city && (
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5 text-primary" /> {gym.city}
+                      </span>
+                    )}
+                    {disciplineTags.length > 0 && <span>· {disciplineTags.join(" · ")}</span>}
+                  </p>
                 </div>
-                <div className="w-full md:w-auto md:self-start [&>*]:w-full md:[&>*]:w-auto">
-                  {renderActionButton()}
+                <div className="flex items-center gap-2 shrink-0">
+                  {gym.phone && (
+                    <a
+                      href={`tel:${gym.phone}`}
+                      className="rounded-full flex items-center justify-center bg-card hover:bg-muted transition-colors"
+                      style={{ width: 44, height: 44, boxShadow: "var(--shadow-card)" }}
+                      aria-label="Call gym"
+                    >
+                      <Phone className="h-4 w-4 text-foreground" />
+                    </a>
+                  )}
+                  <div className="[&>*]:w-auto">{renderActionButton()}</div>
                 </div>
               </div>
 
+              {/* KPI strip */}
+              <div className="mb-6">
+                <GymKpiStrip fighters={approvedFighters} />
+              </div>
 
               {gym.description && (
-                <div className="mb-8">
+                <div className="mb-6 rounded-xl bg-card p-5" style={{ boxShadow: "var(--shadow-card)" }}>
+                  <h3
+                    style={{
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      letterSpacing: "0.08em",
+                      fontSize: 13,
+                      color: "hsl(var(--primary))",
+                      marginBottom: 10,
+                    }}
+                  >
+                    ABOUT
+                  </h3>
                   <p className="text-muted-foreground leading-relaxed">{gym.description}</p>
                 </div>
               )}
-
-              {/* Discipline tags removed from header — shown in description card below */}
 
               {/* Contact CTA — role/status aware */}
               {!isOwner && (
                 <div className="mb-8">
                   {isMember ? (
-                    <div className="rounded-lg border border-success/30 bg-success/5 p-4 flex items-center gap-3">
+                    <div className="rounded-lg bg-card p-4 flex items-center gap-3" style={{ boxShadow: "var(--shadow-card)" }}>
                       <CheckIcon className="h-5 w-5 text-success shrink-0" />
                       <p className="text-sm text-foreground font-medium">You are a member of this gym</p>
                     </div>
