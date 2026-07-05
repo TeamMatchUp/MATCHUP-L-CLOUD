@@ -629,14 +629,60 @@ export default function EventManager() {
                     <span style={{ fontSize: 12, color: TEXT_SEC }}>Total Expenses</span>
                     <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: TEXT }}>{fmtGBP(0)}</span>
                   </div>
-                  <div className="flex items-center justify-between" style={{ padding: "10px 12px", background: ACCENT_DIM, borderRadius: 10 }}>
+              {/* Financial Summary */}
+              <div style={cardStyle}>
+                <SectionTitle>Financial Summary</SectionTitle>
+
+                {/* Per-ticket revenue breakdown */}
+                <div className="mb-4">
+                  <p style={{ fontSize: 11, color: TEXT_SEC, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8, fontWeight: 600 }}>
+                    Revenue by ticket tier
+                  </p>
+                  {tickets.length === 0 ? (
+                    <p style={{ fontSize: 12, color: TEXT_MUTED, padding: "8px 0" }}>No ticket tiers yet.</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {tickets.map((t: any) => {
+                        const qty = t.quantity_available ?? 0;
+                        const rev = qty * (Number(t.price) || 0);
+                        return (
+                          <div key={t.id} className="flex items-center justify-between gap-3" style={{ padding: "8px 12px", background: RAISED, borderRadius: 8, fontSize: 12 }}>
+                            <div className="flex-1 min-w-0">
+                              <p style={{ color: TEXT, fontWeight: 600 }} className="truncate">{t.ticket_type}</p>
+                              <p style={{ color: TEXT_MUTED, fontSize: 11 }}>{fmtGBP(Number(t.price) || 0)} × {qty.toLocaleString("en-GB")}</p>
+                            </div>
+                            <span style={{ color: SUCCESS, fontWeight: 700 }}>{fmtGBP(rev)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Expenses */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p style={{ fontSize: 11, color: TEXT_SEC, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+                      Expenses
+                    </p>
+                  </div>
+                  <ExpensesEditor eventId={id!} expenses={expenses} />
+                </div>
+
+                <div className="space-y-2 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="flex items-center justify-between" style={{ padding: "8px 12px", background: RAISED, borderRadius: 8 }}>
+                    <span style={{ fontSize: 12, color: TEXT_SEC }}>Total Revenue (Est.)</span>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: SUCCESS }}>{fmtGBP(metrics.estRevenue)}</span>
+                  </div>
+                  <div className="flex items-center justify-between" style={{ padding: "8px 12px", background: RAISED, borderRadius: 8 }}>
+                    <span style={{ fontSize: 12, color: TEXT_SEC }}>Total Expenses</span>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: TEXT }}>{fmtGBP(totalExpenses)}</span>
+                  </div>
+                  <div className="flex items-center justify-between" style={{ padding: "8px 12px", background: ACCENT_DIM, borderRadius: 8 }}>
                     <span style={{ fontSize: 12, color: TEXT_SEC }}>Net Profit (Est.)</span>
-                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: ACCENT }}>{fmtGBP(metrics.estRevenue)}</span>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: ACCENT }}>{fmtGBP(metrics.estRevenue - totalExpenses)}</span>
                   </div>
                 </div>
-                <p style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 12 }}>
-                  Estimates based on current ticket inventory. Add expenses to refine net profit.
-                </p>
               </div>
 
               {/* Recent Activity */}
