@@ -248,6 +248,7 @@ export default function EventDetail() {
   const [mainPage, setMainPage] = useState(0);
   const [underPage, setUnderPage] = useState(0);
   const [mapOpen, setMapOpen] = useState(false);
+  const [showWaitlist, setShowWaitlist] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
