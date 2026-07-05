@@ -569,15 +569,29 @@ export default function EventManager() {
               </div>
             </div>
 
-            {/* Inline ticket management */}
-            {showTickets && (
-              <div style={{ ...cardStyle, marginBottom: 20 }}>
-                <SectionTitle action={
-                  <GhostButton onClick={() => setShowTickets(false)}>Close</GhostButton>
-                }>Manage Tickets</SectionTitle>
-                <ManageTicketsPanel eventId={id!} />
-              </div>
-            )}
+            {/* Ticket management modal */}
+            <Dialog open={showTickets} onOpenChange={setShowTickets}>
+              <DialogContent
+                className="p-0 gap-0 border-none"
+                style={{
+                  width: "min(90vw, 960px)",
+                  maxWidth: "min(90vw, 960px)",
+                  maxHeight: "88vh",
+                  overflowY: "auto",
+                  background: CARD,
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+                }}
+              >
+                <DialogHeader className="p-6 pb-2">
+                  <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, letterSpacing: "0.04em", color: TEXT }}>
+                    Manage Tickets
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="px-6 pb-6">
+                  <ManageTicketsPanel eventId={id!} />
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {/* BOTTOM ROW */}
             <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))" }}>
