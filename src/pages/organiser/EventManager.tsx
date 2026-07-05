@@ -201,6 +201,22 @@ export default function EventManager() {
     enabled: !!id,
   });
 
+  const { data: expenses = [] } = useQuery({
+    queryKey: ["event-expenses", id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("event_expenses").select("*").eq("event_id", id!).order("created_at");
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!id,
+  });
+
+  const totalExpenses = useMemo(
+    () => expenses.reduce((s: number, e: any) => s + Number(e.amount || 0), 0),
+    [expenses],
+  );
+
   // Derived metrics
   const metrics = useMemo(() => {
     const totalCapacity = tickets.reduce((s: number, t: any) => s + (t.quantity_available ?? 0), 0);
@@ -212,6 +228,21 @@ export default function EventManager() {
     const under = bouts.filter((b: any) => b.bout_type !== "Main Event");
     return { totalCapacity, estRevenue, totalSlots, confirmed, open, main, under };
   }, [tickets, bouts]);
+
+  const publishMutation = useMutation({
+    mutationFn: async (newStatus: "published" | "draft") => {
+      const { error } = await supabase.from("events").update({ status: newStatus }).eq("id", id!);
+      if (error) throw error;
+      return newStatus;
+    },
+    onSuccess: (newStatus) => {
+      queryClient.invalidateQueries({ queryKey: ["organiser-event", id] });
+      queryClient.invalidateQueries({ queryKey: ["organiser-events"] });
+      toast.success(newStatus === "published" ? "Event published" : "Event unpublished");
+      if (newStatus === "published") setShowBoost(true);
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to update status"),
+  });
 
   // Progress checklist
   const checklist = useMemo(() => {
