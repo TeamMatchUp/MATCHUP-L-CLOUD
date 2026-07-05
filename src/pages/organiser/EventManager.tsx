@@ -836,3 +836,85 @@ function ShareEventModal({ eventId, title, onClose }: { eventId: string; title?:
   );
 }
 
+// ─── Expenses Editor ────────────────────────────────────────
+function ExpensesEditor({ eventId, expenses }: { eventId: string; expenses: any[] }) {
+  const qc = useQueryClient();
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["event-expenses", eventId] });
+
+  const addExpense = async () => {
+    if (!description.trim() || !amount) return;
+    const { error } = await (supabase as any).from("event_expenses").insert({
+      event_id: eventId,
+      description: description.trim(),
+      amount: parseFloat(amount) || 0,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setDescription(""); setAmount("");
+    invalidate();
+  };
+
+  const deleteExpense = async (expId: string) => {
+    const { error } = await (supabase as any).from("event_expenses").delete().eq("id", expId);
+    if (error) { toast.error(error.message); return; }
+    invalidate();
+  };
+
+  return (
+    <div>
+      <div className="space-y-1.5 mb-2">
+        {expenses.length === 0 && (
+          <p style={{ fontSize: 12, color: TEXT_MUTED, padding: "4px 0" }}>No expenses added yet.</p>
+        )}
+        {expenses.map((exp) => (
+          <div key={exp.id} className="flex items-center justify-between gap-2" style={{ padding: "8px 12px", background: RAISED, borderRadius: 8, fontSize: 12 }}>
+            <span style={{ color: TEXT, flex: 1, minWidth: 0 }} className="truncate">{exp.description}</span>
+            <span style={{ color: TEXT, fontWeight: 700 }}>{fmtGBP(Number(exp.amount) || 0)}</span>
+            <button
+              type="button"
+              onClick={() => deleteExpense(exp.id)}
+              aria-label="Delete expense"
+              style={{
+                width: 24, height: 24, borderRadius: 6, border: "none", cursor: "pointer",
+                background: "transparent", color: TEXT_MUTED,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <Input
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Expense description"
+          className="text-sm h-9 flex-1"
+        />
+        <Input
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="£0"
+          type="number"
+          step="0.01"
+          className="text-sm h-9 w-24"
+        />
+        <Button
+          type="button"
+          size="sm"
+          onClick={addExpense}
+          disabled={!description.trim() || !amount}
+        >
+          <Plus className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
