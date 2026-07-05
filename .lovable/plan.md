@@ -1,91 +1,89 @@
-# Landing Page Redesign — Final Copy Locked
+## Landing Page — Round 3 Edits
 
-## 1. HeroSection (`HeroSection.tsx`)
-- Eyebrow: `AI-DRIVEN MATCHMAKING · VERIFIED FIGHTER DATABASE · FIGHT CARD BUILDER`
-- Headline: **MATCH EASY, / FIGHT HARD** (gold glow on line 2)
-- Sub-tagline: `PROMOTE. MATCHUP. DONE. IT'S THAT SIMPLE…`
-- Primary CTA: `CREATE FREE ACCOUNT` (gold pill, dominant)
-- Secondary: `Explore MatchUp` as low-weight text link
-- Social proof strip: `JOIN 850+ FIGHTERS · 340+ COACHES · 96% MATCH RATE` + 5–6 grayscale partner name placeholders
-- Trust microcopy: `🔒 Your fighter data is private by default · GDPR compliant · You control visibility`
-- Mobile: CTA full-width, ≥48px, stacked
+### 1. HeroSection (`src/components/landing/HeroSection.tsx`)
+- **Logo placement**: replace the centered `AppIcon` shield above the headline with a horizontal lockup — MatchUp shield sits **to the left of** the headline. On mobile it stacks above (same size as now).
+- **Remove** the `AI-DRIVEN MATCHMAKING · VERIFIED FIGHTER DATABASE · FIGHT CARD BUILDER` eyebrow line entirely.
+- **Remove** the gym-name partner strip (`Iron Circle Gym`, `Apex MMA`, etc.) and the `PARTNERS` constant.
+- **Replace copy**:
+  - Old sub-tagline `PROMOTE. MATCHUP. DONE. IT'S THAT SIMPLE…` → new block under the main hero title:
+    - Line 1 (heading weight): `Where fights get made.`
+    - Line 2 (subline, muted): `Fighters, coaches and promoters are already matching. Don't get left off the card.`
+- **CTA**: unchanged (`Create free account` + `or explore MatchUp →`).
+- **Rotating KPI network** (replaces flat counter row + partner strip):
+  - Four live counters queried from Supabase on mount:
+    - `Fighters` — `count` of `fighter_profiles`
+    - `Coaches` — `count` of `user_roles` where `role = 'coach'`
+    - `Organisers` — `count` of `user_roles` where `role = 'organiser'`
+    - `Hours saved` — derived: `confirmed event_fight_slots × 4`
+  - Rendered as a **rotating network animation**: 4 stat-pill nodes on a slow orbit ring (~40s) around a central MU dot with faint connecting lines. Respects `prefers-reduced-motion` (falls back to static row).
+  - Gold accent nodes on `#080a0d`, no borders, shadow only.
+- **Keep** the GDPR trust microcopy.
 
-## 2. UpcomingFightsTicker (new)
-- Two rows autoscrolling left via CSS keyframes (60s / 90s), pause on hover, respects `prefers-reduced-motion`
-- Row 1: next 8 `event_fight_slots` joined with `events` as pill chips
-- Row 2: 6–8 static sponsor name placeholders
+### 2. TopFightersSeekingSection — card redesign (image 2 reference)
+Replicate the reference card exactly:
+```
+┌──────────────────────────────────────┐
+│  ⬤ Initials         [ AVAILABLE ]    │  ← 56px circle avatar, pill top-right
+│                                       │
+│  Fighter Name                         │  ← Inter semibold 18px
+│  "Nickname"                           │  ← gold italic 14px
+│  🇬🇧 City · Discipline                │  ← flag emoji + muted 13px
+│                                       │
+│  ─────────────────────────────────    │  ← subtle inset divider
+│  14–2–0    8     Lightweight          │  ← 3-col stat row
+│  RECORD    KOS   CLASS                │  ← uppercase micro-labels
+└──────────────────────────────────────┘
+```
+- Card surface `#111318`, no border, design-system shadow, hover lift + faint gold glow.
+- Country **flag emoji** (via existing `FlagIcon`) rendered inline before the city.
+- Add KO count by querying `fights` (`method ILIKE '%ko%'` or `%tko%`, `result = 'win'`) batched for the 4 fighters.
+- Include nickname if present on `fighter_profiles`.
+- Available badge: green pill top-right, glass background `rgba(0,0,0,0.6)` blur.
 
-## 3. FeatureShowcase (new `FeatureShowcase.tsx`) — scroll-animated, alternating layout, browser-framed screenshots with hover-lift
+**Sitewide rollout** of this card style:
+- Extract shared `<FighterCard />` at `src/components/fighter/FighterCard.tsx` — flag emoji included by default.
+- Refactor existing fighter card usages:
+  - `src/components/landing/FeaturedFightersSection.tsx`
+  - `src/pages/Fighters.tsx`
+  - `src/pages/Explore.tsx` fighter tab
+  - `src/components/dashboard/DashboardRoster.tsx`
+- Behaviour, props, data shape preserved — only visual layout swapped.
 
-Intro heading (kept from existing `ThreeSidesSection` styling, no cards): **THREE SIDES. ONE PLATFORM.**
+### 3. PlatformStatsStrip — replace with banner style + scroll reveal (image 1)
+Rewrite `src/components/landing/PlatformStatsStrip.tsx`:
+- Full-width dark band, thin hairline shadow top + bottom (inset, not border).
+- Four evenly-spaced stats, centered:
+  - `12,400+  VERIFIED FIGHTERS`
+  - `850+  GYMS & ACADEMIES`
+  - `340+  EVENTS PUBLISHED`
+  - `96%  BOUTS CONFIRMED ON TIME`
+- Numbers: Bebas Neue, gold `#e8a020`, ~clamp(2rem, 4vw, 3rem). Labels: Inter uppercase micro, muted, letter-spacing 0.18em.
+- **Scroll reveal animation** — Framer Motion `whileInView`, container fades + rises (`y: 30 → 0`, 0.6s ease-out), children stagger (0.08s each) so the four stats animate in sequence — same register as `FeatureShowcase` reveals for page consistency. Respects `prefers-reduced-motion`.
+- **Remove** the `Be a part of our network today.` subline entirely.
+- Values remain live-queried (existing behaviour) with the four labels above.
 
-### Section A — FOR FIGHTERS
-**YOUR CAREER, ONE COMMAND CENTRE.**
-> Every offer, callout and contract lands in your Action Centre. Accept a bout in two taps, keep your record verified, and match efficiently from the Matchup network.
+### 4. HowItWorksSection — collapse & restyle
+Edit `src/components/landing/HowItWorksSection.tsx`:
+- All accordion items start **collapsed** by default (omit `defaultValue`).
+- Restyle to match landing card system:
+  - Items = `#111318` cards, no border, design-system shadow, gap between items (not a bordered accordion group).
+  - Trigger row: Bebas Neue heading + gold chevron.
+  - Expanded body uses same type scale as `FeatureShowcase`.
+  - Remove any non-gold accents.
+- Step content and copy unchanged.
 
-- Verified record & fight history with live automated analytics
-- Match offers straight to your inbox
-- Availability toggle — one switch
+### 5. Scope guardrails
+- No backend / RLS / schema changes.
+- Only add read-only `.select('*', { count: 'exact', head: true })` for hero counters.
+- No routing, auth, or header changes.
+- Verify with Playwright at 1280×1800 and 390×2000 after implementation.
 
-CTA: `Explore fighters →`
-Screenshot: fighter dashboard (Action Centre)
-
-### Section B — FOR COACHES
-**RUN THE GYM. / GROW THE ROSTER.**
-> Find new members authentically. Approve join requests, track roster analytics and gym views, and manage every fighter's calendar from a single overview. Your fighters deserve better than WhatsApp and Facebook to grow their career.
-
-- Advertise to the whole Matchup network
-- All-in-one fighter matchmaking
-- Fighter performance analytics
-- Integrated events calendar
-
-CTA: `Explore gyms →`
-Screenshot: coach roster / gym dashboard
-
-### Section C — FOR ORGANISERS
-**BUILD CARDS / THAT SELL OUT.**
-> The old saying of "who you know" just got a whole lot easier — search the entire Matchup network of verified fighters either manually or with SmartMatchup. Send and track offers, confirm bouts and publish your event cards to the platform.
-
-- Effortless matchmaking with detailed analytics
-- Fight proposal tracker
-- One-click event publishing
-- Ticket sales integration
-
-CTA: `Explore events →`
-Screenshot: fight card builder
-
-Each showcase uses `<BrowserFrame>` (traffic-light dots, subtle border, drop shadow), Framer Motion `whileInView` with staggered children, hover lift `translateY(-6px) scale(1.01)` + gold-tinted glow.
-
-## 4. "Top fighters actively seeking a match" strip
-- Rename existing "fighters looking for a dance partner" section heading to **TOP FIGHTERS ACTIVELY SEEKING A MATCH**
-- No other structural changes to that block
-
-## 5. PlatformStatsStrip — unchanged, subline updated
-- New subline under stats: `Be a part of our network today.`
-
-## 6. HowItWorksSection — unchanged
-
-## 7. FinalCtaSection (new)
-- Headline: `YOUR NEXT FIGHT IS THREE CLICKS AWAY.`
-- Single glowing gold CTA: `CREATE FREE ACCOUNT`
-
-## 8. `src/pages/Index.tsx` assembly order
-1. HeroSection
-2. UpcomingFightsTicker
-3. FeatureShowcase (intro + 3 sections)
-4. Top Fighters Actively Seeking a Match strip
-5. PlatformStatsStrip (with new subline)
-6. HowItWorksSection
-7. FinalCtaSection
-8. `<Footer />`
-
-## Technical notes
-- No new dependencies (framer-motion already present)
-- No backend / RLS / schema / route changes
-- Ticker reads existing `event_fight_slots` + `events`
-- Screenshots captured with Playwright at 1280×800, saved to `src/assets/landing/`, imported as ES6
-- Verify with Playwright at 1280×1800 and 390×2000
-
-## Out of scope
-- Header, routing, auth
-- Real sponsor logos, testimonials, Verified-Athlete badge (deferred until assets provided)
+### Files touched
+- edit `src/components/landing/HeroSection.tsx`
+- edit `src/components/landing/TopFightersSeekingSection.tsx`
+- edit `src/components/landing/PlatformStatsStrip.tsx`
+- edit `src/components/landing/HowItWorksSection.tsx`
+- edit `src/components/landing/FeaturedFightersSection.tsx`
+- edit `src/pages/Fighters.tsx`, `src/pages/Explore.tsx`, `src/components/dashboard/DashboardRoster.tsx`
+- new `src/components/fighter/FighterCard.tsx`
+- new `src/components/landing/HeroLiveNetwork.tsx`
