@@ -677,98 +677,115 @@ export default function Explore() {
 
 // ── Sub-components ──
 
+function CardBanner({ image, alt, height = 88 }: { image?: string | null; alt: string; height?: number }) {
+  return (
+    <div style={{ height, position: "relative", overflow: "hidden" }}>
+      {image ? (
+        <img src={image} alt={alt} className="w-full h-full object-cover" />
+      ) : (
+        <HazePlaceholder className="absolute inset-0" />
+      )}
+    </div>
+  );
+}
+
+function Avatar({ src, initials, size = 56, ringColor = "rgba(232,160,32,0.45)" }: { src?: string | null; initials: string; size?: number; ringColor?: string }) {
+  return (
+    <div
+      style={{
+        width: size, height: size, borderRadius: "50%", overflow: "hidden",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "linear-gradient(135deg, rgba(232,160,32,0.25), rgba(239,68,68,0.15))",
+        boxShadow: `0 0 0 2px ${ringColor}, 0 4px 12px rgba(0,0,0,0.5)`,
+        flexShrink: 0,
+      }}
+    >
+      {src ? (
+        <img src={src} alt="" className="h-full w-full object-cover" />
+      ) : (
+        <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: size * 0.4, color: EX.gold }}>{initials}</span>
+      )}
+    </div>
+  );
+}
+
+function initialsOf(name: string) {
+  return name.split(" ").filter((n) => !n.startsWith('"')).map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+}
+
+const CARD_SHADOW = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)";
+const CARD_SHADOW_HOVER = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(239,68,68,0.12), inset 0 1px 0 rgba(255,255,255,0.06)";
+
 function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null }) {
   const { track } = useAnalytics();
-  if (isLoading) return <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{[1,2,3].map(i => <div key={i} style={{ height: 320, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
+  if (isLoading) return <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">{[1,2,3,4].map(i => <div key={i} style={{ height: 240, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
   if (events.length === 0) return <p className="text-center py-12" style={{ color: EX.muted }}>No events found matching your filters.</p>;
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
       {events.map((event, i) => {
-        const confirmedBouts = event.event_fight_slots?.filter((s: any) => s.status === "confirmed").length ?? 0;
-        const openSlots = event.event_fight_slots?.filter((s: any) => !s.fighter_a_id && !s.fighter_b_id && s.status !== "confirmed" && s.status !== "declined").length ?? 0;
-        const hasTickets = event.tickets && event.tickets.length > 0;
+        const now = new Date();
+        const activeTickets = (event.tickets ?? []).filter((t: any) =>
+          (!t.sales_start || new Date(t.sales_start) <= now) &&
+          (!t.sales_end || new Date(t.sales_end) >= now)
+        );
         const isSoldOut = event.sold_out === true;
+        const hasTicketsAvailable = event.ticket_enabled && !isSoldOut && activeTickets.length > 0;
+        const dt = new Date(event.date);
+        const dateStr = dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+        const timeStr = dt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+        const loc = event.city ? `${event.city}, ${event.location || event.country || ""}` : (event.venue_name || event.location || event.country || "");
         return (
           <React.Fragment key={event.id}>
             {i === 15 && <ExploreBanner />}
             <motion.div
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35, delay: Math.min(i * 0.05, 0.3) }}
+              transition={{ duration: 0.3, delay: Math.min(i * 0.04, 0.24) }}
             >
               <Link
                 to={`/events/${event.id}`}
                 className="block transition-all duration-200"
                 onClick={() => void track("event_card_clicked", { event_id: event.id })}
-                style={{ background: EX.card, border: `1px solid ${EX.border}`, borderRadius: 12, overflow: "hidden", cursor: "pointer" }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = EX.goldBorder; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(239,68,68,0.08)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = EX.border; e.currentTarget.style.boxShadow = "none"; }}
+                style={{ background: EX.card, borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: CARD_SHADOW }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = CARD_SHADOW_HOVER; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = CARD_SHADOW; }}
               >
-                {/* Hero area */}
-                <div style={{ height: 180, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {event.banner_image ? (
-                    <img src={event.banner_image} alt={event.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <>
-                      <NetworkBackground />
-                      <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 110, opacity: 0.12, pointerEvents: "none" }} />
-                    </>
+                <div style={{ position: "relative" }}>
+                  <CardBanner image={event.banner_image} alt={event.title} />
+                  <div style={{ position: "absolute", left: 12, bottom: -22 }}>
+                    <Avatar src={event._organiserAvatar} initials={initialsOf(event._organiserName || event.title)} />
+                  </div>
+                  {isSoldOut && (
+                    <span style={{ position: "absolute", top: 8, right: 8, background: "rgba(239,68,68,0.9)", color: "white", borderRadius: 9999, padding: "3px 8px", fontSize: 10, fontWeight: 600 }}>Sold Out</span>
                   )}
-                  {(() => {
-                    if (!event.ticket_enabled) return null;
-                    const now = new Date();
-                    const activeTickets = (event.tickets ?? []).filter((t: any) =>
-                      (!t.sales_start || new Date(t.sales_start) <= now) &&
-                      (!t.sales_end || new Date(t.sales_end) >= now)
-                    );
-                    const isSoldOut = event.sold_out === true;
-                    if (isSoldOut) return (
-                      <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444", borderRadius: 9999, padding: "4px 10px", fontSize: 11, fontWeight: 600 }}>Sold Out</span>
-                    );
-                    if (activeTickets.length > 0) {
-                      const minPrice = Math.min(...activeTickets.map((t: any) => Number(t.price)).filter((p: number) => p > 0));
-                      return (
-                        <>
-                          <span style={{ position: "absolute", top: 10, left: 10, background: "rgba(239,68,68,0.85)", backdropFilter: "blur(8px)", color: "white", borderRadius: 9999, padding: "4px 10px", fontSize: 11, fontWeight: 600 }}>● Tickets Available</span>
-                          {isFinite(minPrice) && minPrice > 0 && (
-                            <span style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", borderRadius: 9999, padding: "6px 12px" }}>
-                              <span style={{ fontSize: 9, color: "white", display: "block" }}>From</span>
-                              <span style={{ fontSize: 14, fontWeight: 700, color: EX.gold }}>£{minPrice}</span>
-                            </span>
-                          )}
-                        </>
-                      );
-                    }
-                    return null;
-                  })()}
+                  {isEventBoosted((event as any).event_boosts) && (
+                    <div style={{ position: "absolute", top: 8, left: 8 }}><BoostedBadge /></div>
+                  )}
                 </div>
-                {/* Body */}
-                <div style={{ padding: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: EX.text, textTransform: "uppercase" }}>{event.title}</p>
-                    {isEventBoosted((event as any).event_boosts) && <BoostedBadge />}
+                <div style={{ padding: "28px 14px 12px" }}>
+                  <div className="flex items-start justify-between gap-2">
+                    <p title={event.title} style={{ fontSize: 15, fontWeight: 700, color: EX.text, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+                      {event.title}
+                    </p>
+                    {hasTicketsAvailable && (
+                      <span title="Tickets available" style={{ color: EX.gold, flexShrink: 0, display: "inline-flex", alignItems: "center" }}>
+                        <Ticket style={{ width: 16, height: 16 }} />
+                      </span>
+                    )}
                   </div>
-                  {event.description && <p style={{ fontSize: 13, color: EX.muted, marginTop: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{event.description}</p>}
-                  <div className="space-y-1" style={{ marginTop: 12 }}>
-                    <div className="flex items-center gap-2"><Calendar style={{ width: 14, height: 14, color: EX.muted }} /><span style={{ fontSize: 12, color: EX.muted }}>{new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span></div>
-                    <div className="flex items-center gap-2"><MapPin style={{ width: 14, height: 14, color: EX.muted }} /><span style={{ fontSize: 12, color: EX.muted }}>{event.city ? `${event.city}, ${event.location}` : event.location}</span></div>
+                  <div className="flex items-center gap-1.5" style={{ marginTop: 6 }}>
+                    <Calendar style={{ width: 12, height: 12, color: EX.muted }} />
+                    <span style={{ fontSize: 11, color: EX.muted }}>{dateStr} · {timeStr}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5" style={{ marginTop: 3 }}>
+                    <MapPin style={{ width: 12, height: 12, color: EX.muted }} />
+                    <span style={{ fontSize: 11, color: EX.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{loc}</span>
                   </div>
                 </div>
-                {/* Main Event preview */}
-                {(() => {
-                  const publicSlots = event.event_fight_slots?.filter((s: any) => s.is_public === true && s.status === "confirmed" && (s.fighter_a_id || s.fighter_b_id));
-                  if (!publicSlots || publicSlots.length === 0) return null;
-                  return (
-                    <div style={{ padding: "0 16px 8px" }}>
-                      <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", letterSpacing: "0.05em" }}>MAIN EVENT</span>
-                    </div>
-                  );
-                })()}
-                {/* Footer */}
-                <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "none" }}>
-                  <span style={{ fontSize: 13, color: EX.gold }}>View Event</span>
-                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: EX.goldDim, border: `1px solid ${EX.goldBorder}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <ChevronRight style={{ width: 14, height: 14, color: EX.gold }} />
+                <div className="flex items-center justify-between" style={{ padding: "10px 14px" }}>
+                  <span style={{ fontSize: 12, color: EX.gold, fontWeight: 600 }}>View Event</span>
+                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: EX.goldDim, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <ChevronRight style={{ width: 12, height: 12, color: EX.gold }} />
                   </div>
                 </div>
               </Link>
@@ -782,71 +799,61 @@ function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; i
 
 function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymId }: { gyms: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null; mapOpen?: boolean; highlightedGymId?: string | null }) {
   const { track } = useAnalytics();
-  if (isLoading) return <div className="grid grid-cols-1 md:grid-cols-3 gap-4">{[1,2,3].map(i => <div key={i} style={{ height: 320, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
+  if (isLoading) return <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">{[1,2,3,4].map(i => <div key={i} style={{ height: 240, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
   if (gyms.length === 0) return <p className="text-center py-12" style={{ color: EX.muted }}>No gyms found matching your filters.</p>;
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
       {gyms.map((gym, i) => {
         const dist = searchCoords && gym.lat != null && gym.lng != null
           ? haversineDistance(searchCoords.latitude, searchCoords.longitude, gym.lat, gym.lng)
           : null;
-        const tags = gym.discipline_tags ? gym.discipline_tags.split(",").map((t: string) => t.trim()).filter(Boolean) : [];
+        const loc = gym.city ? `${gym.city}, ${gym.location || gym.country || ""}` : (gym.location || gym.country || "");
+        const avatar = gym._coachAvatar || gym.logo_url || null;
         return (
           <motion.div
             key={gym.id}
             id={`gym-card-${gym.id}`}
-            initial={{ opacity: 0, y: 16 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35, delay: Math.min(i * 0.05, 0.3) }}
+            transition={{ duration: 0.3, delay: Math.min(i * 0.04, 0.24) }}
           >
             <Link
               to={`/gyms/${gym.id}`}
               className="block transition-all duration-200"
               onClick={() => void track("gym_card_clicked", { gym_id: gym.id })}
-              style={{ background: EX.card, border: "none", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)" }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(239,68,68,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
+              style={{ background: EX.card, borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: CARD_SHADOW }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = CARD_SHADOW_HOVER; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = CARD_SHADOW; }}
             >
-              {/* Hero */}
-              <div style={{ height: 180, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {gym.banner_image ? (
-                  <img src={gym.banner_image} alt={gym.name} className="w-full h-full object-cover transition-transform duration-400" style={{ transition: "transform 0.4s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.03)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }} />
-                ) : (
-                  <>
-                    <NetworkBackground />
-                    <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 110, opacity: 0.12, pointerEvents: "none" }} />
-                  </>
-                )}
-                {tags.length > 0 && (
-                  <div className="absolute bottom-2.5 left-2.5 flex flex-wrap gap-1">
-                    {tags.slice(0, 3).map((tag: string) => (
-                      <span key={tag} style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)", border: `1px solid ${EX.goldBorder}`, color: EX.gold, borderRadius: 9999, padding: "3px 10px", fontSize: 11, fontWeight: 600 }}>{tag}</span>
-                    ))}
-                  </div>
-                )}
+              <div style={{ position: "relative" }}>
+                <CardBanner image={gym.banner_image} alt={gym.name} />
+                <div style={{ position: "absolute", left: 12, bottom: -22 }}>
+                  <Avatar src={avatar} initials={initialsOf(gym.name)} />
+                </div>
                 {gym.claimed && (
-                  <span className="absolute top-2.5 right-2.5 inline-flex items-center gap-1" style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.25)", borderRadius: 9999, padding: "3px 10px", fontSize: 10, fontWeight: 600 }}>
-                    <ShieldCheck style={{ width: 12, height: 12 }} /> Verified
+                  <span style={{ position: "absolute", top: 8, right: 8, background: "rgba(34,197,94,0.18)", color: "#22c55e", borderRadius: 9999, padding: "3px 8px", fontSize: 10, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 3 }}>
+                    <ShieldCheck style={{ width: 10, height: 10 }} /> Verified
                   </span>
                 )}
               </div>
-              {/* Body */}
-              <div style={{ padding: 16 }}>
-                <p style={{ fontSize: 16, fontWeight: 700, color: EX.text }}>{gym.name}</p>
-                {gym.description && <p style={{ fontSize: 13, color: EX.muted, marginTop: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{gym.description}</p>}
-                <div className="space-y-1" style={{ marginTop: 12 }}>
-                  {(gym.city || gym.location) && (
-                    <div className="flex items-center gap-2"><MapPin style={{ width: 14, height: 14, color: EX.muted }} /><span style={{ fontSize: 12, color: EX.muted }}>{gym.city ? `${gym.city}, ${gym.location || gym.country}` : gym.location}</span></div>
-                  )}
-                  <div className="flex items-center gap-2"><Users style={{ width: 14, height: 14, color: EX.muted }} /><span style={{ fontSize: 12, color: EX.muted }}>{gym.fighter_gym_links?.length ?? 0} fighters</span></div>
-                  {dist !== null && <p style={{ fontSize: 12, color: EX.gold, fontWeight: 500 }}>{dist.toFixed(1)} miles</p>}
+              <div style={{ padding: "28px 14px 12px" }}>
+                <p title={gym.name} style={{ fontSize: 15, fontWeight: 700, color: EX.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {gym.name}
+                </p>
+                <div className="flex items-center gap-1.5" style={{ marginTop: 6 }}>
+                  <MapPin style={{ width: 12, height: 12, color: EX.muted }} />
+                  <span style={{ fontSize: 11, color: EX.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{loc || "—"}</span>
                 </div>
+                <div className="flex items-center gap-1.5" style={{ marginTop: 3 }}>
+                  <Users style={{ width: 12, height: 12, color: EX.muted }} />
+                  <span style={{ fontSize: 11, color: EX.muted }}>{gym.fighter_gym_links?.length ?? 0} fighters registered</span>
+                </div>
+                {dist !== null && <p style={{ fontSize: 11, color: EX.gold, fontWeight: 500, marginTop: 3 }}>{dist.toFixed(1)} miles</p>}
               </div>
-              {/* Footer */}
-              <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "none" }}>
-                <span style={{ fontSize: 13, color: EX.gold }}>View Details</span>
-                <div style={{ width: 32, height: 32, borderRadius: "50%", background: EX.goldDim, border: `1px solid ${EX.goldBorder}`, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s" }}>
-                  <ChevronRight style={{ width: 14, height: 14, color: EX.gold }} />
+              <div className="flex items-center justify-between" style={{ padding: "10px 14px" }}>
+                <span style={{ fontSize: 12, color: EX.gold, fontWeight: 600 }}>View Details</span>
+                <div style={{ width: 26, height: 26, borderRadius: "50%", background: EX.goldDim, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <ChevronRight style={{ width: 12, height: 12, color: EX.gold }} />
                 </div>
               </div>
             </Link>
@@ -859,10 +866,10 @@ function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymI
 
 function FightersDirectory({ fighters, isLoading }: { fighters: any[]; isLoading: boolean }) {
   const { user } = useAuth();
-  if (isLoading) return <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">{[1,2,3].map(i => <div key={i} style={{ height: 340, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
+  if (isLoading) return <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">{[1,2,3,4].map(i => <div key={i} style={{ height: 240, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
   if (fighters.length === 0) return <p className="text-center py-12" style={{ color: EX.muted }}>No fighters found.</p>;
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
       {fighters.map((fighter, i) => (
         <FighterCard key={fighter.id} fighter={fighter} index={i} currentUserId={user?.id} />
       ))}
@@ -870,116 +877,103 @@ function FightersDirectory({ fighters, isLoading }: { fighters: any[]; isLoading
   );
 }
 
+function computeAge(dob?: string | null): number | null {
+  if (!dob) return null;
+  const d = new Date(dob);
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age;
+}
+
 function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: number; currentUserId?: string }) {
   const record = fighter._record;
-  const total = record.wins + record.losses + record.draws;
-  const winRate = total > 0 ? Math.round((record.wins / total) * 100) : 0;
-  const primaryGym = fighter.fighter_gym_links?.find((l: any) => l.is_primary && l.status === "approved");
-  const gymName = primaryGym?.gyms?.name ?? "Independent";
-  const initials = fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
   const { isFollowing, toggle, loading: followLoading } = useFollow(fighter.user_id);
-  const [followHover, setFollowHover] = useState(false);
   const showFollow = currentUserId && fighter.user_id && fighter.user_id !== currentUserId;
   const { track: trackAnalytics } = useAnalytics();
-
-  const { data: titles = [] } = useQuery({
-    queryKey: ["fighter-titles-card", fighter.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("fighter_titles").select("id, title").eq("fighter_id", fighter.id).eq("is_current", true).order("created_at", { ascending: false }).limit(3);
-      return data ?? [];
-    },
-  });
+  const age = computeAge(fighter.date_of_birth);
+  const styleLabel = fighter.style ? STYLE_LABELS[fighter.style] || fighter.style : null;
+  const weightLabel = WEIGHT_CLASS_LABELS[fighter.weight_class] || fighter.weight_class;
+  const stanceLabel = fighter.stance ? (fighter.stance.charAt(0).toUpperCase() + fighter.stance.slice(1)) : null;
+  const isAvailable = fighter.available === true;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: Math.min(index * 0.05, 0.3) }}
+      transition={{ duration: 0.3, delay: Math.min(index * 0.04, 0.24) }}
     >
       <Link
         to={`/fighters/${fighter.id}`}
         className="block transition-all duration-200"
         onClick={() => void trackAnalytics("fighter_card_clicked", { fighter_id: fighter.id })}
-        style={{ background: EX.card, border: "none", borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)" }}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(239,68,68,0.08), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)"; }}
+        style={{ background: EX.card, borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: CARD_SHADOW }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = CARD_SHADOW_HOVER; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = CARD_SHADOW; }}
       >
-        {/* Top area */}
-        <div style={{ height: 200, background: EX.raised, position: "relative", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <NetworkBackground />
-          <img src={iconWhite} alt="" style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 150, opacity: 0.12, pointerEvents: "none" }} />
-          <div style={{
-            width: 96, height: 96, borderRadius: "50%", border: "2px solid rgba(239,68,68,0.5)", overflow: "hidden", boxShadow: "0 0 20px rgba(239,68,68,0.2)",
-            display: "flex", alignItems: "center", justifyContent: "center", position: "relative", zIndex: 1,
-            background: fighter._avatar ? "transparent" : "linear-gradient(135deg, rgba(239,68,68,0.25), rgba(239,68,68,0.08))",
-          }}>
-            {fighter._avatar ? (
-              <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" />
-            ) : (
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 26, color: EX.gold }}>{initials}</span>
-            )}
+        <div style={{ position: "relative" }}>
+          <CardBanner image={null} alt={fighter.name} />
+          <div style={{ position: "absolute", left: 12, bottom: -22 }}>
+            <Avatar src={fighter._avatar} initials={initialsOf(fighter.name)} />
           </div>
-          {showFollow && (
-            <button
-              className="absolute top-3 left-3"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(); }}
-              onMouseEnter={() => setFollowHover(true)}
-              onMouseLeave={() => setFollowHover(false)}
-              disabled={followLoading}
-              style={{
-                background: isFollowing ? "rgba(239,68,68,0.15)" : "rgba(0,0,0,0.65)",
-                border: `1px solid ${isFollowing ? (followHover ? "rgba(239,68,68,0.5)" : EX.gold) : "rgba(239,68,68,0.4)"}`,
-                color: isFollowing ? (followHover ? "#ef4444" : EX.gold) : EX.gold,
-                borderRadius: 20, padding: "4px 12px", fontSize: 12, fontWeight: 600,
-                backdropFilter: "blur(6px)", cursor: "pointer", transition: "all 0.2s",
-              }}
-            >
-              {isFollowing ? (followHover ? "Unfollow" : "Following") : "Follow"}
-            </button>
-          )}
         </div>
-        {/* Body */}
-        <div style={{ padding: 16, minWidth: 0 }}>
-          <p title={fighter.name} style={{ fontSize: "clamp(0.9rem, 3.6vw, 1rem)", fontWeight: 700, color: EX.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 }}>{fighter.name}</p>
+        <div style={{ padding: "28px 14px 12px", minWidth: 0 }}>
+          <div className="flex items-center justify-between gap-2">
+            <p title={fighter.name} style={{ fontSize: 15, fontWeight: 700, color: EX.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
+              {fighter.name}
+            </p>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <span
+                title={isAvailable ? "Available" : "Not available"}
+                style={{
+                  width: 8, height: 8, borderRadius: "50%",
+                  background: isAvailable ? "#22c55e" : "#555b6b",
+                  boxShadow: isAvailable ? "0 0 8px rgba(34,197,94,0.6)" : "none",
+                }}
+              />
+              {showFollow && (
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggle(); }}
+                  disabled={followLoading}
+                  style={{
+                    background: isFollowing ? "rgba(232,160,32,0.15)" : "transparent",
+                    border: `1px solid ${EX.gold}`,
+                    color: EX.gold,
+                    borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </button>
+              )}
+            </div>
+          </div>
           {fighter.country && (
-            <div className="flex items-center gap-1.5" style={{ marginTop: 4, minWidth: 0 }}>
-              <FlagIcon countryCode={fighter.country} size={16} />
-              <span style={{ fontSize: 12, color: EX.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{getCountryDisplayName(fighter.country)}</span>
-            </div>
-          )}
-          <p style={{ fontSize: 12, color: EX.muted, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{WEIGHT_CLASS_LABELS[fighter.weight_class] || fighter.weight_class}</p>
-          <div className="flex items-baseline gap-3 sm:gap-4 flex-wrap" style={{ marginTop: 10 }}>
-            <div>
-              <span style={{ fontSize: "clamp(1rem, 4.4vw, 1.25rem)", fontWeight: 700, color: EX.text }}>{record.wins}-{record.losses}-{record.draws}</span>
-              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>{record.stated ? "Stated Record" : "W-L-D"}</span>
-            </div>
-            <div style={{ width: 1, height: 28, background: "rgba(255,255,255,0.06)", alignSelf: "center" }} />
-            <div>
-              <span style={{ fontSize: "clamp(0.85rem, 3.8vw, 1rem)", fontWeight: 700, color: EX.gold }}>{winRate}%</span>
-              <span style={{ fontSize: 9, color: EX.dimmed, textTransform: "uppercase", display: "block" }}>WIN RATE</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5" style={{ marginTop: 8 }}>
-            <span style={{ fontSize: 12, color: EX.muted }}>{gymName}</span>
-          </div>
-          {titles.length > 0 && (
             <div className="flex items-center gap-1.5" style={{ marginTop: 6 }}>
-              <Award style={{ width: 14, height: 14, color: EX.gold, flexShrink: 0 }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: EX.gold, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {titles[0].title}
-              </span>
-              {titles.length > 1 && <span style={{ fontSize: 11, color: EX.muted, flexShrink: 0 }}>+{titles.length - 1} more</span>}
+              <FlagIcon countryCode={fighter.country} size={12} />
+              <span style={{ fontSize: 11, color: EX.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{getCountryDisplayName(fighter.country)}</span>
             </div>
           )}
+          {styleLabel && (
+            <p style={{ fontSize: 11, color: EX.muted, marginTop: 3 }}>{styleLabel}</p>
+          )}
+          <div className="flex items-center flex-wrap gap-x-2 gap-y-1" style={{ marginTop: 10, fontSize: 10, color: EX.muted, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            {stanceLabel && <span><span style={{ color: EX.dimmed }}>Stance</span> <span style={{ color: EX.text, fontWeight: 600 }}>{stanceLabel}</span></span>}
+            <span><span style={{ color: EX.dimmed }}>Wt</span> <span style={{ color: EX.text, fontWeight: 600 }}>{weightLabel}</span></span>
+            {age !== null && <span><span style={{ color: EX.dimmed }}>Age</span> <span style={{ color: EX.text, fontWeight: 600 }}>{age}</span></span>}
+            <span><span style={{ color: EX.dimmed }}>Rec</span> <span style={{ color: EX.text, fontWeight: 700 }}>{record.wins}-{record.losses}-{record.draws}</span></span>
+          </div>
         </div>
-        {/* Footer */}
-        <div className="flex items-center justify-between" style={{ padding: "12px 16px", borderTop: "none" }}>
-          <span style={{ fontSize: 13, color: EX.gold }}>View Profile</span>
-          <div style={{ width: 32, height: 32, borderRadius: "50%", background: EX.goldDim, border: `1px solid ${EX.goldBorder}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ChevronRight style={{ width: 14, height: 14, color: EX.gold }} />
+        <div className="flex items-center justify-between" style={{ padding: "10px 14px" }}>
+          <span style={{ fontSize: 12, color: EX.gold, fontWeight: 600 }}>View Profile</span>
+          <div style={{ width: 26, height: 26, borderRadius: "50%", background: EX.goldDim, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <ChevronRight style={{ width: 12, height: 12, color: EX.gold }} />
           </div>
         </div>
       </Link>
     </motion.div>
   );
 }
+
