@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Filter, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Database } from "@/integrations/supabase/types";
+import { FighterCard } from "@/components/fighter/FighterCard";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
