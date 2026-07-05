@@ -37,7 +37,7 @@ export function ExploreBanner({ adImageUrl, adLinkUrl }: Props) {
         borderRadius: 12,
         overflow: "hidden",
         margin: "4px 0",
-        background: "#111318",
+        background: "hsl(var(--card))",
         boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
         display: "flex",
         alignItems: "center",
@@ -46,12 +46,12 @@ export function ExploreBanner({ adImageUrl, adLinkUrl }: Props) {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <Megaphone style={{ width: 20, height: 20, color: "#555b6b" }} />
+        <Megaphone style={{ width: 20, height: 20, color: "hsl(var(--muted-foreground))" }} />
         <div>
-          <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 14, color: "#8b909e" }}>
+          <p style={{ fontFamily: "Inter, sans-serif", fontWeight: 600, fontSize: 14, color: "hsl(var(--muted-foreground))" }}>
             Advertise here
           </p>
-          <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "#555b6b" }}>
+          <p style={{ fontFamily: "Inter, sans-serif", fontSize: 12, color: "hsl(var(--muted-foreground))" }}>
             Reach combat sports athletes, coaches and event organisers
           </p>
         </div>

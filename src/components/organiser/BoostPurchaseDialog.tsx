@@ -34,7 +34,7 @@ export function BoostPurchaseDialog({ open, onOpenChange, eventId, mode }: Props
           maxWidth: "min(90vw, 720px)",
           maxHeight: "88vh",
           overflowY: "auto",
-          background: "#111318",
+          background: "hsl(var(--card))",
         }}
       >
         <DialogHeader>
@@ -43,7 +43,7 @@ export function BoostPurchaseDialog({ open, onOpenChange, eventId, mode }: Props
               fontFamily: "'Bebas Neue', sans-serif",
               fontSize: 26,
               letterSpacing: "0.03em",
-              color: "#e8eaf0",
+              color: "hsl(var(--foreground))",
               display: "flex",
               alignItems: "center",
               gap: 8,
@@ -52,7 +52,7 @@ export function BoostPurchaseDialog({ open, onOpenChange, eventId, mode }: Props
             <Sparkles style={{ color: "#ef4444", width: 22, height: 22 }} />
             {mode === "upsell" ? "Boost this event to reach more fans" : "Boost this event"}
           </DialogTitle>
-          <DialogDescription style={{ color: "#8b909e", fontSize: 13 }}>
+          <DialogDescription style={{ color: "hsl(var(--muted-foreground))", fontSize: 13 }}>
             {mode === "upsell"
               ? "Your event is published. Pin it to the top of the explore page and event listings so more fighters and fans see it."
               : "Pin your event to the top of the explore page and event listings for a fixed period."}

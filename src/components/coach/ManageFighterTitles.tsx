@@ -81,7 +81,7 @@ export function ManageFighterTitles({ fighterId, fighterName }: ManageFighterTit
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Award style={{ width: 14, height: 14, color: "#ef4444" }} />
-          <span style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>Championship Titles</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))" }}>Championship Titles</span>
         </div>
         <button
           onClick={() => setShowAdd(!showAdd)}
@@ -98,20 +98,20 @@ export function ManageFighterTitles({ fighterId, fighterName }: ManageFighterTit
 
       {showAdd && (
         <div style={{
-          background: "#14171e", borderRadius: 12, padding: 20, marginBottom: 12,
+          background: "hsl(var(--card))", borderRadius: 12, padding: 20, marginBottom: 12,
           boxShadow: "0 8px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)",
         }}>
           <div className="space-y-3">
             <div>
-              <Label style={{ fontSize: 12, color: "#8b909e" }}>Title Name *</Label>
+              <Label style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>Title Name *</Label>
               <Input placeholder="e.g. British Champion" value={titleName} onChange={(e) => setTitleName(e.target.value)} className="mt-1" />
             </div>
             <div>
-              <Label style={{ fontSize: 12, color: "#8b909e" }}>Organisation</Label>
+              <Label style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>Organisation</Label>
               <Input placeholder="e.g. Cage Warriors" value={organisation} onChange={(e) => setOrganisation(e.target.value)} className="mt-1" />
             </div>
             <div>
-              <Label style={{ fontSize: 12, color: "#8b909e" }}>Weight Class</Label>
+              <Label style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>Weight Class</Label>
               <Select value={weightClass} onValueChange={setWeightClass}>
                 <SelectTrigger className="mt-1"><SelectValue placeholder="Select..." /></SelectTrigger>
                 <SelectContent>
@@ -122,15 +122,15 @@ export function ManageFighterTitles({ fighterId, fighterName }: ManageFighterTit
               </Select>
             </div>
             <div>
-              <Label style={{ fontSize: 12, color: "#8b909e" }}>Date Awarded</Label>
+              <Label style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>Date Awarded</Label>
               <Input type="date" value={awardedAt} onChange={(e) => setAwardedAt(e.target.value)} className="mt-1" />
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={isCurrent} onCheckedChange={setIsCurrent} />
-              <Label style={{ fontSize: 12, color: "#8b909e" }}>Current Title</Label>
+              <Label style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>Current Title</Label>
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleAdd} disabled={!titleName.trim() || saving} size="sm" style={{ background: "#ef4444", color: "#080a0d" }}>
+              <Button onClick={handleAdd} disabled={!titleName.trim() || saving} size="sm" style={{ background: "#ef4444", color: "hsl(var(--background))" }}>
                 {saving ? "Adding..." : "Add Title"}
               </Button>
               <Button variant="ghost" size="sm" onClick={() => setShowAdd(false)}>Cancel</Button>
@@ -143,20 +143,20 @@ export function ManageFighterTitles({ fighterId, fighterName }: ManageFighterTit
         <div className="space-y-2">
           {titles.map((t: any) => (
             <div key={t.id} className="flex items-center justify-between" style={{
-              background: "#181c24", borderRadius: 8, padding: "10px 14px",
+              background: "hsl(var(--muted))", borderRadius: 8, padding: "10px 14px",
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
             }}>
               <div>
                 <div className="flex items-center gap-2">
                   <Award style={{ width: 12, height: 12, color: "#ef4444" }} />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{t.title}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))" }}>{t.title}</span>
                   {t.is_current ? (
                     <span style={{ fontSize: 10, fontWeight: 600, color: "#22c55e", background: "rgba(34,197,94,0.12)", borderRadius: 4, padding: "1px 6px" }}>Current</span>
                   ) : (
-                    <span style={{ fontSize: 10, fontWeight: 600, color: "#8b909e", background: "rgba(255,255,255,0.06)", borderRadius: 4, padding: "1px 6px" }}>Former</span>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: "hsl(var(--muted-foreground))", background: "rgba(255,255,255,0.06)", borderRadius: 4, padding: "1px 6px" }}>Former</span>
                   )}
                 </div>
-                <div className="flex gap-2 mt-1" style={{ fontSize: 11, color: "#8b909e" }}>
+                <div className="flex gap-2 mt-1" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>
                   {t.organisation && <span>{t.organisation}</span>}
                   {t.weight_class && <span>· {formatEnum(t.weight_class)}</span>}
                   {t.awarded_at && <span>· {new Date(t.awarded_at).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}</span>}
@@ -165,7 +165,7 @@ export function ManageFighterTitles({ fighterId, fighterName }: ManageFighterTit
               {confirmDelete === t.id ? (
                 <div className="flex gap-1">
                   <button onClick={() => handleDelete(t.id)} style={{ fontSize: 11, color: "#ef4444", cursor: "pointer", background: "none", border: "none" }}>Confirm</button>
-                  <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 11, color: "#8b909e", cursor: "pointer", background: "none", border: "none" }}>Cancel</button>
+                  <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", cursor: "pointer", background: "none", border: "none" }}>Cancel</button>
                 </div>
               ) : (
                 <button onClick={() => setConfirmDelete(t.id)} style={{ color: "#ef4444", cursor: "pointer", background: "none", border: "none" }}>

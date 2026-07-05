@@ -62,7 +62,7 @@ export function HowItWorksSection() {
               <motion.div
                 key={section.title}
                 className="rounded-xl overflow-hidden"
-                style={{ backgroundColor: "#111318", boxShadow: CARD_SHADOW }}
+                style={{ backgroundColor: "hsl(var(--card))", boxShadow: CARD_SHADOW }}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
@@ -113,7 +113,7 @@ export function HowItWorksSection() {
                               key={s.step}
                               className="relative rounded-lg p-5 pt-8"
                               style={{
-                                backgroundColor: "#181c24",
+                                backgroundColor: "hsl(var(--muted))",
                                 boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
                               }}
                             >

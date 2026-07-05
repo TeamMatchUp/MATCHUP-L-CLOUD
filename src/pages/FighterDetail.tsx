@@ -23,15 +23,15 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
   cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
 };
 
-const GOLD = "#e8a020";
+const GOLD = "hsl(var(--primary))";
 const GOLD_TINT = "rgba(232,160,32,0.12)";
 const GOLD_TINT_STRONG = "rgba(232,160,32,0.2)";
-const BG = "#080a0d";
-const SURFACE = "#111318";
-const INSET = "#181c24";
-const TEXT = "#e8eaf0";
-const MUTED = "#8b909e";
-const DIM = "#555b6b";
+const BG = "hsl(var(--background))";
+const SURFACE = "hsl(var(--card))";
+const INSET = "hsl(var(--muted))";
+const TEXT = "hsl(var(--foreground))";
+const MUTED = "hsl(var(--muted-foreground))";
+const DIM = "hsl(var(--muted-foreground))";
 const GREEN = "#22c55e";
 const RED = "#ef4444";
 const CARD_SHADOW = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)";
@@ -669,7 +669,7 @@ export default function FighterDetail() {
                             <div key={i} style={{
                               width: 22, height: 22, borderRadius: "50%",
                               background: r === "W" ? GREEN : r === "L" ? RED : MUTED,
-                              color: "#080a0d", fontSize: 11, fontWeight: 800,
+                              color: "hsl(var(--background))", fontSize: 11, fontWeight: 800,
                               display: "flex", alignItems: "center", justifyContent: "center",
                             }}>{r}</div>
                           ))}

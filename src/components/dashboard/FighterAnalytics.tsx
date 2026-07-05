@@ -118,7 +118,7 @@ export function FighterAnalyticsV2({ fighterProfile, title = "Analytics" }: { fi
             const isWin = f.winner_id === fighterId || f.result === "win";
             const isDraw = f.result === "draw";
             const resultColor = isDraw
-              ? "#8b909e"
+              ? "hsl(var(--muted-foreground))"
               : isWin
               ? "#22c55e"
               : "#ef4444";
@@ -136,7 +136,7 @@ export function FighterAnalyticsV2({ fighterProfile, title = "Analytics" }: { fi
                 style={{ background: ANALYTICS_TOKENS.RAISED }}
               >
                 <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-medium" style={{ color: "#e8eaf0" }}>
+                  <span className="text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>
                     vs {opponent}
                   </span>
                   <span className="text-[11px]" style={{ color: ANALYTICS_TOKENS.TEXT_MUTED }}>

@@ -22,12 +22,12 @@ interface AnalyticsShellProps {
   emptyState?: ReactNode;
 }
 
-const CARD_BG = "#111318";
-const PAGE_BG = "#080a0d";
+const CARD_BG = "hsl(var(--card))";
+const PAGE_BG = "hsl(var(--background))";
 const GOLD = "#ef4444";
 const GOLD_DIM = "rgba(239,68,68,0.12)";
-const TEXT_MUTED = "#8b909e";
-const RAISED = "#181c24";
+const TEXT_MUTED = "hsl(var(--muted-foreground))";
+const RAISED = "hsl(var(--muted))";
 
 const CARD_SHADOW =
   "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)";
@@ -105,7 +105,7 @@ export function AnalyticsCard({
                 fontFamily: "'Bebas Neue', sans-serif",
                 letterSpacing: "0.08em",
                 fontSize: 16,
-                color: "#e8eaf0",
+                color: "hsl(var(--foreground))",
               }}
             >
               {title.toUpperCase()}
@@ -133,7 +133,7 @@ export function ProgressRow({
   const pct = max > 0 ? Math.max(0, Math.min(100, (value / max) * 100)) : 0;
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex items-center justify-between text-[12px]" style={{ color: "#e8eaf0", fontFamily: "Inter, sans-serif" }}>
+      <div className="flex items-center justify-between text-[12px]" style={{ color: "hsl(var(--foreground))", fontFamily: "Inter, sans-serif" }}>
         <span className="truncate pr-3">{label}</span>
         <span style={{ color: TEXT_MUTED }}>{rightLabel ?? `${value}/${max}`}</span>
       </div>
@@ -164,7 +164,7 @@ export function PillToggle<T extends string>({
             className="px-3 py-1 text-[11px] font-semibold rounded-full transition-colors"
             style={{
               background: active ? GOLD : "transparent",
-              color: active ? "#0d0f12" : TEXT_MUTED,
+              color: active ? "hsl(var(--background))" : TEXT_MUTED,
               fontFamily: "Inter, sans-serif",
               letterSpacing: "0.04em",
             }}
@@ -199,7 +199,7 @@ export function AnalyticsShell({
             fontFamily: "'Bebas Neue', sans-serif",
             fontSize: 40,
             letterSpacing: "0.04em",
-            color: "#e8eaf0",
+            color: "hsl(var(--foreground))",
           }}
         >
           {title.toUpperCase()}
@@ -225,7 +225,7 @@ export function AnalyticsShell({
                 className="px-5 py-2 rounded-full text-[12px] font-semibold transition-colors"
                 style={{
                   background: isActive ? GOLD : RAISED,
-                  color: isActive ? "#0d0f12" : TEXT_MUTED,
+                  color: isActive ? "hsl(var(--background))" : TEXT_MUTED,
                   fontFamily: "Inter, sans-serif",
                   letterSpacing: "0.04em",
                   boxShadow: isActive

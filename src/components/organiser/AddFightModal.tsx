@@ -371,7 +371,7 @@ export function AddFightModal({
       onClick={onClick}
       className="w-full flex items-center gap-3 text-left transition-all duration-150"
       style={{
-        background: "#1a1e28",
+        background: "hsl(var(--muted))",
         border: "1px solid rgba(255,255,255,0.06)",
         borderRadius: 8,
         padding: "14px 16px",
@@ -382,16 +382,16 @@ export function AddFightModal({
         e.currentTarget.style.borderColor = "rgba(239,68,68,0.2)";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = "#1a1e28";
+        e.currentTarget.style.background = "hsl(var(--muted))";
         e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
       }}
     >
       <div style={{ color: "#ef4444", flexShrink: 0 }}>{icon}</div>
       <div className="flex-1 min-w-0">
-        <p style={{ fontWeight: 600, fontSize: 15, color: "#e8eaf0" }}>{label}</p>
-        <p style={{ fontSize: 13, color: "#8b909e", marginTop: 2 }}>{desc}</p>
+        <p style={{ fontWeight: 600, fontSize: 15, color: "hsl(var(--foreground))" }}>{label}</p>
+        <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>{desc}</p>
       </div>
-      <ArrowRight className="h-4 w-4 shrink-0" style={{ color: "#555b6b" }} />
+      <ArrowRight className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--muted-foreground))" }} />
     </button>
   );
 
@@ -405,9 +405,9 @@ export function AddFightModal({
   ) => (
     <div className="grid grid-cols-2 gap-3">
       <div className="space-y-1">
-        <Label style={{ fontSize: 11, color: "#8b909e" }}>Weight Class</Label>
+        <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Weight Class</Label>
         <Select value={wc || "any"} onValueChange={(v) => setWc(v === "any" ? "" : v)}>
-          <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28" }}>
+          <SelectTrigger className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -419,9 +419,9 @@ export function AddFightModal({
         </Select>
       </div>
       <div className="space-y-1">
-        <Label style={{ fontSize: 11, color: "#8b909e" }}>Discipline</Label>
+        <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Discipline</Label>
         <Select value={disc || "any"} onValueChange={(v) => setDisc(v === "any" ? "" : v)}>
-          <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28" }}>
+          <SelectTrigger className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -433,7 +433,7 @@ export function AddFightModal({
         </Select>
       </div>
       <div className="space-y-1">
-        <Label style={{ fontSize: 11, color: "#8b909e" }}>Specific Weight (kg)</Label>
+        <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Specific Weight (kg)</Label>
         <Input
           type="number"
           min={40}
@@ -448,11 +448,11 @@ export function AddFightModal({
             else setWeightLbs("");
           }}
           className="h-9 text-sm"
-          style={{ background: "#1a1e28" }}
+          style={{ background: "hsl(var(--muted))" }}
         />
       </div>
       <div className="space-y-1">
-        <Label style={{ fontSize: 11, color: "#8b909e" }}>Specific Weight (lbs)</Label>
+        <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Specific Weight (lbs)</Label>
         <Input
           type="number"
           min={88}
@@ -467,11 +467,11 @@ export function AddFightModal({
             else setWeightKg("");
           }}
           className="h-9 text-sm"
-          style={{ background: "#1a1e28" }}
+          style={{ background: "hsl(var(--muted))" }}
         />
       </div>
       <div className="space-y-1">
-        <Label style={{ fontSize: 11, color: "#8b909e" }}>Rounds</Label>
+        <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Rounds</Label>
         <Input
           type="number"
           min={1}
@@ -480,13 +480,13 @@ export function AddFightModal({
           value={rounds}
           onChange={(e) => setRounds(e.target.value)}
           className="h-9 text-sm"
-          style={{ background: "#1a1e28" }}
+          style={{ background: "hsl(var(--muted))" }}
         />
       </div>
       <div className="space-y-1">
-        <Label style={{ fontSize: 11, color: "#8b909e" }}>Time / Round</Label>
+        <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Time / Round</Label>
         <Select value={roundTime || "any"} onValueChange={(v) => setRoundTime(v === "any" ? "" : v)}>
-          <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28" }}>
+          <SelectTrigger className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }}>
             <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
@@ -507,7 +507,7 @@ export function AddFightModal({
       <DialogContent
         className={step === "suggested" ? "" : "max-h-[90vh] overflow-y-auto"}
         style={{
-          background: "#111318",
+          background: "hsl(var(--card))",
           border: "none",
           borderRadius: step === "suggested" ? 14 : 16,
           width: wideStep ? "min(95vw, 1100px)" : "min(540px, 95vw)",
@@ -521,16 +521,16 @@ export function AddFightModal({
         {step === "menu" && (
           <>
             <DialogHeader>
-              <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#e8eaf0" }}>
+              <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "hsl(var(--foreground))" }}>
                 {getTitle()}
               </DialogTitle>
               {getSubtitle() && (
-                <p style={{ fontSize: 13, color: "#8b909e", marginTop: 4 }}>
+                <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>
                   {getSubtitle()}
                 </p>
               )}
               {mode === "find" && prefillSlot && !getSubtitle() && (
-                <p style={{ fontSize: 12, color: "#8b909e", marginTop: 4 }}>
+                <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>
                   {prefillSlot.weight_class ? formatEnum(prefillSlot.weight_class) : "Open Weight"}
                   {prefillSlot.discipline ? ` · ${formatEnum(prefillSlot.discipline)}` : ""}
                 </p>
@@ -564,12 +564,12 @@ export function AddFightModal({
             <button
               onClick={() => setStep("menu")}
               className="flex items-center gap-1 mb-3 text-sm transition-colors"
-              style={{ color: "#8b909e", background: "none", border: "none", cursor: "pointer" }}
+              style={{ color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer" }}
             >
               <ArrowLeft className="h-3.5 w-3.5" /> Back
             </button>
             <DialogHeader>
-              <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>
+              <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "hsl(var(--foreground))" }}>
                 {scenario === "oneTBA" ? "Manual Fighter Selection" : "Manual Fighter Selection"}
               </DialogTitle>
             </DialogHeader>
@@ -582,13 +582,13 @@ export function AddFightModal({
                 <p style={{ fontSize: 9, color: "#ef4444", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
                   Anchor fighter
                 </p>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "hsl(var(--foreground))" }}>
                   {anchorFighter.name}
-                  <span style={{ fontSize: 12, color: "#8b909e", marginLeft: 8 }}>
+                  <span style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginLeft: 8 }}>
                     {anchorFighter.record_wins}-{anchorFighter.record_losses}-{anchorFighter.record_draws} · {formatEnum(anchorFighter.weight_class)}
                   </span>
                 </p>
-                <p style={{ fontSize: 12, color: "#8b909e", marginTop: 2 }}>Select an opponent below</p>
+                <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>Select an opponent below</p>
               </div>
             )}
 
@@ -596,9 +596,9 @@ export function AddFightModal({
               {/* Slimmer slot parameters — weight class and discipline only (rounds / time / specific weight are not fighter characteristics) */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label style={{ fontSize: 11, color: "#8b909e" }}>Weight Class (slot)</Label>
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Weight Class (slot)</Label>
                   <Select value={manualWc || "any"} onValueChange={(v) => setManualWc(v === "any" ? "" : v)}>
-                    <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28" }}>
+                    <SelectTrigger className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -610,9 +610,9 @@ export function AddFightModal({
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label style={{ fontSize: 11, color: "#8b909e" }}>Discipline (slot)</Label>
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Discipline (slot)</Label>
                   <Select value={manualDisc || "any"} onValueChange={(v) => setManualDisc(v === "any" ? "" : v)}>
-                    <SelectTrigger className="h-9 text-sm" style={{ background: "#1a1e28" }}>
+                    <SelectTrigger className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }}>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -667,13 +667,13 @@ export function AddFightModal({
               )}
 
               <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end pt-3">
-                <Button variant="ghost" onClick={() => handleClose(false)} style={{ color: "#8b909e" }}>Cancel</Button>
+                <Button variant="ghost" onClick={() => handleClose(false)} style={{ color: "hsl(var(--muted-foreground))" }}>Cancel</Button>
                 <Button
                   onClick={handleManualSave}
                   disabled={loading || (scenario === "oneTBA" ? !fighterA : (!fighterA && !fighterB))}
                   style={{
                     background: "#ef4444",
-                    color: "#0d0f12",
+                    color: "hsl(var(--background))",
                     fontWeight: 600,
                     borderRadius: 8,
                   }}
@@ -703,25 +703,25 @@ export function AddFightModal({
             <button
               onClick={() => setStep("menu")}
               className="flex items-center gap-1 mb-3 text-sm transition-colors"
-              style={{ color: "#8b909e", background: "none", border: "none", cursor: "pointer" }}
+              style={{ color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer" }}
             >
               <ArrowLeft className="h-3.5 w-3.5" /> Back
             </button>
             <DialogHeader>
-              <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>
+              <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "hsl(var(--foreground))" }}>
                 Add Open Slot
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 mt-3">
               {paramFields(openWc, setOpenWc, openDisc, setOpenDisc, openRounds, setOpenRounds, openRoundTime, setOpenRoundTime, openWeightKg, setOpenWeightKg, openWeightLbs, setOpenWeightLbs)}
               <div className="flex gap-2 justify-end pt-2">
-                <Button variant="ghost" onClick={() => handleClose(false)} style={{ color: "#8b909e" }}>Cancel</Button>
+                <Button variant="ghost" onClick={() => handleClose(false)} style={{ color: "hsl(var(--muted-foreground))" }}>Cancel</Button>
                 <Button
                   onClick={handleOpenSlotSave}
                   disabled={loading}
                   style={{
                     background: "#ef4444",
-                    color: "#0d0f12",
+                    color: "hsl(var(--background))",
                     fontWeight: 600,
                     borderRadius: 8,
                   }}

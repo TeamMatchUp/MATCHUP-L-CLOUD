@@ -43,8 +43,8 @@ export function EventKpiStrip({ eventId, confirmedCount, openSlotCount }: Props)
       value: ticketData ? formatCurrency(ticketData.estRevenue) : "—",
       color: "#22c55e",
     },
-    { label: "Matched Fights", value: String(confirmedCount), color: "#e8eaf0" },
-    { label: "Open Slots", value: String(openSlotCount), color: "#e8eaf0" },
+    { label: "Matched Fights", value: String(confirmedCount), color: "hsl(var(--foreground))" },
+    { label: "Open Slots", value: String(openSlotCount), color: "hsl(var(--foreground))" },
   ];
 
   return (
@@ -53,7 +53,7 @@ export function EventKpiStrip({ eventId, confirmedCount, openSlotCount }: Props)
         <div
           key={kpi.label}
           style={{
-            background: "#14171e",
+            background: "hsl(var(--card))",
             borderRadius: 12,
             padding: "20px 16px",
             boxShadow:
@@ -63,7 +63,7 @@ export function EventKpiStrip({ eventId, confirmedCount, openSlotCount }: Props)
           <p
             style={{
               fontSize: 11,
-              color: "#8b909e",
+              color: "hsl(var(--muted-foreground))",
               marginBottom: 4,
               textTransform: "uppercase",
               letterSpacing: "0.06em",

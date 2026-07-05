@@ -165,13 +165,13 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
               <TooltipTrigger asChild>
                 <button
                   className="w-full flex items-center justify-center rounded-lg transition-all duration-150"
-                  style={{ padding: "7px 0", margin: "1px 0", color: childActive ? "#ef4444" : "#8b909e", background: childActive ? "rgba(239,68,68,0.12)" : "transparent" }}
+                  style={{ padding: "7px 0", margin: "1px 0", color: childActive ? "#ef4444" : "hsl(var(--muted-foreground))", background: childActive ? "rgba(239,68,68,0.12)" : "transparent" }}
                   onClick={() => toggleAccordion(item.key)}
                 >
                   <item.icon style={{ width: 16, height: 16 }} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "#e8eaf0", zIndex: 9999 }}>
+              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "hsl(var(--foreground))", zIndex: 9999 }}>
                 {item.label}
               </TooltipContent>
             </Tooltip>
@@ -183,12 +183,12 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
         <div key={item.key}>
           <button
             className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
-            style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: childActive ? 600 : 500, color: childActive ? "#ef4444" : "#8b909e", background: childActive ? "rgba(239,68,68,0.12)" : "transparent" }}
+            style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: childActive ? 600 : 500, color: childActive ? "#ef4444" : "hsl(var(--muted-foreground))", background: childActive ? "rgba(239,68,68,0.12)" : "transparent" }}
             onClick={() => toggleAccordion(item.key)}
           >
             <item.icon style={{ width: 16, height: 16 }} />
             <span className="flex-1 text-left">{item.label}</span>
-            <ChevronDown style={{ width: 14, height: 14, color: "#555b6b", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+            <ChevronDown style={{ width: 14, height: 14, color: "hsl(var(--muted-foreground))", transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
           </button>
           <div style={{ maxHeight: isOpen ? 200 : 0, overflow: "hidden", transition: "max-height 0.25s ease" }}>
             {item.children.map((child) => {
@@ -196,18 +196,18 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
               if (child.to) {
                 return (
                   <Link key={child.key} to={child.to} className="block transition-colors duration-150"
-                    style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: isActive ? "#ef4444" : "#8b909e", borderRadius: 8 }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = "#e8eaf0"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = isActive ? "#ef4444" : "#8b909e"; e.currentTarget.style.background = "transparent"; }}
+                    style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: isActive ? "#ef4444" : "hsl(var(--muted-foreground))", borderRadius: 8 }}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = "hsl(var(--foreground))"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = isActive ? "#ef4444" : "hsl(var(--muted-foreground))"; e.currentTarget.style.background = "transparent"; }}
                   >{child.label}</Link>
                 );
               }
               return (
                 <button key={child.key} className="w-full text-left transition-colors duration-150"
-                  style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: isActive ? "#ef4444" : "#8b909e", borderRadius: 8 }}
+                  style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: isActive ? "#ef4444" : "hsl(var(--muted-foreground))", borderRadius: 8 }}
                   onClick={() => handleNav(child.key)}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = "#e8eaf0"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = isActive ? "#ef4444" : "#8b909e"; e.currentTarget.style.background = "transparent"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = "hsl(var(--foreground))"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = isActive ? "#ef4444" : "hsl(var(--muted-foreground))"; e.currentTarget.style.background = "transparent"; }}
                 >{child.label}</button>
               );
             })}
@@ -225,7 +225,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
             <TooltipTrigger asChild>
               <button
                 className="w-full flex items-center justify-center rounded-lg transition-all duration-150 relative"
-                style={{ padding: "7px 0", margin: "1px 0", color: isActive ? "#ef4444" : "#8b909e", background: isActive ? "rgba(239,68,68,0.12)" : "transparent" }}
+                style={{ padding: "7px 0", margin: "1px 0", color: isActive ? "#ef4444" : "hsl(var(--muted-foreground))", background: isActive ? "rgba(239,68,68,0.12)" : "transparent" }}
                 onClick={() => handleNav(item.key)}
               >
                 <item.icon style={{ width: 16, height: 16 }} />
@@ -236,7 +236,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
                 )}
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "#e8eaf0", zIndex: 9999 }}>
+            <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "hsl(var(--foreground))", zIndex: 9999 }}>
               {item.label}
             </TooltipContent>
           </Tooltip>
@@ -246,10 +246,10 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
 
     return (
       <button key={item.key} className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
-        style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: isActive ? 600 : 500, color: isActive ? "#ef4444" : "#8b909e", background: isActive ? "rgba(239,68,68,0.12)" : "transparent" }}
+        style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: isActive ? 600 : 500, color: isActive ? "#ef4444" : "hsl(var(--muted-foreground))", background: isActive ? "rgba(239,68,68,0.12)" : "transparent" }}
         onClick={() => handleNav(item.key)}
-        onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#e8eaf0"; } }}
-        onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8b909e"; } }}
+        onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "hsl(var(--foreground))"; } }}
+        onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "hsl(var(--muted-foreground))"; } }}
       >
         <item.icon style={{ width: 16, height: 16 }} />
         <span className="flex-1 text-left">{item.label}</span>
@@ -285,7 +285,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
               onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
             >
-              <PanelLeft style={{ width: 14, height: 14, color: "#8b909e" }} />
+              <PanelLeft style={{ width: 14, height: 14, color: "hsl(var(--muted-foreground))" }} />
             </button>
           </div>
         ) : (
@@ -298,7 +298,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
               onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.1)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
             >
-              <PanelLeftClose style={{ width: 14, height: 14, color: "#8b909e", transition: "color 0.15s" }} />
+              <PanelLeftClose style={{ width: 14, height: 14, color: "hsl(var(--muted-foreground))", transition: "color 0.15s" }} />
             </button>
           </div>
         )}
@@ -308,9 +308,9 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
       {!collapsed && (
         <div style={{ margin: "8px 12px", flexShrink: 0 }}>
           <div className="flex items-center gap-2" style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: "8px 12px", boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)" }}>
-            <Search style={{ width: 14, height: 14, color: "#555b6b", flexShrink: 0 }} />
+            <Search style={{ width: 14, height: 14, color: "hsl(var(--muted-foreground))", flexShrink: 0 }} />
             <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent outline-none border-none" style={{ fontSize: 13, color: "#e8eaf0" }} />
+              className="w-full bg-transparent outline-none border-none" style={{ fontSize: 13, color: "hsl(var(--foreground))" }} />
           </div>
         </div>
       )}
@@ -318,12 +318,12 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
       {/* Scrollable nav content */}
       <div className="flex-1 overflow-y-auto" style={{ padding: collapsed ? "0 4px" : "0 8px" }}>
         {!collapsed && (
-          <p style={{ padding: "14px 8px 4px", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#555b6b" }}>MENU</p>
+          <p style={{ padding: "14px 8px 4px", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "hsl(var(--muted-foreground))" }}>MENU</p>
         )}
         {menuItems.map(renderNavItem)}
 
         {!collapsed && (
-          <p style={{ padding: "14px 8px 4px", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "#555b6b" }}>GENERAL</p>
+          <p style={{ padding: "14px 8px 4px", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "hsl(var(--muted-foreground))" }}>GENERAL</p>
         )}
 
         {/* Homepage */}
@@ -331,18 +331,18 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link to="/" className="flex items-center justify-center rounded-lg transition-all duration-150" style={{ padding: "7px 0", margin: "1px 0", color: "#8b909e" }}>
+                <Link to="/" className="flex items-center justify-center rounded-lg transition-all duration-150" style={{ padding: "7px 0", margin: "1px 0", color: "hsl(var(--muted-foreground))" }}>
                   <Home style={{ width: 16, height: 16 }} />
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "#e8eaf0", zIndex: 9999 }}>Homepage</TooltipContent>
+              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "hsl(var(--foreground))", zIndex: 9999 }}>Homepage</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : (
           <Link to="/" className="flex items-center gap-2.5 rounded-lg transition-all duration-150"
-            style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: 500, color: "#8b909e" }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#e8eaf0"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8b909e"; }}
+            style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: 500, color: "hsl(var(--muted-foreground))" }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "hsl(var(--foreground))"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "hsl(var(--muted-foreground))"; }}
           >
             <Home style={{ width: 16, height: 16 }} />
             <span>Homepage</span>
@@ -354,39 +354,39 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link to="/account/settings" className="flex items-center justify-center rounded-lg transition-all duration-150" style={{ padding: "7px 0", margin: "1px 0", color: "#8b909e" }}>
+                <Link to="/account/settings" className="flex items-center justify-center rounded-lg transition-all duration-150" style={{ padding: "7px 0", margin: "1px 0", color: "hsl(var(--muted-foreground))" }}>
                   <Settings style={{ width: 16, height: 16 }} />
                 </Link>
               </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "#e8eaf0", zIndex: 9999 }}>Settings</TooltipContent>
+              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "hsl(var(--foreground))", zIndex: 9999 }}>Settings</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : (
           <div>
             <button className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
-              style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: 500, color: "#8b909e" }}
+              style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: 500, color: "hsl(var(--muted-foreground))" }}
               onClick={() => toggleAccordion("settings")}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#e8eaf0"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8b909e"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "hsl(var(--foreground))"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "hsl(var(--muted-foreground))"; }}
             >
               <Settings style={{ width: 16, height: 16 }} />
               <span className="flex-1 text-left">Settings</span>
-              <ChevronDown style={{ width: 14, height: 14, color: "#555b6b", transform: settingsOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+              <ChevronDown style={{ width: 14, height: 14, color: "hsl(var(--muted-foreground))", transform: settingsOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
             </button>
             <div style={{ maxHeight: settingsOpen ? 200 : 0, overflow: "hidden", transition: "max-height 0.25s ease" }}>
-              <div className="flex items-center justify-between" style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: "#8b909e" }}>
+              <div className="flex items-center justify-between" style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: "hsl(var(--muted-foreground))" }}>
                 <span>Dark Mode</span>
                 <Switch checked={isDark} onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")} className="data-[state=checked]:bg-primary" style={{ transform: "scale(0.8)" }} />
               </div>
               <Link to="/account/settings" className="block transition-colors duration-150"
-                style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: "#8b909e", borderRadius: 8 }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "#e8eaf0"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "#8b909e"; e.currentTarget.style.background = "transparent"; }}
+                style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: "hsl(var(--muted-foreground))", borderRadius: 8 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "hsl(var(--foreground))"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "hsl(var(--muted-foreground))"; e.currentTarget.style.background = "transparent"; }}
               >Profile Settings</Link>
               <button className="w-full text-left transition-colors duration-150"
-                style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: "#8b909e", borderRadius: 8 }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "#e8eaf0"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "#8b909e"; e.currentTarget.style.background = "transparent"; }}
+                style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: "hsl(var(--muted-foreground))", borderRadius: 8 }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "hsl(var(--foreground))"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "hsl(var(--muted-foreground))"; e.currentTarget.style.background = "transparent"; }}
               >Billing</button>
             </div>
           </div>
@@ -402,7 +402,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
                   <LogOut style={{ width: 16, height: 16 }} />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "#e8eaf0", zIndex: 9999 }}>Logout</TooltipContent>
+              <TooltipContent side="right" sideOffset={8} style={{ background: "rgba(26,30,40,0.95)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "4px 10px", fontSize: 12, color: "hsl(var(--foreground))", zIndex: 9999 }}>Logout</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         ) : (
@@ -428,19 +428,19 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           </Avatar>
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="truncate" style={{ fontSize: 12, fontWeight: 600, color: "#e8eaf0", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <p className="truncate" style={{ fontSize: 12, fontWeight: 600, color: "hsl(var(--foreground))", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {profile?.full_name || "User"}
               </p>
-              <p className="truncate" style={{ fontSize: 10, color: "#8b909e", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <p className="truncate" style={{ fontSize: 10, color: "hsl(var(--muted-foreground))", maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {user?.email}
               </p>
-              <p style={{ fontSize: 10, color: "#8b909e", marginTop: 2, whiteSpace: "nowrap" }}>
+              <p style={{ fontSize: 10, color: "hsl(var(--muted-foreground))", marginTop: 2, whiteSpace: "nowrap" }}>
                 <button onClick={() => setNetworkSheet("followers")} style={{ cursor: "pointer" }}>
-                  <span style={{ color: "#e8eaf0", fontWeight: 600 }}>{followerCount}</span> Followers
+                  <span style={{ color: "hsl(var(--foreground))", fontWeight: 600 }}>{followerCount}</span> Followers
                 </button>
-                <span style={{ color: "#555b6b", margin: "0 4px" }}>·</span>
+                <span style={{ color: "hsl(var(--muted-foreground))", margin: "0 4px" }}>·</span>
                 <button onClick={() => setNetworkSheet("following")} style={{ cursor: "pointer" }}>
-                  <span style={{ color: "#e8eaf0", fontWeight: 600 }}>{followingCount}</span> Following
+                  <span style={{ color: "hsl(var(--foreground))", fontWeight: 600 }}>{followingCount}</span> Following
                 </button>
               </p>
             </div>

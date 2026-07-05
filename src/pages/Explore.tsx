@@ -58,17 +58,17 @@ const ITEMS_PER_PAGE_MOBILE = 20;
 
 /* ── Explore design tokens (inline, not polluting global CSS) ── */
 const EX = {
-  bg: "#080a0d",
-  card: "#111318",
-  raised: "#181c24",
+  bg: "hsl(var(--background))",
+  card: "hsl(var(--card))",
+  raised: "hsl(var(--muted))",
   border: "transparent",
   borderMid: "transparent",
   gold: "#ef4444",
   goldDim: "rgba(239,68,68,0.12)",
   goldBorder: "rgba(239,68,68,0.25)",
-  text: "#e8eaf0",
-  muted: "#8b909e",
-  dimmed: "#555b6b",
+  text: "hsl(var(--foreground))",
+  muted: "hsl(var(--muted-foreground))",
+  dimmed: "hsl(var(--muted-foreground))",
 };
 
 /* Animated counter hook */
@@ -808,7 +808,7 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
                 title={isAvailable ? "Available" : "Not available"}
                 style={{
                   width: 8, height: 8, borderRadius: "50%",
-                  background: isAvailable ? "#22c55e" : "#555b6b",
+                  background: isAvailable ? "#22c55e" : "hsl(var(--muted-foreground))",
                   boxShadow: isAvailable ? "0 0 8px rgba(34,197,94,0.6)" : "none",
                 }}
               />

@@ -113,7 +113,7 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
   return (
     <div
       style={{
-        background: "#111318",
+        background: "hsl(var(--card))",
         borderRadius: 16,
         padding: 20,
         boxShadow:
@@ -134,18 +134,18 @@ export function GymRequestsPanel({ gymIds, coachId }: GymRequestsPanelProps) {
             <div
               key={link.id}
               className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-              style={{ background: "#181c24", borderRadius: 10, padding: "10px 12px" }}
+              style={{ background: "hsl(var(--muted))", borderRadius: 10, padding: "10px 12px" }}
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>
+                <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))" }}>
                   {fighter?.name ?? "Unknown"}
                 </p>
-                <p className="truncate" style={{ fontSize: 11, color: "#8b909e", marginTop: 2 }}>
+                <p className="truncate" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>
                   {fighter?.discipline ? formatEnum(fighter.discipline) : "—"} · {formatEnum(fighter?.weight_class)}
                   {fighter?.stance ? ` · ${fighter.stance}` : ""}
                 </p>
-                <p className="truncate" style={{ fontSize: 11, color: "#8b909e" }}>
-                  Wants to join <span style={{ color: "#e8eaf0" }}>{gym?.name}</span>
+                <p className="truncate" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>
+                  Wants to join <span style={{ color: "hsl(var(--foreground))" }}>{gym?.name}</span>
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">

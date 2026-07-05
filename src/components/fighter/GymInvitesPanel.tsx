@@ -25,7 +25,7 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
   return (
     <div
       style={{
-        background: "#111318",
+        background: "hsl(var(--card))",
         borderRadius: 16,
         padding: 20,
         boxShadow:
@@ -45,7 +45,7 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
             <div
               key={link.id}
               className="flex items-center justify-between"
-              style={{ background: "#181c24", borderRadius: 10, padding: "10px 12px" }}
+              style={{ background: "hsl(var(--muted))", borderRadius: 10, padding: "10px 12px" }}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div
@@ -55,10 +55,10 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
                   <Building2 className="h-4 w-4" style={{ color: "#ef4444" }} />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>
+                  <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))" }}>
                     {gym?.name ?? "Unknown Gym"}
                   </p>
-                  <p className="truncate" style={{ fontSize: 11, color: "#8b909e" }}>
+                  <p className="truncate" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>
                     {[gym?.location, gym?.country].filter(Boolean).join(" · ")}
                   </p>
                 </div>

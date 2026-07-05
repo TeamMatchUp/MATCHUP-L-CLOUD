@@ -151,11 +151,11 @@ export function Header() {
           {user ? (
             <>
             {basketCount > 0 && (
-              <Link to="/checkout" className="relative" style={{ color: "#e8eaf0" }}>
+              <Link to="/checkout" className="relative" style={{ color: "hsl(var(--foreground))" }}>
                 <ShoppingCart style={{ width: 20, height: 20 }} />
                 <span style={{
                   position: "absolute", top: -6, right: -8,
-                  background: "#ef4444", color: "#0d0f12",
+                  background: "#ef4444", color: "hsl(var(--background))",
                   fontSize: 10, fontWeight: 700, borderRadius: 9999,
                   width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
                 }}>{basketCount}</span>
@@ -227,11 +227,11 @@ export function Header() {
         {/* Mobile: notification bell + hamburger */}
         <div className="md:hidden flex items-center gap-2">
           {basketCount > 0 && (
-            <Link to="/checkout" className="relative" style={{ color: "#e8eaf0" }}>
+            <Link to="/checkout" className="relative" style={{ color: "hsl(var(--foreground))" }}>
               <ShoppingCart style={{ width: 20, height: 20 }} />
               <span style={{
                 position: "absolute", top: -6, right: -8,
-                background: "#ef4444", color: "#0d0f12",
+                background: "#ef4444", color: "hsl(var(--background))",
                 fontSize: 10, fontWeight: 700, borderRadius: 9999,
                 width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
               }}>{basketCount}</span>
@@ -267,7 +267,7 @@ export function Header() {
             <Link
               to="/explore"
               onClick={() => setMobileOpen(false)}
-              style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+              style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "hsl(var(--foreground))", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
             >
               EXPLORE
             </Link>
@@ -279,7 +279,7 @@ export function Header() {
                   to="/account/settings"
                   onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2"
-                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#8b909e", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "hsl(var(--muted-foreground))", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   <Settings style={{ width: 16, height: 16 }} />
                   ACCOUNT SETTINGS
@@ -300,7 +300,7 @@ export function Header() {
                 <button
                   onClick={() => { openAuthModal("signin"); setMobileOpen(false); }}
                   className="text-left"
-                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#e8eaf0", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "hsl(var(--foreground))", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   LOG IN
                 </button>
@@ -315,7 +315,7 @@ export function Header() {
             )}
 
             <div style={{ padding: 20, textAlign: "center" }}>
-              <p style={{ fontSize: 13, color: "#555b6b", fontFamily: "Inter, sans-serif" }}>PROMOTE, MATCHUP, DONE. IT'S THAT SIMPLE...</p>
+              <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", fontFamily: "Inter, sans-serif" }}>PROMOTE, MATCHUP, DONE. IT'S THAT SIMPLE...</p>
             </div>
           </div>
         </div>

@@ -347,12 +347,12 @@ export function FighterRecordHero() {
                 onMouseEnter={() => setHoveredStat(stat.key)}
                 onMouseLeave={() => setHoveredStat(null)}
               >
-                <p style={{ fontSize: 12, color: "#8b909e", marginBottom: 4 }}>{stat.label}</p>
+                <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 4 }}>{stat.label}</p>
                 <p
                   className="font-bold transition-colors duration-150"
                   style={{
                     fontSize: 28,
-                    color: hoveredStat === stat.key ? "#ef4444" : "#e8eaf0",
+                    color: hoveredStat === stat.key ? "#ef4444" : "hsl(var(--foreground))",
                   }}
                 >
                   {stat.value}

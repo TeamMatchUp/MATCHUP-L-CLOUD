@@ -34,7 +34,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
   const declinedCount = confirmations.filter((c: any) => c.decision === "declined").length;
 
   const card: React.CSSProperties = {
-    background: "#111318",
+    background: "hsl(var(--card))",
     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.4)",
   };
 
@@ -42,8 +42,8 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
     <div className="rounded-lg p-5" style={card}>
       <div className="flex items-start justify-between mb-3">
         <div>
-          <p className="text-xs" style={{ color: "#8b909e" }}>{eventTitle} · Slot #{slotNumber}</p>
-          <p className="text-xs" style={{ color: "#555b6b" }}>{formatEnum(weightClass)}</p>
+          <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{eventTitle} · Slot #{slotNumber}</p>
+          <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{formatEnum(weightClass)}</p>
         </div>
         <Badge variant="outline" className="text-xs">
           {proposal.status === "pending"
@@ -54,15 +54,15 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
 
       <div className="flex items-center gap-3 mb-4">
         <div className="flex-1">
-          <p className="font-heading text-lg" style={{ color: "#e8eaf0" }}>{fighterA?.name || "TBD"}</p>
-          <p className="text-xs" style={{ color: "#8b909e" }}>
+          <p className="font-heading text-lg" style={{ color: "hsl(var(--foreground))" }}>{fighterA?.name || "TBD"}</p>
+          <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
             {fighterA?.record_wins}W-{fighterA?.record_losses}L-{fighterA?.record_draws}D
           </p>
         </div>
         <span className="font-heading text-lg" style={{ color: "#ef4444" }}>VS</span>
         <div className="flex-1 text-right">
-          <p className="font-heading text-lg" style={{ color: "#e8eaf0" }}>{fighterB?.name || "TBD"}</p>
-          <p className="text-xs" style={{ color: "#8b909e" }}>
+          <p className="font-heading text-lg" style={{ color: "hsl(var(--foreground))" }}>{fighterB?.name || "TBD"}</p>
+          <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
             {fighterB?.record_wins}W-{fighterB?.record_losses}L-{fighterB?.record_draws}D
           </p>
         </div>
@@ -72,7 +72,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
         size="sm"
         onClick={() => navigate(`/proposals/${proposal.id}`)}
         className="gap-1"
-        style={{ background: "#ef4444", color: "#0d0f12" }}
+        style={{ background: "#ef4444", color: "hsl(var(--background))" }}
       >
         View proposal <ArrowRight className="h-3 w-3" />
       </Button>
