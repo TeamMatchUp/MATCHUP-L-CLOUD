@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Header } from "@/components/Header";
@@ -15,9 +15,12 @@ import { toast } from "sonner";
 import {
   ArrowLeft, Pencil, Eye, Share2, Calendar, MapPin, Building2,
   CheckCircle2, Circle, Ticket, TrendingUp, Users, AlertCircle,
-  ChevronRight, Plus, Trophy, PoundSterling, X, Copy, Check, Sparkles,
+  ChevronRight, Plus, Trophy, PoundSterling, X, Copy, Check, Sparkles, Globe, Trash2,
 } from "lucide-react";
 import { formatEnum } from "@/lib/format";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 
 // ─── Design tokens ──────────────────────────────────────────
@@ -198,6 +201,22 @@ export default function EventManager() {
     enabled: !!id,
   });
 
+  const { data: expenses = [] } = useQuery({
+    queryKey: ["event-expenses", id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("event_expenses").select("*").eq("event_id", id!).order("created_at");
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!id,
+  });
+
+  const totalExpenses = useMemo(
+    () => expenses.reduce((s: number, e: any) => s + Number(e.amount || 0), 0),
+    [expenses],
+  );
+
   // Derived metrics
   const metrics = useMemo(() => {
     const totalCapacity = tickets.reduce((s: number, t: any) => s + (t.quantity_available ?? 0), 0);
@@ -209,6 +228,21 @@ export default function EventManager() {
     const under = bouts.filter((b: any) => b.bout_type !== "Main Event");
     return { totalCapacity, estRevenue, totalSlots, confirmed, open, main, under };
   }, [tickets, bouts]);
+
+  const publishMutation = useMutation({
+    mutationFn: async (newStatus: "published" | "draft") => {
+      const { error } = await supabase.from("events").update({ status: newStatus }).eq("id", id!);
+      if (error) throw error;
+      return newStatus;
+    },
+    onSuccess: (newStatus) => {
+      queryClient.invalidateQueries({ queryKey: ["organiser-event", id] });
+      queryClient.invalidateQueries({ queryKey: ["organiser-events"] });
+      toast.success(newStatus === "published" ? "Event published" : "Event unpublished");
+      if (newStatus === "published") setShowBoost(true);
+    },
+    onError: (e: any) => toast.error(e.message ?? "Failed to update status"),
+  });
 
   // Progress checklist
   const checklist = useMemo(() => {
@@ -316,6 +350,21 @@ export default function EventManager() {
                   )}
                 </div>
                 <div className="flex gap-2 flex-wrap" style={{ alignSelf: "flex-start" }}>
+                  {event.status === "published" ? (
+                    <GhostButton
+                      icon={Globe}
+                      onClick={() => publishMutation.mutate("draft")}
+                    >
+                      Unpublish
+                    </GhostButton>
+                  ) : (
+                    <GoldButton
+                      icon={Globe}
+                      onClick={() => publishMutation.mutate("published")}
+                    >
+                      Publish Event
+                    </GoldButton>
+                  )}
                   {event.status === "published" && (
                     <GoldButton icon={Sparkles} onClick={() => setShowBoost(true)}>
                       {activeBoost ? "Extend Boost" : "Boost This Event"}
@@ -323,7 +372,7 @@ export default function EventManager() {
                   )}
                   <GhostButton icon={Eye} href={`/events/${id}?preview=true`}>Preview Public Page</GhostButton>
                   <GhostButton icon={Share2} onClick={() => setShowShare(true)}>Share Event</GhostButton>
-                  <GoldButton icon={Pencil} onClick={() => setShowEditEvent(true)}>Edit Event Details</GoldButton>
+                  <GhostButton icon={Pencil} onClick={() => setShowEditEvent(true)}>Edit Event Details</GhostButton>
                 </div>
               </div>
             </div>
@@ -520,15 +569,29 @@ export default function EventManager() {
               </div>
             </div>
 
-            {/* Inline ticket management */}
-            {showTickets && (
-              <div style={{ ...cardStyle, marginBottom: 20 }}>
-                <SectionTitle action={
-                  <GhostButton onClick={() => setShowTickets(false)}>Close</GhostButton>
-                }>Manage Tickets</SectionTitle>
-                <ManageTicketsPanel eventId={id!} />
-              </div>
-            )}
+            {/* Ticket management modal */}
+            <Dialog open={showTickets} onOpenChange={setShowTickets}>
+              <DialogContent
+                className="p-0 gap-0 border-none"
+                style={{
+                  width: "min(90vw, 960px)",
+                  maxWidth: "min(90vw, 960px)",
+                  maxHeight: "88vh",
+                  overflowY: "auto",
+                  background: CARD,
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
+                }}
+              >
+                <DialogHeader className="p-6 pb-2">
+                  <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, letterSpacing: "0.04em", color: TEXT }}>
+                    Manage Tickets
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="px-6 pb-6">
+                  <ManageTicketsPanel eventId={id!} />
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {/* BOTTOM ROW */}
             <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))" }}>
@@ -557,23 +620,57 @@ export default function EventManager() {
               {/* Financial Summary */}
               <div style={cardStyle}>
                 <SectionTitle>Financial Summary</SectionTitle>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between" style={{ padding: "10px 12px", background: RAISED, borderRadius: 10 }}>
+
+                {/* Per-ticket revenue breakdown */}
+                <div className="mb-4">
+                  <p style={{ fontSize: 11, color: TEXT_SEC, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8, fontWeight: 600 }}>
+                    Revenue by ticket tier
+                  </p>
+                  {tickets.length === 0 ? (
+                    <p style={{ fontSize: 12, color: TEXT_MUTED, padding: "8px 0" }}>No ticket tiers yet.</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {tickets.map((t: any) => {
+                        const qty = t.quantity_available ?? 0;
+                        const rev = qty * (Number(t.price) || 0);
+                        return (
+                          <div key={t.id} className="flex items-center justify-between gap-3" style={{ padding: "8px 12px", background: RAISED, borderRadius: 8, fontSize: 12 }}>
+                            <div className="flex-1 min-w-0">
+                              <p style={{ color: TEXT, fontWeight: 600 }} className="truncate">{t.ticket_type}</p>
+                              <p style={{ color: TEXT_MUTED, fontSize: 11 }}>{fmtGBP(Number(t.price) || 0)} × {qty.toLocaleString("en-GB")}</p>
+                            </div>
+                            <span style={{ color: SUCCESS, fontWeight: 700 }}>{fmtGBP(rev)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Expenses */}
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p style={{ fontSize: 11, color: TEXT_SEC, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+                      Expenses
+                    </p>
+                  </div>
+                  <ExpensesEditor eventId={id!} expenses={expenses} />
+                </div>
+
+                <div className="space-y-2 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="flex items-center justify-between" style={{ padding: "8px 12px", background: RAISED, borderRadius: 8 }}>
                     <span style={{ fontSize: 12, color: TEXT_SEC }}>Total Revenue (Est.)</span>
                     <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: SUCCESS }}>{fmtGBP(metrics.estRevenue)}</span>
                   </div>
-                  <div className="flex items-center justify-between" style={{ padding: "10px 12px", background: RAISED, borderRadius: 10 }}>
+                  <div className="flex items-center justify-between" style={{ padding: "8px 12px", background: RAISED, borderRadius: 8 }}>
                     <span style={{ fontSize: 12, color: TEXT_SEC }}>Total Expenses</span>
-                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: TEXT }}>{fmtGBP(0)}</span>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: TEXT }}>{fmtGBP(totalExpenses)}</span>
                   </div>
-                  <div className="flex items-center justify-between" style={{ padding: "10px 12px", background: ACCENT_DIM, borderRadius: 10 }}>
+                  <div className="flex items-center justify-between" style={{ padding: "8px 12px", background: ACCENT_DIM, borderRadius: 8 }}>
                     <span style={{ fontSize: 12, color: TEXT_SEC }}>Net Profit (Est.)</span>
-                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: ACCENT }}>{fmtGBP(metrics.estRevenue)}</span>
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: ACCENT }}>{fmtGBP(metrics.estRevenue - totalExpenses)}</span>
                   </div>
                 </div>
-                <p style={{ fontSize: 11, color: TEXT_MUTED, marginTop: 12 }}>
-                  Estimates based on current ticket inventory. Add expenses to refine net profit.
-                </p>
               </div>
 
               {/* Recent Activity */}
@@ -734,6 +831,88 @@ function ShareEventModal({ eventId, title, onClose }: { eventId: string; title?:
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Expenses Editor ────────────────────────────────────────
+function ExpensesEditor({ eventId, expenses }: { eventId: string; expenses: any[] }) {
+  const qc = useQueryClient();
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ["event-expenses", eventId] });
+
+  const addExpense = async () => {
+    if (!description.trim() || !amount) return;
+    const { error } = await (supabase as any).from("event_expenses").insert({
+      event_id: eventId,
+      description: description.trim(),
+      amount: parseFloat(amount) || 0,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setDescription(""); setAmount("");
+    invalidate();
+  };
+
+  const deleteExpense = async (expId: string) => {
+    const { error } = await (supabase as any).from("event_expenses").delete().eq("id", expId);
+    if (error) { toast.error(error.message); return; }
+    invalidate();
+  };
+
+  return (
+    <div>
+      <div className="space-y-1.5 mb-2">
+        {expenses.length === 0 && (
+          <p style={{ fontSize: 12, color: TEXT_MUTED, padding: "4px 0" }}>No expenses added yet.</p>
+        )}
+        {expenses.map((exp) => (
+          <div key={exp.id} className="flex items-center justify-between gap-2" style={{ padding: "8px 12px", background: RAISED, borderRadius: 8, fontSize: 12 }}>
+            <span style={{ color: TEXT, flex: 1, minWidth: 0 }} className="truncate">{exp.description}</span>
+            <span style={{ color: TEXT, fontWeight: 700 }}>{fmtGBP(Number(exp.amount) || 0)}</span>
+            <button
+              type="button"
+              onClick={() => deleteExpense(exp.id)}
+              aria-label="Delete expense"
+              style={{
+                width: 24, height: 24, borderRadius: 6, border: "none", cursor: "pointer",
+                background: "transparent", color: TEXT_MUTED,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <Input
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Expense description"
+          className="text-sm h-9 flex-1"
+        />
+        <Input
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="£0"
+          type="number"
+          step="0.01"
+          className="text-sm h-9 w-24"
+        />
+        <Button
+          type="button"
+          size="sm"
+          onClick={addExpense}
+          disabled={!description.trim() || !amount}
+        >
+          <Plus className="h-3 w-3" />
+        </Button>
       </div>
     </div>
   );

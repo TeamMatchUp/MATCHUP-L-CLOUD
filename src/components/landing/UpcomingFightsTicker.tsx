@@ -30,7 +30,10 @@ export function UpcomingFightsTicker() {
   });
 
   const fights = (data ?? []).filter((f: any) => f.fighter_a && f.fighter_b);
-  const fallbackFights = fights.length > 0 ? fights : [];
+  // Ensure enough content to fill viewport by repeating the fight list.
+  // Each duplicate segment is one "half" of the -50% scroll cycle, so both halves must match.
+  const REPEATS_PER_HALF = Math.max(4, Math.ceil(12 / Math.max(fights.length, 1)));
+  const fillerRepeats = Array.from({ length: REPEATS_PER_HALF });
 
   return (
     <section className="border-y border-border/20 bg-[hsl(var(--card))]/40 overflow-hidden py-4 space-y-3">
@@ -38,9 +41,9 @@ export function UpcomingFightsTicker() {
       <div className="ticker-row group">
         <div className="ticker-track group-hover:[animation-play-state:paused]" style={{ animationDuration: "60s" }}>
           {[...Array(2)].map((_, dup) => (
-            <div key={dup} className="flex items-center gap-3 pr-3 shrink-0">
-              {fallbackFights.length > 0 ? fallbackFights.map((f: any) => (
-                <div key={`${dup}-${f.id}`} className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/60 text-xs whitespace-nowrap">
+            <div key={dup} className="flex items-center justify-center gap-3 pr-3 shrink-0">
+              {fights.length > 0 ? fillerRepeats.flatMap((_, rep) => fights.map((f: any) => (
+                <div key={`${dup}-${rep}-${f.id}`} className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/60 text-xs whitespace-nowrap">
                   <Swords className="h-3.5 w-3.5 text-primary shrink-0" />
                   <span className="text-foreground font-medium">{f.fighter_a?.name}</span>
                   <span className="text-muted-foreground">vs</span>
@@ -52,11 +55,13 @@ export function UpcomingFightsTicker() {
                   <span className="text-muted-foreground/60">·</span>
                   <span className="text-muted-foreground text-[10px]">{formatDate(f.events?.date)}</span>
                 </div>
-              )) : (
-                <div className="flex items-center gap-2 px-4 py-2 text-xs text-muted-foreground uppercase tracking-widest">
-                  <Swords className="h-3.5 w-3.5 text-primary" />
-                  Upcoming fights will appear here as promoters publish cards
-                </div>
+              ))) : (
+                fillerRepeats.map((_, rep) => (
+                  <div key={`${dup}-${rep}`} className="flex items-center gap-2 px-6 py-2 text-xs text-muted-foreground uppercase tracking-widest whitespace-nowrap">
+                    <Swords className="h-3.5 w-3.5 text-primary" />
+                    Upcoming fights will appear here as promoters publish cards
+                  </div>
+                ))
               )}
             </div>
           ))}

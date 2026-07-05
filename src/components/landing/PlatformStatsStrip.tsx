@@ -6,22 +6,17 @@ export function PlatformStatsStrip() {
   const { data } = useQuery({
     queryKey: ["platform-stats-strip"],
     queryFn: async () => {
-      const [fighters, gyms, publishedEvents, confirmedSlots, totalSlots] = await Promise.all([
+      const [fighters, gyms, publishedEvents, allEvents] = await Promise.all([
         supabase.from("fighter_profiles").select("id", { count: "exact", head: true }),
         supabase.from("gyms").select("id", { count: "exact", head: true }),
         supabase.from("events").select("id", { count: "exact", head: true }).eq("status", "published"),
-        supabase.from("event_fight_slots").select("id", { count: "exact", head: true }).eq("status", "confirmed"),
-        supabase.from("event_fight_slots").select("id", { count: "exact", head: true }),
+        supabase.from("events").select("id", { count: "exact", head: true }),
       ]);
-      const confirmRate =
-        (totalSlots.count ?? 0) > 0
-          ? Math.round(((confirmedSlots.count ?? 0) / (totalSlots.count ?? 1)) * 100)
-          : 96;
       return {
         fighters: fighters.count ?? 0,
         gyms: gyms.count ?? 0,
         events: publishedEvents.count ?? 0,
-        confirmRate: Math.max(1, Math.min(100, confirmRate)),
+        hoursSaved: (allEvents.count ?? 0) * 4,
       };
     },
   });
@@ -30,7 +25,7 @@ export function PlatformStatsStrip() {
     { value: `${(data?.fighters ?? 0).toLocaleString()}+`, label: "Verified Fighters" },
     { value: `${(data?.gyms ?? 0).toLocaleString()}+`, label: "Gyms & Academies" },
     { value: `${(data?.events ?? 0).toLocaleString()}+`, label: "Events Published" },
-    { value: `${data?.confirmRate ?? 96}%`, label: "Bouts Confirmed On Time" },
+    { value: `${(data?.hoursSaved ?? 0).toLocaleString()}+`, label: "Hours Saved" },
   ];
 
   return (

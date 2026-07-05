@@ -326,9 +326,23 @@ export default function EventDetail() {
     queryKey: ["event", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("events").select("*, fight_slots(*), tickets(*)").eq("id", id!).single();
+        .from("events").select("*, fight_slots(*)").eq("id", id!).single();
       if (error) throw error;
       return data;
+    },
+    enabled: !!id,
+  });
+
+  const { data: eventTickets = [] } = useQuery({
+    queryKey: ["event-public-tickets", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tickets")
+        .select("*")
+        .eq("event_id", id!)
+        .order("price", { ascending: true });
+      if (error) throw error;
+      return data ?? [];
     },
     enabled: !!id,
   });
@@ -738,7 +752,7 @@ export default function EventDetail() {
                 {/* RIGHT column (sticky on lg+) */}
                 <aside className="lg:sticky lg:top-[80px] lg:self-start space-y-4">
                   {(() => {
-                    const tickets = (event as any).tickets ?? [];
+                    const tickets = eventTickets;
                     const now = new Date();
                     const activeTickets = tickets.filter((t: any) =>
                       (!t.sales_start || new Date(t.sales_start) <= now) &&
