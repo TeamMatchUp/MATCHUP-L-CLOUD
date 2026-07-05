@@ -109,7 +109,7 @@ export function OrganiserOverviewHero() {
               <div className="flex-1 rounded-full overflow-hidden" style={{ height: 14, background: "rgba(255,255,255,0.08)" }}>
                 <div
                   className="rounded-full transition-all"
-                  style={{ width: `${progressPct}%`, height: 14, background: "#ef4444", boxShadow: "0 0 10px rgba(239,68,68,0.3)", transition: "width 0.4s ease" }}
+                  style={{ width: `${progressPct}%`, height: 14, background: "hsl(var(--primary))", boxShadow: "0 0 10px rgba(239,68,68,0.3)", transition: "width 0.4s ease" }}
                 />
               </div>
               <span className="text-base font-bold text-primary">{progressPct}%</span>

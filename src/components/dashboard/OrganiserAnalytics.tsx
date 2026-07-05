@@ -160,7 +160,7 @@ export function OrganiserAnalyticsShared({ userId, title = "Analytics" }: Organi
                     e.status === "published"
                       ? "rgba(34,197,94,0.15)"
                       : "rgba(139,144,158,0.15)",
-                  color: e.status === "published" ? "#22c55e" : ANALYTICS_TOKENS.TEXT_MUTED,
+                  color: e.status === "published" ? "hsl(var(--success))" : ANALYTICS_TOKENS.TEXT_MUTED,
                   letterSpacing: "0.08em",
                 }}
               >
@@ -307,7 +307,7 @@ export function OrganiserAnalyticsShared({ userId, title = "Analytics" }: Organi
                     {e.date ? format(new Date(e.date), "d MMM yyyy") : "—"}
                   </td>
                   <td className="py-3 pr-3 text-right">{slots.length}</td>
-                  <td className="py-3 pr-3 text-right" style={{ color: "#22c55e" }}>
+                  <td className="py-3 pr-3 text-right" style={{ color: "hsl(var(--success))" }}>
                     {conf}
                   </td>
                   <td className="py-3 pr-3 text-right" style={{ color: "#f59e0b" }}>

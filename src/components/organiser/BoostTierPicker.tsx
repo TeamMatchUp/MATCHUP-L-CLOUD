@@ -60,8 +60,8 @@ export function BoostTierPicker({
                     right: 8,
                     fontSize: 9,
                     fontWeight: 700,
-                    color: "hsl(var(--background))",
-                    background: "#ef4444",
+                    color: "hsl(var(--primary-foreground))",
+                    background: "hsl(var(--primary))",
                     padding: "2px 6px",
                     borderRadius: 999,
                     letterSpacing: "0.05em",
@@ -80,13 +80,13 @@ export function BoostTierPicker({
                     width: 18,
                     height: 18,
                     borderRadius: "50%",
-                    background: "#ef4444",
+                    background: "hsl(var(--primary))",
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Check style={{ width: 12, height: 12, color: "hsl(var(--background))" }} />
+                  <Check style={{ width: 12, height: 12, color: "hsl(var(--primary-foreground))" }} />
                 </span>
               )}
               <div style={{ marginTop: 16 }}>
@@ -108,7 +108,7 @@ export function BoostTierPicker({
                   marginTop: 14,
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontSize: 28,
-                  color: "#ef4444",
+                  color: "hsl(var(--primary))",
                   lineHeight: 1,
                   letterSpacing: "0.02em",
                 }}
@@ -151,8 +151,8 @@ export function BoostTierPicker({
           onClick={() => onConfirm(selected)}
           disabled={isSubmitting}
           style={{
-            background: "#ef4444",
-            color: "hsl(var(--background))",
+            background: "hsl(var(--primary))",
+            color: "hsl(var(--primary-foreground))",
             padding: "10px 22px",
             borderRadius: 8,
             fontSize: 14,

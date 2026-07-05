@@ -17,8 +17,8 @@ function PartyPill({ label, status }: PartyPillProps) {
     );
   }
   const styles: Record<SideStatus, { bg: string; fg: string; text: string }> = {
-    accepted: { bg: "rgba(239,68,68,0.18)", fg: "#ef4444", text: "Accepted" },
-    declined: { bg: "rgba(239,68,68,0.16)", fg: "#ef4444", text: "Declined" },
+    accepted: { bg: "rgba(239,68,68,0.18)", fg: "hsl(var(--primary))", text: "Accepted" },
+    declined: { bg: "rgba(239,68,68,0.16)", fg: "hsl(var(--primary))", text: "Declined" },
     awaiting: { bg: "hsl(var(--muted))", fg: "hsl(var(--muted-foreground))", text: "Awaiting" },
   };
   const s = styles[status];

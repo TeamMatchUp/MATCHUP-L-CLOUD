@@ -135,11 +135,11 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                   <div className="min-w-0">
                     <span className="block truncate" style={{ fontSize: 14, fontWeight: 600, color: "hsl(var(--foreground))", lineHeight: 1.2 }}>{ticket.ticket_type}</span>
                     {soldOut ? (
-                      <span style={{ fontSize: 11, color: "#ef4444" }}>Sold Out</span>
+                      <span style={{ fontSize: 11, color: "hsl(var(--primary))" }}>Sold Out</span>
                     ) : ticket.quantity_available != null && ticket.quantity_available < 20 ? (
                       <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} left</span>
                     ) : (
-                      <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
+                      <span style={{ fontSize: 11, color: "hsl(var(--success))" }}>Available</span>
                     )}
                   </div>
                 </div>
@@ -147,13 +147,13 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                 {/* Price (col 2) */}
                 <div style={{ minWidth: 60, textAlign: "right" }}>
                   {ticket.price != null && (
-                    <span style={{ fontSize: 16, fontWeight: 700, color: "#ef4444", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: "hsl(var(--primary))", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
                   )}
                 </div>
 
                 {/* Qty + CTA (col 3) */}
                 {soldOut ? (
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#ef4444" }}>Sold Out</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "hsl(var(--primary))" }}>Sold Out</span>
                 ) : ticketUrl ? (
                   <a
                     href={ticketUrl}
@@ -162,7 +162,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                     onClick={(e) => e.stopPropagation()}
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
-                      background: "#ef4444", color: "hsl(var(--background))", borderRadius: 8, textDecoration: "none",
+                      background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", borderRadius: 8, textDecoration: "none",
                     }}
                   >
                     <ShoppingCart style={{ width: 14, height: 14 }} /> Buy
@@ -193,7 +193,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                       disabled={qty <= 0}
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
-                        background: qty <= 0 ? "rgba(239,68,68,0.3)" : "#ef4444", color: "hsl(var(--background))", borderRadius: 8, border: "none",
+                        background: qty <= 0 ? "rgba(239,68,68,0.3)" : "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", borderRadius: 8, border: "none",
                         cursor: qty <= 0 ? "not-allowed" : "pointer", marginLeft: 4,
                       }}
                     >
@@ -541,7 +541,7 @@ export default function EventDetail() {
             onClick={() => navigate(`/organiser/events/${id}`)}
             style={{
               display: "inline-flex", alignItems: "center", gap: 6,
-              background: "#ef4444", color: "hsl(var(--background))",
+              background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))",
               fontSize: 12, fontWeight: 700, borderRadius: 8,
               padding: "6px 12px", border: "none", cursor: "pointer", whiteSpace: "nowrap",
             }}
@@ -556,7 +556,7 @@ export default function EventDetail() {
           style={{
             position: "fixed", top: 72, right: 16, zIndex: 28,
             display: "inline-flex", alignItems: "center", gap: 6,
-            background: "#ef4444", color: "hsl(var(--background))",
+            background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))",
             fontSize: 12, fontWeight: 700, borderRadius: 999,
             padding: "6px 14px", border: "none", cursor: "pointer", whiteSpace: "nowrap",
             boxShadow: "0 4px 12px rgba(0,0,0,0.4)",

@@ -37,7 +37,7 @@ export function PlatformStatsStrip() {
     <section
       className="py-14 sm:py-16 relative"
       style={{
-        backgroundColor: "#0b0d12",
+        backgroundColor: "hsl(var(--background))",
         boxShadow:
           "inset 0 1px 0 rgba(255,255,255,0.03), inset 0 -1px 0 rgba(255,255,255,0.03)",
       }}

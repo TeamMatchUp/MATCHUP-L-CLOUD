@@ -41,7 +41,7 @@ class AdminErrorBoundary extends Component<
     if (this.state.hasError) {
       return (
         <div style={{ padding: 40, color: "hsl(var(--foreground))", background: "hsl(var(--background))", minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
-          <h2 style={{ color: "#ef4444", fontFamily: "Bebas Neue, sans-serif", fontSize: 28 }}>Admin page error</h2>
+          <h2 style={{ color: "hsl(var(--primary))", fontFamily: "Bebas Neue, sans-serif", fontSize: 28 }}>Admin page error</h2>
           <pre style={{ color: "hsl(var(--muted-foreground))", fontSize: 12, whiteSpace: "pre-wrap", marginTop: 16 }}>
             {this.state.error?.toString()}
             {this.state.errorInfo?.componentStack}

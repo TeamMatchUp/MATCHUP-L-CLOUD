@@ -32,8 +32,8 @@ const INSET = "hsl(var(--muted))";
 const TEXT = "hsl(var(--foreground))";
 const MUTED = "hsl(var(--muted-foreground))";
 const DIM = "hsl(var(--muted-foreground))";
-const GREEN = "#22c55e";
-const RED = "#ef4444";
+const GREEN = "hsl(var(--success))";
+const RED = "hsl(var(--primary))";
 const CARD_SHADOW = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)";
 const INSET_SHADOW = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)";
 
@@ -669,7 +669,7 @@ export default function FighterDetail() {
                             <div key={i} style={{
                               width: 22, height: 22, borderRadius: "50%",
                               background: r === "W" ? GREEN : r === "L" ? RED : MUTED,
-                              color: "hsl(var(--background))", fontSize: 11, fontWeight: 800,
+                              color: "hsl(var(--primary-foreground))", fontSize: 11, fontWeight: 800,
                               display: "flex", alignItems: "center", justifyContent: "center",
                             }}>{r}</div>
                           ))}

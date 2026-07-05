@@ -36,12 +36,12 @@ export function EventKpiStrip({ eventId, confirmedCount, openSlotCount }: Props)
     {
       label: "Tickets Available",
       value: ticketData ? String(ticketData.totalCapacity) : "—",
-      color: "#ef4444",
+      color: "hsl(var(--primary))",
     },
     {
       label: "Est. Revenue",
       value: ticketData ? formatCurrency(ticketData.estRevenue) : "—",
-      color: "#22c55e",
+      color: "hsl(var(--success))",
     },
     { label: "Matched Fights", value: String(confirmedCount), color: "hsl(var(--foreground))" },
     { label: "Open Slots", value: String(openSlotCount), color: "hsl(var(--foreground))" },

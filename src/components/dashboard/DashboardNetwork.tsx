@@ -173,7 +173,7 @@ export function DashboardNetwork() {
                   {item.role && (
                     <span
                       style={{
-                        fontSize: 10, fontWeight: 600, color: "#ef4444",
+                        fontSize: 10, fontWeight: 600, color: "hsl(var(--primary))",
                         background: "rgba(239,68,68,0.1)",
                         borderRadius: 4, padding: "2px 6px",
                       }}
@@ -187,7 +187,7 @@ export function DashboardNetwork() {
                 <button
                   onClick={(e) => { e.stopPropagation(); handleUnfollow(item.userId); }}
                   style={{
-                    fontSize: 11, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)",
+                    fontSize: 11, fontWeight: 600, color: "hsl(var(--primary))", background: "rgba(239,68,68,0.1)",
                     borderRadius: 6, padding: "4px 10px",
                     cursor: "pointer", transition: "all 0.15s",
                   }}
@@ -216,7 +216,7 @@ export function DashboardNetwork() {
               className="text-left rounded-lg p-4 transition-all"
               style={{ background: "hsl(var(--muted))", border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}
             >
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#ef4444" }}>
+              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "hsl(var(--primary))" }}>
                 {followerCount}
               </span>
               <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>Followers</p>
@@ -226,7 +226,7 @@ export function DashboardNetwork() {
               className="text-left rounded-lg p-4 transition-all"
               style={{ background: "hsl(var(--muted))", border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}
             >
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#ef4444" }}>
+              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "hsl(var(--primary))" }}>
                 {followingCount}
               </span>
               <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>Following</p>

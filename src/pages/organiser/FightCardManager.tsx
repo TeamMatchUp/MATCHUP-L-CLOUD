@@ -102,9 +102,9 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
   }
 
   const statusBadge = (s: string) => {
-    if (s === "confirmed") return <span style={{ fontSize: 10, background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Confirmed</span>;
+    if (s === "confirmed") return <span style={{ fontSize: 10, background: "rgba(34,197,94,0.15)", color: "hsl(var(--success))", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Confirmed</span>;
     if (s === "proposed" || s === "pending") return <span style={{ fontSize: 10, background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Pending</span>;
-    if (s === "declined") return <span style={{ fontSize: 10, background: "rgba(239,68,68,0.15)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Declined</span>;
+    if (s === "declined") return <span style={{ fontSize: 10, background: "rgba(239,68,68,0.15)", color: "hsl(var(--primary))", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Declined</span>;
     return null;
   };
 
@@ -160,7 +160,7 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
         {/* Fighters row */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {fighterBlock(fA, "a", "left")}
-          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#ef4444", flexShrink: 0 }}>VS</span>
+          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "hsl(var(--primary))", flexShrink: 0 }}>VS</span>
           {fighterBlock(fB, "b", "right")}
         </div>
 
@@ -189,7 +189,7 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
             style={{
               fontSize: 10,
               fontWeight: 600,
-              color: "#ef4444",
+              color: "hsl(var(--primary))",
               background: "transparent",
               border: "1px solid rgba(239,68,68,0.3)",
               borderRadius: 6,
@@ -365,7 +365,7 @@ export default function FightCardManager() {
         <h2 style={{
           fontFamily: "'Bebas Neue', sans-serif",
           fontSize: 18,
-          color: isMain ? "#ef4444" : "hsl(var(--foreground))",
+          color: isMain ? "hsl(var(--primary))" : "hsl(var(--foreground))",
           letterSpacing: "0.04em",
         }}>
           {isMain ? "MAIN CARD" : "UNDERCARD"}
@@ -380,7 +380,7 @@ export default function FightCardManager() {
             cursor: "pointer",
             transition: "all 0.2s",
             ...(isMain
-              ? { background: "#ef4444", color: "hsl(var(--background))", border: "none", boxShadow: "0 0 12px rgba(239,68,68,0.25)" }
+              ? { background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", border: "none", boxShadow: "0 0 12px rgba(239,68,68,0.25)" }
               : { background: "transparent", color: "hsl(var(--foreground))", border: "1px solid rgba(255,255,255,0.1)" }
             ),
           }}
@@ -389,7 +389,7 @@ export default function FightCardManager() {
             else e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)";
           }}
           onMouseLeave={(e) => {
-            if (isMain) e.currentTarget.style.background = "#ef4444";
+            if (isMain) e.currentTarget.style.background = "hsl(var(--primary))";
             else e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
           }}
         >
@@ -435,7 +435,7 @@ export default function FightCardManager() {
               <div className="flex gap-2 flex-wrap">
                 <button onClick={() => setShowEditEvent(true)} style={{
                   padding: "8px 16px", fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: "pointer",
-                  background: "transparent", border: "1px solid rgba(239,68,68,0.4)", color: "#ef4444",
+                  background: "transparent", border: "1px solid rgba(239,68,68,0.4)", color: "hsl(var(--primary))",
                   transition: "all 0.2s",
                 }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
@@ -449,7 +449,7 @@ export default function FightCardManager() {
                   background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "hsl(var(--muted-foreground))",
                   textDecoration: "none", transition: "all 0.2s",
                 }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; e.currentTarget.style.color = "#ef4444"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; e.currentTarget.style.color = "hsl(var(--primary))"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "hsl(var(--muted-foreground))"; }}
                 >
                   <Eye className="h-3.5 w-3.5" /> Preview public page
@@ -555,7 +555,7 @@ export default function FightCardManager() {
                 if (pendingDeleteId) await handleDelete(pendingDeleteId);
                 setPendingDeleteId(null);
               }}
-              style={{ background: "#ef4444", color: "#fff" }}
+              style={{ background: "hsl(var(--primary))", color: "#fff" }}
             >
               Delete
             </AlertDialogAction>

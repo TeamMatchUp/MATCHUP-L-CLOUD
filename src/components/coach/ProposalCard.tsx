@@ -59,7 +59,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
             {fighterA?.record_wins}W-{fighterA?.record_losses}L-{fighterA?.record_draws}D
           </p>
         </div>
-        <span className="font-heading text-lg" style={{ color: "#ef4444" }}>VS</span>
+        <span className="font-heading text-lg" style={{ color: "hsl(var(--primary))" }}>VS</span>
         <div className="flex-1 text-right">
           <p className="font-heading text-lg" style={{ color: "hsl(var(--foreground))" }}>{fighterB?.name || "TBD"}</p>
           <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -72,7 +72,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
         size="sm"
         onClick={() => navigate(`/proposals/${proposal.id}`)}
         className="gap-1"
-        style={{ background: "#ef4444", color: "hsl(var(--background))" }}
+        style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
       >
         View proposal <ArrowRight className="h-3 w-3" />
       </Button>

@@ -102,8 +102,8 @@ function scorePairForAnchor(anchor: FighterProfile, opponent: FighterProfile): {
 }
 
 const SLIDER_COLORS = {
-  comp: "#ef4444",
-  ent: "#22c55e",
+  comp: "hsl(var(--primary))",
+  ent: "hsl(var(--success))",
   style: "#3b82f6",
   narr: "#a855f7",
 };
@@ -345,7 +345,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
             fontSize: 12, fontWeight: 600, cursor: "pointer", border: "none",
             backdropFilter: "blur(8px)",
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.18)"; e.currentTarget.style.color = "#ef4444"; }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.18)"; e.currentTarget.style.color = "hsl(var(--primary))"; }}
           onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.color = "hsl(var(--foreground))"; }}
         >
           <X style={{ width: 14, height: 14 }} /> Close
@@ -362,9 +362,9 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
         {/* Header */}
         <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 24, color: "hsl(var(--foreground))", letterSpacing: "0.04em" }}>
           {anchorFighter ? (
-            <>SUGGESTED <span style={{ color: "#ef4444" }}>MATCHES</span></>
+            <>SUGGESTED <span style={{ color: "hsl(var(--primary))" }}>MATCHES</span></>
           ) : (
-            <>SUGGESTED <span style={{ color: "#ef4444" }}>FIGHTS</span></>
+            <>SUGGESTED <span style={{ color: "hsl(var(--primary))" }}>FIGHTS</span></>
           )}
         </h2>
 
@@ -373,7 +373,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
           <div style={{
             background: "rgba(239,68,68,0.06)", borderRadius: 8, padding: "12px 16px",
           }}>
-            <p style={{ fontSize: 9, color: "#ef4444", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
+            <p style={{ fontSize: 9, color: "hsl(var(--primary))", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
               Anchor fighter
             </p>
             <p style={{ fontSize: 14, fontWeight: 600, color: "hsl(var(--foreground))" }}>
@@ -388,7 +388,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
 
         {effectiveWeightClass && (
           <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>
-            Filtering for <span style={{ color: "#ef4444", fontWeight: 600 }}>{formatEnum(effectiveWeightClass)}</span>
+            Filtering for <span style={{ color: "hsl(var(--primary))", fontWeight: 600 }}>{formatEnum(effectiveWeightClass)}</span>
           </p>
         )}
 
@@ -409,12 +409,12 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                 onClick={() => applyPreset(key)}
                 style={{
                   background: selectedPreset === key ? "rgba(239,68,68,0.12)" : "hsl(var(--muted))",
-                  color: selectedPreset === key ? "#ef4444" : "hsl(var(--muted-foreground))",
+                  color: selectedPreset === key ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
                   borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, border: "none",
                   boxShadow: selectedPreset === key ? "inset 3px 0 0 #ef4444" : "none",
                   cursor: "pointer", transition: "all 0.15s",
                 }}
-                onMouseEnter={(e) => { if (selectedPreset !== key) e.currentTarget.style.background = "#1e2330"; }}
+                onMouseEnter={(e) => { if (selectedPreset !== key) e.currentTarget.style.background = "hsl(var(--muted))"; }}
                 onMouseLeave={(e) => { if (selectedPreset !== key) e.currentTarget.style.background = "hsl(var(--muted))"; }}
               >
                 {preset.label}
@@ -432,7 +432,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                   borderRadius: 8, padding: "7px 14px", fontSize: 12, fontWeight: 600, border: "none",
                   cursor: "pointer", transition: "all 0.15s", display: "inline-flex", alignItems: "center", gap: 6,
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2330"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "hsl(var(--muted))"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
               >
                 <RefreshCw style={{ width: 12, height: 12 }} />
@@ -488,7 +488,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
           {/* Relative weight stacked bar */}
           {!allZero && (
             <div style={{ marginTop: 12 }}>
-              <div className="flex" style={{ height: 6, borderRadius: 3, overflow: "hidden", background: "#1e2330" }}>
+              <div className="flex" style={{ height: 6, borderRadius: 3, overflow: "hidden", background: "hsl(var(--muted))" }}>
                 {weightBarSegments.map((seg) => (
                   <div key={seg.key} style={{ width: `${seg.pct}%`, background: seg.color, transition: "width 0.3s ease" }} />
                 ))}
@@ -506,7 +506,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
           )}
 
           {allZero && (
-            <p style={{ fontSize: 11, color: "#ef4444", marginTop: 6 }}>Set at least one dimension above 0</p>
+            <p style={{ fontSize: 11, color: "hsl(var(--primary))", marginTop: 6 }}>Set at least one dimension above 0</p>
           )}
         </div>
 
@@ -524,7 +524,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                   onClick={() => toggleExpTier(t)}
                   style={{
                     background: expTiers.has(t) ? "rgba(239,68,68,0.12)" : "hsl(var(--muted))",
-                    color: expTiers.has(t) ? "#ef4444" : "hsl(var(--muted-foreground))",
+                    color: expTiers.has(t) ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
                     borderRadius: 8, padding: "6px 12px", fontSize: 12, fontWeight: 600, border: "none",
                     cursor: "pointer", transition: "all 0.15s",
                   }}
@@ -564,7 +564,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
           <div style={{ marginBottom: 10 }}>
             <div className="flex justify-between" style={{ fontSize: 11, marginBottom: 4 }}>
               <span style={{ color: "hsl(var(--muted-foreground))" }}>Min Finish Rate</span>
-              <span style={{ color: "#ef4444", fontWeight: 600 }}>{minFinishRate}%</span>
+              <span style={{ color: "hsl(var(--primary))", fontWeight: 600 }}>{minFinishRate}%</span>
             </div>
             <Slider value={[minFinishRate]} min={0} max={100} step={5} onValueChange={([v]) => { setMinFinishRate(v); setSettingsChanged(true); }} />
           </div>
@@ -591,8 +591,8 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
             disabled={allZero}
             style={{
               width: "100%", padding: "12px 0", borderRadius: 8, border: "none",
-              background: allZero ? "rgba(239,68,68,0.3)" : "#ef4444",
-              color: "hsl(var(--background))", fontSize: 14, fontWeight: 600, cursor: allZero ? "not-allowed" : "pointer",
+              background: allZero ? "rgba(239,68,68,0.3)" : "hsl(var(--primary))",
+              color: "hsl(var(--primary-foreground))", fontSize: 14, fontWeight: 600, cursor: allZero ? "not-allowed" : "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               boxShadow: allZero ? "none" : "0 0 12px rgba(239,68,68,0.25)",
             }}
@@ -604,7 +604,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
       </div>
 
       {/* ═══ RIGHT COLUMN — Results ═══ */}
-      <div className="flex-1 flex flex-col md:overflow-y-auto" style={{ background: "#0d1018", padding: "28px 24px" }}>
+      <div className="flex-1 flex flex-col md:overflow-y-auto" style={{ background: "hsl(var(--background))", padding: "28px 24px" }}>
         {/* Header row */}
         <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
           <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "hsl(var(--foreground))" }}>
@@ -617,7 +617,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
 
         {anchorFighter && (
           <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 12 }}>
-            Suggested opponents for <span style={{ color: "#ef4444", fontWeight: 600 }}>{anchorFighter.name}</span>
+            Suggested opponents for <span style={{ color: "hsl(var(--primary))", fontWeight: 600 }}>{anchorFighter.name}</span>
           </p>
         )}
 
@@ -682,7 +682,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
                     transition: "all 0.2s ease", cursor: "default",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.background = "#1e2330"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3), 0 0 0 1px rgba(239,68,68,0.08)"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "hsl(var(--muted))"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3), 0 0 0 1px rgba(239,68,68,0.08)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "hsl(var(--muted))"; e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)"; }}
                 >
                   {/* Fighter name */}
@@ -694,10 +694,10 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                   <div style={{ marginTop: 10 }}>
                     <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
                       <span style={{ fontSize: 9, color: "hsl(var(--muted-foreground))", textTransform: "uppercase", letterSpacing: "0.05em" }}>Match Score vs {anchorFighter.name}</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#ef4444" }}>{compositeScore.toFixed(0)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "hsl(var(--primary))" }}>{compositeScore.toFixed(0)}</span>
                     </div>
-                    <div style={{ height: 3, borderRadius: 2, background: "#1e2330" }}>
-                      <div style={{ width: `${compositeScore}%`, height: "100%", borderRadius: 2, background: "#ef4444", transition: "width 0.3s" }} />
+                    <div style={{ height: 3, borderRadius: 2, background: "hsl(var(--muted))" }}>
+                      <div style={{ width: `${compositeScore}%`, height: "100%", borderRadius: 2, background: "hsl(var(--primary))", transition: "width 0.3s" }} />
                     </div>
                   </div>
 
@@ -722,7 +722,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                       onClick={() => handleSelect(f, anchorFighter)}
                       disabled={allZero}
                       style={{
-                        background: "rgba(239,68,68,0.12)", color: "#ef4444", borderRadius: 6,
+                        background: "rgba(239,68,68,0.12)", color: "hsl(var(--primary))", borderRadius: 6,
                         padding: "5px 14px", fontSize: 12, fontWeight: 600, border: "none",
                         cursor: allZero ? "not-allowed" : "pointer", transition: "all 0.15s",
                         display: "flex", alignItems: "center", gap: 4,
@@ -759,7 +759,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                   <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", gap: 12 }}>
                     {[pair.fighterA, pair.fighterB].map((fighter: FighterProfile, idx: number) => (
                       <div key={fighter.id + idx} style={{
-                        background: "#1e2330", borderRadius: 10, padding: 12,
+                        background: "hsl(var(--muted))", borderRadius: 10, padding: 12,
                         order: idx === 0 ? 1 : 3,
                         minWidth: 0,
                       }}>
@@ -768,22 +768,22 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                           {formatEnum(fighter.weight_class)}
                           {fighter.style && ` · ${formatEnum(fighter.style)}`}
                         </p>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: "#ef4444", marginTop: 6 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: "hsl(var(--primary))", marginTop: 6 }}>
                           {fighter.record_wins}-{fighter.record_losses}-{fighter.record_draws}
                         </p>
                       </div>
                     ))}
-                    <span style={{ order: 2, fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#ef4444", textAlign: "center" }}>VS</span>
+                    <span style={{ order: 2, fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "hsl(var(--primary))", textAlign: "center" }}>VS</span>
                   </div>
 
                   {/* Compatibility score bar */}
                   <div style={{ marginTop: 12 }}>
                     <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
                       <span style={{ fontSize: 9, color: "hsl(var(--muted-foreground))", textTransform: "uppercase", letterSpacing: "0.05em" }}>Compatibility</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#ef4444" }}>{compositeScore.toFixed(0)} / 100</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "hsl(var(--primary))" }}>{compositeScore.toFixed(0)} / 100</span>
                     </div>
-                    <div style={{ height: 4, borderRadius: 2, background: "#1e2330" }}>
-                      <div style={{ width: `${compositeScore}%`, height: "100%", borderRadius: 2, background: "#ef4444", transition: "width 0.3s" }} />
+                    <div style={{ height: 4, borderRadius: 2, background: "hsl(var(--muted))" }}>
+                      <div style={{ width: `${compositeScore}%`, height: "100%", borderRadius: 2, background: "hsl(var(--primary))", transition: "width 0.3s" }} />
                     </div>
                     <p style={{ fontSize: 10, color: "hsl(var(--muted-foreground))", marginTop: 6 }}>
                       Elo Δ{eloDelta} · {pair.reason}
@@ -848,7 +848,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                           onClick={() => setOpenWhyId(open ? null : pairId)}
                           style={{
                             background: "transparent", border: "none", padding: "4px 0",
-                            color: "#ef4444", fontSize: 11, fontWeight: 600,
+                            color: "hsl(var(--primary))", fontSize: 11, fontWeight: 600,
                             display: "inline-flex", alignItems: "center", gap: 4, cursor: "pointer",
                           }}
                           aria-expanded={open}
@@ -902,7 +902,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                                     {bar.pct}%
                                   </span>
                                 </div>
-                                <div style={{ height: 4, borderRadius: 2, background: "#1e2330", overflow: "hidden" }}>
+                                <div style={{ height: 4, borderRadius: 2, background: "hsl(var(--muted))", overflow: "hidden" }}>
                                   <div style={{
                                     width: `${bar.pct}%`,
                                     height: "100%",
@@ -921,7 +921,7 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                               {chips.map((label) => (
                                 <span key={label} style={{
                                   background: "rgba(34,197,94,0.12)",
-                                  color: "#22c55e",
+                                  color: "hsl(var(--success))",
                                   fontSize: 10,
                                   fontWeight: 600,
                                   padding: "3px 8px",
@@ -975,8 +975,8 @@ export function MatchSuggestionsPanel({ slot, existingProposalFighterIds, onSele
                       onClick={() => handleSelect(pair.fighterA, pair.fighterB)}
                       disabled={allZero}
                       style={{
-                        background: allZero ? "rgba(239,68,68,0.3)" : "#ef4444",
-                        color: "hsl(var(--background))", borderRadius: 6,
+                        background: allZero ? "rgba(239,68,68,0.3)" : "hsl(var(--primary))",
+                        color: "hsl(var(--primary-foreground))", borderRadius: 6,
                         padding: "6px 16px", fontSize: 12, fontWeight: 700, border: "none",
                         cursor: allZero ? "not-allowed" : "pointer", transition: "all 0.15s",
                         display: "inline-flex", alignItems: "center", gap: 4,

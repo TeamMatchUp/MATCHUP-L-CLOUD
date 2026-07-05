@@ -15,9 +15,9 @@ import { format } from "date-fns";
 type FilterMode = "all" | "pro" | "amateur";
 
 const COLORS = {
-  wins: "#22c55e",
+  wins: "hsl(var(--success))",
   draws: "#f59e0b",
-  losses: "#ef4444",
+  losses: "hsl(var(--primary))",
 };
 
 function ActiveShape(props: any) {
@@ -290,8 +290,8 @@ export function FighterRecordHero() {
             {last5.map((fight, i) => {
               const result = getFightResult(fight);
               const styles = {
-                W: { bg: "rgba(34,197,94,0.2)", border: "#22c55e", color: "#22c55e" },
-                L: { bg: "rgba(239,68,68,0.15)", border: "#ef4444", color: "#ef4444" },
+                W: { bg: "rgba(34,197,94,0.2)", border: "hsl(var(--success))", color: "hsl(var(--success))" },
+                L: { bg: "rgba(239,68,68,0.15)", border: "hsl(var(--primary))", color: "hsl(var(--primary))" },
                 D: { bg: "rgba(245,158,11,0.15)", border: "#f59e0b", color: "#f59e0b" },
               }[result] || { bg: "rgba(245,158,11,0.15)", border: "#f59e0b", color: "#f59e0b" };
 
@@ -352,7 +352,7 @@ export function FighterRecordHero() {
                   className="font-bold transition-colors duration-150"
                   style={{
                     fontSize: 28,
-                    color: hoveredStat === stat.key ? "#ef4444" : "hsl(var(--foreground))",
+                    color: hoveredStat === stat.key ? "hsl(var(--primary))" : "hsl(var(--foreground))",
                   }}
                 >
                   {stat.value}

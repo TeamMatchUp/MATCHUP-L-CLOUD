@@ -24,14 +24,14 @@ import { formatEnum } from "@/lib/format";
 const PAGE_BG = "hsl(var(--background))";
 const CARD = "hsl(var(--card))";
 const RAISED = "hsl(var(--muted))";
-const ACCENT = "#ef4444";
+const ACCENT = "hsl(var(--primary))";
 const ACCENT_DIM = "rgba(239,68,68,0.12)";
 const TEXT = "hsl(var(--foreground))";
 const TEXT_SEC = "hsl(var(--muted-foreground))";
 const TEXT_MUTED = "hsl(var(--muted-foreground))";
-const SUCCESS = "#22c55e";
+const SUCCESS = "hsl(var(--success))";
 const WARNING = "#f59e0b";
-const DANGER = "#ef4444";
+const DANGER = "hsl(var(--primary))";
 
 const CARD_SHADOW =
   "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)";
@@ -111,7 +111,7 @@ function GhostButton({ children, onClick, href, icon: Icon }: {
     background: RAISED, color: TEXT, border: "none", cursor: "pointer",
     textDecoration: "none", transition: "background 0.15s",
   };
-  const onEnter = (e: any) => (e.currentTarget.style.background = "#1e2330");
+  const onEnter = (e: any) => (e.currentTarget.style.background = "hsl(var(--muted))");
   const onLeave = (e: any) => (e.currentTarget.style.background = RAISED);
   if (href) {
     return (
@@ -134,7 +134,7 @@ function GoldButton({ children, onClick, icon: Icon, size = "md" }: {
     display: "inline-flex", alignItems: "center", gap: 6,
     padding: size === "sm" ? "7px 12px" : "9px 14px",
     fontSize: size === "sm" ? 12 : 13, fontWeight: 700, borderRadius: 10,
-    background: ACCENT, color: "hsl(var(--background))", border: "none", cursor: "pointer",
+    background: ACCENT, color: "hsl(var(--primary-foreground))", border: "none", cursor: "pointer",
     boxShadow: "0 0 16px rgba(239,68,68,0.25)", transition: "background 0.15s",
   };
   return (

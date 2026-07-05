@@ -155,7 +155,7 @@ export function Header() {
                 <ShoppingCart style={{ width: 20, height: 20 }} />
                 <span style={{
                   position: "absolute", top: -6, right: -8,
-                  background: "#ef4444", color: "hsl(var(--background))",
+                  background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))",
                   fontSize: 10, fontWeight: 700, borderRadius: 9999,
                   width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
                 }}>{basketCount}</span>
@@ -231,7 +231,7 @@ export function Header() {
               <ShoppingCart style={{ width: 20, height: 20 }} />
               <span style={{
                 position: "absolute", top: -6, right: -8,
-                background: "#ef4444", color: "hsl(var(--background))",
+                background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))",
                 fontSize: 10, fontWeight: 700, borderRadius: 9999,
                 width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center",
               }}>{basketCount}</span>
@@ -287,7 +287,7 @@ export function Header() {
                 <button
                   onClick={() => { handleSignOut(); setMobileOpen(false); }}
                   className="flex items-center gap-2 w-full text-left"
-                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#ef4444", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "hsl(var(--primary))", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   <LogOut style={{ width: 16, height: 16 }} />
                   SIGN OUT
@@ -307,7 +307,7 @@ export function Header() {
                 <button
                   onClick={() => { openAuthModal("signup"); setMobileOpen(false); }}
                   className="text-left"
-                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "#ef4444", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+                  style={{ padding: "16px 20px", fontFamily: "Inter, sans-serif", fontWeight: 500, fontSize: 15, color: "hsl(var(--primary))", borderBottom: "1px solid rgba(255,255,255,0.04)" }}
                 >
                   CREATE ACCOUNT
                 </button>

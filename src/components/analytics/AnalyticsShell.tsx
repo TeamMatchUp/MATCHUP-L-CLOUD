@@ -24,7 +24,7 @@ interface AnalyticsShellProps {
 
 const CARD_BG = "hsl(var(--card))";
 const PAGE_BG = "hsl(var(--background))";
-const GOLD = "#ef4444";
+const GOLD = "hsl(var(--primary))";
 const GOLD_DIM = "rgba(239,68,68,0.12)";
 const TEXT_MUTED = "hsl(var(--muted-foreground))";
 const RAISED = "hsl(var(--muted))";

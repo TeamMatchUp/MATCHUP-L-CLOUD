@@ -159,7 +159,7 @@ export function FighterSearchDropdown({
         cursor: "pointer",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = "#1e2330";
+        e.currentTarget.style.background = "hsl(var(--muted))";
         e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3), 0 0 0 1px rgba(239,68,68,0.18)";
       }}
       onMouseLeave={(e) => {
@@ -176,7 +176,7 @@ export function FighterSearchDropdown({
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
           <span style={{
-            display: "inline-block", fontSize: 10, fontWeight: 600, color: "#ef4444",
+            display: "inline-block", fontSize: 10, fontWeight: 600, color: "hsl(var(--primary))",
             background: "rgba(239,68,68,0.1)", borderRadius: 4, padding: "2px 8px",
           }}>
             {formatEnum(f.weight_class)}
@@ -191,8 +191,8 @@ export function FighterSearchDropdown({
 
   const SectionDivider = ({ icon: Icon, label, count }: { icon: any; label: string; count: number }) => (
     <div className="flex items-center gap-2" style={{ padding: "4px 0" }}>
-      <Icon style={{ width: 12, height: 12, color: "#ef4444" }} />
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#ef4444" }}>
+      <Icon style={{ width: 12, height: 12, color: "hsl(var(--primary))" }} />
+      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "hsl(var(--primary))" }}>
         {label}
       </span>
       <span style={{ fontSize: 10, color: "hsl(var(--muted-foreground))" }}>· {count}</span>

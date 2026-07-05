@@ -64,7 +64,7 @@ export function ExploreBanner({ adImageUrl, adLinkUrl }: Props) {
           fontFamily: "Inter, sans-serif",
           fontWeight: 600,
           fontSize: 12,
-          color: "#ef4444",
+          color: "hsl(var(--primary))",
           background: "transparent",
           border: "1px solid rgba(239,68,68,0.3)",
           cursor: "pointer",

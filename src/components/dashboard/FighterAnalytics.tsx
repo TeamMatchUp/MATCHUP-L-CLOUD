@@ -120,8 +120,8 @@ export function FighterAnalyticsV2({ fighterProfile, title = "Analytics" }: { fi
             const resultColor = isDraw
               ? "hsl(var(--muted-foreground))"
               : isWin
-              ? "#22c55e"
-              : "#ef4444";
+              ? "hsl(var(--success))"
+              : "hsl(var(--primary))";
             const resultLabel = isDraw ? "DRAW" : isWin ? "WIN" : "LOSS";
             const opponent =
               f.opponent_name ||

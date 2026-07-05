@@ -85,13 +85,13 @@ export function NetworkModal({
               <div className="flex-1 min-w-0">
                 <span className="block truncate" style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))" }}>{item.name || "Unknown"}</span>
                 {item.role && (
-                  <span style={{ fontSize: 10, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)", borderRadius: 4, padding: "1px 6px", display: "inline-block", marginTop: 2 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "hsl(var(--primary))", background: "rgba(239,68,68,0.1)", borderRadius: 4, padding: "1px 6px", display: "inline-block", marginTop: 2 }}>
                     {ROLE_LABELS[item.role] || item.role}
                   </span>
                 )}
               </div>
               {type === "following" && (
-                <button onClick={(e) => { e.stopPropagation(); handleUnfollow(item.userId); }} style={{ fontSize: 11, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>
+                <button onClick={(e) => { e.stopPropagation(); handleUnfollow(item.userId); }} style={{ fontSize: 11, fontWeight: 600, color: "hsl(var(--primary))", background: "rgba(239,68,68,0.1)", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>
                   Unfollow
                 </button>
               )}

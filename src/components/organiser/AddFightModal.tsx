@@ -386,7 +386,7 @@ export function AddFightModal({
         e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
       }}
     >
-      <div style={{ color: "#ef4444", flexShrink: 0 }}>{icon}</div>
+      <div style={{ color: "hsl(var(--primary))", flexShrink: 0 }}>{icon}</div>
       <div className="flex-1 min-w-0">
         <p style={{ fontWeight: 600, fontSize: 15, color: "hsl(var(--foreground))" }}>{label}</p>
         <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>{desc}</p>
@@ -579,7 +579,7 @@ export function AddFightModal({
               <div style={{
                 background: "rgba(239,68,68,0.06)", borderRadius: 8, padding: "12px 16px", marginTop: 8, marginBottom: 4,
               }}>
-                <p style={{ fontSize: 9, color: "#ef4444", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
+                <p style={{ fontSize: 9, color: "hsl(var(--primary))", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
                   Anchor fighter
                 </p>
                 <p style={{ fontSize: 14, fontWeight: 600, color: "hsl(var(--foreground))" }}>
@@ -672,8 +672,8 @@ export function AddFightModal({
                   onClick={handleManualSave}
                   disabled={loading || (scenario === "oneTBA" ? !fighterA : (!fighterA && !fighterB))}
                   style={{
-                    background: "#ef4444",
-                    color: "hsl(var(--background))",
+                    background: "hsl(var(--primary))",
+                    color: "hsl(var(--primary-foreground))",
                     fontWeight: 600,
                     borderRadius: 8,
                   }}
@@ -720,8 +720,8 @@ export function AddFightModal({
                   onClick={handleOpenSlotSave}
                   disabled={loading}
                   style={{
-                    background: "#ef4444",
-                    color: "hsl(var(--background))",
+                    background: "hsl(var(--primary))",
+                    color: "hsl(var(--primary-foreground))",
                     fontWeight: 600,
                     borderRadius: 8,
                   }}
