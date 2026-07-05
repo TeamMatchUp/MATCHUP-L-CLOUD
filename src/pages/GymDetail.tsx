@@ -338,7 +338,7 @@ export default function GymDetail() {
                       <p className="text-sm text-foreground font-medium">You are a member of this gym</p>
                     </div>
                   ) : gym.claimed ? (
-                    <GymContactCTA gymId={gym.id} gymName={gym.name} coachId={gym.coach_id} />
+                    <GymContactCTA gymId={gym.id} gymName={gym.name} coachId={gym.coach_id} contactEmail={gym.contact_email} />
                   ) : null}
                 </div>
               )}

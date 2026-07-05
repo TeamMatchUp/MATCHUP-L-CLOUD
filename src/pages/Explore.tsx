@@ -37,6 +37,8 @@ import { FlagIcon, getCountryDisplayName } from "@/components/FlagIcon";
 import { Award } from "lucide-react";
 import { BoostedBadge } from "@/components/BoostedBadge";
 import { isEventBoosted, latestBoostCreatedAt } from "@/hooks/useActiveBoost";
+import { EventCard } from "@/components/explore/EventCard";
+import { GymCard } from "@/components/explore/GymCard";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
@@ -716,150 +718,27 @@ function initialsOf(name: string) {
 const CARD_SHADOW = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)";
 const CARD_SHADOW_HOVER = "0 4px 16px rgba(0,0,0,0.5), 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(239,68,68,0.12), inset 0 1px 0 rgba(255,255,255,0.06)";
 
-function EventsDirectory({ events, isLoading, searchCoords }: { events: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null }) {
-  const { track } = useAnalytics();
-  if (isLoading) return <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">{[1,2,3,4].map(i => <div key={i} style={{ height: 240, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
+function EventsDirectory({ events, isLoading }: { events: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null }) {
+  if (isLoading) return <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">{[1,2,3,4].map(i => <div key={i} style={{ height: 232, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
   if (events.length === 0) return <p className="text-center py-12" style={{ color: EX.muted }}>No events found matching your filters.</p>;
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-      {events.map((event, i) => {
-        const now = new Date();
-        const activeTickets = (event.tickets ?? []).filter((t: any) =>
-          (!t.sales_start || new Date(t.sales_start) <= now) &&
-          (!t.sales_end || new Date(t.sales_end) >= now)
-        );
-        const isSoldOut = event.sold_out === true;
-        const hasTicketsAvailable = event.ticket_enabled && !isSoldOut && activeTickets.length > 0;
-        const dt = new Date(event.date);
-        const dateStr = dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-        const timeStr = dt.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-        const loc = event.city ? `${event.city}, ${event.location || event.country || ""}` : (event.venue_name || event.location || event.country || "");
-        return (
-          <React.Fragment key={event.id}>
-            {i === 15 && <ExploreBanner />}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: Math.min(i * 0.04, 0.24) }}
-            >
-              <Link
-                to={`/events/${event.id}`}
-                className="block transition-all duration-200"
-                onClick={() => void track("event_card_clicked", { event_id: event.id })}
-                style={{ background: EX.card, borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: CARD_SHADOW }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = CARD_SHADOW_HOVER; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = CARD_SHADOW; }}
-              >
-                <div style={{ position: "relative" }}>
-                  <CardBanner image={event.banner_image} alt={event.title} />
-                  <div style={{ position: "absolute", left: 12, bottom: -22 }}>
-                    <Avatar src={event._organiserAvatar} initials={initialsOf(event._organiserName || event.title)} />
-                  </div>
-                  {isSoldOut && (
-                    <span style={{ position: "absolute", top: 8, right: 8, background: "rgba(239,68,68,0.9)", color: "white", borderRadius: 9999, padding: "3px 8px", fontSize: 10, fontWeight: 600 }}>Sold Out</span>
-                  )}
-                  {isEventBoosted((event as any).event_boosts) && (
-                    <div style={{ position: "absolute", top: 8, left: 8 }}><BoostedBadge /></div>
-                  )}
-                </div>
-                <div style={{ padding: "28px 14px 12px" }}>
-                  <div className="flex items-start justify-between gap-2">
-                    <p title={event.title} style={{ fontSize: 15, fontWeight: 700, color: EX.text, lineHeight: 1.2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, minWidth: 0 }}>
-                      {event.title}
-                    </p>
-                    {hasTicketsAvailable && (
-                      <span title="Tickets available" style={{ color: EX.gold, flexShrink: 0, display: "inline-flex", alignItems: "center" }}>
-                        <Ticket style={{ width: 16, height: 16 }} />
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1.5" style={{ marginTop: 6 }}>
-                    <Calendar style={{ width: 12, height: 12, color: EX.muted }} />
-                    <span style={{ fontSize: 11, color: EX.muted }}>{dateStr} · {timeStr}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5" style={{ marginTop: 3 }}>
-                    <MapPin style={{ width: 12, height: 12, color: EX.muted }} />
-                    <span style={{ fontSize: 11, color: EX.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{loc}</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between" style={{ padding: "10px 14px" }}>
-                  <span style={{ fontSize: 12, color: EX.gold, fontWeight: 600 }}>View Event</span>
-                  <div style={{ width: 26, height: 26, borderRadius: "50%", background: EX.goldDim, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <ChevronRight style={{ width: 12, height: 12, color: EX.gold }} />
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          </React.Fragment>
-        );
-      })}
+      {events.map((event, i) => (
+        <React.Fragment key={event.id}>
+          {i === 15 && <ExploreBanner />}
+          <EventCard event={event} index={i} />
+        </React.Fragment>
+      ))}
     </div>
   );
 }
 
-function GymsDirectory({ gyms, isLoading, searchCoords, mapOpen, highlightedGymId }: { gyms: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null; mapOpen?: boolean; highlightedGymId?: string | null }) {
-  const { track } = useAnalytics();
-  if (isLoading) return <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">{[1,2,3,4].map(i => <div key={i} style={{ height: 240, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
+function GymsDirectory({ gyms, isLoading }: { gyms: any[]; isLoading: boolean; searchCoords?: { latitude: number; longitude: number } | null; mapOpen?: boolean; highlightedGymId?: string | null }) {
+  if (isLoading) return <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">{[1,2,3,4].map(i => <div key={i} style={{ height: 232, borderRadius: 12, background: EX.card }} className="animate-pulse" />)}</div>;
   if (gyms.length === 0) return <p className="text-center py-12" style={{ color: EX.muted }}>No gyms found matching your filters.</p>;
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3">
-      {gyms.map((gym, i) => {
-        const dist = searchCoords && gym.lat != null && gym.lng != null
-          ? haversineDistance(searchCoords.latitude, searchCoords.longitude, gym.lat, gym.lng)
-          : null;
-        const loc = gym.city ? `${gym.city}, ${gym.location || gym.country || ""}` : (gym.location || gym.country || "");
-        const avatar = gym._coachAvatar || gym.logo_url || null;
-        return (
-          <motion.div
-            key={gym.id}
-            id={`gym-card-${gym.id}`}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: Math.min(i * 0.04, 0.24) }}
-          >
-            <Link
-              to={`/gyms/${gym.id}`}
-              className="block transition-all duration-200"
-              onClick={() => void track("gym_card_clicked", { gym_id: gym.id })}
-              style={{ background: EX.card, borderRadius: 12, overflow: "hidden", cursor: "pointer", boxShadow: CARD_SHADOW }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = CARD_SHADOW_HOVER; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = CARD_SHADOW; }}
-            >
-              <div style={{ position: "relative" }}>
-                <CardBanner image={gym.banner_image} alt={gym.name} />
-                <div style={{ position: "absolute", left: 12, bottom: -22 }}>
-                  <Avatar src={avatar} initials={initialsOf(gym.name)} />
-                </div>
-                {gym.claimed && (
-                  <span style={{ position: "absolute", top: 8, right: 8, background: "rgba(34,197,94,0.18)", color: "#22c55e", borderRadius: 9999, padding: "3px 8px", fontSize: 10, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 3 }}>
-                    <ShieldCheck style={{ width: 10, height: 10 }} /> Verified
-                  </span>
-                )}
-              </div>
-              <div style={{ padding: "28px 14px 12px" }}>
-                <p title={gym.name} style={{ fontSize: 15, fontWeight: 700, color: EX.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {gym.name}
-                </p>
-                <div className="flex items-center gap-1.5" style={{ marginTop: 6 }}>
-                  <MapPin style={{ width: 12, height: 12, color: EX.muted }} />
-                  <span style={{ fontSize: 11, color: EX.muted, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{loc || "—"}</span>
-                </div>
-                <div className="flex items-center gap-1.5" style={{ marginTop: 3 }}>
-                  <Users style={{ width: 12, height: 12, color: EX.muted }} />
-                  <span style={{ fontSize: 11, color: EX.muted }}>{gym.fighter_gym_links?.length ?? 0} fighters registered</span>
-                </div>
-                {dist !== null && <p style={{ fontSize: 11, color: EX.gold, fontWeight: 500, marginTop: 3 }}>{dist.toFixed(1)} miles</p>}
-              </div>
-              <div className="flex items-center justify-between" style={{ padding: "10px 14px" }}>
-                <span style={{ fontSize: 12, color: EX.gold, fontWeight: 600 }}>View Details</span>
-                <div style={{ width: 26, height: 26, borderRadius: "50%", background: EX.goldDim, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <ChevronRight style={{ width: 12, height: 12, color: EX.gold }} />
-                </div>
-              </div>
-            </Link>
-          </motion.div>
-        );
-      })}
+      {gyms.map((gym, i) => <GymCard key={gym.id} gym={gym} index={i} />)}
     </div>
   );
 }

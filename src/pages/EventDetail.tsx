@@ -23,6 +23,7 @@ import { ClaimEventDialog } from "@/components/organiser/ClaimEventDialog";
 import { Map as PigeonMap, Marker } from "pigeon-maps";
 import { BoostedBadge } from "@/components/BoostedBadge";
 import { useActiveBoost } from "@/hooks/useActiveBoost";
+import { WaitlistDialog } from "@/components/event/WaitlistDialog";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -247,6 +248,7 @@ export default function EventDetail() {
   const [mainPage, setMainPage] = useState(0);
   const [underPage, setUnderPage] = useState(0);
   const [mapOpen, setMapOpen] = useState(false);
+  const [showWaitlist, setShowWaitlist] = useState(false);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -680,16 +682,49 @@ export default function EventDetail() {
                   )}
                 </div>
 
-                {/* Ticket Section */}
+                {/* Ticket Section / Waitlist */}
                 {(() => {
                   const tickets = (event as any).tickets ?? [];
-                  if (!event.ticket_enabled || tickets.length === 0) return null;
                   const now = new Date();
                   const activeTickets = tickets.filter((t: any) =>
                     (!t.sales_start || new Date(t.sales_start) <= now) &&
                     (!t.sales_end || new Date(t.sales_end) >= now)
                   );
-                  if (activeTickets.length === 0) return null;
+                  const allSoldOut =
+                    event.sold_out === true ||
+                    (event.ticket_enabled && activeTickets.length > 0 &&
+                      activeTickets.every((t: any) => t.quantity_available != null && t.quantity_available <= 0));
+
+                  if (allSoldOut) {
+                    return (
+                      <div
+                        style={{
+                          marginTop: 32,
+                          borderRadius: 14,
+                          padding: "20px 22px",
+                          background: "hsl(var(--card) / 0.7)",
+                          backdropFilter: "blur(20px) saturate(160%)",
+                          WebkitBackdropFilter: "blur(20px) saturate(160%)",
+                          boxShadow: "var(--shadow-card)",
+                        }}
+                        className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                      >
+                        <div className="min-w-0">
+                          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "hsl(var(--foreground))", letterSpacing: "0.04em" }}>
+                            SOLD OUT
+                          </h3>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Every ticket for this event has gone. Join the waitlist to be first in line for returns.
+                          </p>
+                        </div>
+                        <Button size="lg" className="shrink-0" onClick={() => setShowWaitlist(true)}>
+                          Join waitlist
+                        </Button>
+                      </div>
+                    );
+                  }
+
+                  if (!event.ticket_enabled || activeTickets.length === 0) return null;
                   const purchaseUrl = (event as any).ticket_url || null;
                   return (
                     <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
@@ -762,6 +797,16 @@ export default function EventDetail() {
 
       {showClaimEvent && event && (
         <ClaimEventDialog open={showClaimEvent} onOpenChange={setShowClaimEvent} eventId={id!} eventTitle={event.title} />
+      )}
+
+      {event && (
+        <WaitlistDialog
+          open={showWaitlist}
+          onOpenChange={setShowWaitlist}
+          eventId={id!}
+          eventTitle={event.title}
+          organiserId={event.organiser_id}
+        />
       )}
 
       <Footer />
