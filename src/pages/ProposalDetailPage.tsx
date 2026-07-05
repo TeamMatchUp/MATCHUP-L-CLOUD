@@ -9,14 +9,14 @@ export default function ProposalDetailPage() {
 
   if (!id) {
     return (
-      <div className="min-h-screen" style={{ background: "#080a0d", color: "#e8eaf0" }}>
+      <div className="min-h-screen bg-background text-foreground">
         <div className="max-w-3xl mx-auto p-6">No proposal ID supplied.</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "#080a0d", color: "#e8eaf0" }}>
+    <div className="min-h-screen bg-background text-foreground">
       <div className="max-w-3xl mx-auto p-4 md:p-6">
         <Button
           variant="ghost"

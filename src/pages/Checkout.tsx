@@ -55,7 +55,7 @@ export default function Checkout() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: "#0d0f12" }}>
+    <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-20 pb-16">
         <div className="container" style={{ maxWidth: 640 }}>
