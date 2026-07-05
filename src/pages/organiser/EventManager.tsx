@@ -620,18 +620,6 @@ export default function EventManager() {
               {/* Financial Summary */}
               <div style={cardStyle}>
                 <SectionTitle>Financial Summary</SectionTitle>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between" style={{ padding: "10px 12px", background: RAISED, borderRadius: 10 }}>
-                    <span style={{ fontSize: 12, color: TEXT_SEC }}>Total Revenue (Est.)</span>
-                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: SUCCESS }}>{fmtGBP(metrics.estRevenue)}</span>
-                  </div>
-                  <div className="flex items-center justify-between" style={{ padding: "10px 12px", background: RAISED, borderRadius: 10 }}>
-                    <span style={{ fontSize: 12, color: TEXT_SEC }}>Total Expenses</span>
-                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: TEXT }}>{fmtGBP(0)}</span>
-                  </div>
-              {/* Financial Summary */}
-              <div style={cardStyle}>
-                <SectionTitle>Financial Summary</SectionTitle>
 
                 {/* Per-ticket revenue breakdown */}
                 <div className="mb-4">
