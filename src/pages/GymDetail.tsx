@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { JoinGymButton } from "@/components/gym/JoinGymButton";
 import { GymContactCTA } from "@/components/gym/GymContactCTA";
 import { GymKpiStrip } from "@/components/gym/GymKpiStrip";
+import { GymGallerySection } from "@/components/gym/GymGallerySection";
 import { AddFighterToGymDialog } from "@/components/gym/AddFighterToGymDialog";
 import { useToast } from "@/hooks/use-toast";
 import { EditGymDialog } from "@/components/gym/EditGymDialog";
@@ -195,7 +196,7 @@ export default function GymDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
+      <div className="min-h-screen bg-background">
         <Header />
         <main className="pt-16">
           <div className="container py-6 md:py-10">
@@ -208,7 +209,7 @@ export default function GymDetail() {
 
   if (!gym) {
     return (
-      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
+      <div className="min-h-screen bg-background">
         <Header />
         <main className="pt-16">
           <div className="container py-6 md:py-10 text-center">
@@ -266,7 +267,7 @@ export default function GymDetail() {
   const disciplineTags: string[] = Array.isArray((gym as any).discipline_tags) ? (gym as any).discipline_tags : [];
 
   return (
-    <div className="min-h-screen" style={{ background: "#0d0f12" }}>
+    <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-16">
         <section style={{ padding: "10px 0" }}>
@@ -387,6 +388,9 @@ export default function GymDetail() {
                   <p className="text-muted-foreground leading-relaxed">{gym.description}</p>
                 </div>
               )}
+
+              <GymGallerySection gymId={gym.id} />
+
 
               {/* Contact CTA — role/status aware */}
               {!isOwner && (
