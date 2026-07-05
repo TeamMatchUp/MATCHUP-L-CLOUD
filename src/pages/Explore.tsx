@@ -163,9 +163,23 @@ export default function Explore() {
       if (countryFilter !== "all") q = q.eq("country", countryFilter as CountryCode);
       const { data } = await q;
       const list = data ?? [];
+
+      // Attach organiser avatar/name
+      const organiserIds = Array.from(new Set(list.map((e: any) => e.organiser_id).filter(Boolean))) as string[];
+      const orgMap = new Map<string, { avatar_url: string | null; full_name: string | null }>();
+      if (organiserIds.length) {
+        const { data: profs } = await supabase.from("profiles").select("id, avatar_url, full_name").in("id", organiserIds);
+        (profs ?? []).forEach((p: any) => orgMap.set(p.id, { avatar_url: p.avatar_url, full_name: p.full_name }));
+      }
+      const enriched = list.map((e: any) => ({
+        ...e,
+        _organiserAvatar: orgMap.get(e.organiser_id)?.avatar_url ?? null,
+        _organiserName: orgMap.get(e.organiser_id)?.full_name ?? null,
+      }));
+
       const boosted: any[] = [];
       const rest: any[] = [];
-      for (const ev of list) {
+      for (const ev of enriched) {
         if (isEventBoosted((ev as any).event_boosts)) boosted.push(ev);
         else rest.push(ev);
       }
@@ -181,7 +195,18 @@ export default function Explore() {
       let q = supabase.from("gyms").select("*, fighter_gym_links(fighter_id)").order("name");
       if (countryFilter !== "all") q = q.eq("country", countryFilter as CountryCode);
       const { data } = await q;
-      return data ?? [];
+      const list = data ?? [];
+      const coachIds = Array.from(new Set(list.map((g: any) => g.coach_id).filter(Boolean))) as string[];
+      const coachMap = new Map<string, { avatar_url: string | null; full_name: string | null }>();
+      if (coachIds.length) {
+        const { data: profs } = await supabase.from("profiles").select("id, avatar_url, full_name").in("id", coachIds);
+        (profs ?? []).forEach((p: any) => coachMap.set(p.id, { avatar_url: p.avatar_url, full_name: p.full_name }));
+      }
+      return list.map((g: any) => ({
+        ...g,
+        _coachAvatar: g.coach_id ? coachMap.get(g.coach_id)?.avatar_url ?? null : null,
+        _coachName: g.coach_id ? coachMap.get(g.coach_id)?.full_name ?? null : null,
+      }));
     },
   });
 
@@ -245,6 +270,7 @@ export default function Explore() {
       }));
     },
   });
+
 
   // ── Filtered data ──
   const filteredEvents = useMemo(() => {
