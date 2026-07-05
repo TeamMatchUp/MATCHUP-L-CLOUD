@@ -1069,6 +1069,41 @@ export type Database = {
           },
         ]
       }
+      gym_gallery_images: {
+        Row: {
+          caption: string | null
+          created_at: string
+          gym_id: string
+          id: string
+          sort_order: number
+          url: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          gym_id: string
+          id?: string
+          sort_order?: number
+          url: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          gym_id?: string
+          id?: string
+          sort_order?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_gallery_images_gym_id_fkey"
+            columns: ["gym_id"]
+            isOneToOne: false
+            referencedRelation: "gyms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gym_leads: {
         Row: {
           created_at: string

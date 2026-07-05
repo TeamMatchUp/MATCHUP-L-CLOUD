@@ -37,6 +37,7 @@ import type { Database } from "@/integrations/supabase/types";
 import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 import { Trash2 } from "lucide-react";
 import { BannerImageUpload } from "@/components/BannerImageUpload";
+import { GymGalleryManager } from "@/components/gym/GymGalleryManager";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 
@@ -189,6 +190,11 @@ export function EditGymDialog({ open, onOpenChange, gym, onSuccess, onDelete }: 
               onUploaded={(url) => setBannerUrl(url)}
               onRemoved={() => setBannerUrl(null)}
             />
+          </div>
+
+          <div className="space-y-1">
+            <Label>Gallery Images</Label>
+            <GymGalleryManager gymId={gym.id} />
           </div>
 
           <div className="space-y-1">

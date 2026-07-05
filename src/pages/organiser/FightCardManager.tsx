@@ -323,7 +323,7 @@ export default function FightCardManager() {
 
   if (eventLoading) {
     return (
-      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
+      <div className="min-h-screen bg-background">
         <Header />
         <main className="pt-16"><div className="container py-6 md:py-10"><div className="animate-pulse" style={{ color: "#8b909e" }}>Loading event...</div></div></main>
       </div>
@@ -332,7 +332,7 @@ export default function FightCardManager() {
 
   if (!event) {
     return (
-      <div className="min-h-screen" style={{ background: "#0d0f12" }}>
+      <div className="min-h-screen bg-background">
         <Header />
         <main className="pt-16"><div className="container py-6 md:py-10 text-center">
           <p style={{ color: "#8b909e" }}>Event not found.</p>
@@ -407,7 +407,7 @@ export default function FightCardManager() {
   );
 
   return (
-    <div className="min-h-screen" style={{ background: "#0d0f12" }}>
+    <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-16">
         <section style={{ padding: "24px 0 64px" }}>
