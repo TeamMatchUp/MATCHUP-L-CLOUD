@@ -799,6 +799,16 @@ export default function EventDetail() {
         <ClaimEventDialog open={showClaimEvent} onOpenChange={setShowClaimEvent} eventId={id!} eventTitle={event.title} />
       )}
 
+      {event && (
+        <WaitlistDialog
+          open={showWaitlist}
+          onOpenChange={setShowWaitlist}
+          eventId={id!}
+          eventTitle={event.title}
+          organiserId={event.organiser_id}
+        />
+      )}
+
       <Footer />
     </div>
   );
