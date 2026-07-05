@@ -350,6 +350,21 @@ export default function EventManager() {
                   )}
                 </div>
                 <div className="flex gap-2 flex-wrap" style={{ alignSelf: "flex-start" }}>
+                  {event.status === "published" ? (
+                    <GhostButton
+                      icon={Globe}
+                      onClick={() => publishMutation.mutate("draft")}
+                    >
+                      Unpublish
+                    </GhostButton>
+                  ) : (
+                    <GoldButton
+                      icon={Globe}
+                      onClick={() => publishMutation.mutate("published")}
+                    >
+                      Publish Event
+                    </GoldButton>
+                  )}
                   {event.status === "published" && (
                     <GoldButton icon={Sparkles} onClick={() => setShowBoost(true)}>
                       {activeBoost ? "Extend Boost" : "Boost This Event"}
@@ -357,7 +372,7 @@ export default function EventManager() {
                   )}
                   <GhostButton icon={Eye} href={`/events/${id}?preview=true`}>Preview Public Page</GhostButton>
                   <GhostButton icon={Share2} onClick={() => setShowShare(true)}>Share Event</GhostButton>
-                  <GoldButton icon={Pencil} onClick={() => setShowEditEvent(true)}>Edit Event Details</GoldButton>
+                  <GhostButton icon={Pencil} onClick={() => setShowEditEvent(true)}>Edit Event Details</GhostButton>
                 </div>
               </div>
             </div>
