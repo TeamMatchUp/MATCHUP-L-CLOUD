@@ -3,16 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
-const WEIGHT_CLASS_LABELS: Record<string, string> = {
-  strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
-  featherweight: "Featherweight", lightweight: "Lightweight", super_lightweight: "Super Lightweight",
-  welterweight: "Welterweight", super_welterweight: "Super Welterweight", middleweight: "Middleweight",
-  super_middleweight: "Super Middleweight", light_heavyweight: "Light Heavyweight",
-  cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
-};
-
-import { STYLE_LABELS } from "@/lib/format";
+import { FighterCard } from "@/components/fighter/FighterCard";
 
 export function FeaturedFightersSection() {
   const { data: fighters } = useQuery({
@@ -50,42 +41,26 @@ export function FeaturedFightersSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {displayFighters.map((fighter, i) => {
-            const primaryGym = fighter.fighter_gym_links?.find((l: any) => l.is_primary);
-            const gymName = primaryGym?.gyms?.name ?? "Independent";
-            const record = `${fighter.record_wins}-${fighter.record_losses}-${fighter.record_draws}`;
-
-            return (
-              <motion.div
-                key={fighter.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-              >
-                <Link
-                  to={`/fighters/${fighter.id}`}
-                  className="rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block"
-                >
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground">
-                      {fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)}
-                    </div>
-                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-success/10 text-success">
-                      Available
-                    </span>
-                  </div>
-                  <h3 className="font-heading text-lg text-foreground">{fighter.name}</h3>
-                  <p className="text-primary font-bold text-lg mt-1">{record}</p>
-                  <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-                    <p>{WEIGHT_CLASS_LABELS[fighter.weight_class]} · {fighter.style ? STYLE_LABELS[fighter.style] : "—"}</p>
-                    <p>{gymName}</p>
-                    {fighter.height && fighter.reach && <p>{fighter.height} · {fighter.reach} reach</p>}
-                  </div>
-                </Link>
-              </motion.div>
-            );
-          })}
+          {displayFighters.map((fighter: any, i: number) => (
+            <FighterCard
+              key={fighter.id}
+              index={i}
+              fighter={{
+                id: fighter.id,
+                name: fighter.name,
+                country: fighter.country,
+                region: fighter.region,
+                discipline: fighter.discipline,
+                weight_class: fighter.weight_class,
+                style: fighter.style,
+                available: fighter.available,
+                profile_image: fighter.profile_image,
+                wins: fighter.record_wins ?? 0,
+                losses: fighter.record_losses ?? 0,
+                draws: fighter.record_draws ?? 0,
+              }}
+            />
+          ))}
         </div>
 
         <div className="mt-8 text-center md:hidden">

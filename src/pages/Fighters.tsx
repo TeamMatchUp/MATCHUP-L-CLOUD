@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Filter, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Database } from "@/integrations/supabase/types";
+import { FighterCard } from "@/components/fighter/FighterCard";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
@@ -244,43 +245,29 @@ const Fighters = () => {
               </div>
             ) : filteredFighters && filteredFighters.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredFighters.map((fighter, i) => {
-                  const primaryGym = fighter.fighter_gym_links?.find((l: any) => l.is_primary);
-                  const gymName = primaryGym?.gyms?.name ?? "Independent";
-                  const record = `${fighter._record.wins}-${fighter._record.losses}-${fighter._record.draws}`;
-
-                  return (
-                    <React.Fragment key={fighter.id}>
-                      {i > 0 && i % 5 === 0 && <BannerAd variant="grid-break" />}
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: i * 0.06 }}
-                      >
-                        <Link
-                          to={`/fighters/${fighter.id}`}
-                          className="rounded-lg border border-border bg-card p-6 hover:gold-border-subtle transition-all duration-250 block"
-                        >
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center font-heading text-lg text-muted-foreground overflow-hidden shrink-0">
-                              {fighter._avatar ? (
-                                <img src={fighter._avatar} alt={fighter.name} className="h-full w-full object-cover" />
-                              ) : (
-                                fighter.name.split(" ").filter((n: string) => !n.startsWith('"')).map((n: string) => n[0]).join("").slice(0, 2)
-                              )}
-                            </div>
-                            <h3 className="font-heading text-lg text-foreground">{fighter.name}</h3>
-                          </div>
-                          <p className="text-primary font-bold text-lg">{record}</p>
-                          <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-                            <p>{WEIGHT_CLASS_LABELS[fighter.weight_class]} · {fighter.style ? STYLE_LABELS[fighter.style] : "—"}</p>
-                            <p>{gymName}</p>
-                          </div>
-                        </Link>
-                      </motion.div>
-                    </React.Fragment>
-                  );
-                })}
+                {filteredFighters.map((fighter, i) => (
+                  <React.Fragment key={fighter.id}>
+                    {i > 0 && i % 5 === 0 && <BannerAd variant="grid-break" />}
+                    <FighterCard
+                      index={i}
+                      fighter={{
+                        id: fighter.id,
+                        name: fighter.name,
+                        country: fighter.country,
+                        region: fighter.region,
+                        discipline: fighter.discipline,
+                        weight_class: fighter.weight_class,
+                        style: fighter.style,
+                        available: fighter.available,
+                        profile_image: fighter.profile_image,
+                        _avatar: fighter._avatar,
+                        wins: fighter._record.wins,
+                        losses: fighter._record.losses,
+                        draws: fighter._record.draws,
+                      }}
+                    />
+                  </React.Fragment>
+                ))}
                 {filteredFighters.length < 5 && <BannerAd variant="grid-break" />}
               </div>
             ) : (
