@@ -24,6 +24,7 @@ import { Map as PigeonMap, Marker } from "pigeon-maps";
 import { BoostedBadge } from "@/components/BoostedBadge";
 import { useActiveBoost } from "@/hooks/useActiveBoost";
 import { WaitlistDialog } from "@/components/event/WaitlistDialog";
+import { EventDetailsCard } from "@/components/event/EventDetailsCard";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -568,197 +569,245 @@ export default function EventDetail() {
         <section style={{ padding: "10px 0" }}>
           <div className="container" style={{ paddingLeft: 16, paddingRight: 16 }}>
             <div className="pt-2">
-              <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
-                <ArrowLeft className="h-4 w-4 mr-2" />Back
-              </Button>
+              <Link
+                to="/explore?tab=events"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+              >
+                <ArrowLeft className="h-4 w-4" /> All events
+              </Link>
             </div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              {/* Banner hero */}
+              {/* Optional slim cover strip (no title overlay) */}
               {event.banner_image && (
-                <div className="mb-8 rounded-xl overflow-hidden relative" style={{ height: 280 }}>
+                <div className="mb-6 rounded-xl overflow-hidden" style={{ height: 140 }}>
                   <img src={event.banner_image} alt={event.title} className="w-full h-full object-cover" />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 50%, rgba(13,15,18,0.95) 100%)" }} />
-                  {activeBoost && (
-                    <div style={{ position: "absolute", top: 12, left: 12 }}>
-                      <BoostedBadge size="md" />
-                    </div>
-                  )}
-                  <h1 className="absolute bottom-4 left-4 right-4 font-heading text-foreground truncate" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.5rem, 6vw, 3rem)", lineHeight: 1.05 }}>{event.title}</h1>
                 </div>
               )}
 
-              {/* Main info panel */}
-              <div className="mb-8">
-                {!event.banner_image && (
-                  <div className="flex items-center gap-3 flex-wrap mb-2">
-                    <h1 className="font-heading text-foreground truncate" style={{ fontSize: "clamp(1.5rem, 6vw, 3rem)", lineHeight: 1.05 }}>{event.title}</h1>
-                    {activeBoost && <BoostedBadge size="md" />}
-                  </div>
-                )}
-                {event.promotion_name && <p className="text-lg text-muted-foreground mb-4">{event.promotion_name}</p>}
-
-                {event.description && (
-                  <p className="text-muted-foreground mb-6 max-w-3xl">{event.description}</p>
-                )}
-
-                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground mb-6">
+              {/* Hero header */}
+              <div className="mb-6">
+                <div className="flex items-center gap-3 flex-wrap mb-3">
+                  <span
+                    className="text-xs font-semibold uppercase"
+                    style={{ color: "hsl(var(--primary))", letterSpacing: "0.14em" }}
+                  >
+                    {[event.promotion_name, event.discipline].filter(Boolean).join(" · ") || "EVENT"}
+                  </span>
+                  {activeBoost && <BoostedBadge size="sm" />}
+                </div>
+                <h1
+                  className="font-heading text-foreground"
+                  style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(2.25rem, 7vw, 4.5rem)", lineHeight: 1, letterSpacing: "0.01em" }}
+                >
+                  {event.title}
+                </h1>
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground mt-4">
                   <span className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-primary" />
                     {new Date(event.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                   </span>
-                  <span className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-primary" />
-                    {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
-                  </span>
-                  {hasCoords && (
-                    <button
-                      onClick={() => setMapOpen((v) => !v)}
-                      className="inline-flex items-center gap-2 transition-colors"
-                      style={{
-                        background: mapOpen ? "rgba(239,68,68,0.12)" : "rgba(255,255,255,0.04)",
-                        color: mapOpen ? "#ef4444" : "#8b909e",
-                        borderRadius: 999, padding: "4px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
-                      }}
-                    >
-                      <MapIcon className="h-3.5 w-3.5" /> {mapOpen ? "Hide map" : "Show map"}
-                    </button>
-                  )}
-                </div>
-
-                {mapOpen && hasCoords && (
-                  <div className="rounded-lg overflow-hidden mb-6" style={{ background: "#111318", boxShadow: "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
-                    <div style={{ height: 320 }}>
-                      <PigeonMap defaultCenter={[event.latitude!, event.longitude!]} defaultZoom={14} height={320}>
-                        <Marker anchor={[event.latitude!, event.longitude!]} color="hsl(46, 93%, 61%)" width={36} />
-                      </PigeonMap>
-                    </div>
-                    <div className="px-4 py-3 flex items-center gap-2 text-sm text-muted-foreground">
+                  {(event.venue_name || event.location || event.city) && (
+                    <span className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-primary" />
-                      {[event.venue_name, event.location, event.city].filter(Boolean).join(", ")}
-                    </div>
-                  </div>
-                )}
-
-                {hasContact && (
-                  <div className="rounded-lg bg-card p-5 mb-6 max-w-xl" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)" }}>
-                    <h3 className="font-heading text-sm text-muted-foreground uppercase tracking-wide mb-3">Contact</h3>
-                    <div className="space-y-2 text-sm">
-                      {event.contact_email && (
-                        <a href={`mailto:${event.contact_email}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                          <Mail className="h-4 w-4 text-muted-foreground" /> {event.contact_email}
-                        </a>
-                      )}
-                      {event.contact_phone && (
-                        <a href={`tel:${event.contact_phone}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                          <Phone className="h-4 w-4 text-muted-foreground" /> {event.contact_phone}
-                        </a>
-                      )}
-                      {event.contact_website && (
-                        <a href={event.contact_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                          <Globe className="h-4 w-4 text-muted-foreground" /> {event.contact_website}
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex flex-wrap gap-3">
-                  {user && (isFighter || isCoach) && fighterProfile && (
-                    existingInterest ? (
-                      <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
-                        <Star className="h-4 w-4 fill-primary" /> Interested
-                      </Button>
-                    ) : (
-                      <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={handleToggleInterest} disabled={sending}>
-                        <Star className="h-4 w-4" /> I'm Interested
-                      </Button>
-                    )
-                  )}
-                  {isCoach && user && (
-                    <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowPutForward(true)}>
-                      <Users className="h-4 w-4" /> Put Forward Fighters
-                    </Button>
+                      {[event.venue_name, event.city].filter(Boolean).join(", ")}
+                    </span>
                   )}
                 </div>
+              </div>
 
-                {/* Ticket Section / Waitlist */}
-                {(() => {
-                  const tickets = (event as any).tickets ?? [];
-                  const now = new Date();
-                  const activeTickets = tickets.filter((t: any) =>
-                    (!t.sales_start || new Date(t.sales_start) <= now) &&
-                    (!t.sales_end || new Date(t.sales_end) >= now)
-                  );
-                  const allSoldOut =
-                    event.sold_out === true ||
-                    (event.ticket_enabled && activeTickets.length > 0 &&
-                      activeTickets.every((t: any) => t.quantity_available != null && t.quantity_available <= 0));
-
-                  if (allSoldOut) {
-                    return (
-                      <div
-                        style={{
-                          marginTop: 32,
-                          borderRadius: 14,
-                          padding: "20px 22px",
-                          background: "hsl(var(--card) / 0.7)",
-                          backdropFilter: "blur(20px) saturate(160%)",
-                          WebkitBackdropFilter: "blur(20px) saturate(160%)",
-                          boxShadow: "var(--shadow-card)",
-                        }}
-                        className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-                      >
+              {/* Two-column body */}
+              <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6">
+                {/* LEFT column */}
+                <div className="min-w-0 space-y-6">
+                  {hasCoords && (
+                    <div
+                      className="rounded-xl overflow-hidden bg-card"
+                      style={{ boxShadow: "var(--shadow-card)" }}
+                    >
+                      <div style={{ height: 300 }}>
+                        <PigeonMap defaultCenter={[event.latitude!, event.longitude!]} defaultZoom={14} height={300}>
+                          <Marker anchor={[event.latitude!, event.longitude!]} color="hsl(46, 93%, 61%)" width={36} />
+                        </PigeonMap>
+                      </div>
+                      <div className="px-4 py-3 flex items-center justify-between gap-3">
                         <div className="min-w-0">
-                          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "hsl(var(--foreground))", letterSpacing: "0.04em" }}>
-                            SOLD OUT
-                          </h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Every ticket for this event has gone. Join the waitlist to be first in line for returns.
+                          <p className="text-sm font-semibold text-foreground truncate">
+                            {event.venue_name || "Venue"}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {[event.city, new Date(event.date).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })].filter(Boolean).join(" · ")}
                           </p>
                         </div>
-                        <Button size="lg" className="shrink-0" onClick={() => setShowWaitlist(true)}>
-                          Join waitlist
-                        </Button>
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline whitespace-nowrap"
+                        >
+                          Open in Maps <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
                       </div>
-                    );
-                  }
+                    </div>
+                  )}
 
-                  if (!event.ticket_enabled || activeTickets.length === 0) return null;
-                  const purchaseUrl = (event as any).ticket_url || null;
-                  return (
-                    <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
-                  );
-                })()}
+                  {/* FIGHT CARD */}
+                  {mainEvents.length > 0 && (
+                    <div>
+                      <h2 className="font-heading text-2xl text-foreground mb-4">
+                        MAIN <span className="text-primary">CARD</span>
+                      </h2>
+                      <div className="space-y-4 mb-4">{paginatedMain.map(renderMainBout)}</div>
+                      <Pagination page={mainPage} total={Math.ceil(mainEvents.length / BOUTS_PER_PAGE) || 1} setPage={setMainPage} />
+                    </div>
+                  )}
+
+                  {undercards.length > 0 && (
+                    <div>
+                      <h2 className="font-heading text-2xl text-foreground mb-4">
+                        UNDER<span className="text-primary">CARD</span>
+                      </h2>
+                      <div className="space-y-2 mb-4">{paginatedUnder.map(renderUndercardBout)}</div>
+                      <Pagination page={underPage} total={Math.ceil(undercards.length / BOUTS_PER_PAGE) || 1} setPage={setUnderPage} />
+                    </div>
+                  )}
+
+                  {mainEvents.length === 0 && undercards.length === 0 && (
+                    <div className="rounded-xl bg-card p-8 text-center" style={{ boxShadow: "var(--shadow-card)" }}>
+                      <p className="text-muted-foreground text-sm">No bouts announced yet.</p>
+                    </div>
+                  )}
+
+                  {/* About + contact */}
+                  {(event.description || hasContact) && (
+                    <div className="rounded-xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
+                      <h3
+                        style={{
+                          fontFamily: "'Bebas Neue', sans-serif",
+                          letterSpacing: "0.08em",
+                          fontSize: 13,
+                          color: "hsl(var(--primary))",
+                          marginBottom: 12,
+                        }}
+                      >
+                        ABOUT
+                      </h3>
+                      {event.description && (
+                        <p className="text-muted-foreground whitespace-pre-wrap mb-4">{event.description}</p>
+                      )}
+                      {hasContact && (
+                        <div className="space-y-2 text-sm pt-2">
+                          {event.contact_email && (
+                            <a href={`mailto:${event.contact_email}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                              <Mail className="h-4 w-4 text-muted-foreground" /> {event.contact_email}
+                            </a>
+                          )}
+                          {event.contact_phone && (
+                            <a href={`tel:${event.contact_phone}`} className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                              <Phone className="h-4 w-4 text-muted-foreground" /> {event.contact_phone}
+                            </a>
+                          )}
+                          {event.contact_website && (
+                            <a href={event.contact_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                              <Globe className="h-4 w-4 text-muted-foreground" /> {event.contact_website}
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Fighter/coach actions */}
+                  {(((isFighter || isCoach) && fighterProfile) || isCoach) && (
+                    <div className="flex flex-wrap gap-3">
+                      {user && (isFighter || isCoach) && fighterProfile && (
+                        existingInterest ? (
+                          <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
+                            <Star className="h-4 w-4 fill-primary" /> Interested
+                          </Button>
+                        ) : (
+                          <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={handleToggleInterest} disabled={sending}>
+                            <Star className="h-4 w-4" /> I'm Interested
+                          </Button>
+                        )
+                      )}
+                      {isCoach && user && (
+                        <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowPutForward(true)}>
+                          <Users className="h-4 w-4" /> Put Forward Fighters
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* RIGHT column (sticky on lg+) */}
+                <aside className="lg:sticky lg:top-[80px] lg:self-start space-y-4">
+                  {(() => {
+                    const tickets = (event as any).tickets ?? [];
+                    const now = new Date();
+                    const activeTickets = tickets.filter((t: any) =>
+                      (!t.sales_start || new Date(t.sales_start) <= now) &&
+                      (!t.sales_end || new Date(t.sales_end) >= now)
+                    );
+                    const allSoldOut =
+                      event.sold_out === true ||
+                      (event.ticket_enabled && activeTickets.length > 0 &&
+                        activeTickets.every((t: any) => t.quantity_available != null && t.quantity_available <= 0));
+
+                    if (allSoldOut) {
+                      return (
+                        <div
+                          className="rounded-xl bg-card p-5"
+                          style={{
+                            backdropFilter: "blur(20px) saturate(160%)",
+                            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+                            boxShadow: "var(--shadow-card)",
+                          }}
+                        >
+                          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.08em", fontSize: 13, color: "hsl(var(--primary))" }}>TICKETS</h3>
+                          <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "hsl(var(--destructive))", letterSpacing: "0.04em", marginTop: 6 }}>SOLD OUT</p>
+                          <p className="text-sm text-muted-foreground mt-2">
+                            Every ticket for this event has gone. Join the waitlist to be first in line for returns.
+                          </p>
+                          <Button size="lg" className="w-full mt-4" onClick={() => setShowWaitlist(true)}>
+                            Join waitlist
+                          </Button>
+                        </div>
+                      );
+                    }
+
+                    if (event.ticket_enabled && activeTickets.length > 0) {
+                      const purchaseUrl = (event as any).ticket_url || null;
+                      return (
+                        <div
+                          className="rounded-xl bg-card p-5"
+                          style={{
+                            backdropFilter: "blur(20px) saturate(160%)",
+                            WebkitBackdropFilter: "blur(20px) saturate(160%)",
+                            boxShadow: "var(--shadow-card)",
+                          }}
+                        >
+                          <div style={{ marginTop: -16 }}>
+                            <TicketSection tickets={activeTickets} event={event} purchaseUrl={purchaseUrl} />
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  <EventDetailsCard
+                    rows={[
+                      { label: "Promoter", value: event.promotion_name },
+                      { label: "Discipline", value: event.discipline ? String(event.discipline).replace(/_/g, " ") : null },
+                      { label: "Venue", value: event.venue_name },
+                      { label: "City", value: event.city },
+                      { label: "Date", value: new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) },
+                    ]}
+                  />
+                </aside>
               </div>
             </motion.div>
-
-            {/* FIGHT CARD — only show sections with confirmed public bouts */}
-            {mainEvents.length > 0 && (
-              <>
-                <h2 className="font-heading text-2xl text-foreground mb-6">
-                  MAIN <span className="text-primary">CARD</span>
-                </h2>
-                <div className="space-y-4 mb-4">{paginatedMain.map(renderMainBout)}</div>
-                <Pagination page={mainPage} total={Math.ceil(mainEvents.length / BOUTS_PER_PAGE) || 1} setPage={setMainPage} />
-              </>
-            )}
-
-            {undercards.length > 0 && (
-              <>
-                <h2 className="font-heading text-2xl text-foreground mb-6 mt-12">
-                  UNDER<span className="text-primary">CARD</span>
-                </h2>
-                <div className="space-y-2 mb-4">{paginatedUnder.map(renderUndercardBout)}</div>
-                <Pagination page={underPage} total={Math.ceil(undercards.length / BOUTS_PER_PAGE) || 1} setPage={setUnderPage} />
-              </>
-            )}
-
-            {mainEvents.length === 0 && undercards.length === 0 && (
-              <div className="rounded-lg border border-dashed border-border bg-card/50 p-8 text-center mb-4">
-                <p className="text-muted-foreground text-sm">No bouts announced yet.</p>
-              </div>
-            )}
           </div>
         </section>
       </main>

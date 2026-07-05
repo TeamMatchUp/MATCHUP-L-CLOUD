@@ -1,119 +1,80 @@
 
-# Full redesign plan — Phases 1–4
+# Phase 2 rework — EventDetail layout gap-fix
 
-All work stays inside the existing dark liquid-glass tokens (bg #080a0d, card #111318, gold #e8a020, Bebas/Inter, soft shadow + inset highlight, no borders). Every new component uses semantic tokens only, so Phase 4's light-mode repaint flips automatically without touching component code.
+Phase 2 shipped the waitlist backend + dialog and the gym mailto wiring, but the EventDetail page was NOT rebuilt to match reference image 2. The current page is still the old single-column banner hero with a toggle-map and inline ticket list. This plan finishes what Phase 2 promised.
 
----
+## Gap analysis vs. reference image 2
 
-## Phase 1 — Explore cards + Interests reuse
+| Reference (image 2)                                                        | Current EventDetail                            | Fix          |
+| -------------------------------------------------------------------------- | ---------------------------------------------- | ------------ |
+| `← All events` back link (text, top)                                       | `← Back` ghost button                          | Rename + restyle |
+| Eyebrow: `PROMOTION · DISCIPLINE` + `★ BOOSTED` pill                       | No eyebrow. Boosted pill sits on banner image  | New eyebrow row above title |
+| Huge Bebas title, no banner image above it                                 | Banner image hero with title overlaid           | Move title into hero row; keep cover as smaller optional element |
+| Meta row: calendar date · doors · first bout · venue · city                | Only date + venue chips                        | Add doors / first bout entries |
+| **Two-column body** — map (left) + tickets & event details (right sticky)  | Single column; map behind a toggle             | New `lg:grid-cols-[minmax(0,1fr)_360px]` layout |
+| Map card ALWAYS visible with `Open in Maps` footer                         | Map hidden until user clicks "Show map"        | Remove toggle, render inline map card |
+| Right column: `TICKETS` card listing every tier publicly                   | Tickets rendered inline in left flow           | Move into sticky right card (reuse existing `TicketSection`) |
+| Right column: `EVENT DETAILS` table (Promoter / Discipline / Doors / First bout / Venue) | Not present                          | New `EventDetailsCard` component |
+| Waitlist card replaces tickets card when sold out                          | Waitlist banner sits below action buttons      | Move into right column, swap with tickets card |
+| **No AI Matchmaking button anywhere**                                      | Present in surrounding actions                 | Remove |
 
-Explore page (`src/pages/Explore.tsx`)
-- **Ordering:** boosted listings first (active `event_boosts` for events, `listing_tier` for gyms), rest by date/name.
-- **Event card** (image 1 layout):
-  - Fixed height, single card component reused everywhere.
-  - Left: day/month block in gold Bebas.
-  - Right: title, venue · time, short description (2-line clamp), discipline chip + "From £X" or red "SOLD OUT".
-  - `★ BOOSTED` pill top-right when boosted.
-  - **Avatar removed.**
-- **Gym card** (image 8 layout):
-  - Fixed height, no avatar.
-  - Name, city · N pro fighters · N upcoming, description (2-line clamp), verified chip top-right, discipline pills row.
-- Descriptions truncate; cards never expand to fit content.
+## Files to edit
 
-Interests page (`src/components/fighter/InterestedEventsPanel.tsx`, `DashboardEvents.tsx`)
-- Replaces bespoke row with the same Explore event card component.
+- `src/pages/EventDetail.tsx` — layout rewrite of the `return (...)` block. All data hooks, RLS queries, interest toggle, waitlist state, `TicketSection`, boost badge, put-forward and claim dialogs stay untouched — this is a presentation-only refactor.
+- `src/components/event/EventDetailsCard.tsx` — new small stateless card (Promoter, Discipline, Doors, First bout, Venue rows).
 
-Files
-- `src/pages/Explore.tsx`, new `src/components/explore/EventCard.tsx` + `GymCard.tsx`, `src/components/fighter/InterestedEventsPanel.tsx`, `src/components/dashboard/DashboardEvents.tsx`.
+No new components beyond `EventDetailsCard`. No route, RLS, matchmaking, or data changes. All colors/shadows via existing semantic tokens so Phase 4 light-mode still flips automatically.
 
----
+## New layout skeleton
 
-## Phase 2 — EventDetail rebuild (image 2) + waitlist + gym mailto
-
-EventDetail (`src/pages/EventDetail.tsx`)
-- Hero: "← All events" · "PROMOTION · DISCIPLINE" + boosted pill · huge Bebas title · date / doors + first bout / venue · city.
-- Left column: Map card (existing Pigeon Map) with venue footer + "Open in Maps"; Fight Card section with title-fight gold outline, corner initials, names + nicknames + records + flags, weight chip, "Awaiting profile" fallback; About section.
-- Right column (sticky, `backdrop-blur-xl bg-card/70` for liquid glass):
-  - **Tickets card** — every tier listed publicly (name, description, price, qty available, "Only N left", sold-out state, qty stepper) with single "Select tickets" CTA.
-  - **Waitlist card** — appears when `sold_out = true` or all tiers exhausted. Signed-in one-click; guests provide name + email. Insert into new `event_waitlist` table, then call `create_notification` for `events.organiser_id`. Idempotent per (event_id, email).
-  - Event Details card (promoter, discipline, doors, first bout, venue). **AI Matchmaking button removed.**
-  - Share event + Add to calendar buttons.
-
-GymDetail contact wiring (`src/pages/GymDetail.tsx`)
-- "Contact Gym" → `mailto:` with `to = gym.contact_email`, subject "Enquiry via MatchUp — {gym name}", body prefilled with sender's name/email; if sender is an organiser with an upcoming event, prefill "Enquiry from {organiser name} regarding {event title} on {date}".
-- Phone icon → `tel:` when `phone` is set.
-- (Full GymDetail visual rebuild is Phase 3.)
-
-Migration
-```sql
-CREATE TABLE public.event_waitlist (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_id uuid NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
-  user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
-  name text NOT NULL,
-  email text NOT NULL,
-  ticket_type text,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
-GRANT SELECT, INSERT ON public.event_waitlist TO authenticated;
-GRANT INSERT ON public.event_waitlist TO anon;
-GRANT ALL ON public.event_waitlist TO service_role;
-ALTER TABLE public.event_waitlist ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "anyone joins waitlist" ON public.event_waitlist
-  FOR INSERT TO anon, authenticated WITH CHECK (true);
-CREATE POLICY "organiser or self reads waitlist" ON public.event_waitlist
-  FOR SELECT TO authenticated USING (
-    EXISTS (SELECT 1 FROM public.events e WHERE e.id = event_id AND e.organiser_id = auth.uid())
-    OR user_id = auth.uid()
-  );
+```text
+Header
+────────────────────────────────────────────────────────────
+← All events
+PROMOTION · DISCIPLINE          [★ BOOSTED]
+HUGE BEBAS EVENT TITLE
+📅 Sat, 4 Jul 2026   🕒 Doors 19:00 · First bout 20:00   📍 O2 Arena, London
+────────────────────────────────────────────────────────────
+┌─────────────────────────────┐  ┌──────────────────────┐
+│ Map (always visible)        │  │ TICKETS              │
+│ Venue footer + Open in Maps │  │ · Tier 1  £60  [+/-] │
+├─────────────────────────────┤  │ · Tier 2  £45  [+/-] │
+│ FIGHT CARD                  │  │ · Tier 3  SOLD OUT   │
+│  · Main events              │  └──────────────────────┘
+│  · Undercards               │  ┌──────────────────────┐
+├─────────────────────────────┤  │ EVENT DETAILS        │
+│ About                       │  │ Promoter · Discipline│
+│ (description + contact)     │  │ Doors · First bout   │
+└─────────────────────────────┘  │ Venue                │
+                                 └──────────────────────┘
+                                 [Waitlist card replaces
+                                  Tickets when sold out]
 ```
-Also verify (and add if missing) anon SELECT policies for `tickets` and `event_fight_slots` scoped to `events.status = 'published'` / `is_public = true` so the public detail page renders for logged-out users.
 
----
+Sticky right column: `position: sticky; top: 80px;` on `lg+` screens. Right column stacks under left column on mobile with the tickets card first (mirrors mobile UX shown in reference).
 
-## Phase 3 — GymDetail rebuild (image 3) + Proposal accept/pending (image 4)
+## Details of each change
 
-GymDetail (`src/pages/GymDetail.tsx`)
-- Hero: gym avatar circle (kept only on detail page), Bebas name, verified chip, meta (city · disciplines), phone icon + "CONTACT GYM" primary (mailto from Phase 2).
-- KPI strip: Combined Record, Win Rate, Knockouts, Titles Held, Pro Fighters, Upcoming Events.
-- "Inside the Gym" gallery: large slide + thumbnail row with caption + counter.
-- Two-column body:
-  - Left: About card; Competition Roster (fighter mini-cards with avatar, name, nickname, flag · discipline, record / KOs / class, availability pill); Recent Results list.
-  - Right: Map card; Contact card (address, phone, email, get directions); Roster in Action (upcoming events with roster members on the card); Disciplines & Facilities chips + short description.
+1. Delete banner-title hero. Render title + eyebrow + boosted pill in a plain header block. If `event.banner_image` exists, keep it as a slim cover strip above the eyebrow (60–120px, no title overlay) — kept per earlier note "with the cover image added".
+2. Meta row uses `event.doors_time`/`event.first_bout_time` when present, otherwise derive from `event.date`.
+3. Remove `mapOpen` state + toggle chip; render the map card unconditionally when `hasCoords`. Add an `Open in Maps` link that opens `https://www.google.com/maps/search/?api=1&query={lat},{lng}` in a new tab.
+4. Extract the existing tickets block into the right column. When `allSoldOut`, swap it for the existing waitlist card (already built in Phase 2) in the same slot.
+5. New `EventDetailsCard` renders whichever of `promotion_name`, `discipline`, `doors_time`, `first_bout_time`, `venue_name` are present. No behaviour, no queries.
+6. Remove any `AI Matchmaking` / matchmaking CTA button rendered on this page (audit `EventDetail.tsx` for the string).
+7. Public read: confirm `tickets` has an anon SELECT policy scoped to published events. If missing, add it as a separate migration BEFORE the layout edit lands so the right-column tickets card renders for logged-out users.
 
-Proposal detail (`src/components/proposal/ProposalDetail.tsx`, `src/pages/ProposalDetailPage.tsx`)
-- Hero: "← Dashboard", "MATCH PROPOSAL · {EVENT NAME}", Bebas "{FIGHTER A} vs {FIGHTER B}", overall status pill top-right, meta line "Main Card — Weight · proposed by {promoter} · {date}".
-- Two side-by-side corner cards (Red / Blue):
-  - Corner header row: initials avatar, "Red/Blue corner", coach/gym subtitle, corner status pill.
-  - Fighter row: name, "Fighter — {corner}", timestamp, Accepted pill OR Accept/Decline buttons when current user is that fighter.
-  - Coach row: same pattern for that fighter's coach/gym.
-- Footer note: "A bout confirms only when every required party on both sides accepts."
-- Existing accept/decline RPC calls remain unchanged; only the panel UI is rebuilt.
+## Technical notes
 
----
+- Two-column grid: `grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6`.
+- Sticky wrapper: `<aside className="lg:sticky lg:top-[80px] lg:self-start space-y-4">`.
+- Reuses `TicketSection` component unchanged. Only its parent container/margin styles change.
+- Waitlist card visibility logic stays identical to Phase 2 (`allSoldOut` boolean); only its DOM position moves.
+- All new surfaces use `bg-card`, `text-foreground`, `text-muted-foreground`, `text-primary`, `hsl(var(--card))` — no hardcoded hex.
 
-## Phase 4 — Light-mode repaint (images 6–9)
+## Out of scope (still queued)
 
-- Locate the existing light-mode toggle (`ThemeProvider`, `.light` block in `src/index.css`).
-- Repaint light tokens to match the reference:
-  - `--background` #f2f1ec off-white
-  - `--card` #ffffff
-  - `--foreground` #0a0a0a
-  - `--muted-foreground` neutral 500
-  - `--primary` electric blue #2563eb (hover #1d4ed8), `--primary-foreground` white
-  - `--border` neutral 200, subtle
-  - Success red for SOLD OUT stays legible on light.
-- Keep Bebas Neue / Inter typography, keep card shadow shape (softer values on light).
-- Audit Phase 1–3 components: any leftover hardcoded hex → replaced with semantic tokens so the toggle covers them.
-- Dark mode untouched.
+- Phase 3 — GymDetail rebuild + Proposal accept/pending redesign.
+- Phase 4 — Light-mode token repaint.
+- Anything on Explore / Interests cards (Phase 1 already shipped, matches image 1 / image 5).
 
----
-
-## Global rules across all phases
-
-- No route changes.
-- No matchmaking scoring changes.
-- No RLS rewrites beyond the additive policies noted above.
-- No hardcoded colors in any component — semantic tokens only.
-- Liquid-glass surfaces (backdrop blur + soft inset highlight) preserved and extended to the new sticky tickets column.
-- Ship phases in order; pause after each for review.
+Ship this, review the EventDetail page against image 2, then proceed to Phase 3.
