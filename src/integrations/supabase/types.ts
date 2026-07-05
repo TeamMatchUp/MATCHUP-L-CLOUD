@@ -278,6 +278,41 @@ export type Database = {
           },
         ]
       }
+      event_expenses: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string
+          event_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          description: string
+          event_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string
+          event_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_expenses_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_fight_slots: {
         Row: {
           bout_type: string | null
