@@ -39,8 +39,8 @@ export function BoostTierPicker({
               onClick={() => setSelected(tier.id)}
               style={{
                 position: "relative",
-                background: active ? "rgba(239,68,68,0.12)" : "#181c24",
-                color: "#e8eaf0",
+                background: active ? "rgba(239,68,68,0.12)" : "hsl(var(--muted))",
+                color: "hsl(var(--foreground))",
                 borderRadius: 12,
                 padding: "16px 14px",
                 textAlign: "left",
@@ -60,8 +60,8 @@ export function BoostTierPicker({
                     right: 8,
                     fontSize: 9,
                     fontWeight: 700,
-                    color: "#0d0f12",
-                    background: "#ef4444",
+                    color: "hsl(var(--primary-foreground))",
+                    background: "hsl(var(--primary))",
                     padding: "2px 6px",
                     borderRadius: 999,
                     letterSpacing: "0.05em",
@@ -80,13 +80,13 @@ export function BoostTierPicker({
                     width: 18,
                     height: 18,
                     borderRadius: "50%",
-                    background: "#ef4444",
+                    background: "hsl(var(--primary))",
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Check style={{ width: 12, height: 12, color: "#0d0f12" }} />
+                  <Check style={{ width: 12, height: 12, color: "hsl(var(--primary-foreground))" }} />
                 </span>
               )}
               <div style={{ marginTop: 16 }}>
@@ -95,20 +95,20 @@ export function BoostTierPicker({
                     fontFamily: "'Bebas Neue', sans-serif",
                     fontSize: 24,
                     letterSpacing: "0.04em",
-                    color: "#e8eaf0",
+                    color: "hsl(var(--foreground))",
                     lineHeight: 1,
                   }}
                 >
                   {tier.label}
                 </div>
-                <div style={{ fontSize: 11, color: "#8b909e", marginTop: 4 }}>{tier.duration} of top placement</div>
+                <div style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>{tier.duration} of top placement</div>
               </div>
               <div
                 style={{
                   marginTop: 14,
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontSize: 28,
-                  color: "#ef4444",
+                  color: "hsl(var(--primary))",
                   lineHeight: 1,
                   letterSpacing: "0.02em",
                 }}
@@ -135,7 +135,7 @@ export function BoostTierPicker({
           disabled={isSubmitting}
           style={{
             background: "transparent",
-            color: "#8b909e",
+            color: "hsl(var(--muted-foreground))",
             padding: "10px 18px",
             borderRadius: 8,
             fontSize: 14,
@@ -151,8 +151,8 @@ export function BoostTierPicker({
           onClick={() => onConfirm(selected)}
           disabled={isSubmitting}
           style={{
-            background: "#ef4444",
-            color: "#0d0f12",
+            background: "hsl(var(--primary))",
+            color: "hsl(var(--primary-foreground))",
             padding: "10px 22px",
             borderRadius: 8,
             fontSize: 14,

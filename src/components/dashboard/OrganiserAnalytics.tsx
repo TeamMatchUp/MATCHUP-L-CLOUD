@@ -143,7 +143,7 @@ export function OrganiserAnalyticsShared({ userId, title = "Analytics" }: Organi
                   style={{
                     fontFamily: "'Bebas Neue', sans-serif",
                     fontSize: 18,
-                    color: "#e8eaf0",
+                    color: "hsl(var(--foreground))",
                     letterSpacing: "0.04em",
                   }}
                 >
@@ -160,7 +160,7 @@ export function OrganiserAnalyticsShared({ userId, title = "Analytics" }: Organi
                     e.status === "published"
                       ? "rgba(34,197,94,0.15)"
                       : "rgba(139,144,158,0.15)",
-                  color: e.status === "published" ? "#22c55e" : ANALYTICS_TOKENS.TEXT_MUTED,
+                  color: e.status === "published" ? "hsl(var(--success))" : ANALYTICS_TOKENS.TEXT_MUTED,
                   letterSpacing: "0.08em",
                 }}
               >
@@ -175,7 +175,7 @@ export function OrganiserAnalyticsShared({ userId, title = "Analytics" }: Organi
                 max={Math.max(e.slots, 1)}
                 rightLabel={`${e.confirmed}/${e.slots} (${e.slotsPct}%)`}
               />
-              <div className="flex items-center justify-between text-[12px]" style={{ color: "#e8eaf0" }}>
+              <div className="flex items-center justify-between text-[12px]" style={{ color: "hsl(var(--foreground))" }}>
                 <span>Ticketing</span>
                 <span style={{ color: ANALYTICS_TOKENS.TEXT_MUTED }}>
                   {e.soldOut
@@ -265,7 +265,7 @@ export function OrganiserAnalyticsShared({ userId, title = "Analytics" }: Organi
   const events = (
     <AnalyticsCard title="Per-Event Slot Breakdown">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-[12px]" style={{ color: "#e8eaf0" }}>
+        <table className="w-full text-left text-[12px]" style={{ color: "hsl(var(--foreground))" }}>
           <thead>
             <tr
               className="text-[10px] uppercase"
@@ -307,7 +307,7 @@ export function OrganiserAnalyticsShared({ userId, title = "Analytics" }: Organi
                     {e.date ? format(new Date(e.date), "d MMM yyyy") : "—"}
                   </td>
                   <td className="py-3 pr-3 text-right">{slots.length}</td>
-                  <td className="py-3 pr-3 text-right" style={{ color: "#22c55e" }}>
+                  <td className="py-3 pr-3 text-right" style={{ color: "hsl(var(--success))" }}>
                     {conf}
                   </td>
                   <td className="py-3 pr-3 text-right" style={{ color: "#f59e0b" }}>
@@ -350,7 +350,7 @@ function FunnelRow({ label, value, max }: { label: string; value: number; max: n
     <div className="flex flex-col gap-1.5">
       <div
         className="flex items-center justify-between text-[12px]"
-        style={{ color: "#e8eaf0" }}
+        style={{ color: "hsl(var(--foreground))" }}
       >
         <span>{label}</span>
         <span style={{ color: ANALYTICS_TOKENS.TEXT_MUTED }}>

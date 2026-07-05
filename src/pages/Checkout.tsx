@@ -63,31 +63,31 @@ export default function Checkout() {
             <ArrowLeft className="h-4 w-4 mr-2" /> Continue Shopping
           </Button>
 
-          <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#e8eaf0", marginBottom: 24 }}>
-            YOUR <span style={{ color: "#ef4444" }}>BASKET</span>
+          <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "hsl(var(--foreground))", marginBottom: 24 }}>
+            YOUR <span style={{ color: "hsl(var(--primary))" }}>BASKET</span>
           </h1>
 
           {basket.length === 0 ? (
-            <div style={{ background: "#111318", borderRadius: 12, padding: 40, textAlign: "center" }}>
-              <ShoppingCart style={{ width: 40, height: 40, color: "#555b6b", margin: "0 auto 12px" }} />
-              <p style={{ fontSize: 15, color: "#8b909e" }}>Your basket is empty</p>
+            <div style={{ background: "hsl(var(--card))", borderRadius: 12, padding: 40, textAlign: "center" }}>
+              <ShoppingCart style={{ width: 40, height: 40, color: "hsl(var(--muted-foreground))", margin: "0 auto 12px" }} />
+              <p style={{ fontSize: 15, color: "hsl(var(--muted-foreground))" }}>Your basket is empty</p>
             </div>
           ) : (
             <>
               <div className="space-y-3">
                 {basket.map((item, i) => (
                   <div key={i} className="flex items-center justify-between" style={{
-                    background: "#111318", borderRadius: 8, padding: "16px 20px",
+                    background: "hsl(var(--card))", borderRadius: 8, padding: "16px 20px",
                     boxShadow: "0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04)",
                   }}>
                     <div>
-                      <p style={{ fontSize: 15, fontWeight: 600, color: "#e8eaf0" }}>{item.ticket_type}</p>
-                      {item.event_title && <p style={{ fontSize: 11, color: "#8b909e" }}>{item.event_title}</p>}
-                      <p style={{ fontSize: 12, color: "#8b909e", marginTop: 2 }}>Qty: {item.quantity}</p>
+                      <p style={{ fontSize: 15, fontWeight: 600, color: "hsl(var(--foreground))" }}>{item.ticket_type}</p>
+                      {item.event_title && <p style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>{item.event_title}</p>}
+                      <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>Qty: {item.quantity}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span style={{ fontSize: 18, fontWeight: 700, color: "#ef4444" }}>£{(item.price * item.quantity).toFixed(2)}</span>
-                      <button onClick={() => removeItem(i)} style={{ color: "#ef4444", cursor: "pointer" }}>
+                      <span style={{ fontSize: 18, fontWeight: 700, color: "hsl(var(--primary))" }}>£{(item.price * item.quantity).toFixed(2)}</span>
+                      <button onClick={() => removeItem(i)} style={{ color: "hsl(var(--primary))", cursor: "pointer" }}>
                         <Trash2 style={{ width: 16, height: 16 }} />
                       </button>
                     </div>
@@ -96,21 +96,21 @@ export default function Checkout() {
               </div>
 
               <div className="flex items-center justify-between" style={{ marginTop: 20, padding: "16px 0", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                <span style={{ fontSize: 16, fontWeight: 600, color: "#e8eaf0" }}>Total</span>
-                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#ef4444" }}>£{total.toFixed(2)}</span>
+                <span style={{ fontSize: 16, fontWeight: 600, color: "hsl(var(--foreground))" }}>Total</span>
+                <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "hsl(var(--primary))" }}>£{total.toFixed(2)}</span>
               </div>
 
               {showPayment ? (
                 <div style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: 8, padding: "16px 20px", marginTop: 16, textAlign: "center" }}>
                   <p style={{ fontSize: 14, color: "#f59e0b", fontWeight: 600 }}>Payment processing coming soon</p>
-                  <p style={{ fontSize: 12, color: "#8b909e", marginTop: 4 }}>Stripe integration will be available in a future update.</p>
+                  <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>Stripe integration will be available in a future update.</p>
                 </div>
               ) : (
                 <button
                   onClick={() => setShowPayment(true)}
                   style={{
                     width: "100%", marginTop: 16, padding: "14px 0",
-                    background: "#ef4444", color: "#0d0f12", fontWeight: 700, fontSize: 15,
+                    background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", fontWeight: 700, fontSize: 15,
                     borderRadius: 8, cursor: "pointer", border: "none",
                     boxShadow: "0 0 12px rgba(239,68,68,0.25)",
                   }}

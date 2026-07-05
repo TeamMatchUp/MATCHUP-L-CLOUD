@@ -25,7 +25,7 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
   return (
     <div
       style={{
-        background: "#111318",
+        background: "hsl(var(--card))",
         borderRadius: 16,
         padding: 20,
         boxShadow:
@@ -36,7 +36,7 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
         className="font-heading text-foreground mb-4"
         style={{ fontSize: 18, letterSpacing: "0.04em", textTransform: "uppercase" }}
       >
-        GYM <span style={{ color: "#ef4444" }}>REQUESTS</span>
+        GYM <span style={{ color: "hsl(var(--primary))" }}>REQUESTS</span>
       </h3>
       <div className="space-y-2">
         {pendingLinks.map((link: any) => {
@@ -45,20 +45,20 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
             <div
               key={link.id}
               className="flex items-center justify-between"
-              style={{ background: "#181c24", borderRadius: 10, padding: "10px 12px" }}
+              style={{ background: "hsl(var(--muted))", borderRadius: 10, padding: "10px 12px" }}
             >
               <div className="flex items-center gap-3 min-w-0">
                 <div
                   className="flex items-center justify-center shrink-0"
                   style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(239,68,68,0.12)" }}
                 >
-                  <Building2 className="h-4 w-4" style={{ color: "#ef4444" }} />
+                  <Building2 className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>
+                  <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))" }}>
                     {gym?.name ?? "Unknown Gym"}
                   </p>
-                  <p className="truncate" style={{ fontSize: 11, color: "#8b909e" }}>
+                  <p className="truncate" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>
                     {[gym?.location, gym?.country].filter(Boolean).join(" · ")}
                   </p>
                 </div>
@@ -70,7 +70,7 @@ export function GymInvitesPanel({ fighterProfileId }: GymInvitesPanelProps) {
                   fontWeight: 600,
                   letterSpacing: "0.06em",
                   textTransform: "uppercase",
-                  color: "#ef4444",
+                  color: "hsl(var(--primary))",
                   background: "rgba(239,68,68,0.12)",
                   padding: "4px 8px",
                   borderRadius: 6,

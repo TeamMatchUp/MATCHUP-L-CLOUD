@@ -152,36 +152,36 @@ export function FighterSearchDropdown({
       onClick={() => onSelect(f)}
       className="w-full text-left transition-all"
       style={{
-        background: "#1a1e28",
+        background: "hsl(var(--muted))",
         borderRadius: 10,
         padding: "12px 14px",
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
         cursor: "pointer",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = "#1e2330";
+        e.currentTarget.style.background = "hsl(var(--muted))";
         e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3), 0 0 0 1px rgba(239,68,68,0.18)";
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = "#1a1e28";
+        e.currentTarget.style.background = "hsl(var(--muted))";
         e.currentTarget.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)";
       }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate" style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{f.name}</p>
-          <p className="truncate" style={{ fontSize: 11, color: "#8b909e", marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
+          <p className="truncate" style={{ fontSize: 14, fontWeight: 700, color: "hsl(var(--foreground))" }}>{f.name}</p>
+          <p className="truncate" style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", marginTop: 2, display: "flex", alignItems: "center", gap: 6 }}>
             <Users style={{ width: 11, height: 11 }} /> {f.__gymName || "Independent"}
           </p>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
           <span style={{
-            display: "inline-block", fontSize: 10, fontWeight: 600, color: "#ef4444",
+            display: "inline-block", fontSize: 10, fontWeight: 600, color: "hsl(var(--primary))",
             background: "rgba(239,68,68,0.1)", borderRadius: 4, padding: "2px 8px",
           }}>
             {formatEnum(f.weight_class)}
           </span>
-          <p style={{ fontSize: 12, color: "#e8eaf0", fontWeight: 700, marginTop: 4 }}>
+          <p style={{ fontSize: 12, color: "hsl(var(--foreground))", fontWeight: 700, marginTop: 4 }}>
             {f.record_wins}-{f.record_losses}-{f.record_draws}
           </p>
         </div>
@@ -191,11 +191,11 @@ export function FighterSearchDropdown({
 
   const SectionDivider = ({ icon: Icon, label, count }: { icon: any; label: string; count: number }) => (
     <div className="flex items-center gap-2" style={{ padding: "4px 0" }}>
-      <Icon style={{ width: 12, height: 12, color: "#ef4444" }} />
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#ef4444" }}>
+      <Icon style={{ width: 12, height: 12, color: "hsl(var(--primary))" }} />
+      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "hsl(var(--primary))" }}>
         {label}
       </span>
-      <span style={{ fontSize: 10, color: "#555b6b" }}>· {count}</span>
+      <span style={{ fontSize: 10, color: "hsl(var(--muted-foreground))" }}>· {count}</span>
       <div style={{ flex: 1, height: 1, background: "rgba(239,68,68,0.15)", marginLeft: 8 }} />
     </div>
   );
@@ -207,7 +207,7 @@ export function FighterSearchDropdown({
       {/* Filter bar */}
       <div
         style={{
-          background: "#111318", padding: "8px 0",
+          background: "hsl(var(--card))", padding: "8px 0",
           boxShadow: "0 1px 0 rgba(255,255,255,0.04)",
           position: "sticky", top: 0, zIndex: 20,
         }}

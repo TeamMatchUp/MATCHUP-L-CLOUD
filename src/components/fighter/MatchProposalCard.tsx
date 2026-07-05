@@ -35,7 +35,7 @@ export function MatchProposalCard({ proposal, fighterProfileId }: MatchProposalC
   const acceptedCount = confirmations.filter((c: any) => c.decision === "accepted").length;
 
   const card: React.CSSProperties = {
-    background: "#111318",
+    background: "hsl(var(--card))",
     boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.4)",
   };
 
@@ -43,10 +43,10 @@ export function MatchProposalCard({ proposal, fighterProfileId }: MatchProposalC
     <div className="rounded-lg p-5" style={card}>
       <div className="flex items-start justify-between mb-3">
         <div>
-          <p className="text-xs" style={{ color: "#8b909e" }}>
+          <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
             {eventTitle} · {eventDate}
           </p>
-          <p className="text-xs" style={{ color: "#555b6b" }}>{formatEnum(weightClass)}</p>
+          <p className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{formatEnum(weightClass)}</p>
         </div>
         <Badge
           variant="outline"
@@ -61,9 +61,9 @@ export function MatchProposalCard({ proposal, fighterProfileId }: MatchProposalC
       </div>
 
       <div className="mb-4">
-        <p className="text-xs mb-1" style={{ color: "#8b909e" }}>Your Opponent</p>
-        <p className="font-heading text-xl" style={{ color: "#e8eaf0" }}>{opponent?.name || "TBD"}</p>
-        <p className="text-sm" style={{ color: "#8b909e" }}>
+        <p className="text-xs mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>Your Opponent</p>
+        <p className="font-heading text-xl" style={{ color: "hsl(var(--foreground))" }}>{opponent?.name || "TBD"}</p>
+        <p className="text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
           {opponent?.record_wins}W-{opponent?.record_losses}L-{opponent?.record_draws}D
           {opponent?.style && ` · ${formatEnum(opponent.style)}`}
         </p>
@@ -73,7 +73,7 @@ export function MatchProposalCard({ proposal, fighterProfileId }: MatchProposalC
         size="sm"
         onClick={() => navigate(`/proposals/${proposal.id}`)}
         className="gap-1"
-        style={{ background: "#ef4444", color: "#0d0f12" }}
+        style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
       >
         View proposal <ArrowRight className="h-3 w-3" />
       </Button>

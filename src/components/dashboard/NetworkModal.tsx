@@ -60,15 +60,15 @@ export function NetworkModal({
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(12px)" }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: "#14171e", borderRadius: 12, width: "min(480px, 95vw)", maxHeight: "80vh", overflowY: "auto", padding: 20, boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
+      <div style={{ background: "hsl(var(--card))", borderRadius: 12, width: "min(480px, 95vw)", maxHeight: "80vh", overflowY: "auto", padding: 20, boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
         <div className="flex items-center justify-between" style={{ marginBottom: 16 }}>
-          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>{type === "followers" ? "Followers" : "Following"}</h3>
-          <button onClick={onClose} style={{ color: "#8b909e", cursor: "pointer" }}><X style={{ width: 20, height: 20 }} /></button>
+          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "hsl(var(--foreground))" }}>{type === "followers" ? "Followers" : "Following"}</h3>
+          <button onClick={onClose} style={{ color: "hsl(var(--muted-foreground))", cursor: "pointer" }}><X style={{ width: 20, height: 20 }} /></button>
         </div>
         {items.length === 0 && (
           <div className="text-center py-8">
-            <Users style={{ width: 32, height: 32, color: "#555b6b", margin: "0 auto 8px" }} />
-            <p style={{ fontSize: 13, color: "#8b909e" }}>{type === "followers" ? "No followers yet" : "Not following anyone"}</p>
+            <Users style={{ width: 32, height: 32, color: "hsl(var(--muted-foreground))", margin: "0 auto 8px" }} />
+            <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>{type === "followers" ? "No followers yet" : "Not following anyone"}</p>
           </div>
         )}
         <div className="space-y-2">
@@ -83,15 +83,15 @@ export function NetworkModal({
                 {item.avatar ? <img src={item.avatar} alt="" className="h-full w-full object-cover" /> : (item.name || "?").slice(0, 2).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <span className="block truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{item.name || "Unknown"}</span>
+                <span className="block truncate" style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))" }}>{item.name || "Unknown"}</span>
                 {item.role && (
-                  <span style={{ fontSize: 10, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)", borderRadius: 4, padding: "1px 6px", display: "inline-block", marginTop: 2 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: "hsl(var(--primary))", background: "rgba(239,68,68,0.1)", borderRadius: 4, padding: "1px 6px", display: "inline-block", marginTop: 2 }}>
                     {ROLE_LABELS[item.role] || item.role}
                   </span>
                 )}
               </div>
               {type === "following" && (
-                <button onClick={(e) => { e.stopPropagation(); handleUnfollow(item.userId); }} style={{ fontSize: 11, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>
+                <button onClick={(e) => { e.stopPropagation(); handleUnfollow(item.userId); }} style={{ fontSize: 11, fontWeight: 600, color: "hsl(var(--primary))", background: "rgba(239,68,68,0.1)", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>
                   Unfollow
                 </button>
               )}

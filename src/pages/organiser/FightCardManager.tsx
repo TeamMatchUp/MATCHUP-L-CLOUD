@@ -80,7 +80,7 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
   const hasTBA = oneTBA || bothTBA;
 
   let cardStyle: React.CSSProperties = {
-    background: "#1a1e28",
+    background: "hsl(var(--muted))",
     border: "1px solid rgba(255,255,255,0.06)",
     borderRadius: 8,
     padding: "14px 16px",
@@ -102,9 +102,9 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
   }
 
   const statusBadge = (s: string) => {
-    if (s === "confirmed") return <span style={{ fontSize: 10, background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Confirmed</span>;
+    if (s === "confirmed") return <span style={{ fontSize: 10, background: "rgba(34,197,94,0.15)", color: "hsl(var(--success))", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Confirmed</span>;
     if (s === "proposed" || s === "pending") return <span style={{ fontSize: 10, background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Pending</span>;
-    if (s === "declined") return <span style={{ fontSize: 10, background: "rgba(239,68,68,0.15)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Declined</span>;
+    if (s === "declined") return <span style={{ fontSize: 10, background: "rgba(239,68,68,0.15)", color: "hsl(var(--primary))", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 9999, padding: "1px 8px" }}>Declined</span>;
     return null;
   };
 
@@ -112,16 +112,16 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
     const isAssigned = side === "a" ? !!bout.fighter_a_id : !!bout.fighter_b_id;
     return (
       <div style={{ flex: 1, textAlign: align, minWidth: 0 }}>
-        <p style={{ fontWeight: 600, fontSize: 14, color: isAssigned ? "#e8eaf0" : "#555b6b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <p style={{ fontWeight: 600, fontSize: 14, color: isAssigned ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {fighter?.name ?? "TBA"}
         </p>
         {fighter && (
-          <p style={{ fontSize: 11, color: "#8b909e", marginTop: 1 }}>
+          <p style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", marginTop: 1 }}>
             {fighter.record_wins}-{fighter.record_losses}-{fighter.record_draws}
           </p>
         )}
         {isAssigned && statusBadge(status)}
-        {!isAssigned && <span style={{ fontSize: 11, color: "#555b6b" }}>—</span>}
+        {!isAssigned && <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>—</span>}
       </div>
     );
   };
@@ -139,20 +139,20 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
     >
       {/* Drag handle */}
       <div style={{ cursor: "grab", flexShrink: 0 }}>
-        <GripVertical className="h-3.5 w-3.5" style={{ color: "#555b6b" }} />
+        <GripVertical className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
       </div>
 
       {/* Centre content */}
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* Weight + discipline row */}
-        <div style={{ fontSize: 12, color: "#8b909e", marginBottom: 4 }}>
+        <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 4 }}>
           {weightDisplay(bout.weight_class)}
-          {bout.discipline && <span style={{ marginLeft: 8, color: "#555b6b" }}>{formatEnum(bout.discipline)}</span>}
+          {bout.discipline && <span style={{ marginLeft: 8, color: "hsl(var(--muted-foreground))" }}>{formatEnum(bout.discipline)}</span>}
         </div>
 
         {/* Rounds row */}
         {bout.rounds && bout.round_duration_minutes && (
-          <div style={{ fontSize: 11, color: "#555b6b", marginBottom: 6 }}>
+          <div style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", marginBottom: 6 }}>
             {bout.rounds} × {bout.round_duration_minutes} min rounds
           </div>
         )}
@@ -160,12 +160,12 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
         {/* Fighters row */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {fighterBlock(fA, "a", "left")}
-          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#ef4444", flexShrink: 0 }}>VS</span>
+          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "hsl(var(--primary))", flexShrink: 0 }}>VS</span>
           {fighterBlock(fB, "b", "right")}
         </div>
 
         {isEmpty && (
-          <p style={{ fontSize: 12, color: "#555b6b", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>EMPTY</p>
+          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>EMPTY</p>
         )}
       </div>
 
@@ -178,10 +178,10 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
           onClick={() => onTogglePublic(bout.id, !bout.is_public)}
           title={bout.is_public !== false ? "Make unlisted" : "Make public"}
         >
-          {bout.is_public !== false ? <Eye className="h-3.5 w-3.5" style={{ color: "#8b909e" }} /> : <EyeOff className="h-3.5 w-3.5" style={{ color: "#8b909e" }} />}
+          {bout.is_public !== false ? <Eye className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} /> : <EyeOff className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />}
         </Button>
         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onEdit(bout)}>
-          <Pencil className="h-3.5 w-3.5" style={{ color: "#8b909e" }} />
+          <Pencil className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
         </Button>
         {hasTBA && (
           <button
@@ -189,7 +189,7 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
             style={{
               fontSize: 10,
               fontWeight: 600,
-              color: "#ef4444",
+              color: "hsl(var(--primary))",
               background: "transparent",
               border: "1px solid rgba(239,68,68,0.3)",
               borderRadius: 6,
@@ -205,7 +205,7 @@ function SlotCard({ bout, onEdit, onTogglePublic, onFindMatches, onDelete, onDra
           </button>
         )}
         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => onDelete(bout.id)}>
-          <Trash2 className="h-3.5 w-3.5" style={{ color: "#555b6b" }} />
+          <Trash2 className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
         </Button>
       </div>
     </div>
@@ -325,7 +325,7 @@ export default function FightCardManager() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-16"><div className="container py-6 md:py-10"><div className="animate-pulse" style={{ color: "#8b909e" }}>Loading event...</div></div></main>
+        <main className="pt-16"><div className="container py-6 md:py-10"><div className="animate-pulse" style={{ color: "hsl(var(--muted-foreground))" }}>Loading event...</div></div></main>
       </div>
     );
   }
@@ -335,7 +335,7 @@ export default function FightCardManager() {
       <div className="min-h-screen bg-background">
         <Header />
         <main className="pt-16"><div className="container py-6 md:py-10 text-center">
-          <p style={{ color: "#8b909e" }}>Event not found.</p>
+          <p style={{ color: "hsl(var(--muted-foreground))" }}>Event not found.</p>
           <Button variant="outline" asChild className="mt-4"><Link to="/organiser/dashboard">Back to Dashboard</Link></Button>
         </div></main>
       </div>
@@ -355,7 +355,7 @@ export default function FightCardManager() {
 
   const sectionContainer = (isMain: boolean, children: React.ReactNode, sectionBouts: any[]) => (
     <div style={{
-      background: "#14171e",
+      background: "hsl(var(--card))",
       border: isMain ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(255,255,255,0.08)",
       borderRadius: 12,
       padding: 20,
@@ -365,7 +365,7 @@ export default function FightCardManager() {
         <h2 style={{
           fontFamily: "'Bebas Neue', sans-serif",
           fontSize: 18,
-          color: isMain ? "#ef4444" : "#e8eaf0",
+          color: isMain ? "hsl(var(--primary))" : "hsl(var(--foreground))",
           letterSpacing: "0.04em",
         }}>
           {isMain ? "MAIN CARD" : "UNDERCARD"}
@@ -380,8 +380,8 @@ export default function FightCardManager() {
             cursor: "pointer",
             transition: "all 0.2s",
             ...(isMain
-              ? { background: "#ef4444", color: "#0d0f12", border: "none", boxShadow: "0 0 12px rgba(239,68,68,0.25)" }
-              : { background: "transparent", color: "#e8eaf0", border: "1px solid rgba(255,255,255,0.1)" }
+              ? { background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", border: "none", boxShadow: "0 0 12px rgba(239,68,68,0.25)" }
+              : { background: "transparent", color: "hsl(var(--foreground))", border: "1px solid rgba(255,255,255,0.1)" }
             ),
           }}
           onMouseEnter={(e) => {
@@ -389,7 +389,7 @@ export default function FightCardManager() {
             else e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)";
           }}
           onMouseLeave={(e) => {
-            if (isMain) e.currentTarget.style.background = "#ef4444";
+            if (isMain) e.currentTarget.style.background = "hsl(var(--primary))";
             else e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
           }}
         >
@@ -399,7 +399,7 @@ export default function FightCardManager() {
       </div>
 
       {sectionBouts.length === 0 ? (
-        <p style={{ fontSize: 13, color: "#555b6b", textAlign: "center", padding: "24px 0", borderTop: "1px dashed rgba(255,255,255,0.06)" }}>
+        <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", textAlign: "center", padding: "24px 0", borderTop: "1px dashed rgba(255,255,255,0.06)" }}>
           No {isMain ? "main card" : "undercard"} bouts yet.
         </p>
       ) : children}
@@ -413,7 +413,7 @@ export default function FightCardManager() {
         <section style={{ padding: "24px 0 64px" }}>
           <div className="container" style={{ paddingLeft: 35, paddingRight: 35 }}>
             <div className="flex items-center gap-4 mb-6">
-              <button type="button" onClick={() => navigate(`/organiser/events/${id}`)} className="inline-flex items-center gap-2 text-sm hover:text-foreground" style={{ color: "#8b909e" }}>
+              <button type="button" onClick={() => navigate(`/organiser/events/${id}`)} className="inline-flex items-center gap-2 text-sm hover:text-foreground" style={{ color: "hsl(var(--muted-foreground))" }}>
                 <ArrowLeft className="h-4 w-4" /> Back to Event Overview
               </button>
             </div>
@@ -425,17 +425,17 @@ export default function FightCardManager() {
             <div className="flex items-start justify-between flex-wrap gap-4 mb-8">
               <div>
                 <div className="flex items-center gap-3 mb-1">
-                  <h1 className="truncate" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.5rem, 5vw, 2rem)", color: "#e8eaf0", textTransform: "uppercase", lineHeight: 1.05, maxWidth: "100%" }}>{event.title}</h1>
+                  <h1 className="truncate" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.5rem, 5vw, 2rem)", color: "hsl(var(--foreground))", textTransform: "uppercase", lineHeight: 1.05, maxWidth: "100%" }}>{event.title}</h1>
                   <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>{event.status}</Badge>
                 </div>
-                <p style={{ fontSize: 13, color: "#8b909e" }}>
+                <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>
                   {new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })} · {event.location} · {event.country}
                 </p>
               </div>
               <div className="flex gap-2 flex-wrap">
                 <button onClick={() => setShowEditEvent(true)} style={{
                   padding: "8px 16px", fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: "pointer",
-                  background: "transparent", border: "1px solid rgba(239,68,68,0.4)", color: "#ef4444",
+                  background: "transparent", border: "1px solid rgba(239,68,68,0.4)", color: "hsl(var(--primary))",
                   transition: "all 0.2s",
                 }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.1)"; }}
@@ -446,11 +446,11 @@ export default function FightCardManager() {
                 <a href={`/events/${id}`} target="_blank" rel="noopener noreferrer" style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "8px 16px", fontSize: 13, fontWeight: 600, borderRadius: 8,
-                  background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "#8b909e",
+                  background: "transparent", border: "1px solid rgba(255,255,255,0.1)", color: "hsl(var(--muted-foreground))",
                   textDecoration: "none", transition: "all 0.2s",
                 }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; e.currentTarget.style.color = "#ef4444"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "#8b909e"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(239,68,68,0.4)"; e.currentTarget.style.color = "hsl(var(--primary))"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)"; e.currentTarget.style.color = "hsl(var(--muted-foreground))"; }}
                 >
                   <Eye className="h-3.5 w-3.5" /> Preview public page
                 </a>
@@ -462,7 +462,7 @@ export default function FightCardManager() {
               </div>
             </div>
 
-            {event.description && <p style={{ color: "#8b909e", marginBottom: 32, maxWidth: 640 }}>{event.description}</p>}
+            {event.description && <p style={{ color: "hsl(var(--muted-foreground))", marginBottom: 32, maxWidth: 640 }}>{event.description}</p>}
 
             {/* MAIN CARD */}
             {sectionContainer(true, (
@@ -555,7 +555,7 @@ export default function FightCardManager() {
                 if (pendingDeleteId) await handleDelete(pendingDeleteId);
                 setPendingDeleteId(null);
               }}
-              style={{ background: "#ef4444", color: "#fff" }}
+              style={{ background: "hsl(var(--primary))", color: "#fff" }}
             >
               Delete
             </AlertDialogAction>

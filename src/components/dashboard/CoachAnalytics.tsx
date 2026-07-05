@@ -29,7 +29,7 @@ const ChartTooltip = ({ active, payload, label }: any) => {
       style={{
         background: ANALYTICS_TOKENS.RAISED,
         boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
-        color: "#e8eaf0",
+        color: "hsl(var(--foreground))",
       }}
     >
       <p className="mb-1 font-semibold">{label}</p>
@@ -291,7 +291,7 @@ export function CoachAnalyticsV2({ userId, title = "Analytics" }: { userId: stri
                 style={{ background: ANALYTICS_TOKENS.RAISED }}
               >
                 <div className="min-w-0">
-                  <div className="text-sm font-medium truncate" style={{ color: "#e8eaf0" }}>
+                  <div className="text-sm font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
                     {event.title}
                   </div>
                   <div className="text-[11px]" style={{ color: ANALYTICS_TOKENS.TEXT_MUTED }}>
@@ -471,7 +471,7 @@ export function CoachAnalyticsV2({ userId, title = "Analytics" }: { userId: stri
               <Tooltip content={<ChartTooltip />} cursor={{ fill: "rgba(239,68,68,0.06)" }} />
               <Legend wrapperStyle={{ color: axisColor, fontSize: 11 }} />
               <Bar dataKey="Wins" stackId="r" fill={ANALYTICS_TOKENS.GOLD} radius={[0, 0, 0, 0]} />
-              <Bar dataKey="Losses" stackId="r" fill="#555b6b" />
+              <Bar dataKey="Losses" stackId="r" fill="hsl(var(--muted-foreground))" />
               <Bar dataKey="Draws" stackId="r" fill="#2d3140" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>

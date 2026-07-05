@@ -53,8 +53,8 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
   });
 
   const heading = (
-    <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.125rem, 4.5vw, 1.25rem)", color: "#e8eaf0", letterSpacing: "0.04em", marginBottom: 12, lineHeight: 1.1 }}>
-      GYMS <span style={{ color: "#ef4444" }}>NEAR YOU</span>
+    <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(1.125rem, 4.5vw, 1.25rem)", color: "hsl(var(--foreground))", letterSpacing: "0.04em", marginBottom: 12, lineHeight: 1.1 }}>
+      GYMS <span style={{ color: "hsl(var(--primary))" }}>NEAR YOU</span>
     </h3>
   );
 
@@ -63,8 +63,8 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
       <div className="flex flex-col flex-1">
         {heading}
         <div className="flex-1 flex flex-col items-center justify-center text-center">
-          <LocateFixed style={{ width: 32, height: 32, color: "#555b6b", marginBottom: 8 }} />
-          <p style={{ fontSize: 12, color: "#8b909e", marginBottom: 10 }}>
+          <LocateFixed style={{ width: 32, height: 32, color: "hsl(var(--muted-foreground))", marginBottom: 8 }} />
+          <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 10 }}>
             {locationError ? "Location access was denied." : "Enable location to see nearby gyms"}
           </p>
           <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={requestLocation}>
@@ -79,7 +79,7 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
     return (
       <div className="flex flex-col flex-1">
         {heading}
-        <div className="space-y-2">{[1, 2, 3].map((i) => (<div key={i} style={{ height: 56, background: "#181c24", borderRadius: 8 }} className="animate-pulse" />))}</div>
+        <div className="space-y-2">{[1, 2, 3].map((i) => (<div key={i} style={{ height: 56, background: "hsl(var(--muted))", borderRadius: 8 }} className="animate-pulse" />))}</div>
       </div>
     );
   }
@@ -88,7 +88,7 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
     return (
       <div className="flex flex-col flex-1">
         {heading}
-        <p style={{ fontSize: 12, color: "#8b909e", textAlign: "center", padding: "16px 0" }}>No gyms found within 20 miles.</p>
+        <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", textAlign: "center", padding: "16px 0" }}>No gyms found within 20 miles.</p>
       </div>
     );
   }
@@ -102,19 +102,19 @@ export function GymsNearYouWidget({ fighterProfileId }: GymsNearYouWidgetProps) 
             key={gym.id}
             to={`/gyms/${gym.id}`}
             className="flex items-center gap-3 transition-colors"
-            style={{ background: "#181c24", borderRadius: 8, padding: "10px 12px" }}
+            style={{ background: "hsl(var(--muted))", borderRadius: 8, padding: "10px 12px" }}
           >
             <div style={{ height: 36, width: 36, borderRadius: 8, background: "rgba(239,68,68,0.1)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <MapPin style={{ width: 16, height: 16, color: "#ef4444" }} />
+              <MapPin style={{ width: 16, height: 16, color: "hsl(var(--primary))" }} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
-                <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{gym.name}</p>
-                {gym.listing_tier === "featured" && <Star style={{ width: 12, height: 12, color: "#ef4444", fill: "#ef4444", flexShrink: 0 }} />}
+                <p className="truncate" style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))" }}>{gym.name}</p>
+                {gym.listing_tier === "featured" && <Star style={{ width: 12, height: 12, color: "hsl(var(--primary))", fill: "hsl(var(--primary))", flexShrink: 0 }} />}
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <p style={{ fontSize: 11, color: "#8b909e" }}>{gym.city ?? gym.country}</p>
-                <span style={{ fontSize: 11, color: "#ef4444", fontWeight: 600 }}>{gym.distance.toFixed(1)} mi</span>
+                <p style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>{gym.city ?? gym.country}</p>
+                <span style={{ fontSize: 11, color: "hsl(var(--primary))", fontWeight: 600 }}>{gym.distance.toFixed(1)} mi</span>
               </div>
             </div>
           </Link>

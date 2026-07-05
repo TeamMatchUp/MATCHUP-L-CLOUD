@@ -10,16 +10,16 @@ function PartyPill({ label, status }: PartyPillProps) {
     return (
       <div
         className="rounded-full px-3 py-1.5 text-[11px]"
-        style={{ background: "#181c24", color: "#555b6b", fontFamily: "Inter" }}
+        style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))", fontFamily: "Inter" }}
       >
         {label}: not assigned
       </div>
     );
   }
   const styles: Record<SideStatus, { bg: string; fg: string; text: string }> = {
-    accepted: { bg: "rgba(239,68,68,0.18)", fg: "#ef4444", text: "Accepted" },
-    declined: { bg: "rgba(239,68,68,0.16)", fg: "#ef4444", text: "Declined" },
-    awaiting: { bg: "#181c24", fg: "#8b909e", text: "Awaiting" },
+    accepted: { bg: "rgba(239,68,68,0.18)", fg: "hsl(var(--primary))", text: "Accepted" },
+    declined: { bg: "rgba(239,68,68,0.16)", fg: "hsl(var(--primary))", text: "Declined" },
+    awaiting: { bg: "hsl(var(--muted))", fg: "hsl(var(--muted-foreground))", text: "Awaiting" },
   };
   const s = styles[status];
   return (
@@ -56,13 +56,13 @@ export function ProposalProgress({
     <div
       className="rounded-lg p-4"
       style={{
-        background: "#111318",
+        background: "hsl(var(--card))",
         boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.4)",
       }}
     >
       <p
         className="mb-3 text-[11px] uppercase tracking-[0.08em]"
-        style={{ color: "#8b909e", fontFamily: "Inter" }}
+        style={{ color: "hsl(var(--muted-foreground))", fontFamily: "Inter" }}
       >
         Acceptance Progress
       </p>

@@ -132,8 +132,8 @@ export function DashboardNetwork() {
     if (items.length === 0) {
       return (
         <div className="text-center py-12">
-          <Users style={{ width: 32, height: 32, color: "#555b6b", margin: "0 auto 8px" }} />
-          <p style={{ fontSize: 13, color: "#8b909e" }}>
+          <Users style={{ width: 32, height: 32, color: "hsl(var(--muted-foreground))", margin: "0 auto 8px" }} />
+          <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))" }}>
             {showUnfollow ? "Not following anyone" : "No followers yet"}
           </p>
         </div>
@@ -154,9 +154,9 @@ export function DashboardNetwork() {
             >
               <div
                 style={{
-                  width: 36, height: 36, borderRadius: "50%", background: "#1a1e28",
+                  width: 36, height: 36, borderRadius: "50%", background: "hsl(var(--muted))",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 13, fontWeight: 600, color: "#8b909e", overflow: "hidden", flexShrink: 0,
+                  fontSize: 13, fontWeight: 600, color: "hsl(var(--muted-foreground))", overflow: "hidden", flexShrink: 0,
                 }}
               >
                 {item.profile?.avatar_url ? (
@@ -166,14 +166,14 @@ export function DashboardNetwork() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0" }}>
+                <p className="truncate" style={{ fontSize: 14, fontWeight: 600, color: "hsl(var(--foreground))" }}>
                   {item.profile?.full_name || "Unknown"}
                 </p>
                 <div className="flex items-center gap-2">
                   {item.role && (
                     <span
                       style={{
-                        fontSize: 10, fontWeight: 600, color: "#ef4444",
+                        fontSize: 10, fontWeight: 600, color: "hsl(var(--primary))",
                         background: "rgba(239,68,68,0.1)",
                         borderRadius: 4, padding: "2px 6px",
                       }}
@@ -187,7 +187,7 @@ export function DashboardNetwork() {
                 <button
                   onClick={(e) => { e.stopPropagation(); handleUnfollow(item.userId); }}
                   style={{
-                    fontSize: 11, fontWeight: 600, color: "#ef4444", background: "rgba(239,68,68,0.1)",
+                    fontSize: 11, fontWeight: 600, color: "hsl(var(--primary))", background: "rgba(239,68,68,0.1)",
                     borderRadius: 6, padding: "4px 10px",
                     cursor: "pointer", transition: "all 0.15s",
                   }}
@@ -207,29 +207,29 @@ export function DashboardNetwork() {
       <div className="coach-card">
         <div style={{ height: 3, background: "linear-gradient(90deg, #ef4444, rgba(239,68,68,0.3))", borderRadius: "12px 12px 0 0" }} />
         <div className="p-5">
-          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "#e8eaf0", marginBottom: 16 }}>
+          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 16, color: "hsl(var(--foreground))", marginBottom: 16 }}>
             Your Network
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => setSheet("followers")}
               className="text-left rounded-lg p-4 transition-all"
-              style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}
+              style={{ background: "hsl(var(--muted))", border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}
             >
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#ef4444" }}>
+              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "hsl(var(--primary))" }}>
                 {followerCount}
               </span>
-              <p style={{ fontSize: 12, color: "#8b909e", marginTop: 2 }}>Followers</p>
+              <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>Followers</p>
             </button>
             <button
               onClick={() => setSheet("following")}
               className="text-left rounded-lg p-4 transition-all"
-              style={{ background: "#1a1e28", border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}
+              style={{ background: "hsl(var(--muted))", border: "1px solid rgba(255,255,255,0.06)", cursor: "pointer" }}
             >
-              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#ef4444" }}>
+              <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "hsl(var(--primary))" }}>
                 {followingCount}
               </span>
-              <p style={{ fontSize: 12, color: "#8b909e", marginTop: 2 }}>Following</p>
+              <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>Following</p>
             </button>
           </div>
         </div>
@@ -243,13 +243,13 @@ export function DashboardNetwork() {
         >
           <div
             className="w-full max-w-md mx-4 overflow-hidden"
-            style={{ background: "#14171e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, maxHeight: "70vh" }}
+            style={{ background: "hsl(var(--card))", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, maxHeight: "70vh" }}
           >
             <div className="flex items-center justify-between p-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-              <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#e8eaf0" }}>
+              <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "hsl(var(--foreground))" }}>
                 {sheet === "followers" ? "Followers" : "Following"}
               </h3>
-              <button onClick={() => setSheet(null)} style={{ color: "#8b909e", cursor: "pointer" }}>
+              <button onClick={() => setSheet(null)} style={{ color: "hsl(var(--muted-foreground))", cursor: "pointer" }}>
                 <X style={{ width: 20, height: 20 }} />
               </button>
             </div>

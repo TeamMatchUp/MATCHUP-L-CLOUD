@@ -40,9 +40,9 @@ class AdminErrorBoundary extends Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: 40, color: "#e8eaf0", background: "#080a0d", minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
-          <h2 style={{ color: "#ef4444", fontFamily: "Bebas Neue, sans-serif", fontSize: 28 }}>Admin page error</h2>
-          <pre style={{ color: "#8b909e", fontSize: 12, whiteSpace: "pre-wrap", marginTop: 16 }}>
+        <div style={{ padding: 40, color: "hsl(var(--foreground))", background: "hsl(var(--background))", minHeight: "100vh", fontFamily: "Inter, sans-serif" }}>
+          <h2 style={{ color: "hsl(var(--primary))", fontFamily: "Bebas Neue, sans-serif", fontSize: 28 }}>Admin page error</h2>
+          <pre style={{ color: "hsl(var(--muted-foreground))", fontSize: 12, whiteSpace: "pre-wrap", marginTop: 16 }}>
             {this.state.error?.toString()}
             {this.state.errorInfo?.componentStack}
           </pre>
@@ -114,7 +114,7 @@ export default function AdminAnalytics() {
 
   if (!ready) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", color: "#8b909e", fontFamily: "Inter, sans-serif", fontSize: 14, background: "#080a0d" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", color: "hsl(var(--muted-foreground))", fontFamily: "Inter, sans-serif", fontSize: 14, background: "hsl(var(--background))" }}>
         Checking access...
       </div>
     );

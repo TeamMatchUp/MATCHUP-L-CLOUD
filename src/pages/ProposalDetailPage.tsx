@@ -23,7 +23,7 @@ export default function ProposalDetailPage() {
           size="sm"
           onClick={() => navigate(-1)}
           className="mb-4 gap-1"
-          style={{ color: "#8b909e" }}
+          style={{ color: "hsl(var(--muted-foreground))" }}
         >
           <ArrowLeft className="h-4 w-4" /> Back
         </Button>

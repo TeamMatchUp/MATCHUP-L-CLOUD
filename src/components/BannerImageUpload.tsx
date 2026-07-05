@@ -121,7 +121,7 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
                 display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer",
               }}
             >
-              <X style={{ width: 14, height: 14, color: "#e8eaf0" }} />
+              <X style={{ width: 14, height: 14, color: "hsl(var(--foreground))" }} />
             </button>
           )}
           <button
@@ -130,7 +130,7 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
             className="absolute bottom-2 right-2"
             style={{
               padding: "6px 14px", borderRadius: 8, background: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(8px)", color: "#ef4444", fontSize: 12, fontWeight: 600,
+              backdropFilter: "blur(8px)", color: "hsl(var(--primary))", fontSize: 12, fontWeight: 600,
               cursor: uploading ? "wait" : "pointer",
             }}
           >
@@ -145,14 +145,14 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
             width: "100%", aspectRatio: "16/9", borderRadius: 8, cursor: uploading ? "wait" : "pointer",
             border: "2px dashed rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.04)",
             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            gap: 8, color: "#8b909e", fontSize: 13,
+            gap: 8, color: "hsl(var(--muted-foreground))", fontSize: 13,
           }}
         >
           {uploading ? (
-            <Loader2 className="h-6 w-6 animate-spin" style={{ color: "#ef4444" }} />
+            <Loader2 className="h-6 w-6 animate-spin" style={{ color: "hsl(var(--primary))" }} />
           ) : (
             <>
-              <Upload style={{ width: 24, height: 24, color: "#ef4444" }} />
+              <Upload style={{ width: 24, height: 24, color: "hsl(var(--primary))" }} />
               <span>Upload banner image</span>
               <span style={{ fontSize: 11 }}>JPEG, PNG, or WebP · Max 5MB</span>
             </>
@@ -172,18 +172,18 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
           <div
             style={{
               width: "min(90vw, 720px)",
-              background: "#111318",
+              background: "hsl(var(--card))",
               borderRadius: 14,
               overflow: "hidden",
               boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
             <div style={{ padding: "16px 20px" }}>
-              <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "#e8eaf0" }}>
+              <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "hsl(var(--foreground))" }}>
                 Crop Banner Image
               </h3>
             </div>
-            <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#080a0d" }}>
+            <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "hsl(var(--background))" }}>
               <Cropper
                 image={cropSrc}
                 crop={crop}
@@ -196,7 +196,7 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
             </div>
             <div style={{ padding: "16px 20px" }}>
               <div className="flex items-center gap-3 mb-4">
-                <ZoomOut style={{ width: 16, height: 16, color: "#8b909e" }} />
+                <ZoomOut style={{ width: 16, height: 16, color: "hsl(var(--muted-foreground))" }} />
                 <input
                   type="range"
                   min={1}
@@ -205,16 +205,16 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
                   value={zoom}
                   onChange={(e) => setZoom(Number(e.target.value))}
                   className="flex-1"
-                  style={{ accentColor: "#ef4444" }}
+                  style={{ accentColor: "hsl(var(--primary))" }}
                 />
-                <ZoomIn style={{ width: 16, height: 16, color: "#8b909e" }} />
+                <ZoomIn style={{ width: 16, height: 16, color: "hsl(var(--muted-foreground))" }} />
               </div>
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={handleCropCancel}
                   style={{
                     padding: "10px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-                    background: "transparent", color: "#8b909e", cursor: "pointer",
+                    background: "transparent", color: "hsl(var(--muted-foreground))", cursor: "pointer",
                   }}
                 >
                   Cancel
@@ -224,7 +224,7 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
                   disabled={uploading}
                   style={{
                     padding: "10px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
-                    background: "#ef4444", color: "#0d0f12", cursor: uploading ? "wait" : "pointer",
+                    background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", cursor: uploading ? "wait" : "pointer",
                     boxShadow: "0 0 12px rgba(239,68,68,0.25)",
                   }}
                 >

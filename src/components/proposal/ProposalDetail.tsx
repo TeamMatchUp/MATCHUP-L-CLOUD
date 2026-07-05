@@ -25,8 +25,8 @@ interface ProposalDetailProps {
 type CornerStatus = "accepted" | "declined" | "pending";
 
 const statusStyle = (s: CornerStatus): React.CSSProperties => {
-  if (s === "accepted") return { background: "rgba(34,197,94,0.14)", color: "#22c55e" };
-  if (s === "declined") return { background: "rgba(239,68,68,0.14)", color: "#ef4444" };
+  if (s === "accepted") return { background: "rgba(34,197,94,0.14)", color: "hsl(var(--success))" };
+  if (s === "declined") return { background: "rgba(239,68,68,0.14)", color: "hsl(var(--primary))" };
   return { background: "rgba(232,160,32,0.14)", color: "hsl(var(--primary))" };
 };
 
@@ -146,7 +146,7 @@ function PartyRow({ name, subtitle, decision, canAct, busy, onAccept, onDecline 
             onClick={onAccept}
             disabled={busy}
             className="gap-1 h-8 px-3"
-            style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e" }}
+            style={{ background: "rgba(34,197,94,0.15)", color: "hsl(var(--success))" }}
           >
             <Check className="h-3.5 w-3.5" /> Accept
           </Button>
@@ -156,7 +156,7 @@ function PartyRow({ name, subtitle, decision, canAct, busy, onAccept, onDecline 
             onClick={onDecline}
             disabled={busy}
             className="gap-1 h-8 px-3"
-            style={{ background: "rgba(239,68,68,0.15)", color: "#ef4444" }}
+            style={{ background: "rgba(239,68,68,0.15)", color: "hsl(var(--primary))" }}
           >
             <X className="h-3.5 w-3.5" /> Decline
           </Button>

@@ -54,7 +54,7 @@ export function FighterCard({ fighter, index = 0, animate = true }: Props) {
       to={`/fighters/${fighter.id}`}
       className="group block h-full rounded-xl p-5 sm:p-6 mu-card"
       style={{
-        backgroundColor: "#111318",
+        backgroundColor: "hsl(var(--card))",
         boxShadow:
           "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
         transition: "transform 0.25s ease, box-shadow 0.25s ease",

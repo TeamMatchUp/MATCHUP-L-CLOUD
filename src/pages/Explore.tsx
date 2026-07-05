@@ -58,17 +58,17 @@ const ITEMS_PER_PAGE_MOBILE = 20;
 
 /* ── Explore design tokens (inline, not polluting global CSS) ── */
 const EX = {
-  bg: "#080a0d",
-  card: "#111318",
-  raised: "#181c24",
+  bg: "hsl(var(--background))",
+  card: "hsl(var(--card))",
+  raised: "hsl(var(--muted))",
   border: "transparent",
   borderMid: "transparent",
-  gold: "#ef4444",
+  gold: "hsl(var(--primary))",
   goldDim: "rgba(239,68,68,0.12)",
   goldBorder: "rgba(239,68,68,0.25)",
-  text: "#e8eaf0",
-  muted: "#8b909e",
-  dimmed: "#555b6b",
+  text: "hsl(var(--foreground))",
+  muted: "hsl(var(--muted-foreground))",
+  dimmed: "hsl(var(--muted-foreground))",
 };
 
 /* Animated counter hook */
@@ -537,7 +537,7 @@ export default function Explore() {
                           <button onClick={pc.lookup} disabled={pc.isGeocoding || !pc.postcode.trim()} style={{ height: 36, padding: "0 16px", borderRadius: 8, background: EX.gold, color: EX.bg, fontSize: 13, fontWeight: 600, cursor: "pointer", opacity: pc.isGeocoding || !pc.postcode.trim() ? 0.5 : 1 }}>{pc.isGeocoding ? "..." : "Search"}</button>
                           {pc.coords && <button onClick={pc.clear} style={{ width: 36, height: 36, borderRadius: 8, background: "rgba(255,255,255,0.04)", border: `1px solid ${EX.border}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X style={{ width: 16, height: 16, color: EX.muted }} /></button>}
                         </div>
-                        {pc.error && <p className="text-xs" style={{ color: "#ef4444" }}>{pc.error}</p>}
+                        {pc.error && <p className="text-xs" style={{ color: "hsl(var(--primary))" }}>{pc.error}</p>}
                         {pc.coords && (
                           <div className="space-y-2">
                             <span className="text-xs" style={{ color: EX.muted }}>Within <span style={{ color: EX.text, fontWeight: 500 }}>{pc.radius} miles</span> of {pc.coords.postcode}</span>
@@ -808,7 +808,7 @@ function FighterCard({ fighter, index, currentUserId }: { fighter: any; index: n
                 title={isAvailable ? "Available" : "Not available"}
                 style={{
                   width: 8, height: 8, borderRadius: "50%",
-                  background: isAvailable ? "#22c55e" : "#555b6b",
+                  background: isAvailable ? "hsl(var(--success))" : "hsl(var(--muted-foreground))",
                   boxShadow: isAvailable ? "0 0 8px rgba(34,197,94,0.6)" : "none",
                 }}
               />

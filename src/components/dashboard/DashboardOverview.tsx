@@ -37,14 +37,14 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children, c
       <button
         className="flex items-center gap-2 transition-all duration-150"
         style={{
-          background: "#ef4444", color: "#0d0f12", borderRadius: 8,
+          background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", borderRadius: 8,
           padding: compact ? "8px 12px" : "8px 18px",
           fontSize: compact ? 12 : 13, fontWeight: 600, letterSpacing: "0.02em",
           boxShadow: "0 0 12px rgba(239,68,68,0.25)", cursor: "pointer",
         }}
         onClick={() => setShowQuickActions(!showQuickActions)}
         onMouseEnter={(e) => { e.currentTarget.style.background = "#c47e10"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.background = "#ef4444"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "hsl(var(--primary))"; }}
       >
         <Plus style={{ width: 16, height: 16 }} />
         {compact ? <>Quick Actions</> : <>Quick Actions<ChevronDown style={{ width: 14, height: 14 }} /></>}
@@ -53,7 +53,7 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children, c
       {showQuickActions && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setShowQuickActions(false)} />
-          <div className="absolute right-0 top-11 z-50" style={{ minWidth: 220, background: "#1a1e28", borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.5)", padding: 8 }}>
+          <div className="absolute right-0 top-11 z-50" style={{ minWidth: 220, background: "hsl(var(--muted))", borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.5)", padding: 8 }}>
             {children}
           </div>
         </>
@@ -64,28 +64,28 @@ function QuickActionsButton({ showQuickActions, setShowQuickActions, children, c
 
 function DropdownActionItem({ icon: Icon, label, onClick }: { icon: any; label: string; onClick?: () => void }) {
   return (
-    <button className="w-full flex items-center gap-2.5 rounded-md transition-colors" style={{ padding: "10px 12px", fontSize: 13, color: "#8b909e" }} onClick={onClick}
-      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#e8eaf0"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8b909e"; }}
+    <button className="w-full flex items-center gap-2.5 rounded-md transition-colors" style={{ padding: "10px 12px", fontSize: 13, color: "hsl(var(--muted-foreground))" }} onClick={onClick}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "hsl(var(--foreground))"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "hsl(var(--muted-foreground))"; }}
     ><Icon style={{ width: 16, height: 16 }} />{label}</button>
   );
 }
 
 function DropdownActionLink({ icon: Icon, label, to, onClose }: { icon: any; label: string; to: string; onClose: () => void }) {
   return (
-    <Link to={to} className="flex items-center gap-2.5 rounded-md transition-colors" style={{ padding: "10px 12px", fontSize: 13, color: "#8b909e" }} onClick={onClose}
-      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "#e8eaf0"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#8b909e"; }}
+    <Link to={to} className="flex items-center gap-2.5 rounded-md transition-colors" style={{ padding: "10px 12px", fontSize: 13, color: "hsl(var(--muted-foreground))" }} onClick={onClose}
+      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "hsl(var(--foreground))"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "hsl(var(--muted-foreground))"; }}
     ><Icon style={{ width: 16, height: 16 }} />{label}</Link>
   );
 }
 
 function VisibilityToggle({ label, visible, onToggle }: { label: string; visible: boolean; onToggle: () => void }) {
   return (
-    <button className="w-full flex items-center justify-between rounded-md transition-colors" style={{ padding: "10px 12px", fontSize: 13, color: "#8b909e" }} onClick={onToggle}
+    <button className="w-full flex items-center justify-between rounded-md transition-colors" style={{ padding: "10px 12px", fontSize: 13, color: "hsl(var(--muted-foreground))" }} onClick={onToggle}
       onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-    >{label}{visible ? <Eye style={{ width: 14, height: 14, color: "#ef4444" }} /> : <EyeOff style={{ width: 14, height: 14 }} />}</button>
+    >{label}{visible ? <Eye style={{ width: 14, height: 14, color: "hsl(var(--primary))" }} /> : <EyeOff style={{ width: 14, height: 14 }} />}</button>
   );
 }
 
@@ -166,26 +166,26 @@ function GlobalSearch() {
         background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: "8px 14px",
         boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)",
       }}>
-        <Search style={{ width: 14, height: 14, color: "#8b909e", flexShrink: 0 }} />
+        <Search style={{ width: 14, height: 14, color: "hsl(var(--muted-foreground))", flexShrink: 0 }} />
         <input type="text" placeholder="Search..." value={term}
           onChange={(e) => { setTerm(e.target.value); setOpen(true); }}
           onFocus={() => { if (term.length >= 2) setOpen(true); }}
-          className="w-full bg-transparent outline-none border-none" style={{ fontSize: 13, color: "#e8eaf0" }}
+          className="w-full bg-transparent outline-none border-none" style={{ fontSize: 13, color: "hsl(var(--foreground))" }}
         />
       </div>
       {open && term.length >= 2 && (
         <div className="absolute top-full left-0 right-0 z-50 mt-1" style={{
-          background: "#1a1e28", borderRadius: 8,
+          background: "hsl(var(--muted))", borderRadius: 8,
           boxShadow: "0 8px 24px rgba(0,0,0,0.4)", maxHeight: 360, overflowY: "auto",
         }}>
           {!hasResults && (
-            <p style={{ padding: 12, fontSize: 13, color: "#8b909e" }}>No results for "{term}"</p>
+            <p style={{ padding: 12, fontSize: 13, color: "hsl(var(--muted-foreground))" }}>No results for "{term}"</p>
           )}
           {results && results.pages.length > 0 && (
             <>
-              <p style={{ padding: "8px 12px 4px", fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#555b6b" }}>PAGES</p>
+              <p style={{ padding: "8px 12px 4px", fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "hsl(var(--muted-foreground))" }}>PAGES</p>
               {results.pages.map((p) => (
-                <button key={p.route} className="w-full text-left" style={{ padding: "8px 12px", fontSize: 13, color: "#e8eaf0", cursor: "pointer" }}
+                <button key={p.route} className="w-full text-left" style={{ padding: "8px 12px", fontSize: 13, color: "hsl(var(--foreground))", cursor: "pointer" }}
                   onClick={() => handleSelect(p.route)}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
@@ -195,45 +195,45 @@ function GlobalSearch() {
           )}
           {results && results.fighters.length > 0 && (
             <>
-              <p style={{ padding: "8px 12px 4px", fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#555b6b" }}>FIGHTERS</p>
+              <p style={{ padding: "8px 12px 4px", fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "hsl(var(--muted-foreground))" }}>FIGHTERS</p>
               {results.fighters.map((f: any) => (
                 <button key={f.id} className="w-full text-left" style={{ padding: "8px 12px", cursor: "pointer" }}
                   onClick={() => handleSelect(`/fighters/${f.id}`)}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                 >
-                  <span style={{ fontSize: 13, color: "#e8eaf0" }}>{f.name}</span>
-                  <span style={{ fontSize: 11, color: "#8b909e", marginLeft: 8 }}>{f.weight_class}</span>
+                  <span style={{ fontSize: 13, color: "hsl(var(--foreground))" }}>{f.name}</span>
+                  <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", marginLeft: 8 }}>{f.weight_class}</span>
                 </button>
               ))}
             </>
           )}
           {results && results.gyms.length > 0 && (
             <>
-              <p style={{ padding: "8px 12px 4px", fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#555b6b" }}>GYMS</p>
+              <p style={{ padding: "8px 12px 4px", fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "hsl(var(--muted-foreground))" }}>GYMS</p>
               {results.gyms.map((g: any) => (
                 <button key={g.id} className="w-full text-left" style={{ padding: "8px 12px", cursor: "pointer" }}
                   onClick={() => handleSelect(`/gyms/${g.id}`)}
                   onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                 >
-                  <span style={{ fontSize: 13, color: "#e8eaf0" }}>{g.name}</span>
-                  {g.city && <span style={{ fontSize: 11, color: "#8b909e", marginLeft: 8 }}>{g.city}</span>}
+                  <span style={{ fontSize: 13, color: "hsl(var(--foreground))" }}>{g.name}</span>
+                  {g.city && <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", marginLeft: 8 }}>{g.city}</span>}
                 </button>
               ))}
             </>
           )}
           {results && results.events.length > 0 && (
             <>
-              <p style={{ padding: "8px 12px 4px", fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "#555b6b" }}>EVENTS</p>
+              <p style={{ padding: "8px 12px 4px", fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "hsl(var(--muted-foreground))" }}>EVENTS</p>
               {results.events.map((e: any) => (
                 <button key={e.id} className="w-full text-left" style={{ padding: "8px 12px", cursor: "pointer" }}
                   onClick={() => handleSelect(`/events/${e.id}`)}
                   onMouseEnter={(ev) => { ev.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
                   onMouseLeave={(ev) => { ev.currentTarget.style.background = "transparent"; }}
                 >
-                  <span style={{ fontSize: 13, color: "#e8eaf0" }}>{e.title}</span>
-                  {e.date && <span style={{ fontSize: 11, color: "#8b909e", marginLeft: 8 }}>{new Date(e.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>}
+                  <span style={{ fontSize: 13, color: "hsl(var(--foreground))" }}>{e.title}</span>
+                  {e.date && <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", marginLeft: 8 }}>{new Date(e.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span>}
                 </button>
               ))}
             </>
@@ -333,7 +333,7 @@ export function DashboardOverview({
     <div style={{
       position: "fixed", top: 0, right: 0, zIndex: 29, height: 60,
       left: "var(--sidebar-width, 220px)",
-      background: scrolled ? "rgba(8,10,13,0.88)" : "#080a0d",
+      background: scrolled ? "rgba(8,10,13,0.88)" : "hsl(var(--background))",
       backdropFilter: scrolled ? "blur(20px) saturate(160%)" : "none",
       boxShadow: scrolled ? "0 4px 24px rgba(0,0,0,0.5)" : "none",
       padding: isMobile ? "0 10px" : "0 24px",
@@ -349,7 +349,7 @@ export function DashboardOverview({
             aria-label="Open menu"
             style={{
               width: 36, height: 36, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
-              background: "rgba(255,255,255,0.04)", color: "#8b909e", cursor: "pointer", flexShrink: 0,
+              background: "rgba(255,255,255,0.04)", color: "hsl(var(--muted-foreground))", cursor: "pointer", flexShrink: 0,
             }}
           >
             <PanelLeft style={{ width: 18, height: 18 }} />
@@ -375,7 +375,7 @@ export function DashboardOverview({
       <DropdownActionItem icon={ToggleRight} label="Set Availability" onClick={() => { setShowQuickActions(false); onNavigateSection("my-profile"); }} />
       <DropdownActionLink icon={Crosshair} label="Find Opponents" to="/explore?tab=fighters" onClose={() => setShowQuickActions(false)} />
       <div style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)", margin: "6px 0", height: 1 }} />
-      <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "#555b6b" }}>KPI VISIBILITY</p>
+      <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "hsl(var(--muted-foreground))" }}>KPI VISIBILITY</p>
       <VisibilityToggle label="Fight Record Card" visible={fighterCardVis.record} onToggle={() => setFighterCardVis(p => ({ ...p, record: !p.record }))} />
       <VisibilityToggle label="Next Fight Card" visible={fighterCardVis.nextFight} onToggle={() => setFighterCardVis(p => ({ ...p, nextFight: !p.nextFight }))} />
       <VisibilityToggle label="Calendar Card" visible={fighterCardVis.calendar} onToggle={() => setFighterCardVis(p => ({ ...p, calendar: !p.calendar }))} />
@@ -388,7 +388,7 @@ export function DashboardOverview({
       <DropdownActionLink icon={Calendar} label="Create Event" to="/organiser/create-event?from=overview" onClose={() => setShowQuickActions(false)} />
       <DropdownActionItem icon={Plus} label="Add Fighter" onClick={() => { setShowQuickActions(false); onNavigateSection("roster"); }} />
       <div style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)", margin: "6px 0", height: 1 }} />
-      <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "#555b6b" }}>KPI VISIBILITY</p>
+      <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "hsl(var(--muted-foreground))" }}>KPI VISIBILITY</p>
       <VisibilityToggle label="KPIs Card" visible={coachCardVis.kpis} onToggle={() => setCoachCardVis(p => ({ ...p, kpis: !p.kpis }))} />
       <VisibilityToggle label="Fights Card" visible={coachCardVis.fights} onToggle={() => setCoachCardVis(p => ({ ...p, fights: !p.fights }))} />
       <VisibilityToggle label="Calendar Card" visible={coachCardVis.calendar} onToggle={() => setCoachCardVis(p => ({ ...p, calendar: !p.calendar }))} />
@@ -399,7 +399,7 @@ export function DashboardOverview({
     <>
       <DropdownActionLink icon={CalendarPlus} label="Create Event" to="/organiser/create-event?from=overview" onClose={() => setShowQuickActions(false)} />
       <div style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)", margin: "6px 0", height: 1 }} />
-      <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "#555b6b" }}>KPI VISIBILITY</p>
+      <p style={{ padding: "6px 12px", fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", color: "hsl(var(--muted-foreground))" }}>KPI VISIBILITY</p>
       <VisibilityToggle label="Overview Stats Card" visible={orgCardVis.stats} onToggle={() => setOrgCardVis(p => ({ ...p, stats: !p.stats }))} />
       <VisibilityToggle label="Pending Matches Card" visible={orgCardVis.pending} onToggle={() => setOrgCardVis(p => ({ ...p, pending: !p.pending }))} />
       <VisibilityToggle label="Calendar Card" visible={orgCardVis.calendar} onToggle={() => setOrgCardVis(p => ({ ...p, calendar: !p.calendar }))} />
@@ -410,13 +410,13 @@ export function DashboardOverview({
     <div style={{ marginBottom: 4 }}>
       <h1 style={{
         fontFamily: "'Bebas Neue', sans-serif",
-        fontSize: 32, color: "#e8eaf0",
+        fontSize: 32, color: "hsl(var(--foreground))",
         letterSpacing: "0.04em", textTransform: "uppercase",
         lineHeight: 1.1,
       }}>
-        Over<span style={{ color: "#ef4444" }}>view</span>
+        Over<span style={{ color: "hsl(var(--primary))" }}>view</span>
       </h1>
-      <p style={{ fontSize: 13, color: "#8b909e", marginTop: 4 }}>
+      <p style={{ fontSize: 13, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>
         Welcome back, {profileData?.full_name || "User"}.
       </p>
     </div>
@@ -427,7 +427,7 @@ export function DashboardOverview({
     <div
       className={span === 2 ? "lg:col-span-2" : "lg:col-span-1"}
       style={{
-        background: "#111318",
+        background: "hsl(var(--card))",
         borderRadius: 16,
         padding: isMobile ? 14 : 20,
         minHeight: 320,
@@ -502,7 +502,7 @@ export function DashboardOverview({
         <div className="lg:col-span-2"><EventCalendar events={calendarEvents} highlightedDates={highlightedDates} /></div>
         <div className="space-y-4">
           <div className="coach-card p-4">
-            <h3 className="font-heading text-lg text-foreground mb-3">QUICK <span style={{ color: "#ef4444" }}>ACTIONS</span></h3>
+            <h3 className="font-heading text-lg text-foreground mb-3">QUICK <span style={{ color: "hsl(var(--primary))" }}>ACTIONS</span></h3>
             <div className="grid grid-cols-1 gap-2">
               <Button variant="outline" className="justify-start gap-2 h-10" asChild><Link to="/explore?tab=events"><Search className="h-4 w-4 text-primary" />Browse Events</Link></Button>
               <Button variant="outline" className="justify-start gap-2 h-10" onClick={() => onNavigateSection("actions")}><Inbox className="h-4 w-4 text-primary" />View Actions</Button>

@@ -66,7 +66,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
   return (
     <div style={{ marginTop: 32, marginBottom: 24 }}>
       <div className="flex items-center justify-between mb-3">
-        <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "#e8eaf0" }}>TICKETS</h3>
+        <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: "hsl(var(--foreground))" }}>TICKETS</h3>
       </div>
       <div className="space-y-2">
         {tickets.map((ticket: any) => {
@@ -96,7 +96,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
               onClick={handleRowClick}
               className="cursor-pointer transition-all duration-150"
               style={{
-                background: "#181c24",
+                background: "hsl(var(--muted))",
                 borderRadius: 10,
                 padding: "10px 14px",
                 transform: isSelected ? "scale(1.01)" : "scale(1)",
@@ -118,7 +118,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                       aria-expanded={isExpanded}
                       style={{
                         width: 24, height: 24, borderRadius: 6, flexShrink: 0,
-                        background: "rgba(255,255,255,0.04)", color: "#8b909e",
+                        background: "rgba(255,255,255,0.04)", color: "hsl(var(--muted-foreground))",
                         border: "none", cursor: "pointer",
                         display: "flex", alignItems: "center", justifyContent: "center",
                       }}
@@ -133,13 +133,13 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                     </button>
                   )}
                   <div className="min-w-0">
-                    <span className="block truncate" style={{ fontSize: 14, fontWeight: 600, color: "#e8eaf0", lineHeight: 1.2 }}>{ticket.ticket_type}</span>
+                    <span className="block truncate" style={{ fontSize: 14, fontWeight: 600, color: "hsl(var(--foreground))", lineHeight: 1.2 }}>{ticket.ticket_type}</span>
                     {soldOut ? (
-                      <span style={{ fontSize: 11, color: "#ef4444" }}>Sold Out</span>
+                      <span style={{ fontSize: 11, color: "hsl(var(--primary))" }}>Sold Out</span>
                     ) : ticket.quantity_available != null && ticket.quantity_available < 20 ? (
                       <span style={{ fontSize: 11, color: "#f59e0b" }}>Only {ticket.quantity_available} left</span>
                     ) : (
-                      <span style={{ fontSize: 11, color: "#22c55e" }}>Available</span>
+                      <span style={{ fontSize: 11, color: "hsl(var(--success))" }}>Available</span>
                     )}
                   </div>
                 </div>
@@ -147,13 +147,13 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                 {/* Price (col 2) */}
                 <div style={{ minWidth: 60, textAlign: "right" }}>
                   {ticket.price != null && (
-                    <span style={{ fontSize: 16, fontWeight: 700, color: "#ef4444", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
+                    <span style={{ fontSize: 16, fontWeight: 700, color: "hsl(var(--primary))", fontFamily: "Inter, sans-serif", whiteSpace: "nowrap" }}>£{Number(ticket.price).toFixed(2)}</span>
                   )}
                 </div>
 
                 {/* Qty + CTA (col 3) */}
                 {soldOut ? (
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "#ef4444" }}>Sold Out</span>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "hsl(var(--primary))" }}>Sold Out</span>
                 ) : ticketUrl ? (
                   <a
                     href={ticketUrl}
@@ -162,7 +162,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                     onClick={(e) => e.stopPropagation()}
                     style={{
                       display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
-                      background: "#ef4444", color: "#0d0f12", borderRadius: 8, textDecoration: "none",
+                      background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", borderRadius: 8, textDecoration: "none",
                     }}
                   >
                     <ShoppingCart style={{ width: 14, height: 14 }} /> Buy
@@ -174,17 +174,17 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                       disabled={qty <= 0}
                       style={{
                         width: 26, height: 26, borderRadius: "50%", border: "none", cursor: qty <= 0 ? "not-allowed" : "pointer",
-                        background: "rgba(255,255,255,0.06)", color: qty <= 0 ? "#555b6b" : "#e8eaf0", fontSize: 14, fontWeight: 700,
+                        background: "rgba(255,255,255,0.06)", color: qty <= 0 ? "hsl(var(--muted-foreground))" : "hsl(var(--foreground))", fontSize: 14, fontWeight: 700,
                         display: "flex", alignItems: "center", justifyContent: "center",
                       }}
                     >−</button>
-                    <span style={{ width: 20, textAlign: "center", fontSize: 14, fontWeight: 700, color: "#e8eaf0" }}>{qty}</span>
+                    <span style={{ width: 20, textAlign: "center", fontSize: 14, fontWeight: 700, color: "hsl(var(--foreground))" }}>{qty}</span>
                     <button
                       onClick={() => setQty(ticket.id, Math.min(maxQty, qty + 1))}
                       disabled={qty >= maxQty}
                       style={{
                         width: 26, height: 26, borderRadius: "50%", border: "none", cursor: qty >= maxQty ? "not-allowed" : "pointer",
-                        background: "rgba(255,255,255,0.06)", color: qty >= maxQty ? "#555b6b" : "#e8eaf0", fontSize: 14, fontWeight: 700,
+                        background: "rgba(255,255,255,0.06)", color: qty >= maxQty ? "hsl(var(--muted-foreground))" : "hsl(var(--foreground))", fontSize: 14, fontWeight: 700,
                         display: "flex", alignItems: "center", justifyContent: "center",
                       }}
                     >+</button>
@@ -193,7 +193,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                       disabled={qty <= 0}
                       style={{
                         display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", fontSize: 13, fontWeight: 600,
-                        background: qty <= 0 ? "rgba(239,68,68,0.3)" : "#ef4444", color: "#0d0f12", borderRadius: 8, border: "none",
+                        background: qty <= 0 ? "rgba(239,68,68,0.3)" : "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", borderRadius: 8, border: "none",
                         cursor: qty <= 0 ? "not-allowed" : "pointer", marginLeft: 4,
                       }}
                     >
@@ -214,12 +214,12 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
                   }}
                 >
                   {ticket.quantity_available != null && (
-                    <span style={{ fontSize: 12, color: "#8b909e", fontWeight: 600 }}>
+                    <span style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", fontWeight: 600 }}>
                       {ticket.quantity_available} tickets available
                     </span>
                   )}
                   {ticket.description && (
-                    <p style={{ whiteSpace: "pre-wrap", fontSize: 13, color: "#8b909e", lineHeight: 1.5, margin: 0 }}>
+                    <p style={{ whiteSpace: "pre-wrap", fontSize: 13, color: "hsl(var(--muted-foreground))", lineHeight: 1.5, margin: 0 }}>
                       {ticket.description}
                     </p>
                   )}
@@ -534,14 +534,14 @@ export default function EventDetail() {
             display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
           }}
         >
-          <span style={{ fontSize: 13, color: "#e8eaf0", fontWeight: 600 }}>
+          <span style={{ fontSize: 13, color: "hsl(var(--foreground))", fontWeight: 600 }}>
             Previewing your public event page
           </span>
           <button
             onClick={() => navigate(`/organiser/events/${id}`)}
             style={{
               display: "inline-flex", alignItems: "center", gap: 6,
-              background: "#ef4444", color: "#0d0f12",
+              background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))",
               fontSize: 12, fontWeight: 700, borderRadius: 8,
               padding: "6px 12px", border: "none", cursor: "pointer", whiteSpace: "nowrap",
             }}
@@ -556,7 +556,7 @@ export default function EventDetail() {
           style={{
             position: "fixed", top: 72, right: 16, zIndex: 28,
             display: "inline-flex", alignItems: "center", gap: 6,
-            background: "#ef4444", color: "#0d0f12",
+            background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))",
             fontSize: 12, fontWeight: 700, borderRadius: 999,
             padding: "6px 14px", border: "none", cursor: "pointer", whiteSpace: "nowrap",
             boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
