@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Check, ArrowRight } from "lucide-react";
 import { BrowserFrame } from "./BrowserFrame";
-import fighterShot from "@/assets/landing/fighter-showcase.png";
-import coachShot from "@/assets/landing/coach-showcase.png";
-import organiserShot from "@/assets/landing/organiser-showcase.png";
+import fighterShot from "@/assets/landing/fighter-showcase-new.png";
+import coachShot from "@/assets/landing/coach-showcase-new.webp";
+import organiserShot from "@/assets/landing/organiser-showcase-new.webp";
 
 type Feature = {
   eyebrow: string;

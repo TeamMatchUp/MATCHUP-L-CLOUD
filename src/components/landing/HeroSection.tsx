@@ -16,7 +16,7 @@ export function HeroSection() {
           {/* Logo + Headline horizontal lockup */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
             <AppIcon
-              className="h-[clamp(56px,6vw,88px)] w-auto opacity-95 drop-shadow-[0_0_60px_rgba(255,255,255,0.08)] shrink-0"
+              className="h-[clamp(112px,13vw,176px)] w-auto opacity-95 drop-shadow-[0_0_60px_rgba(255,255,255,0.08)] shrink-0"
               alt="MatchUp shield"
             />
             <h1
@@ -40,10 +40,10 @@ export function HeroSection() {
 
           {/* Tagline */}
           <p
-            className="text-foreground/90 mt-8 max-w-2xl"
+            className="text-foreground/90 mt-8 max-w-2xl font-normal"
             style={{ fontSize: "clamp(1rem, 1.6vw, 1.25rem)", lineHeight: 1.5 }}
           >
-            Fighters, coaches and promoters are already matching. Don't get left off the card.
+            Fighters, coaches and promoters are already matching. <strong className="font-bold text-foreground">Don't get left off the card.</strong>
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 w-full sm:w-auto">

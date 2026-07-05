@@ -25,8 +25,9 @@ export function FinalCtaSection() {
             className="font-heading text-foreground mb-4 leading-[0.95]"
             style={{ fontSize: "clamp(2rem, 5.5vw, 4.25rem)" }}
           >
-            YOUR NEXT FIGHT IS{" "}
-            <span className="text-primary text-gold-glow">THREE CLICKS AWAY.</span>
+            YOUR TICKET TO THE FUTURE OF{" "}
+            <span className="text-primary text-gold-glow">COMBAT SPORTS</span>{" "}
+            IS ONE STEP AWAY
           </h2>
           <p className="text-muted-foreground text-base sm:text-lg mb-10 max-w-xl mx-auto">
             Join the platform built for combat sports. Verified fighters, structured matchmaking, sold-out cards.
