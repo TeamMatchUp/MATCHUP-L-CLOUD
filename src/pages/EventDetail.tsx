@@ -24,6 +24,7 @@ import { Map as PigeonMap, Marker } from "pigeon-maps";
 import { BoostedBadge } from "@/components/BoostedBadge";
 import { useActiveBoost } from "@/hooks/useActiveBoost";
 import { WaitlistDialog } from "@/components/event/WaitlistDialog";
+import { EventDetailsCard } from "@/components/event/EventDetailsCard";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
