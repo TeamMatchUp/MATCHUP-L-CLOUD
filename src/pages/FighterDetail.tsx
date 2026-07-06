@@ -38,13 +38,10 @@ const RED = "hsl(var(--primary))";
 const CARD_SHADOW = "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)";
 const INSET_SHADOW = "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)";
 
-const isKO = (m?: string | null) => { if (!m) return false; const u = m.toUpperCase(); return u === 'KO' || u.startsWith('KO '); };
-const isTKO = (m?: string | null) => m?.toUpperCase().includes('TKO') ?? false;
-const isSub = (m?: string | null) => m?.toUpperCase().includes('SUB') ?? false;
-const isDec = (m?: string | null) => { if (!m) return false; const u = m.toUpperCase(); return u.includes('DECISION') || u.includes('DEC') || u.includes('POINTS'); };
-const isWin = (f: any, id: string) => f.result?.toLowerCase() === 'win' || f.winner_id === id;
-const isLoss = (f: any) => f.result?.toLowerCase() === 'loss';
-const isDraw = (f: any) => f.result?.toLowerCase() === 'draw';
+import { isKO, isTKO, isSub, isDec, isWin as isWinShared, isLoss as isLossShared, isDraw } from "@/lib/fighterStats";
+export { isKO, isTKO, isSub, isDec, isDraw };
+const isWin = (f: any, id: string) => isWinShared(f, id);
+const isLoss = (f: any, id: string) => isLossShared(f, id);
 
 const formatHeight = (cm?: number | null) => {
   if (!cm) return "—";
