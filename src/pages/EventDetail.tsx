@@ -696,7 +696,7 @@ export default function EventDetail() {
                   {/* About + contact */}
                   {(event.description || hasContact) && (
                     <div className="rounded-xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
-                      <h3
+                      <h2
                         style={{
                           fontFamily: "'Bebas Neue', sans-serif",
                           letterSpacing: "0.08em",
@@ -706,7 +706,7 @@ export default function EventDetail() {
                         }}
                       >
                         ABOUT
-                      </h3>
+                      </h2>
                       {event.description && (
                         <p className="text-muted-foreground whitespace-pre-wrap mb-4">{event.description}</p>
                       )}
@@ -779,7 +779,7 @@ export default function EventDetail() {
                             boxShadow: "var(--shadow-card)",
                           }}
                         >
-                          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.08em", fontSize: 13, color: "hsl(var(--primary))" }}>TICKETS</h3>
+                          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.08em", fontSize: 13, color: "hsl(var(--primary))" }}>TICKETS</h2>
                           <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "hsl(var(--destructive))", letterSpacing: "0.04em", marginTop: 6 }}>SOLD OUT</p>
                           <p className="text-sm text-muted-foreground mt-2">
                             Every ticket for this event has gone. Join the waitlist to be first in line for returns.

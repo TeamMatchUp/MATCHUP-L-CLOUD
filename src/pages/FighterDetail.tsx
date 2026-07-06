@@ -354,6 +354,7 @@ export default function FighterDetail() {
 
           {/* Back link */}
           <button onClick={() => fromParam === "roster" ? navigate("/dashboard?section=roster") : navigate(-1)}
+            aria-label="Back to fighters"
             className="flex items-center gap-2"
             style={{ background: "none", border: "none", color: MUTED, fontSize: 13, cursor: "pointer", padding: "0 0 16px" }}>
             <ArrowLeft style={{ width: 14, height: 14 }} /> Back to Fighters

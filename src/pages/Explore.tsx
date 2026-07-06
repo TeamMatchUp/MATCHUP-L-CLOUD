@@ -366,6 +366,7 @@ export default function Explore() {
     return (
       <div className="flex items-center justify-center gap-3" style={{ padding: "32px 0" }}>
         <button
+          aria-label="Previous page"
           disabled={page === 0}
           onClick={() => { setPage(p => p - 1); document.getElementById("gym-map-list")?.scrollTo({ top: 0, behavior: "smooth" }); }}
           style={{
@@ -377,13 +378,13 @@ export default function Explore() {
           onMouseEnter={(e) => { if (page > 0) { e.currentTarget.style.background = EX.goldDim; e.currentTarget.style.borderColor = EX.goldBorder; } }}
           onMouseLeave={(e) => { e.currentTarget.style.background = EX.raised; e.currentTarget.style.borderColor = EX.borderMid; }}
         >
-          <ChevronLeft aria-label="Previous page" style={{ width: 14, height: 14, color: page === 0 ? EX.dimmed : EX.text }} />
+          <ChevronLeft style={{ width: 14, height: 14, color: page === 0 ? EX.dimmed : EX.text }} />
         </button>
         <span style={{ fontSize: 14, fontWeight: 600, color: EX.text }}>
           Page {page + 1} of {totalPages}
         </span>
         <button
-          aria-label="Previous page"
+          aria-label="Next page"
           disabled={page >= totalPages - 1}
           onClick={() => { setPage(p => p + 1); document.getElementById("gym-map-list")?.scrollTo({ top: 0, behavior: "smooth" }); }}
           style={{
