@@ -63,6 +63,7 @@ export default function Gyms() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Combat Sports Gyms" description="Find MMA and Muay Thai gyms across the UK. Filter by location and discipline, and connect with coaches on MatchUp." canonicalPath="/gyms" />
       <Header />
       <main className="pt-16">
         <section className="py-16">

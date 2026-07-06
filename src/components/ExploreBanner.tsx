@@ -23,7 +23,7 @@ export function ExploreBanner({ adImageUrl, adLinkUrl }: Props) {
           display: "block",
         }}
       >
-        <img src={adImageUrl} alt="Advertisement" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <img src={adImageUrl} alt="Partner advertisement" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </a>
     );
   }

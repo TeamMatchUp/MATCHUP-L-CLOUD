@@ -92,6 +92,7 @@ const Events = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Upcoming Combat Sports Events" description="Browse upcoming MMA and Muay Thai events across the UK. Tickets, fight cards, and venues on MatchUp." canonicalPath="/events" />
       <Header />
       <main className="pt-16">
         <section className="py-16">

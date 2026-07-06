@@ -469,6 +469,7 @@ export default function Explore() {
                 />
               </div>
               <button
+                aria-label="Toggle filters"
                 onClick={() => setFiltersOpen(!filtersOpen)}
                 style={{
                   width: 40, height: 40, borderRadius: 8, flexShrink: 0,
@@ -482,6 +483,7 @@ export default function Explore() {
               </button>
               {(tab === "gyms" || tab === "events") && (
                 <button
+                  aria-label={mapOpen ? "Close map view" : "Open map view"}
                   onClick={() => { setMapOpen(!mapOpen); setPopupItem(null); setHighlightedGymId(null); }}
                   style={{
                     height: 40, width: isMobile ? 40 : "auto", padding: isMobile ? 0 : "0 14px",
