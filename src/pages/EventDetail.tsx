@@ -682,30 +682,25 @@ export default function EventDetail() {
                     </div>
                   )}
 
-                  {/* FIGHT CARD */}
-                  {mainEvents.length > 0 && (
-                    <div>
-                      <h2 className="font-heading text-2xl text-foreground mb-4">
-                        MAIN <span className="text-primary">CARD</span>
-                      </h2>
-                      <div className="space-y-4 mb-4">{paginatedMain.map(renderMainBout)}</div>
-                      <Pagination page={mainPage} total={Math.ceil(mainEvents.length / BOUTS_PER_PAGE) || 1} setPage={setMainPage} />
-                    </div>
-                  )}
-
-                  {undercards.length > 0 && (
-                    <div>
-                      <h2 className="font-heading text-2xl text-foreground mb-4">
-                        UNDER<span className="text-primary">CARD</span>
-                      </h2>
-                      <div className="space-y-2 mb-4">{paginatedUnder.map(renderUndercardBout)}</div>
-                      <Pagination page={underPage} total={Math.ceil(undercards.length / BOUTS_PER_PAGE) || 1} setPage={setUnderPage} />
-                    </div>
-                  )}
-
-                  {mainEvents.length === 0 && undercards.length === 0 && (
-                    <div className="rounded-xl bg-card p-8 text-center" style={{ boxShadow: "var(--shadow-card)" }}>
-                      <p className="text-muted-foreground text-sm">No bouts announced yet.</p>
+                  {/* Fighter/coach actions — above About */}
+                  {(((isFighter || isCoach) && fighterProfile) || isCoach) && (
+                    <div className="flex flex-wrap gap-3">
+                      {user && (isFighter || isCoach) && fighterProfile && (
+                        existingInterest ? (
+                          <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
+                            <Star className="h-4 w-4 fill-primary" /> Interested
+                          </Button>
+                        ) : (
+                          <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={handleToggleInterest} disabled={sending}>
+                            <Star className="h-4 w-4" /> I'm Interested
+                          </Button>
+                        )
+                      )}
+                      {isCoach && user && (
+                        <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowPutForward(true)}>
+                          <Users className="h-4 w-4" /> Put Forward Fighters
+                        </Button>
+                      )}
                     </div>
                   )}
 
@@ -748,25 +743,41 @@ export default function EventDetail() {
                     </div>
                   )}
 
-                  {/* Fighter/coach actions */}
-                  {(((isFighter || isCoach) && fighterProfile) || isCoach) && (
-                    <div className="flex flex-wrap gap-3">
-                      {user && (isFighter || isCoach) && fighterProfile && (
-                        existingInterest ? (
-                          <Button variant="outline" className="gap-2 border-primary/50 text-primary hover:bg-destructive/10 hover:text-destructive hover:border-destructive/50" onClick={handleToggleInterest} disabled={sending}>
-                            <Star className="h-4 w-4 fill-primary" /> Interested
-                          </Button>
-                        ) : (
-                          <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={handleToggleInterest} disabled={sending}>
-                            <Star className="h-4 w-4" /> I'm Interested
-                          </Button>
-                        )
-                      )}
-                      {isCoach && user && (
-                        <Button variant="outline" className="gap-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground" onClick={() => setShowPutForward(true)}>
-                          <Users className="h-4 w-4" /> Put Forward Fighters
-                        </Button>
-                      )}
+                  {/* Event Details (moved from sidebar so it sits above the fight card) */}
+                  <EventDetailsCard
+                    rows={[
+                      { label: "Promoter", value: event.promotion_name },
+                      { label: "Discipline", value: event.discipline ? String(event.discipline).replace(/_/g, " ") : null },
+                      { label: "Venue", value: event.venue_name },
+                      { label: "City", value: event.city },
+                      { label: "Date", value: new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) },
+                    ]}
+                  />
+
+                  {/* FIGHT CARD */}
+                  {mainEvents.length > 0 && (
+                    <div>
+                      <h2 className="font-heading text-2xl text-foreground mb-4">
+                        MAIN <span className="text-primary">CARD</span>
+                      </h2>
+                      <div className="space-y-4 mb-4">{paginatedMain.map(renderMainBout)}</div>
+                      <Pagination page={mainPage} total={Math.ceil(mainEvents.length / BOUTS_PER_PAGE) || 1} setPage={setMainPage} />
+                    </div>
+                  )}
+
+                  {undercards.length > 0 && (
+                    <div>
+                      <h2 className="font-heading text-2xl text-foreground mb-4">
+                        UNDER<span className="text-primary">CARD</span>
+                      </h2>
+                      <div className="space-y-2 mb-4">{paginatedUnder.map(renderUndercardBout)}</div>
+                      <Pagination page={underPage} total={Math.ceil(undercards.length / BOUTS_PER_PAGE) || 1} setPage={setUnderPage} />
+                    </div>
+                  )}
+
+                  {mainEvents.length === 0 && undercards.length === 0 && (
+                    <div className="rounded-xl bg-card p-8 text-center" style={{ boxShadow: "var(--shadow-card)" }}>
+                      <p className="text-muted-foreground text-sm">No bouts announced yet.</p>
                     </div>
                   )}
                 </div>
@@ -807,7 +818,7 @@ export default function EventDetail() {
                       );
                     }
 
-                    if (event.ticket_enabled && activeTickets.length > 0) {
+                    if (activeTickets.length > 0) {
                       const purchaseUrl = (event as any).ticket_url || null;
                       return (
                         <div
@@ -821,16 +832,6 @@ export default function EventDetail() {
                     }
                     return null;
                   })()}
-
-                  <EventDetailsCard
-                    rows={[
-                      { label: "Promoter", value: event.promotion_name },
-                      { label: "Discipline", value: event.discipline ? String(event.discipline).replace(/_/g, " ") : null },
-                      { label: "Venue", value: event.venue_name },
-                      { label: "City", value: event.city },
-                      { label: "Date", value: new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) },
-                    ]}
-                  />
                 </aside>
               </div>
             </motion.div>

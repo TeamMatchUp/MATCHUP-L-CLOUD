@@ -12,7 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Loader2, Save, User, Sun, Moon } from "lucide-react";
+import { Camera, Loader2, Save, User, Sun, Moon, Sparkles, ExternalLink } from "lucide-react";
+import { getStripeEnvironment } from "@/lib/stripe";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CoachFighterProfileForm } from "@/components/onboarding/CoachFighterProfileForm";
 
@@ -48,6 +49,42 @@ export default function AccountSettings() {
   const [isCoach, setIsCoach] = useState(false);
   const [hasFighterProfile, setHasFighterProfile] = useState(false);
   const [fighterModalOpen, setFighterModalOpen] = useState(false);
+
+  // Subscription
+  const [subscription, setSubscription] = useState<any>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("environment", getStripeEnvironment())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setSubscription(data);
+    })();
+  }, [user]);
+
+  const openBillingPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-portal-session", {
+        body: {
+          environment: getStripeEnvironment(),
+          returnUrl: `${window.location.origin}/account`,
+        },
+      });
+      if (error || !data?.url) throw new Error(error?.message || "Could not open billing portal");
+      window.open(data.url, "_blank");
+    } catch (e: any) {
+      toast({ title: "Unable to open billing", description: e.message, variant: "destructive" });
+    } finally {
+      setPortalLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (authLoading) return;
@@ -283,6 +320,48 @@ export default function AccountSettings() {
           )}
 
           <Separator className="mb-8" />
+
+          {/* Subscription / Billing */}
+          <section className="space-y-4 mb-8">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">Subscription</h2>
+            </div>
+            {subscription && ["active", "trialing", "past_due"].includes(subscription.status) ? (
+              <div className="rounded-xl bg-card p-5 space-y-3" style={{ boxShadow: "var(--shadow-card)" }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">MatchUp Pro</p>
+                    <p className="text-xs text-muted-foreground capitalize">
+                      Status: {subscription.status}
+                      {subscription.current_period_end &&
+                        ` · Renews ${new Date(subscription.current_period_end).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    <Sparkles className="h-3 w-3" /> PRO
+                  </span>
+                </div>
+                <Button variant="outline" onClick={openBillingPortal} disabled={portalLoading} className="gap-2">
+                  {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                  Manage billing
+                </Button>
+              </div>
+            ) : (
+              <div className="rounded-xl bg-card p-5 space-y-3" style={{ boxShadow: "var(--shadow-card)" }}>
+                <p className="text-sm font-semibold text-foreground">You're on the Free plan</p>
+                <p className="text-xs text-muted-foreground">
+                  Unlock priority matchmaking, advanced analytics and featured placement with MatchUp Pro.
+                </p>
+                <Button variant="hero" onClick={() => navigate("/pricing")} className="gap-2">
+                  <Sparkles className="h-4 w-4" /> Upgrade to Pro
+                </Button>
+              </div>
+            )}
+          </section>
+
+          <Separator className="mb-8" />
+
 
           {/* Password */}
           <section className="space-y-4 mb-8">
