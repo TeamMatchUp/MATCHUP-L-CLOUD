@@ -492,7 +492,7 @@ export default function FighterDetail() {
           {isOwnerOrCoach && <div style={{ marginTop: 16 }}><ProfileCompletionBar fighterId={fighter.id} fighterProfile={fighter} /></div>}
 
           {/* ════ MAIN GRID ════ */}
-          <div className="grid gap-6" style={{ gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr)", marginTop: 24 }}>
+          <div className="grid gap-6 grid-cols-1 md:[grid-template-columns:minmax(0,1.6fr)_minmax(0,1fr)]" style={{ marginTop: 24 }}>
 
             {/* ─── LEFT COLUMN ─── */}
             <div>
