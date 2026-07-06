@@ -377,7 +377,7 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
                         {res}
                       </span>
                     </TableCell>
-                    <TableCell className="text-sm">{fight.method || "—"}</TableCell>
+                    <TableCell className="text-sm whitespace-nowrap">{fight.method || "—"}</TableCell>
                     <TableCell className="hidden md:table-cell text-sm">
                       {fight.round ? `R${fight.round}${fight.total_rounds ? `/${fight.total_rounds}` : ""}` : "—"}
                     </TableCell>
@@ -390,7 +390,7 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
                     <TableCell>
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${
+                        className={`text-[10px] whitespace-nowrap ${
                           fight.verification_status === "self_reported"
                             ? "border-muted-foreground/30 text-muted-foreground"
                             : "border-success/30 text-success"
