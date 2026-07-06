@@ -80,15 +80,21 @@ export async function resolveOrCreateCustomer(
 ): Promise<string> {
   if (options.userId && !/^[a-zA-Z0-9_-]+$/.test(options.userId)) throw new Error("Invalid userId");
   if (options.userId) {
-    const found = await stripe.customers.search({
-      query: `metadata['userId']:'${options.userId}'`,
-      limit: 1,
-    });
-    if (found.data.length) return found.data[0].id;
+    try {
+      const found = await stripe.customers.search({
+        query: `metadata['userId']:'${options.userId}'`,
+        limit: 1,
+      });
+      if (found?.data && found.data.length > 0) return found.data[0].id;
+    } catch (e) {
+      // customers.search can 400 if the search index hasn't caught up yet
+      // for brand-new customers — fall through to the email lookup instead.
+      console.warn("stripe.customers.search failed, falling back to email lookup", e);
+    }
   }
   if (options.email) {
     const existing = await stripe.customers.list({ email: options.email, limit: 1 });
-    if (existing.data.length) {
+    if (existing?.data && existing.data.length > 0) {
       const customer = existing.data[0];
       if (options.userId && customer.metadata?.userId !== options.userId) {
         await stripe.customers.update(customer.id, {
