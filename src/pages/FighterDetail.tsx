@@ -819,9 +819,29 @@ export default function FighterDetail() {
             </div>
           </div>
 
-          {/* ════ RELATED FIGHTERS ════ */}
-          {related.length > 0 && (
+          {/* Gym affiliations */}
+          {gyms.length > 0 && (
+            <div style={{ marginTop: 32 }}>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: TEXT, letterSpacing: "0.06em", marginBottom: 12 }}>GYM AFFILIATIONS</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {gyms.map((link: any) => (
+                  <Link key={link.gym_id} to={`/gyms/${link.gyms?.id}`} className="flex items-center justify-between" style={{
+                    borderRadius: 10, background: SURFACE, padding: "14px 18px", textDecoration: "none",
+                    boxShadow: CARD_SHADOW,
+                  }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: TEXT }}>{link.gyms?.name}</div>
+                      {link.gyms?.location && <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{link.gyms.location}</div>}
+                    </div>
+                    {link.is_primary && <span style={{ fontSize: 10, fontWeight: 700, color: GOLD, letterSpacing: "0.1em", textTransform: "uppercase", background: GOLD_TINT, padding: "4px 10px", borderRadius: 9999 }}>Primary</span>}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
 
+          {/* ════ RELATED FIGHTERS (bottom of page) ════ */}
+          {related.length > 0 && (
             <div style={{ marginTop: 40 }}>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 26, color: TEXT, letterSpacing: "0.06em", marginBottom: 14 }}>RELATED FIGHTERS</div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -862,26 +882,6 @@ export default function FighterDetail() {
             </div>
           )}
 
-          {/* Gym affiliations */}
-          {gyms.length > 0 && (
-            <div style={{ marginTop: 32 }}>
-              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: TEXT, letterSpacing: "0.06em", marginBottom: 12 }}>GYM AFFILIATIONS</div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {gyms.map((link: any) => (
-                  <Link key={link.gym_id} to={`/gyms/${link.gyms?.id}`} className="flex items-center justify-between" style={{
-                    borderRadius: 10, background: SURFACE, padding: "14px 18px", textDecoration: "none",
-                    boxShadow: CARD_SHADOW,
-                  }}>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: TEXT }}>{link.gyms?.name}</div>
-                      {link.gyms?.location && <div style={{ fontSize: 12, color: MUTED, marginTop: 2 }}>{link.gyms.location}</div>}
-                    </div>
-                    {link.is_primary && <span style={{ fontSize: 10, fontWeight: 700, color: GOLD, letterSpacing: "0.1em", textTransform: "uppercase", background: GOLD_TINT, padding: "4px 10px", borderRadius: 9999 }}>Primary</span>}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
         </motion.div>
       </main>
       <Footer />
