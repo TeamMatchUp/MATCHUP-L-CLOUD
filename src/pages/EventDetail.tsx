@@ -533,10 +533,26 @@ export default function EventDetail() {
   const eventTitle = (event as any)?.title ?? "Event";
   const eventCity = (event as any)?.city ?? "";
   const eventDesc = `${eventTitle}${eventCity ? ` in ${eventCity}` : ""} — fight card, tickets and details on MatchUp.`;
+  const eventJsonLd = event ? {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: eventTitle,
+    startDate: (event as any).date,
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    location: {
+      "@type": "Place",
+      name: (event as any).venue_name || eventCity,
+      address: [eventCity, (event as any).country].filter(Boolean).join(", "),
+    },
+    image: (event as any).banner_image || undefined,
+    description: (event as any).description || eventDesc,
+  } : undefined;
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={eventTitle} description={eventDesc} ogType="event" image={(event as any)?.banner_image ?? undefined} />
+      <SEO title={eventTitle} description={eventDesc} ogType="event" image={(event as any)?.banner_image ?? undefined} jsonLd={eventJsonLd} />
       <Header />
+
 
       {isOwnEvent && isPreview && (
         <div
@@ -696,7 +712,7 @@ export default function EventDetail() {
                   {/* About + contact */}
                   {(event.description || hasContact) && (
                     <div className="rounded-xl bg-card p-6" style={{ boxShadow: "var(--shadow-card)" }}>
-                      <h3
+                      <h2
                         style={{
                           fontFamily: "'Bebas Neue', sans-serif",
                           letterSpacing: "0.08em",
@@ -706,7 +722,7 @@ export default function EventDetail() {
                         }}
                       >
                         ABOUT
-                      </h3>
+                      </h2>
                       {event.description && (
                         <p className="text-muted-foreground whitespace-pre-wrap mb-4">{event.description}</p>
                       )}
@@ -779,7 +795,7 @@ export default function EventDetail() {
                             boxShadow: "var(--shadow-card)",
                           }}
                         >
-                          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.08em", fontSize: 13, color: "hsl(var(--primary))" }}>TICKETS</h3>
+                          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.08em", fontSize: 13, color: "hsl(var(--primary))" }}>TICKETS</h2>
                           <p style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "hsl(var(--destructive))", letterSpacing: "0.04em", marginTop: 6 }}>SOLD OUT</p>
                           <p className="text-sm text-muted-foreground mt-2">
                             Every ticket for this event has gone. Join the waitlist to be first in line for returns.
