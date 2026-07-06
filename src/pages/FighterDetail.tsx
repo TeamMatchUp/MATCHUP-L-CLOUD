@@ -394,7 +394,7 @@ export default function FighterDetail() {
               )}
             </div>
 
-            <div className="grid gap-8" style={{ gridTemplateColumns: "auto 1fr", alignItems: "center" }}>
+            <div className="grid gap-6 md:gap-8 md:[grid-template-columns:auto_1fr] [grid-template-columns:1fr] justify-items-center md:justify-items-start text-center md:text-left items-center">
               {/* Avatar */}
               <div style={{
                 width: 140, height: 140, borderRadius: "50%",
