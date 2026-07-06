@@ -382,15 +382,15 @@ export default function FighterDetail() {
           }}>
 
             {/* Action buttons top-right */}
-            <div className="flex items-center gap-2" style={{ position: "absolute", top: 20, right: 20, zIndex: 2 }}>
-              <button onClick={handleShare} style={{
-                width: 34, height: 34, borderRadius: "50%", background: INSET, color: MUTED,
+            <div className="flex items-center gap-1.5 md:gap-2 top-3 right-3 md:top-5 md:right-5" style={{ position: "absolute", zIndex: 2 }}>
+              <button onClick={handleShare} className="w-8 h-8 md:w-[34px] md:h-[34px]" style={{
+                borderRadius: "50%", background: INSET, color: MUTED,
                 display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "none",
                 boxShadow: INSET_SHADOW,
-              }}><Share2 style={{ width: 14, height: 14 }} /></button>
+              }}><Share2 className="w-3.5 h-3.5" /></button>
               {showFollow && (
-                <button onClick={toggleFollow} disabled={followLoading} style={{
-                  borderRadius: 8, padding: "8px 18px", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+                <button onClick={toggleFollow} disabled={followLoading} className="px-2.5 py-1 text-[10px] md:px-[18px] md:py-2 md:text-[11px]" style={{
+                  borderRadius: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
                   background: isFollowing ? GOLD_TINT : "transparent",
                   color: GOLD,
                   border: `1.5px solid ${GOLD}`,
