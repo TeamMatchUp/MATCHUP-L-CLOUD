@@ -647,6 +647,23 @@ export default function AccountSettings() {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!checkoutPlan} onOpenChange={(o) => !o && setCheckoutPlan(null)}>
+        <DialogContent style={{ maxWidth: "min(90vw, 960px)", maxHeight: "88vh", overflowY: "auto", background: "#111318" }}>
+          <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#e8eaf0", letterSpacing: "0.04em" }}>
+            SUBSCRIBE TO MATCHUP PRO
+          </DialogTitle>
+          {checkoutPlan && user && (
+            <StripeEmbeddedCheckout
+              mode="subscription"
+              priceId={checkoutPlan}
+              userId={user.id}
+              customerEmail={user.email ?? undefined}
+              returnUrl={`${window.location.origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
