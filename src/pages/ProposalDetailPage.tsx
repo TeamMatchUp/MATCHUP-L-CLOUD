@@ -2,6 +2,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { ProposalDetail } from "@/components/proposal/ProposalDetail";
+import { SEO } from "@/components/SEO";
+
 
 export default function ProposalDetailPage() {
   const { id } = useParams<{ id: string }>();
