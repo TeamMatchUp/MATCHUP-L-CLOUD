@@ -1,4 +1,5 @@
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Footer } from "@/components/Footer";
 import { BannerAd } from "@/components/BannerAd";
 
@@ -140,6 +141,7 @@ const Fighters = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Fighter Roster" description="Explore active MMA and Muay Thai fighters. Filter by weight class, style, and availability on MatchUp." canonicalPath="/fighters" />
       <Header />
       <main className="pt-16">
         <section className="py-16">

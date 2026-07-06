@@ -1,4 +1,5 @@
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Footer } from "@/components/Footer";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Filter, Users, ShieldCheck, Search, X, SlidersHorizontal } from "lucide-react";
@@ -63,6 +64,7 @@ export default function Gyms() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Combat Sports Gyms" description="Find MMA and Muay Thai gyms across the UK. Filter by location and discipline, and connect with coaches on MatchUp." canonicalPath="/gyms" />
       <Header />
       <main className="pt-16">
         <section className="py-16">

@@ -1,4 +1,5 @@
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Footer } from "@/components/Footer";
 import { BannerAd } from "@/components/BannerAd";
 import { AppIcon } from "@/components/AppIcon";
@@ -92,6 +93,7 @@ const Events = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO title="Upcoming Combat Sports Events" description="Browse upcoming MMA and Muay Thai events across the UK. Tickets, fight cards, and venues on MatchUp." canonicalPath="/events" />
       <Header />
       <main className="pt-16">
         <section className="py-16">
