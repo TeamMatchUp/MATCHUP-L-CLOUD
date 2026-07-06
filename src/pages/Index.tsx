@@ -16,9 +16,14 @@ const Index = () => {
         title="MatchUp — Combat Sports Matchmaking"
         description="The UK matchmaking platform for MMA and Muay Thai. Discover events, explore fighters, and confirm your next bout."
         canonicalPath="/"
+        jsonLd={[
+          { "@context": "https://schema.org", "@type": "Organization", name: "MatchUp", url: "https://matchupfight.lovable.app" },
+          { "@context": "https://schema.org", "@type": "WebSite", name: "MatchUp", url: "https://matchupfight.lovable.app" },
+        ]}
       />
       <Header />
       <main className="pt-16">
+
 
         <HeroSection />
         <UpcomingFightsTicker />

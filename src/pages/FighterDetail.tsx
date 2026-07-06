@@ -343,10 +343,19 @@ export default function FighterDetail() {
 
   const fighterName = (fighter as any)?.name ?? "Fighter";
   const fighterDesc = `${fighterName} — combat sports fighter profile, record, stats, and fight history on MatchUp.`;
+  const fighterJsonLd = fighter ? {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: fighterName,
+    nationality: (fighter as any).country,
+    image: (fighter as any).profile_image || undefined,
+    description: fighterDesc,
+  } : undefined;
   return (
     <div className="min-h-screen" style={{ background: BG }}>
-      <SEO title={fighterName} description={fighterDesc} ogType="profile" image={(fighter as any)?.profile_image ?? undefined} />
+      <SEO title={fighterName} description={fighterDesc} ogType="profile" image={(fighter as any)?.profile_image ?? undefined} jsonLd={fighterJsonLd} />
       <Header />
+
 
       <main className="pt-20 pb-16">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}

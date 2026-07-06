@@ -268,10 +268,21 @@ export default function GymDetail() {
   const disciplineTags: string[] = Array.isArray((gym as any).discipline_tags) ? (gym as any).discipline_tags : [];
 
   const gymDesc = `${gym.name}${(gym as any).city ? ` — ${(gym as any).city}` : ""}. Combat sports gym profile, coaches, roster and contact on MatchUp.`;
+  const gymJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: gym.name,
+    address: [(gym as any).address, (gym as any).city].filter(Boolean).join(", "),
+    telephone: (gym as any).phone || undefined,
+    email: (gym as any).contact_email || undefined,
+    image: (gym as any).banner_image || (gym as any).logo_url || undefined,
+    description: (gym as any).description || gymDesc,
+  };
   return (
     <div className="min-h-screen bg-background">
-      <SEO title={gym.name} description={gymDesc} image={(gym as any)?.banner_image ?? (gym as any)?.logo_url ?? undefined} />
+      <SEO title={gym.name} description={gymDesc} image={(gym as any)?.banner_image ?? (gym as any)?.logo_url ?? undefined} jsonLd={gymJsonLd} />
       <Header />
+
 
       <main className="pt-16">
         <section style={{ padding: "10px 0" }}>
