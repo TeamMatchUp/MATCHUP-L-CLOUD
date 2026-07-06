@@ -378,13 +378,17 @@ export default function FighterDetail() {
             position: "relative", overflow: "hidden",
           }}>
 
-            {/* Action buttons top-right */}
-            <div className="flex items-center gap-1.5 md:gap-2 top-3 right-3 md:top-5 md:right-5" style={{ position: "absolute", zIndex: 2 }}>
-              <button onClick={handleShare} className="w-8 h-8 md:w-[34px] md:h-[34px]" style={{
+            {/* Share button — top-left, opposite Follow */}
+            <div className="top-3 left-3 md:top-5 md:left-5" style={{ position: "absolute", zIndex: 2 }}>
+              <button onClick={handleShare} aria-label="Share" className="w-8 h-8 md:w-[34px] md:h-[34px]" style={{
                 borderRadius: "50%", background: INSET, color: MUTED,
                 display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", border: "none",
                 boxShadow: INSET_SHADOW,
               }}><Share2 className="w-3.5 h-3.5" /></button>
+            </div>
+
+            {/* Follow button — top-right */}
+            <div className="top-3 right-3 md:top-5 md:right-5" style={{ position: "absolute", zIndex: 2 }}>
               {showFollow && (
                 <button onClick={toggleFollow} disabled={followLoading} className="px-2.5 py-1 text-[10px] md:px-[18px] md:py-2 md:text-[11px]" style={{
                   borderRadius: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
