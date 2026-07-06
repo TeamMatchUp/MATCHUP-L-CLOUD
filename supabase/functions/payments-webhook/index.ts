@@ -79,13 +79,6 @@ async function handleCheckoutCompleted(session: any, env: StripeEnv) {
         active_until: activeUntil.toISOString(),
         updated_at: now.toISOString(),
       }).eq("id", purchase.id);
-
-      // Bump event boost fields
-      if (eventId) {
-        await sb().from("events").update({
-          boosted_until: activeUntil.toISOString(),
-        } as any).eq("id", eventId);
-      }
     }
   }
 }
