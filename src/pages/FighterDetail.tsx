@@ -438,13 +438,14 @@ export default function FighterDetail() {
                 </div>
 
                 {/* Stat pills */}
-                <div className="flex gap-2 flex-wrap" style={{ marginTop: 16 }}>
+                <div className="flex gap-1.5 flex-nowrap w-full" style={{ marginTop: 16 }}>
                   <StatPill value={stats.wins} label="W" color={GREEN} bg="rgba(34,197,94,0.12)" />
                   <StatPill value={stats.losses} label="L" color={RED} bg="rgba(239,68,68,0.12)" />
                   <StatPill value={stats.draws} label="D" color={MUTED} />
                   <StatPill value={stats.kos + stats.tkos} label="KOs" color={GOLD} bg={GOLD_TINT} />
                   <StatPill value={`${winRate}%`} label="Win %" color={GOLD} bg={GOLD_TINT} />
                 </div>
+
 
                 {/* Titles */}
                 {titles.length > 0 && (
