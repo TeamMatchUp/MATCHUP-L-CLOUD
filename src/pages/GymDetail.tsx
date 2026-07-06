@@ -358,14 +358,15 @@ export default function GymDetail() {
                       </span>
                     )}
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                  <p className="mt-2 text-sm text-muted-foreground flex items-center gap-2 flex-nowrap overflow-x-auto whitespace-nowrap" style={{ scrollbarWidth: "none" }}>
                     {gym.city && (
-                      <span className="inline-flex items-center gap-1">
+                      <span className="inline-flex items-center gap-1 shrink-0">
                         <MapPin className="h-3.5 w-3.5 text-primary" /> {gym.city}
                       </span>
                     )}
-                    {disciplineTags.length > 0 && <span>· {disciplineTags.join(" · ")}</span>}
+                    {disciplineTags.length > 0 && <span className="shrink-0">· {disciplineTags.join(" · ")}</span>}
                   </p>
+
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {gym.phone && (

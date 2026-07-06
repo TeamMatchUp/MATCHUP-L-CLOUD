@@ -370,10 +370,11 @@ export default function FighterDetail() {
           </button>
 
           {/* ════ HERO CARD ════ */}
-          <div style={{
-            background: constellationBg, borderRadius: 16, padding: 32, boxShadow: CARD_SHADOW,
+          <div className="p-5 md:p-8" style={{
+            background: constellationBg, borderRadius: 16, boxShadow: CARD_SHADOW,
             position: "relative", overflow: "hidden",
           }}>
+
             {/* Action buttons top-right */}
             <div className="flex items-center gap-2" style={{ position: "absolute", top: 20, right: 20, zIndex: 2 }}>
               <button onClick={handleShare} style={{
@@ -394,7 +395,7 @@ export default function FighterDetail() {
               )}
             </div>
 
-            <div className="grid gap-8" style={{ gridTemplateColumns: "auto 1fr", alignItems: "center" }}>
+            <div className="grid gap-6 md:gap-8 md:[grid-template-columns:auto_1fr] [grid-template-columns:1fr] justify-items-center md:justify-items-start text-center md:text-left items-center">
               {/* Avatar */}
               <div style={{
                 width: 140, height: 140, borderRadius: "50%",
@@ -492,7 +493,7 @@ export default function FighterDetail() {
           {isOwnerOrCoach && <div style={{ marginTop: 16 }}><ProfileCompletionBar fighterId={fighter.id} fighterProfile={fighter} /></div>}
 
           {/* ════ MAIN GRID ════ */}
-          <div className="grid gap-6" style={{ gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr)", marginTop: 24 }}>
+          <div className="grid gap-6 grid-cols-1 md:[grid-template-columns:minmax(0,1.6fr)_minmax(0,1fr)]" style={{ marginTop: 24 }}>
 
             {/* ─── LEFT COLUMN ─── */}
             <div>
