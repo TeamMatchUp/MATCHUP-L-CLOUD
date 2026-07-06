@@ -15,6 +15,7 @@ import { Filter, Search, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Database } from "@/integrations/supabase/types";
 import { FighterCard } from "@/components/fighter/FighterCard";
+import { computeFighterRecord } from "@/lib/fighterStats";
 
 type CountryCode = Database["public"]["Enums"]["country_code"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
@@ -78,43 +79,16 @@ const Fighters = () => {
       [...(fightsA || []), ...(fightsB || [])].forEach((f) => fightMap.set(f.id, f));
       const allFights = Array.from(fightMap.values());
 
-      // Calculate dynamic records
-      const recordMap = new Map<string, { wins: number; losses: number; draws: number }>();
+      // Calculate dynamic records via shared helper (keeps card + profile in sync)
+      const recordMap = new Map<string, { wins: number; losses: number; draws: number; kos: number; stated: boolean }>();
       (data ?? []).forEach((fighter) => {
-        let wins = 0, losses = 0, draws = 0;
-        allFights.forEach((fight) => {
-          const isA = fight.fighter_a_id === fighter.id;
-          const isB = fight.fighter_b_id === fighter.id;
-          if (!isA && !isB) return;
-          
-          // Skip truly invalid self-fights (no opponent_name means bad data)
-          if (fight.fighter_a_id === fight.fighter_b_id && !fight.opponent_name) return;
-
-          // For self-referencing fights (external opponent), treat as fighter_a's perspective
-          const isSelfRef = fight.fighter_a_id === fight.fighter_b_id;
-          const result = fight.result as string;
-
-          // Prioritize winner_id if set
-          if (fight.winner_id) {
-            if (fight.winner_id === fighter.id) wins++;
-            else losses++;
-          } else if (result === "draw") {
-            draws++;
-          } else if (result === "win") {
-            if (isSelfRef || isA) wins++;
-            else losses++;
-          } else if (result === "loss") {
-            if (isSelfRef || isA) losses++;
-            else wins++;
-          }
-        });
-        recordMap.set(fighter.id, { wins, losses, draws });
+        recordMap.set(fighter.id, computeFighterRecord(fighter, allFights));
       });
 
       return (data ?? []).map((f) => ({
         ...f,
         _avatar: f.profile_image || (f.user_id ? avatarMap.get(f.user_id) : null) || null,
-        _record: recordMap.get(f.id) || { wins: 0, losses: 0, draws: 0 },
+        _record: recordMap.get(f.id) || { wins: 0, losses: 0, draws: 0, kos: 0, stated: false },
       }));
     },
   });
@@ -266,6 +240,7 @@ const Fighters = () => {
                         wins: fighter._record.wins,
                         losses: fighter._record.losses,
                         draws: fighter._record.draws,
+                        kos: fighter._record.kos,
                       }}
                     />
                   </React.Fragment>
