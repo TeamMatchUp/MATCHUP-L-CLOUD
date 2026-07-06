@@ -329,25 +329,25 @@ export function FighterFightHistory({ fighterId, fighterUserId, isOwner = false 
         <p className="text-muted-foreground text-sm">No fight history recorded yet.</p>
       ) : (
         <div className="rounded-lg border border-border overflow-hidden">
-          <div className="overflow-hidden">
-            <Table>
+          <div className="overflow-x-auto">
+            <Table className="min-w-[520px]">
               <TableHeader className="sticky top-0 z-10 bg-card">
                 <TableRow>
-                  <TableHead>Opponent</TableHead>
-                  <TableHead className="hidden md:table-cell">Gym</TableHead>
-                  <TableHead>Result</TableHead>
-                  <TableHead>Method</TableHead>
-                  <TableHead className="hidden md:table-cell">Rd</TableHead>
-                  <TableHead className="hidden md:table-cell">Date</TableHead>
-                  <TableHead className="hidden lg:table-cell">Event</TableHead>
-                  <TableHead>Source</TableHead>
+                  <TableHead className="whitespace-nowrap">Opponent</TableHead>
+                  <TableHead className="hidden md:table-cell whitespace-nowrap">Gym</TableHead>
+                  <TableHead className="whitespace-nowrap">Result</TableHead>
+                  <TableHead className="whitespace-nowrap">Method</TableHead>
+                  <TableHead className="hidden md:table-cell whitespace-nowrap">Rd</TableHead>
+                  <TableHead className="hidden md:table-cell whitespace-nowrap">Date</TableHead>
+                  <TableHead className="hidden lg:table-cell whitespace-nowrap">Event</TableHead>
+                  <TableHead className="whitespace-nowrap">Source</TableHead>
                   {isOwner && <TableHead className="w-10"></TableHead>}
                 </TableRow>
               </TableHeader>
             </Table>
           </div>
-          <div className="overflow-y-auto" style={{ maxHeight: "calc(41px * 8)" }}>
-            <Table>
+          <div className="overflow-auto" style={{ maxHeight: "calc(41px * 8)" }}>
+            <Table className="min-w-[520px]">
               <TableBody>
               {fights.map((fight: any) => {
                 const res = getResultForFighter(fight);
