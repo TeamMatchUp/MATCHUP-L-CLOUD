@@ -1,4 +1,5 @@
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Footer } from "@/components/Footer";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Filter, Users, ShieldCheck, Search, X, SlidersHorizontal } from "lucide-react";
