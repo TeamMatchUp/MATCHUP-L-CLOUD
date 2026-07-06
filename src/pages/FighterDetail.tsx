@@ -317,10 +317,15 @@ export default function FighterDetail() {
   };
 
   const yearRecord = (yearFights: any[]) => {
-    let w = 0, l = 0;
-    yearFights.forEach((f: any) => { if (isWin(f, fighter.id)) w++; else if (isLoss(f)) l++; });
-    return `${w}W - ${l}L`;
+    let w = 0, l = 0, d = 0;
+    yearFights.forEach((f: any) => {
+      if (isWin(f, fighter.id)) w++;
+      else if (isLoss(f)) l++;
+      else if (isDraw(f)) d++;
+    });
+    return d > 0 ? `${w}W - ${l}L - ${d}D` : `${w}W - ${l}L`;
   };
+
 
   const ScopeBtn = ({ k, label }: { k: ScopeTab; label: string }) => (
     <button onClick={() => setScope(k)} style={{
