@@ -818,7 +818,7 @@ export default function EventDetail() {
                       );
                     }
 
-                    if (event.ticket_enabled && activeTickets.length > 0) {
+                    if (activeTickets.length > 0) {
                       const purchaseUrl = (event as any).ticket_url || null;
                       return (
                         <div
@@ -832,16 +832,6 @@ export default function EventDetail() {
                     }
                     return null;
                   })()}
-
-                  <EventDetailsCard
-                    rows={[
-                      { label: "Promoter", value: event.promotion_name },
-                      { label: "Discipline", value: event.discipline ? String(event.discipline).replace(/_/g, " ") : null },
-                      { label: "Venue", value: event.venue_name },
-                      { label: "City", value: event.city },
-                      { label: "Date", value: new Date(event.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) },
-                    ]}
-                  />
                 </aside>
               </div>
             </motion.div>
