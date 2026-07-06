@@ -19,6 +19,7 @@ export default function ProposalDetailPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <SEO title="Match Proposal" description="Review and respond to a match proposal on MatchUp." />
       <div className="max-w-3xl mx-auto p-4 md:p-6">
         <Button
           variant="ghost"
