@@ -240,6 +240,7 @@ const Fighters = () => {
                         wins: fighter._record.wins,
                         losses: fighter._record.losses,
                         draws: fighter._record.draws,
+                        kos: fighter._record.kos,
                       }}
                     />
                   </React.Fragment>
