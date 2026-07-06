@@ -12,9 +12,10 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Loader2, Save, User, Sun, Moon, Sparkles, ExternalLink } from "lucide-react";
+import { Camera, Loader2, Save, User, Sun, Moon, Sparkles, ExternalLink, Check } from "lucide-react";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { CoachFighterProfileForm } from "@/components/onboarding/CoachFighterProfileForm";
 
 export default function AccountSettings() {
