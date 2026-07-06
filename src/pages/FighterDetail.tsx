@@ -365,7 +365,7 @@ export default function FighterDetail() {
           className="mx-auto" style={{ maxWidth: 1280, padding: "0 24px" }}>
 
           {/* Back link */}
-          <button onClick={() => fromParam === "roster" ? navigate("/dashboard?section=roster") : navigate(-1)}
+          <button onClick={() => fromParam === "roster" ? navigate("/dashboard?section=roster") : navigate("/explore?tab=fighters")}
             aria-label="Back to fighters"
             className="flex items-center gap-2"
             style={{ background: "none", border: "none", color: MUTED, fontSize: 13, cursor: "pointer", padding: "0 0 16px" }}>
