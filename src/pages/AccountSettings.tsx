@@ -326,41 +326,190 @@ export default function AccountSettings() {
 
           {/* Subscription / Billing */}
           <section className="space-y-4 mb-8">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold text-foreground">Subscription</h2>
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold text-foreground">Subscription</h2>
+              </div>
+              {/* Monthly / Annual toggle */}
+              <div
+                role="tablist"
+                aria-label="Billing interval"
+                style={{
+                  display: "inline-flex",
+                  padding: 4,
+                  borderRadius: 999,
+                  background: "#181c24",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.03), 0 2px 6px rgba(0,0,0,0.3)",
+                }}
+              >
+                {(["monthly", "annual"] as const).map((k) => {
+                  const active = billingInterval === k;
+                  return (
+                    <button
+                      key={k}
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => setBillingInterval(k)}
+                      style={{
+                        padding: "6px 14px",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: "0.04em",
+                        textTransform: "uppercase",
+                        borderRadius: 999,
+                        border: "none",
+                        cursor: "pointer",
+                        background: active ? "#e8a020" : "transparent",
+                        color: active ? "#080a0d" : "#8b909e",
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      {k === "monthly" ? "Monthly" : "Annual"}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            {subscription && ["active", "trialing", "past_due"].includes(subscription.status) ? (
-              <div className="rounded-xl bg-card p-5 space-y-3" style={{ boxShadow: "var(--shadow-card)" }}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">MatchUp Pro</p>
-                    <p className="text-xs text-muted-foreground capitalize">
-                      Status: {subscription.status}
-                      {subscription.current_period_end &&
-                        ` · Renews ${new Date(subscription.current_period_end).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
+
+            {(() => {
+              const isPro = subscription && ["active", "trialing", "past_due"].includes(subscription.status);
+              const price = billingInterval === "monthly" ? "£9.99" : "£99";
+              const sub = billingInterval === "monthly" ? "per month" : "per year — save 2 months";
+              const planId = billingInterval === "monthly" ? "pro_monthly" : "pro_yearly";
+              const freeFeatures = [
+                "Create and complete your profile",
+                "Browse events, gyms and fighters",
+                "Basic match proposals",
+                "Standard notifications",
+              ];
+              const proFeatures = [
+                "Priority matchmaking suggestions",
+                "Advanced fight analytics & win probability",
+                "Featured placement in fighter search",
+                "Unlimited match proposals",
+                "Verified profile badge",
+              ];
+              const cardStyle: React.CSSProperties = {
+                background: "#111318",
+                borderRadius: 12,
+                padding: 24,
+                boxShadow:
+                  "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
+                display: "flex",
+                flexDirection: "column",
+              };
+              return (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
+                  {/* Free tier */}
+                  <div style={cardStyle}>
+                    <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, letterSpacing: "0.06em", color: "#8b909e" }}>
+                      FREE
+                    </div>
+                    <div style={{ marginTop: 6 }}>
+                      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 36, color: "#e8eaf0" }}>£0</span>
+                      <span style={{ fontSize: 12, color: "#8b909e", marginLeft: 6 }}>forever</span>
+                    </div>
+                    <p style={{ fontSize: 12, color: "#8b909e", marginTop: 10, marginBottom: 16 }}>
+                      Everything you need to get started on MatchUp.
                     </p>
+                    <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px", flex: 1 }}>
+                      {freeFeatures.map((f) => (
+                        <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: "#e8eaf0", marginBottom: 8 }}>
+                          <Check style={{ width: 14, height: 14, color: "#8b909e", flexShrink: 0, marginTop: 3 }} /> {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <div
+                      style={{
+                        padding: "10px 0",
+                        textAlign: "center",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        letterSpacing: "0.04em",
+                        textTransform: "uppercase",
+                        borderRadius: 8,
+                        background: "#181c24",
+                        color: "#8b909e",
+                      }}
+                    >
+                      {isPro ? "Included" : "Current plan"}
+                    </div>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                    <Sparkles className="h-3 w-3" /> PRO
-                  </span>
+
+                  {/* Pro tier */}
+                  <div style={{ ...cardStyle, boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(232,160,32,0.25), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, letterSpacing: "0.06em", color: "#e8a020" }}>
+                        PRO
+                      </div>
+                      {isPro && (
+                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.06em", color: "#e8a020", background: "rgba(232,160,32,0.12)", padding: "3px 8px", borderRadius: 999 }}>
+                          ACTIVE
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ marginTop: 6 }}>
+                      <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 36, color: "#e8eaf0" }}>{price}</span>
+                      <span style={{ fontSize: 12, color: "#8b909e", marginLeft: 6 }}>{sub}</span>
+                    </div>
+                    <p style={{ fontSize: 12, color: "#8b909e", marginTop: 10, marginBottom: 16 }}>
+                      For serious fighters and coaches who want the edge.
+                    </p>
+                    <ul style={{ listStyle: "none", padding: 0, margin: "0 0 20px", flex: 1 }}>
+                      {proFeatures.map((f) => (
+                        <li key={f} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: "#e8eaf0", marginBottom: 8 }}>
+                          <Check style={{ width: 14, height: 14, color: "#e8a020", flexShrink: 0, marginTop: 3 }} /> {f}
+                        </li>
+                      ))}
+                    </ul>
+                    {isPro ? (
+                      <button
+                        onClick={openBillingPortal}
+                        disabled={portalLoading}
+                        style={{
+                          padding: "10px 0",
+                          fontSize: 13,
+                          fontWeight: 700,
+                          letterSpacing: "0.04em",
+                          textTransform: "uppercase",
+                          borderRadius: 8,
+                          border: "none",
+                          cursor: portalLoading ? "wait" : "pointer",
+                          background: "#181c24",
+                          color: "#e8eaf0",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 8,
+                        }}
+                      >
+                        {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                        Manage billing
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setCheckoutPlan(planId)}
+                        style={{
+                          padding: "10px 0",
+                          fontSize: 13,
+                          fontWeight: 700,
+                          letterSpacing: "0.04em",
+                          textTransform: "uppercase",
+                          borderRadius: 8,
+                          border: "none",
+                          cursor: "pointer",
+                          background: "#e8a020",
+                          color: "#080a0d",
+                        }}
+                      >
+                        Upgrade to Pro
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <Button variant="outline" onClick={openBillingPortal} disabled={portalLoading} className="gap-2">
-                  {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
-                  Manage billing
-                </Button>
-              </div>
-            ) : (
-              <div className="rounded-xl bg-card p-5 space-y-3" style={{ boxShadow: "var(--shadow-card)" }}>
-                <p className="text-sm font-semibold text-foreground">You're on the Free plan</p>
-                <p className="text-xs text-muted-foreground">
-                  Unlock priority matchmaking, advanced analytics and featured placement with MatchUp Pro.
-                </p>
-                <Button variant="hero" onClick={() => navigate("/pricing")} className="gap-2">
-                  <Sparkles className="h-4 w-4" /> Upgrade to Pro
-                </Button>
-              </div>
-            )}
+              );
+            })()}
           </section>
 
           <Separator className="mb-8" />
