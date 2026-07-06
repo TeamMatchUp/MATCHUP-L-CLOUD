@@ -52,8 +52,11 @@ export function FighterCard({ fighter, index = 0, animate = true }: Props) {
   const Body = (
     <Link
       to={`/fighters/${fighter.id}`}
-      className="group block h-full rounded-xl p-5 sm:p-6 mu-card"
+      className="group block rounded-xl p-5 sm:p-6 mu-card"
       style={{
+        height: 300,
+        display: "flex",
+        flexDirection: "column",
         backgroundColor: "hsl(var(--card))",
         boxShadow:
           "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)",
@@ -73,7 +76,7 @@ export function FighterCard({ fighter, index = 0, animate = true }: Props) {
         </div>
         {fighter.available && (
           <span
-            className="text-[10px] font-medium px-2.5 py-1 rounded-full text-success uppercase tracking-widest"
+            className="text-[10px] font-medium px-2.5 py-1 rounded-full text-success uppercase tracking-widest whitespace-nowrap"
             style={{
               background: "rgba(34,197,94,0.12)",
               backdropFilter: "blur(6px)",
@@ -84,16 +87,25 @@ export function FighterCard({ fighter, index = 0, animate = true }: Props) {
         )}
       </div>
 
-      <h3 className="font-heading text-lg sm:text-xl text-foreground leading-tight tracking-wide">
+      <h3
+        className="font-heading text-lg sm:text-xl text-foreground leading-tight tracking-wide"
+        style={{
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+          minHeight: "2.5em",
+        }}
+      >
         {fighter.name}
       </h3>
-      <p className="mt-1.5 flex items-center gap-1.5 text-[13px] text-muted-foreground">
+      <p className="mt-1.5 flex items-center gap-1.5 text-[13px] text-muted-foreground min-w-0">
         {fighter.country && <FlagIcon countryCode={fighter.country} size={14} />}
         <span className="truncate">{locationLine || fighter.country || "—"}</span>
       </p>
 
       <div
-        className="mt-5 pt-4 grid grid-cols-3 gap-3"
+        className="mt-auto pt-4 grid grid-cols-3 gap-3"
         style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)" }}
       >
         <div>
@@ -109,7 +121,17 @@ export function FighterCard({ fighter, index = 0, animate = true }: Props) {
           </p>
         </div>
         <div>
-          <p className="font-heading text-sm text-foreground leading-tight">{weight}</p>
+          <p
+            className="font-heading text-sm text-foreground leading-tight"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {weight}
+          </p>
           <p className="text-[10px] uppercase tracking-widest text-muted-foreground mt-0.5">
             Class
           </p>
@@ -117,6 +139,7 @@ export function FighterCard({ fighter, index = 0, animate = true }: Props) {
       </div>
     </Link>
   );
+
 
   if (!animate) return Body;
   return (
