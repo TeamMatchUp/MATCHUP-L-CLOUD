@@ -177,7 +177,7 @@ export function FighterRecordHero() {
     return "D";
   };
 
-  const filterLabels: Record<FilterMode, string> = { all: "All", pro: "Pro", amateur: "Amateur" };
+  const filterLabels: Record<FilterMode, string> = { all: "Total", pro: "Pro", amateur: "Amateur" };
 
   if (!fighterProfile) return null;
 
