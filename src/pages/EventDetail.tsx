@@ -58,6 +58,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
     if (totalQty <= 0) return;
     selected.forEach(({ t, qty }) => {
       addToBasket({
+        ticket_id: t.id,
         ticket_type: t.ticket_type,
         price: Number(t.price),
         quantity: qty,
@@ -65,6 +66,7 @@ function TicketSection({ tickets, event, purchaseUrl }: { tickets: any[]; event:
         event_title: event.title,
       });
     });
+
     setQuantities({});
     toast.success(`${totalQty} ticket${totalQty === 1 ? "" : "s"} added to basket`);
   };
