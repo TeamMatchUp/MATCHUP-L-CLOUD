@@ -788,8 +788,7 @@ export default function EventDetail() {
                     const tickets = eventTickets;
                     const now = new Date();
                     const activeTickets = tickets.filter((t: any) =>
-                      (!t.sales_start || new Date(t.sales_start) <= now) &&
-                      (!t.sales_end || new Date(t.sales_end) >= now)
+                      !t.sales_end || new Date(t.sales_end) >= now
                     );
                     const allSoldOut =
                       event.sold_out === true ||
