@@ -370,10 +370,11 @@ export default function FighterDetail() {
           </button>
 
           {/* ════ HERO CARD ════ */}
-          <div style={{
-            background: constellationBg, borderRadius: 16, padding: 32, boxShadow: CARD_SHADOW,
+          <div className="p-5 md:p-8" style={{
+            background: constellationBg, borderRadius: 16, boxShadow: CARD_SHADOW,
             position: "relative", overflow: "hidden",
           }}>
+
             {/* Action buttons top-right */}
             <div className="flex items-center gap-2" style={{ position: "absolute", top: 20, right: 20, zIndex: 2 }}>
               <button onClick={handleShare} style={{
