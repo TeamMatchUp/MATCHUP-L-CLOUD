@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, ShieldCheck, Plus, Trash2, Pencil, LogOut, Lock, Mail, Phone, Globe, Copy, Check as CheckIcon } from "lucide-react";

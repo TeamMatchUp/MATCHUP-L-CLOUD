@@ -194,6 +194,7 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4 py-8">
+      <SEO title={isSignUp ? "Create Account" : "Sign In"} description="Sign in or create an account on MatchUp — combat sports matchmaking for fighters, coaches and organisers." canonicalPath="/auth" />
       <motion.div
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 20 }}

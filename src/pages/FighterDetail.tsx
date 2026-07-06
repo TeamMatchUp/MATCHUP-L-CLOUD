@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
