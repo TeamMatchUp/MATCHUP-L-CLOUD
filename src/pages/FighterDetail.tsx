@@ -294,11 +294,12 @@ export default function FighterDetail() {
 
   // ──── Stat pill (hero) ────
   const StatPill = ({ value, label, color = TEXT, bg = INSET }: { value: React.ReactNode; label: string; color?: string; bg?: string }) => (
-    <div style={{ background: bg, borderRadius: 10, padding: "10px 14px", minWidth: 64, textAlign: "center", boxShadow: INSET_SHADOW }}>
-      <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 26, lineHeight: 1, color }}>{value}</div>
-      <div style={{ marginTop: 2, fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", color: MUTED, textTransform: "uppercase" }}>{label}</div>
+    <div style={{ background: bg, borderRadius: 10, padding: "8px 6px", flex: "1 1 0", minWidth: 0, textAlign: "center", boxShadow: INSET_SHADOW }}>
+      <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(18px, 5.5vw, 26px)", lineHeight: 1, color }}>{value}</div>
+      <div style={{ marginTop: 2, fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", color: MUTED, textTransform: "uppercase" }}>{label}</div>
     </div>
   );
+
 
   // ──── Method bar row ────
   const MethodBar = ({ label, count, max, color }: { label: string; count: number; max: number; color: string }) => {
