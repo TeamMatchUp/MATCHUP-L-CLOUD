@@ -7,12 +7,19 @@ import { TopFightersSeekingSection } from "@/components/landing/TopFightersSeeki
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { PlatformStatsStrip } from "@/components/landing/PlatformStatsStrip";
 import { FinalCtaSection } from "@/components/landing/FinalCtaSection";
+import { SEO } from "@/components/SEO";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="MatchUp — Combat Sports Matchmaking"
+        description="The UK matchmaking platform for MMA and Muay Thai. Discover events, explore fighters, and confirm your next bout."
+        canonicalPath="/"
+      />
       <Header />
       <main className="pt-16">
+
         <HeroSection />
         <UpcomingFightsTicker />
         <FeatureShowcase />

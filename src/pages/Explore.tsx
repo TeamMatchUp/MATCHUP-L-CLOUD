@@ -398,10 +398,18 @@ export default function Explore() {
     );
   };
 
+  const seoMap: Record<TabType, { title: string; desc: string }> = {
+    gyms: { title: "Find Combat Sports Gyms", desc: "Browse MMA and Muay Thai gyms across the UK. Filter by location, discipline, and connect with coaches." },
+    fighters: { title: "Explore Fighters", desc: "Discover active MMA and Muay Thai fighters. Filter by weight class, style, and availability." },
+    events: { title: "Upcoming Combat Sports Events", desc: "Find upcoming MMA and Muay Thai events across the UK. Tickets, fight cards, and venues." },
+  };
+  const seoCurrent = seoMap[tab] ?? seoMap.events;
   return (
     <div className="min-h-screen flex flex-col" style={{ background: EX.bg }}>
+      <SEO title={seoCurrent.title} description={seoCurrent.desc} canonicalPath={`/explore/${tab}`} />
       <Header />
       <main className="flex-1 flex flex-col" style={{ paddingTop: 56 }}>
+
         <section className="flex-1 flex flex-col px-4 sm:px-8" style={{ paddingTop: 24, paddingBottom: 24 }}>
           {/* Pill Tab Navigation */}
           <div className="flex items-center gap-1.5 sm:gap-2 mb-6 flex-nowrap overflow-x-auto">
