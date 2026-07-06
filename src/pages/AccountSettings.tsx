@@ -321,6 +321,48 @@ export default function AccountSettings() {
 
           <Separator className="mb-8" />
 
+          {/* Subscription / Billing */}
+          <section className="space-y-4 mb-8">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">Subscription</h2>
+            </div>
+            {subscription && ["active", "trialing", "past_due"].includes(subscription.status) ? (
+              <div className="rounded-xl bg-card p-5 space-y-3" style={{ boxShadow: "var(--shadow-card)" }}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">MatchUp Pro</p>
+                    <p className="text-xs text-muted-foreground capitalize">
+                      Status: {subscription.status}
+                      {subscription.current_period_end &&
+                        ` · Renews ${new Date(subscription.current_period_end).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`}
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+                    <Sparkles className="h-3 w-3" /> PRO
+                  </span>
+                </div>
+                <Button variant="outline" onClick={openBillingPortal} disabled={portalLoading} className="gap-2">
+                  {portalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+                  Manage billing
+                </Button>
+              </div>
+            ) : (
+              <div className="rounded-xl bg-card p-5 space-y-3" style={{ boxShadow: "var(--shadow-card)" }}>
+                <p className="text-sm font-semibold text-foreground">You're on the Free plan</p>
+                <p className="text-xs text-muted-foreground">
+                  Unlock priority matchmaking, advanced analytics and featured placement with MatchUp Pro.
+                </p>
+                <Button variant="hero" onClick={() => navigate("/pricing")} className="gap-2">
+                  <Sparkles className="h-4 w-4" /> Upgrade to Pro
+                </Button>
+              </div>
+            )}
+          </section>
+
+          <Separator className="mb-8" />
+
+
           {/* Password */}
           <section className="space-y-4 mb-8">
             <h2 className="text-lg font-semibold text-foreground">Change Password</h2>
