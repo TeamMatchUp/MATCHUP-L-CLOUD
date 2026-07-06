@@ -184,6 +184,71 @@ export type Database = {
           },
         ]
       }
+      event_boost_purchases: {
+        Row: {
+          active_from: string | null
+          active_until: string | null
+          amount: number
+          created_at: string
+          currency: string
+          duration_hours: number
+          environment: string
+          event_id: string
+          id: string
+          organiser_id: string
+          price_id: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          active_from?: string | null
+          active_until?: string | null
+          amount: number
+          created_at?: string
+          currency?: string
+          duration_hours: number
+          environment?: string
+          event_id: string
+          id?: string
+          organiser_id: string
+          price_id: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tier: string
+          updated_at?: string
+        }
+        Update: {
+          active_from?: string | null
+          active_until?: string | null
+          amount?: number
+          created_at?: string
+          currency?: string
+          duration_hours?: number
+          environment?: string
+          event_id?: string
+          id?: string
+          organiser_id?: string
+          price_id?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_boost_purchases_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_boosts: {
         Row: {
           created_at: string
@@ -1642,6 +1707,126 @@ export type Database = {
             columns: ["result_id"]
             isOneToOne: false
             referencedRelation: "fight_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          price_id: string
+          product_id: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id: string
+          product_id: string
+          status?: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          price_id?: string
+          product_id?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ticket_orders: {
+        Row: {
+          buyer_email: string | null
+          buyer_id: string | null
+          created_at: string
+          currency: string
+          environment: string
+          event_id: string
+          id: string
+          quantity: number
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          ticket_id: string | null
+          ticket_type: string
+          total_amount: number
+          unit_amount: number
+          updated_at: string
+        }
+        Insert: {
+          buyer_email?: string | null
+          buyer_id?: string | null
+          created_at?: string
+          currency?: string
+          environment?: string
+          event_id: string
+          id?: string
+          quantity?: number
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          ticket_id?: string | null
+          ticket_type: string
+          total_amount: number
+          unit_amount: number
+          updated_at?: string
+        }
+        Update: {
+          buyer_email?: string | null
+          buyer_id?: string | null
+          created_at?: string
+          currency?: string
+          environment?: string
+          event_id?: string
+          id?: string
+          quantity?: number
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          ticket_id?: string | null
+          ticket_type?: string
+          total_amount?: number
+          unit_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_orders_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_orders_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
             referencedColumns: ["id"]
           },
         ]
