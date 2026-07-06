@@ -49,7 +49,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
   const [gymResults, setGymResults] = useState<GymResult[]>([]);
   const [joiningGym, setJoiningGym] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [heroRecordFilter, setHeroRecordFilter] = useState<"pro" | "amateur" | "total">("pro");
+  const [heroRecordFilter, setHeroRecordFilter] = useState<"total" | "pro" | "amateur">("total");
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [showCrop, setShowCrop] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean>(fighterProfile.available ?? true);
@@ -415,7 +415,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
                     <>
                       <div className="flex items-center gap-2 mt-4 mb-2">
                         <div className="flex gap-1">
-                          {(["pro", "amateur", "total"] as const).map((opt) => (
+                          {(["total", "pro", "amateur"] as const).map((opt) => (
                             <button key={opt} onClick={() => setRecordFilter(opt)} className={`px-3 py-1 text-xs rounded-md font-medium transition-colors ${recordFilter === opt ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground"}`}>
                               {opt.charAt(0).toUpperCase() + opt.slice(1)}
                             </button>

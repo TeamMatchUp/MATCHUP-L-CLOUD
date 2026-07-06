@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { FighterCard } from "@/components/fighter/FighterCard";
+import { FighterProfileCard } from "@/components/fighter/FighterProfileCard";
+import { computeFighterRecord } from "@/lib/fighterStats";
 
 export function TopFightersSeekingSection() {
   const { data: fighters } = useQuery({
@@ -17,32 +18,38 @@ export function TopFightersSeekingSection() {
         .limit(4);
       if (error) throw error;
 
-      // Fetch KO counts
       const ids = (data ?? []).map((f) => f.id);
-      const koMap = new Map<string, number>();
-      if (ids.length) {
-        const [{ data: koA }, { data: koB }] = await Promise.all([
-          supabase.from("fights").select("fighter_a_id, method, result, winner_id").in("fighter_a_id", ids),
-          supabase.from("fights").select("fighter_b_id, method, result, winner_id").in("fighter_b_id", ids),
-        ]);
-        const isKO = (m?: string | null) =>
-          !!m && /ko|tko/i.test(m);
-        (koA ?? []).forEach((f: any) => {
-          if (isKO(f.method) && (f.result === "win" || f.winner_id === f.fighter_a_id)) {
-            koMap.set(f.fighter_a_id, (koMap.get(f.fighter_a_id) ?? 0) + 1);
-          }
-        });
-        (koB ?? []).forEach((f: any) => {
-          if (isKO(f.method) && f.winner_id === f.fighter_b_id) {
-            koMap.set(f.fighter_b_id, (koMap.get(f.fighter_b_id) ?? 0) + 1);
-          }
-        });
-      }
+      const userIds = (data ?? []).map(f => f.user_id).filter(Boolean) as string[];
 
-      return (data ?? []).map((f: any) => ({
-        ...f,
-        _kos: koMap.get(f.id) ?? 0,
-      }));
+      const [avatarsRes, fightsARes, fightsBRes] = await Promise.all([
+        userIds.length
+          ? supabase.from("profiles").select("id, avatar_url").in("id", userIds)
+          : Promise.resolve({ data: [] as any[] } as any),
+        ids.length
+          ? supabase.from("fights").select("*").in("fighter_a_id", ids)
+          : Promise.resolve({ data: [] as any[] } as any),
+        ids.length
+          ? supabase.from("fights").select("*").in("fighter_b_id", ids)
+          : Promise.resolve({ data: [] as any[] } as any),
+      ]);
+
+      const avatarMap = new Map<string, string>();
+      (avatarsRes.data ?? []).forEach((p: any) => { if (p.avatar_url) avatarMap.set(p.id, p.avatar_url); });
+
+      const fightMap = new Map<string, any>();
+      [...(fightsARes.data ?? []), ...(fightsBRes.data ?? [])].forEach((f: any) => fightMap.set(f.id, f));
+      const allFights = Array.from(fightMap.values());
+
+      return (data ?? []).map((f: any) => {
+        const rec = computeFighterRecord(f, allFights);
+        const primary = f.fighter_gym_links?.find((l: any) => l.is_primary);
+        return {
+          ...f,
+          _avatar: f.profile_image || (f.user_id ? avatarMap.get(f.user_id) : null) || null,
+          _record: rec,
+          _gymName: primary?.gyms?.name || "Independent",
+        };
+      });
     },
   });
 
@@ -80,23 +87,27 @@ export function TopFightersSeekingSection() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {displayFighters.map((fighter: any, i: number) => (
-            <FighterCard
+            <FighterProfileCard
               key={fighter.id}
               index={i}
               fighter={{
                 id: fighter.id,
                 name: fighter.name,
                 country: fighter.country,
-                region: fighter.region,
                 discipline: fighter.discipline,
                 weight_class: fighter.weight_class,
-                style: fighter.style,
-                available: fighter.available,
                 profile_image: fighter.profile_image,
-                wins: fighter.record_wins ?? 0,
-                losses: fighter.record_losses ?? 0,
-                draws: fighter.record_draws ?? 0,
-                kos: fighter._kos ?? 0,
+                _avatar: fighter._avatar,
+                height: fighter.height,
+                reach: fighter.reach,
+                walk_around_weight_kg: fighter.walk_around_weight_kg,
+                stance: fighter.stance,
+                date_of_birth: fighter.date_of_birth,
+                gymName: fighter._gymName,
+                wins: fighter._record.wins,
+                losses: fighter._record.losses,
+                draws: fighter._record.draws,
+                kos: fighter._record.kos,
               }}
             />
           ))}
