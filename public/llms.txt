@@ -1,0 +1,21 @@
+# MatchUp
+
+> UK combat sports matchmaking platform connecting fighters, coaches/gyms, and event organisers for MMA and Muay Thai.
+
+MatchUp helps fighters find bouts, coaches manage rosters, and organisers build fight cards. Explore events, fighter profiles, and gyms across the UK.
+
+## Pages
+
+- [Home](/): Platform overview and how MatchUp works.
+- [Events](/explore/events): Upcoming MMA and Muay Thai events across the UK.
+- [Fighters](/explore/fighters): Active fighters by weight class, style, and availability.
+- [Gyms](/explore/gyms): Combat sports gyms with disciplines and coaches.
+- [Sign in / Sign up](/auth): Create an account as a fighter, coach, or organiser.
+- [Contact](/contact): Get in touch with the MatchUp team.
+
+## Optional
+
+- [Terms of Service](/terms)
+- [Privacy Policy](/privacy)
+- [Record Accuracy Policy](/record-accuracy)
+- [Advertise](/advertise)
