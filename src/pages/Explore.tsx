@@ -377,12 +377,13 @@ export default function Explore() {
           onMouseEnter={(e) => { if (page > 0) { e.currentTarget.style.background = EX.goldDim; e.currentTarget.style.borderColor = EX.goldBorder; } }}
           onMouseLeave={(e) => { e.currentTarget.style.background = EX.raised; e.currentTarget.style.borderColor = EX.borderMid; }}
         >
-          <ChevronLeft style={{ width: 14, height: 14, color: page === 0 ? EX.dimmed : EX.text }} />
+          <ChevronLeft aria-label="Previous page" style={{ width: 14, height: 14, color: page === 0 ? EX.dimmed : EX.text }} />
         </button>
         <span style={{ fontSize: 14, fontWeight: 600, color: EX.text }}>
           Page {page + 1} of {totalPages}
         </span>
         <button
+          aria-label="Previous page"
           disabled={page >= totalPages - 1}
           onClick={() => { setPage(p => p + 1); document.getElementById("gym-map-list")?.scrollTo({ top: 0, behavior: "smooth" }); }}
           style={{
@@ -413,6 +414,8 @@ export default function Explore() {
       <main className="flex-1 flex flex-col" style={{ paddingTop: 56 }}>
 
         <section className="flex-1 flex flex-col px-4 sm:px-8" style={{ paddingTop: 24, paddingBottom: 24 }}>
+          <h1 className="sr-only">{seoCurrent.title}</h1>
+
           {/* Pill Tab Navigation */}
           <div className="flex items-center gap-1.5 sm:gap-2 mb-6 flex-nowrap overflow-x-auto">
             {([
