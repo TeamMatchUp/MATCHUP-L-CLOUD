@@ -149,7 +149,7 @@ export default function FighterDetail() {
   const stats = useMemo(() => {
     if (!fighter) return { wins: 0, losses: 0, draws: 0, kos: 0, tkos: 0, subs: 0, decs: 0, lossKos: 0, lossTkos: 0, lossDecs: 0, lossSubs: 0, stated: false, avgFinishRound: 0 };
     const w = scopedFights.filter((f: any) => isWin(f, fighter.id));
-    const l = scopedFights.filter((f: any) => isLoss(f));
+    const l = scopedFights.filter((f: any) => isLoss(f, fighter.id));
     const d = scopedFights.filter((f: any) => isDraw(f));
     const hasFights = scopedFights.length > 0;
     const cachedW = scope === "amateur" ? (fighter.amateur_wins ?? 0) : scope === "pro" ? (fighter.record_wins ?? 0) : (fighter.record_wins ?? 0) + (fighter.amateur_wins ?? 0);
@@ -209,7 +209,7 @@ export default function FighterDetail() {
     let rw = 0, rl = 0, rd = 0;
     sorted.forEach((f: any) => {
       if (isWin(f, fighter.id)) rw++;
-      else if (isLoss(f)) rl++;
+      else if (isLoss(f, fighter.id)) rl++;
       else rd++;
       map.set(f.id, `${rw}-${rl}${rd > 0 ? `-${rd}` : ""}`);
     });
@@ -218,7 +218,7 @@ export default function FighterDetail() {
 
   const last8 = useMemo(() => {
     if (!fighter) return [];
-    return scopedFights.slice(0, 8).map((f: any) => isWin(f, fighter.id) ? "W" : isLoss(f) ? "L" : "D").reverse();
+    return scopedFights.slice(0, 8).map((f: any) => isWin(f, fighter.id) ? "W" : isLoss(f, fighter.id) ? "L" : "D").reverse();
   }, [scopedFights, fighter]);
 
   const fightsPerYear = useMemo(() => {
@@ -239,7 +239,7 @@ export default function FighterDetail() {
       if (!m.has(promo)) m.set(promo, { w: 0, l: 0, d: 0 });
       const r = m.get(promo)!;
       if (isWin(f, fighter.id)) r.w++;
-      else if (isLoss(f)) r.l++;
+      else if (isLoss(f, fighter.id)) r.l++;
       else r.d++;
     });
     return Array.from(m.entries()).slice(0, 4);
@@ -318,7 +318,7 @@ export default function FighterDetail() {
     let w = 0, l = 0, d = 0;
     yearFights.forEach((f: any) => {
       if (isWin(f, fighter.id)) w++;
-      else if (isLoss(f)) l++;
+      else if (isLoss(f, fighter.id)) l++;
       else if (isDraw(f)) d++;
     });
     return d > 0 ? `${w}W - ${l}L - ${d}D` : `${w}W - ${l}L`;
@@ -758,7 +758,7 @@ export default function FighterDetail() {
                     <div style={{ marginTop: 8 }}>
                       {yearFights.map((fight: any) => {
                         const w = isWin(fight, fighter.id);
-                        const l = isLoss(fight);
+                        const l = isLoss(fight, fighter.id);
                         const resultLetter = w ? "W" : l ? "L" : "D";
                         const resultColor = w ? GREEN : l ? RED : MUTED;
                         const resultBg = w ? "rgba(34,197,94,0.12)" : l ? "rgba(239,68,68,0.12)" : "rgba(255,255,255,0.05)";
