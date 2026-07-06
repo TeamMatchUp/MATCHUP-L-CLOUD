@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ArrowLeft, MapPin, ShieldCheck, Plus, Trash2, Pencil, LogOut, Lock, Mail, Phone, Globe, Copy, Check as CheckIcon } from "lucide-react";
@@ -266,9 +267,12 @@ export default function GymDetail() {
 
   const disciplineTags: string[] = Array.isArray((gym as any).discipline_tags) ? (gym as any).discipline_tags : [];
 
+  const gymDesc = `${gym.name}${(gym as any).city ? ` — ${(gym as any).city}` : ""}. Combat sports gym profile, coaches, roster and contact on MatchUp.`;
   return (
     <div className="min-h-screen bg-background">
+      <SEO title={gym.name} description={gymDesc} image={(gym as any)?.banner_image ?? (gym as any)?.logo_url ?? undefined} />
       <Header />
+
       <main className="pt-16">
         <section style={{ padding: "10px 0" }}>
           <div className="container max-w-6xl">

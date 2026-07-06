@@ -28,6 +28,7 @@ import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
 import { GymRequestsPanel } from "@/components/coach/GymRequestsPanel";
 import { EditableProfilePanel } from "@/components/fighter/EditableProfilePanel";
 import { DashboardAnalytics } from "@/components/dashboard/DashboardAnalytics";
+import { SEO } from "@/components/SEO";
 import type { Database } from "@/integrations/supabase/types";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
@@ -326,7 +327,9 @@ export default function Dashboard() {
 
   return (
     <div style={{ background: "hsl(var(--background))", width: "100%", minHeight: "100vh", margin: 0, overflow: "hidden" } as React.CSSProperties}>
+      <SEO title={`${sectionTitle} — Dashboard`} description="Your MatchUp dashboard — manage fights, roster, events, and notifications." canonicalPath="/dashboard" />
       <style>{`:root { --sidebar-width: ${sidebarW}px; }`}</style>
+
       {/* Mobile sidebar overlay */}
       {isMobile && mobileSidebarOpen && (
         <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setMobileSidebarOpen(false)} />

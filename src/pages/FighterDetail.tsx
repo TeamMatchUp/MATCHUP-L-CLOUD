@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
@@ -340,9 +341,13 @@ export default function FighterDetail() {
     }}>{label}</button>
   );
 
+  const fighterName = (fighter as any)?.name ?? "Fighter";
+  const fighterDesc = `${fighterName} — combat sports fighter profile, record, stats, and fight history on MatchUp.`;
   return (
     <div className="min-h-screen" style={{ background: BG }}>
+      <SEO title={fighterName} description={fighterDesc} ogType="profile" image={(fighter as any)?.profile_image ?? undefined} />
       <Header />
+
       <main className="pt-20 pb-16">
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}
           className="mx-auto" style={{ maxWidth: 1280, padding: "0 24px" }}>

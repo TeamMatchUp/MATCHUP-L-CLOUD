@@ -1,4 +1,5 @@
 import { Header } from "@/components/Header";
+import { SEO } from "@/components/SEO";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { MapPin, Calendar, ArrowLeft, ExternalLink, Ticket, Star, Users, Plus, Phone, Globe, Mail, ShoppingCart, Map as MapIcon, Settings, ChevronDown } from "lucide-react";
@@ -529,9 +530,14 @@ export default function EventDetail() {
 
   // Fight card sections are conditionally rendered below based on whether public confirmed bouts exist
 
+  const eventTitle = (event as any)?.title ?? "Event";
+  const eventCity = (event as any)?.city ?? "";
+  const eventDesc = `${eventTitle}${eventCity ? ` in ${eventCity}` : ""} — fight card, tickets and details on MatchUp.`;
   return (
     <div className="min-h-screen bg-background">
+      <SEO title={eventTitle} description={eventDesc} ogType="event" image={(event as any)?.banner_image ?? undefined} />
       <Header />
+
       {isOwnEvent && isPreview && (
         <div
           style={{
