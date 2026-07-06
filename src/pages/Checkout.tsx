@@ -9,12 +9,14 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface BasketItem {
+  ticket_id?: string;
   ticket_type: string;
   price: number;
   quantity: number;
   event_id: string;
   event_title?: string;
 }
+
 
 // Simple global basket state
 let globalBasket: BasketItem[] = [];
