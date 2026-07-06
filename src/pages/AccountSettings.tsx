@@ -49,6 +49,8 @@ export default function AccountSettings() {
   const [isCoach, setIsCoach] = useState(false);
   const [hasFighterProfile, setHasFighterProfile] = useState(false);
   const [fighterModalOpen, setFighterModalOpen] = useState(false);
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "annual">("monthly");
+  const [checkoutPlan, setCheckoutPlan] = useState<"pro_monthly" | "pro_yearly" | null>(null);
 
   // Subscription
   const [subscription, setSubscription] = useState<any>(null);
