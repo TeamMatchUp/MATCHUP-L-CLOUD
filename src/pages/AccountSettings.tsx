@@ -50,6 +50,42 @@ export default function AccountSettings() {
   const [hasFighterProfile, setHasFighterProfile] = useState(false);
   const [fighterModalOpen, setFighterModalOpen] = useState(false);
 
+  // Subscription
+  const [subscription, setSubscription] = useState<any>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("environment", getStripeEnvironment())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setSubscription(data);
+    })();
+  }, [user]);
+
+  const openBillingPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-portal-session", {
+        body: {
+          environment: getStripeEnvironment(),
+          returnUrl: `${window.location.origin}/account`,
+        },
+      });
+      if (error || !data?.url) throw new Error(error?.message || "Could not open billing portal");
+      window.open(data.url, "_blank");
+    } catch (e: any) {
+      toast({ title: "Unable to open billing", description: e.message, variant: "destructive" });
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
