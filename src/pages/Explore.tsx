@@ -238,40 +238,15 @@ export default function Explore() {
       [...(fightsA || []), ...(fightsB || [])].forEach((f) => fightMap.set(f.id, f));
       const allFights = Array.from(fightMap.values());
 
-      const recordMap = new Map<string, { wins: number; losses: number; draws: number; stated: boolean }>();
+      const recordMap = new Map<string, { wins: number; losses: number; draws: number; kos: number; stated: boolean }>();
       (data ?? []).forEach((fighter) => {
-        let wins = 0, losses = 0, draws = 0, rows = 0;
-        allFights.forEach((fight) => {
-          const isA = fight.fighter_a_id === fighter.id;
-          const isB = fight.fighter_b_id === fighter.id;
-          if (!isA && !isB) return;
-          rows++;
-          if (fight.result === "draw") {
-            draws++;
-          } else if (fight.winner_id) {
-            if (fight.winner_id === fighter.id) wins++; else losses++;
-          } else if (fight.result === "win") {
-            if (isA) wins++; else losses++;
-          } else if (fight.result === "loss") {
-            if (isA) losses++; else wins++;
-          }
-        });
-        if (rows === 0) {
-          recordMap.set(fighter.id, {
-            wins: fighter.record_wins ?? 0,
-            losses: fighter.record_losses ?? 0,
-            draws: fighter.record_draws ?? 0,
-            stated: true,
-          });
-        } else {
-          recordMap.set(fighter.id, { wins, losses, draws, stated: false });
-        }
+        recordMap.set(fighter.id, computeFighterRecord(fighter, allFights));
       });
 
       return (data ?? []).map((f) => ({
         ...f,
         _avatar: f.profile_image || (f.user_id ? avatarMap.get(f.user_id) : null) || null,
-        _record: recordMap.get(f.id) || { wins: 0, losses: 0, draws: 0, stated: false },
+        _record: recordMap.get(f.id) || { wins: 0, losses: 0, draws: 0, kos: 0, stated: false },
       }));
     },
   });
