@@ -9,12 +9,14 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { useAuth } from "@/contexts/AuthContext";
 
 export interface BasketItem {
+  ticket_id?: string;
   ticket_type: string;
   price: number;
   quantity: number;
   event_id: string;
   event_title?: string;
 }
+
 
 // Simple global basket state
 let globalBasket: BasketItem[] = [];
@@ -59,12 +61,14 @@ export default function Checkout() {
   };
 
   const items = basket.map((b) => ({
+    ticket_id: b.ticket_id,
     ticket_type: b.ticket_type,
     event_id: b.event_id,
     event_title: b.event_title,
     unit_amount: Math.round(b.price * 100),
     quantity: b.quantity,
   }));
+
 
   return (
     <div className="min-h-screen bg-background">

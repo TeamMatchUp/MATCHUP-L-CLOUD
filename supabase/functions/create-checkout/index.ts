@@ -20,8 +20,17 @@ interface TicketLine {
   ticket_type: string;
   event_id: string;
   event_title?: string;
-  unit_amount: number; // cents/pence
+  unit_amount?: number; // ignored server-side; DB is source of truth
   quantity: number;
+}
+
+async function getAuthedUser(req: Request): Promise<{ id: string; email?: string } | null> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  const token = authHeader.replace("Bearer ", "");
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data?.user) return null;
+  return { id: data.user.id, email: data.user.email ?? undefined };
 }
 
 async function handle(req: Request): Promise<Response> {
@@ -29,10 +38,24 @@ async function handle(req: Request): Promise<Response> {
   const environment: StripeEnv = body.environment === "live" ? "live" : "sandbox";
   const mode: "subscription" | "boost" | "tickets" = body.mode;
   const returnUrl: string = body.returnUrl;
-  const customerEmail: string | undefined = body.customerEmail;
-  const userId: string | undefined = body.userId;
 
   if (!returnUrl) throw new Error("returnUrl required");
+
+  const authedUser = await getAuthedUser(req);
+
+  // Auth requirements per mode
+  if ((mode === "subscription" || mode === "boost") && !authedUser) {
+    throw new Error("Authentication required");
+  }
+
+  // Prefer authed identity over client-supplied values
+  const userId: string | undefined = authedUser?.id ?? (mode === "tickets" ? body.userId : undefined);
+  const customerEmail: string | undefined = authedUser?.email ?? body.customerEmail;
+
+  // If caller supplied a userId, it must match the authed user (when authed)
+  if (authedUser && body.userId && body.userId !== authedUser.id) {
+    throw new Error("userId does not match authenticated user");
+  }
 
   const stripe = createStripeClient(environment);
   const customerId = (customerEmail || userId)
@@ -68,6 +91,15 @@ async function handle(req: Request): Promise<Response> {
     if (!BOOST_MAP[tier]) throw new Error("Invalid boost tier");
     if (!eventId || !userId) throw new Error("eventId and userId required");
 
+    // Verify caller owns the event
+    const { data: evt, error: evtErr } = await supabase
+      .from("events")
+      .select("id, organiser_id")
+      .eq("id", eventId)
+      .maybeSingle();
+    if (evtErr || !evt) throw new Error("Event not found");
+    if (evt.organiser_id !== userId) throw new Error("Not authorised to boost this event");
+
     const conf = BOOST_MAP[tier];
     const prices = await stripe.prices.list({ lookup_keys: [conf.priceId] });
     if (!prices.data.length) throw new Error("Boost price not found");
@@ -75,7 +107,6 @@ async function handle(req: Request): Promise<Response> {
     const productId = typeof price.product === "string" ? price.product : price.product.id;
     const product = await stripe.products.retrieve(productId);
 
-    // Pre-insert pending purchase row keyed by session id
     const session = await stripe.checkout.sessions.create({
       line_items: [{ price: price.id, quantity: 1 }],
       mode: "payment",
@@ -106,7 +137,48 @@ async function handle(req: Request): Promise<Response> {
     const items: TicketLine[] = body.items;
     if (!Array.isArray(items) || items.length === 0) throw new Error("items required");
 
-    const line_items = items.map((it) => ({
+    // Server-side price lookup — never trust client-supplied unit_amount.
+    const resolved = await Promise.all(items.map(async (it) => {
+      if (!it.ticket_id) throw new Error("ticket_id required for each item");
+      if (!it.event_id) throw new Error("event_id required for each item");
+      if (!Number.isInteger(it.quantity) || it.quantity < 1 || it.quantity > 50) {
+        throw new Error("Invalid quantity");
+      }
+
+      const { data: ticket, error: tErr } = await supabase
+        .from("tickets")
+        .select("id, event_id, ticket_type, price, sales_start, sales_end, quantity_available")
+        .eq("id", it.ticket_id)
+        .maybeSingle();
+      if (tErr || !ticket) throw new Error("Ticket not found");
+      if (ticket.event_id !== it.event_id) throw new Error("Ticket does not belong to event");
+
+      const now = Date.now();
+      if (ticket.sales_start && new Date(ticket.sales_start).getTime() > now) {
+        throw new Error("Ticket sales have not started");
+      }
+      if (ticket.sales_end && new Date(ticket.sales_end).getTime() < now) {
+        throw new Error("Ticket sales have ended");
+      }
+      if (ticket.price == null) throw new Error("Ticket price not configured");
+
+      const { data: evt } = await supabase
+        .from("events")
+        .select("id, title")
+        .eq("id", it.event_id)
+        .maybeSingle();
+
+      return {
+        ticket_id: ticket.id,
+        ticket_type: ticket.ticket_type,
+        event_id: it.event_id,
+        event_title: evt?.title,
+        unit_amount: Math.round(Number(ticket.price) * 100),
+        quantity: it.quantity,
+      };
+    }));
+
+    const line_items = resolved.map((it) => ({
       price_data: {
         currency: "gbp",
         product_data: {
@@ -117,9 +189,9 @@ async function handle(req: Request): Promise<Response> {
       quantity: it.quantity,
     }));
 
-    const totalDesc = items.length === 1
-      ? `${items[0].ticket_type}${items[0].event_title ? ` — ${items[0].event_title}` : ""}`
-      : `MatchUp tickets (${items.reduce((s, i) => s + i.quantity, 0)})`;
+    const totalDesc = resolved.length === 1
+      ? `${resolved[0].ticket_type}${resolved[0].event_title ? ` — ${resolved[0].event_title}` : ""}`
+      : `MatchUp tickets (${resolved.reduce((s, i) => s + i.quantity, 0)})`;
 
     const session = await stripe.checkout.sessions.create({
       line_items,
@@ -131,12 +203,11 @@ async function handle(req: Request): Promise<Response> {
       metadata: { userId: userId ?? "", kind: "tickets" },
     });
 
-    // Pre-insert pending ticket_orders (one per line)
-    const rows = items.map((it) => ({
+    const rows = resolved.map((it) => ({
       buyer_id: userId ?? null,
       buyer_email: customerEmail ?? null,
       event_id: it.event_id,
-      ticket_id: it.ticket_id ?? null,
+      ticket_id: it.ticket_id,
       ticket_type: it.ticket_type,
       quantity: it.quantity,
       unit_amount: it.unit_amount,
