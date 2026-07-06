@@ -419,7 +419,7 @@ export default function FighterDetail() {
               </div>
 
               {/* Right side */}
-              <div style={{ minWidth: 0 }}>
+              <div className="w-full" style={{ minWidth: 0 }}>
                 {nickname && (
                   <div style={{ fontSize: 12, fontStyle: "italic", color: GOLD, letterSpacing: "0.12em", textTransform: "uppercase", fontWeight: 600 }}>
                     "{nickname}"
