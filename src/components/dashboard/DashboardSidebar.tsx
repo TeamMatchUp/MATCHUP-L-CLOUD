@@ -382,7 +382,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
                 style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: "hsl(var(--muted-foreground))", borderRadius: 8 }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = "hsl(var(--foreground))"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = "hsl(var(--muted-foreground))"; e.currentTarget.style.background = "transparent"; }}
-              >Profile Settings</Link>
+              >Account Settings</Link>
               <button className="w-full text-left transition-colors duration-150"
                 style={{ padding: "5px 12px 5px 40px", fontSize: 12, color: "hsl(var(--muted-foreground))", borderRadius: 8 }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = "hsl(var(--foreground))"; e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
