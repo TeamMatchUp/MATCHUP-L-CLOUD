@@ -441,10 +441,33 @@ export default function Onboarding() {
       : freshRoles[0] ?? null
     : null;
 
-  if (authLoading || !user || rolesLoading || !freshRoles || freshRoles.length === 0) {
+  const queryClient = useQueryClient();
+
+  if (authLoading || !user || rolesLoading || !freshRoles) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (freshRoles.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 text-center space-y-4">
+          <h2 className="font-heading text-xl text-foreground">We couldn't finish setting up your account</h2>
+          <p className="text-sm text-muted-foreground">
+            No role is assigned to your profile yet. Please retry, or sign out and sign up again.
+          </p>
+          <div className="flex flex-col gap-2">
+            <Button variant="hero" onClick={() => queryClient.invalidateQueries({ queryKey: ["onboarding-fresh-roles", user.id] })}>
+              Retry
+            </Button>
+            <Button variant="outline" onClick={async () => { await supabase.auth.signOut(); navigate("/auth", { replace: true }); }}>
+              Back to sign in
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
