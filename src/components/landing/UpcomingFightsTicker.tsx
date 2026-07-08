@@ -1,10 +1,41 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Swords } from "lucide-react";
 
-const SPONSORS = [
-  "Venum", "Hayabusa", "Everlast", "Fairtex", "Tatami", "Ringside", "RDX", "Cleto Reyes",
-];
+const SPONSORS = ["Venum", "Hayabusa", "Everlast", "Fairtex", "Tatami", "Ringside", "RDX", "Cleto Reyes"];
+
+// Shared scroll speed for both rows, in px/sec. Tune this one number
+// to make the whole ticker feel faster or slower — both rows stay in sync.
+const TICKER_PX_PER_SEC = 60;
+
+/**
+ * Measures one "half" of a duplicated ticker track (the distance covered
+ * by a -50% translateX) and returns a duration in seconds so every row
+ * scrolls at the same pixel speed, regardless of how much content it has.
+ */
+function useTickerDuration(trackRef: React.RefObject<HTMLDivElement>, deps: unknown[]) {
+  const [duration, setDuration] = useState(30);
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      // scrollWidth covers both duplicated halves, so one half is /2.
+      const halfWidth = el.scrollWidth / 2;
+      if (halfWidth > 0) setDuration(halfWidth / TICKER_PX_PER_SEC);
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  return duration;
+}
 
 function formatDate(d: string | null) {
   if (!d) return "";
@@ -19,7 +50,9 @@ export function UpcomingFightsTicker() {
       const today = new Date().toISOString().split("T")[0];
       const { data } = await supabase
         .from("event_fight_slots")
-        .select("id, weight_class, discipline, fighter_a:fighter_profiles!fighter_a_id(name), fighter_b:fighter_profiles!fighter_b_id(name), events!inner(title, date, status)")
+        .select(
+          "id, weight_class, discipline, fighter_a:fighter_profiles!fighter_a_id(name), fighter_b:fighter_profiles!fighter_b_id(name), events!inner(title, date, status)",
+        )
         .eq("status", "confirmed")
         .eq("is_public", true)
         .gte("events.date", today)
@@ -30,39 +63,57 @@ export function UpcomingFightsTicker() {
   });
 
   const fights = (data ?? []).filter((f: any) => f.fighter_a && f.fighter_b);
-  // Ensure enough content to fill viewport by repeating the fight list.
-  // Each duplicate segment is one "half" of the -50% scroll cycle, so both halves must match.
   const REPEATS_PER_HALF = Math.max(4, Math.ceil(12 / Math.max(fights.length, 1)));
   const fillerRepeats = Array.from({ length: REPEATS_PER_HALF });
+
+  const row1Ref = useRef<HTMLDivElement>(null);
+  const row2Ref = useRef<HTMLDivElement>(null);
+
+  const row1Duration = useTickerDuration(row1Ref, [fights.length]);
+  const row2Duration = useTickerDuration(row2Ref, []);
 
   return (
     <section className="border-y border-border/20 bg-[hsl(var(--card))]/40 overflow-hidden py-4 space-y-3">
       {/* Row 1 — upcoming fights */}
       <div className="ticker-row group">
-        <div className="ticker-track group-hover:[animation-play-state:paused]" style={{ animationDuration: "60s" }}>
+        <div
+          ref={row1Ref}
+          className="ticker-track group-hover:[animation-play-state:paused]"
+          style={{ animationDuration: `${row1Duration}s` }}
+        >
           {[...Array(2)].map((_, dup) => (
             <div key={dup} className="flex items-center justify-center gap-3 pr-3 shrink-0">
-              {fights.length > 0 ? fillerRepeats.flatMap((_, rep) => fights.map((f: any) => (
-                <div key={`${dup}-${rep}-${f.id}`} className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/60 text-xs whitespace-nowrap">
-                  <Swords className="h-3.5 w-3.5 text-primary shrink-0" />
-                  <span className="text-foreground font-medium">{f.fighter_a?.name}</span>
-                  <span className="text-muted-foreground">vs</span>
-                  <span className="text-foreground font-medium">{f.fighter_b?.name}</span>
-                  <span className="text-muted-foreground/60">·</span>
-                  <span className="text-muted-foreground uppercase tracking-wider text-[10px]">{f.weight_class?.replace(/_/g, " ")}</span>
-                  <span className="text-muted-foreground/60">·</span>
-                  <span className="text-primary/80 uppercase tracking-wider text-[10px]">{f.events?.title}</span>
-                  <span className="text-muted-foreground/60">·</span>
-                  <span className="text-muted-foreground text-[10px]">{formatDate(f.events?.date)}</span>
-                </div>
-              ))) : (
-                fillerRepeats.map((_, rep) => (
-                  <div key={`${dup}-${rep}`} className="flex items-center gap-2 px-6 py-2 text-xs text-muted-foreground uppercase tracking-widest whitespace-nowrap">
-                    <Swords className="h-3.5 w-3.5 text-primary" />
-                    Upcoming fights will appear here as promoters publish cards
-                  </div>
-                ))
-              )}
+              {fights.length > 0
+                ? fillerRepeats.flatMap((_, rep) =>
+                    fights.map((f: any) => (
+                      <div
+                        key={`${dup}-${rep}-${f.id}`}
+                        className="flex items-center gap-2 px-4 py-2 rounded-full bg-background/60 text-xs whitespace-nowrap"
+                      >
+                        <Swords className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <span className="text-foreground font-medium">{f.fighter_a?.name}</span>
+                        <span className="text-muted-foreground">vs</span>
+                        <span className="text-foreground font-medium">{f.fighter_b?.name}</span>
+                        <span className="text-muted-foreground/60">·</span>
+                        <span className="text-muted-foreground uppercase tracking-wider text-[10px]">
+                          {f.weight_class?.replace(/_/g, " ")}
+                        </span>
+                        <span className="text-muted-foreground/60">·</span>
+                        <span className="text-primary/80 uppercase tracking-wider text-[10px]">{f.events?.title}</span>
+                        <span className="text-muted-foreground/60">·</span>
+                        <span className="text-muted-foreground text-[10px]">{formatDate(f.events?.date)}</span>
+                      </div>
+                    )),
+                  )
+                : fillerRepeats.map((_, rep) => (
+                    <div
+                      key={`${dup}-${rep}`}
+                      className="flex items-center gap-2 px-6 py-2 text-xs text-muted-foreground uppercase tracking-widest whitespace-nowrap"
+                    >
+                      <Swords className="h-3.5 w-3.5 text-primary" />
+                      Upcoming fights will appear here as promoters publish cards
+                    </div>
+                  ))}
             </div>
           ))}
         </div>
@@ -70,7 +121,11 @@ export function UpcomingFightsTicker() {
 
       {/* Row 2 — sponsors */}
       <div className="ticker-row group hidden sm:block">
-        <div className="ticker-track group-hover:[animation-play-state:paused]" style={{ animationDuration: "90s", animationDirection: "reverse" }}>
+        <div
+          ref={row2Ref}
+          className="ticker-track group-hover:[animation-play-state:paused]"
+          style={{ animationDuration: `${row2Duration}s`, animationDirection: "reverse" }}
+        >
           {[...Array(2)].map((_, dup) => (
             <div key={dup} className="flex items-center gap-10 pr-10 shrink-0">
               {SPONSORS.map((s) => (
