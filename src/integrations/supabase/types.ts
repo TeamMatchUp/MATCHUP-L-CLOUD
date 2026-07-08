@@ -1977,6 +1977,10 @@ export type Database = {
     }
     Functions: {
       approve_gym_claim: { Args: { _claim_id: string }; Returns: undefined }
+      assign_signup_role: {
+        Args: { _role: Database["public"]["Enums"]["app_role"] }
+        Returns: undefined
+      }
       create_notification: {
         Args: {
           _message?: string
