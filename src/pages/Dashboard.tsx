@@ -411,6 +411,16 @@ export default function Dashboard() {
         </main>
       </div>
 
+      {/* First-login dashboard tutorial */}
+      {user && tutorialFlag?.has_seen_tutorial === false && activeRole && (
+        <DashboardTutorial
+          role={activeRole}
+          open
+          onDismiss={handleTutorialDismiss}
+          onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
+        />
+      )}
+
       {/* Dialogs */}
       {user && (addFighterGymId || primaryGym?.id) && (
         <AddFighterToGymDialog
