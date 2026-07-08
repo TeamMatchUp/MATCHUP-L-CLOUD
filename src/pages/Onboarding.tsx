@@ -421,6 +421,7 @@ function OrganiserLanding() {
 
 export default function Onboarding() {
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
 
   const { data: freshRoles, isLoading: rolesLoading } = useQuery({
     queryKey: ["onboarding-fresh-roles", user?.id],
