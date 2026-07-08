@@ -1,0 +1,1 @@
+ALTER TYPE public.weight_class ADD VALUE IF NOT EXISTS 'unspecified' BEFORE 'strawweight';
