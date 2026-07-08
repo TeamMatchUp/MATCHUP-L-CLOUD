@@ -107,10 +107,13 @@ export function AuthModal({ open, mode, onModeChange, onClose }: Props) {
     }
 
     if (data.user) {
-      const { error: roleError } = await supabase
-        .from("user_roles")
-        .insert([{ user_id: data.user.id, role: selectedRole }]);
-      if (roleError) console.error("Failed to insert role:", roleError);
+      const { error: roleError } = await supabase.rpc("assign_signup_role", { _role: selectedRole });
+      if (roleError) {
+        console.error("Failed to assign role:", roleError);
+        setLoading(false);
+        toast({ title: "Sign up incomplete", description: roleError.message, variant: "destructive" });
+        return;
+      }
 
       if (data.session) {
         setLoading(false);
