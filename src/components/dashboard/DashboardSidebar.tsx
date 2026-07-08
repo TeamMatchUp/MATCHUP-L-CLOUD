@@ -242,6 +242,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           <Tooltip>
             <TooltipTrigger asChild>
               <button
+                data-tutorial={dataTutorial}
                 className="w-full flex items-center justify-center rounded-lg transition-all duration-150 relative"
                 style={{ padding: "7px 0", margin: "1px 0", color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))", background: isActive ? "rgba(239,68,68,0.12)" : "transparent" }}
                 onClick={() => handleNav(item.key)}
