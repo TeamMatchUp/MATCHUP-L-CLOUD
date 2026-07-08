@@ -111,6 +111,29 @@ export default function Dashboard() {
     staleTime: 60000,
   });
 
+  // First-login tutorial gate — fresh read so "Replay" sees the reset flag.
+  const queryClient = useQueryClient();
+  const { data: tutorialFlag } = useQuery({
+    queryKey: ["tutorial-flag", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("has_seen_tutorial")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data ?? { has_seen_tutorial: true };
+    },
+    enabled: !!user,
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
+
+  const handleTutorialDismiss = async () => {
+    if (!user) return;
+    await supabase.from("profiles").update({ has_seen_tutorial: true }).eq("id", user.id);
+    queryClient.setQueryData(["tutorial-flag", user.id], { has_seen_tutorial: true });
+  };
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
