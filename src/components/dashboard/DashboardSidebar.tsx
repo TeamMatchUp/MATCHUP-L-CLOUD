@@ -373,7 +373,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link to="/account/settings" className="flex items-center justify-center rounded-lg transition-all duration-150" style={{ padding: "7px 0", margin: "1px 0", color: "hsl(var(--muted-foreground))" }}>
+                <Link to="/account/settings" data-tutorial="account" className="flex items-center justify-center rounded-lg transition-all duration-150" style={{ padding: "7px 0", margin: "1px 0", color: "hsl(var(--muted-foreground))" }}>
                   <Settings style={{ width: 16, height: 16 }} />
                 </Link>
               </TooltipTrigger>
