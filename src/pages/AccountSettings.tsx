@@ -557,6 +557,34 @@ export default function AccountSettings() {
 
           <Separator className="mb-8" />
 
+          {/* Guided tour */}
+          <section className="space-y-4 mb-8">
+            <h2 className="text-lg font-semibold text-foreground">Guided tour</h2>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-foreground">Dashboard walkthrough</p>
+                <p className="text-xs text-muted-foreground">Show the intro tooltips again next time you open your dashboard.</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  if (!user) return;
+                  await supabase.from("profiles").update({ has_seen_tutorial: false }).eq("id", user.id);
+                  await queryClient.invalidateQueries({ queryKey: ["tutorial-flag", user.id] });
+                  toast({ title: "Tour will replay on your next dashboard visit" });
+                  const path = (activeRole && ROLE_PATHS[activeRole]) || "/dashboard";
+                  navigate(path);
+                }}
+              >
+                <PlayCircle className="h-4 w-4 mr-2" />
+                Replay dashboard tour
+              </Button>
+            </div>
+          </section>
+
+          <Separator className="mb-8" />
+
           {/* Notification Preferences */}
           <section className="space-y-4 mb-8">
             <h2 className="text-lg font-semibold text-foreground">Notification Preferences</h2>
