@@ -1588,6 +1588,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           gym_id: string | null
+          has_seen_tutorial: boolean
           id: string
           marketing_opt_in: boolean
           notification_event_updates: boolean
@@ -1603,6 +1604,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           gym_id?: string | null
+          has_seen_tutorial?: boolean
           id: string
           marketing_opt_in?: boolean
           notification_event_updates?: boolean
@@ -1618,6 +1620,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           gym_id?: string | null
+          has_seen_tutorial?: boolean
           id?: string
           marketing_opt_in?: boolean
           notification_event_updates?: boolean
