@@ -264,7 +264,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
     }
 
     return (
-      <button key={item.key} className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
+      <button key={item.key} data-tutorial={dataTutorial} className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
         style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: isActive ? 600 : 500, color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))", background: isActive ? "rgba(239,68,68,0.12)" : "transparent" }}
         onClick={() => handleNav(item.key)}
         onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "hsl(var(--foreground))"; } }}
