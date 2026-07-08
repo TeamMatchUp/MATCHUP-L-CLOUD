@@ -151,9 +151,25 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
   const handleSignOut = async () => { await signOut(); navigate("/"); };
   const settingsOpen = openAccordions["settings"] ?? false;
 
+  // Map the "my-content" tutorial anchor to the right nav key per role.
+  const myContentKey: string | null = isFighter
+    ? "my-profile"
+    : isCoachOrOwner
+      ? "manage"
+      : isOrganiser
+        ? "events"
+        : null;
+
+  const tutorialFor = (key: string): string | undefined => {
+    if (key === "explore") return "explore";
+    if (myContentKey && key === myContentKey) return "my-content";
+    return undefined;
+  };
+
   const sidebarWidth = collapsed ? 56 : 220;
 
   const renderNavItem = (item: NavItemDef) => {
+    const dataTutorial = tutorialFor(item.key);
     if (item.isAccordion && item.children) {
       const isOpen = openAccordions[item.key] ?? false;
       const childActive = item.children.some((c) => activeSection === c.key);
