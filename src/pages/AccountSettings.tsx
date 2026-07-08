@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
+import { useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -12,17 +13,26 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Loader2, Save, User, Sun, Moon, Sparkles, ExternalLink, Check } from "lucide-react";
+import { Camera, Loader2, Save, User, Sun, Moon, Sparkles, ExternalLink, Check, PlayCircle } from "lucide-react";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { CoachFighterProfileForm } from "@/components/onboarding/CoachFighterProfileForm";
 
+const ROLE_PATHS: Record<string, string> = {
+  organiser: "/organiser/dashboard",
+  fighter: "/fighter/dashboard",
+  gym_owner: "/gym-owner/dashboard",
+  coach: "/coach/dashboard",
+  admin: "/admin",
+};
+
 export default function AccountSettings() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, activeRole, loading: authLoading } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
@@ -542,6 +552,34 @@ export default function AccountSettings() {
                 />
               </div>
               <p className="text-xs text-muted-foreground">Leave blank if you don't want to change your password.</p>
+            </div>
+          </section>
+
+          <Separator className="mb-8" />
+
+          {/* Guided tour */}
+          <section className="space-y-4 mb-8">
+            <h2 className="text-lg font-semibold text-foreground">Guided tour</h2>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-foreground">Dashboard walkthrough</p>
+                <p className="text-xs text-muted-foreground">Show the intro tooltips again next time you open your dashboard.</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  if (!user) return;
+                  await supabase.from("profiles").update({ has_seen_tutorial: false }).eq("id", user.id);
+                  await queryClient.invalidateQueries({ queryKey: ["tutorial-flag", user.id] });
+                  toast({ title: "Tour will replay on your next dashboard visit" });
+                  const path = (activeRole && ROLE_PATHS[activeRole]) || "/dashboard";
+                  navigate(path);
+                }}
+              >
+                <PlayCircle className="h-4 w-4 mr-2" />
+                Replay dashboard tour
+              </Button>
             </div>
           </section>
 

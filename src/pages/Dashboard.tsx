@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { PanelLeft } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { DashboardTutorial } from "@/components/tutorial/DashboardTutorial";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DashboardOverview } from "@/components/dashboard/DashboardOverview";
 import { DashboardGyms } from "@/components/dashboard/DashboardGyms";
@@ -109,6 +110,29 @@ export default function Dashboard() {
     enabled: !!user,
     staleTime: 60000,
   });
+
+  // First-login tutorial gate — fresh read so "Replay" sees the reset flag.
+  const queryClient = useQueryClient();
+  const { data: tutorialFlag } = useQuery({
+    queryKey: ["tutorial-flag", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("has_seen_tutorial")
+        .eq("id", user!.id)
+        .maybeSingle();
+      return data ?? { has_seen_tutorial: true };
+    },
+    enabled: !!user,
+    staleTime: 0,
+    refetchOnMount: "always",
+  });
+
+  const handleTutorialDismiss = async () => {
+    if (!user) return;
+    await supabase.from("profiles").update({ has_seen_tutorial: true }).eq("id", user.id);
+    queryClient.setQueryData(["tutorial-flag", user.id], { has_seen_tutorial: true });
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -386,6 +410,16 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+
+      {/* First-login dashboard tutorial */}
+      {user && tutorialFlag?.has_seen_tutorial === false && activeRole && (
+        <DashboardTutorial
+          role={activeRole}
+          open
+          onDismiss={handleTutorialDismiss}
+          onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
+        />
+      )}
 
       {/* Dialogs */}
       {user && (addFighterGymId || primaryGym?.id) && (

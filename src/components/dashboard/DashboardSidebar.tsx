@@ -151,9 +151,25 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
   const handleSignOut = async () => { await signOut(); navigate("/"); };
   const settingsOpen = openAccordions["settings"] ?? false;
 
+  // Map the "my-content" tutorial anchor to the right nav key per role.
+  const myContentKey: string | null = isFighter
+    ? "my-profile"
+    : isCoachOrOwner
+      ? "manage"
+      : isOrganiser
+        ? "events"
+        : null;
+
+  const tutorialFor = (key: string): string | undefined => {
+    if (key === "explore") return "explore";
+    if (myContentKey && key === myContentKey) return "my-content";
+    return undefined;
+  };
+
   const sidebarWidth = collapsed ? 56 : 220;
 
   const renderNavItem = (item: NavItemDef) => {
+    const dataTutorial = tutorialFor(item.key);
     if (item.isAccordion && item.children) {
       const isOpen = openAccordions[item.key] ?? false;
       const childActive = item.children.some((c) => activeSection === c.key);
@@ -164,6 +180,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
+                  data-tutorial={dataTutorial}
                   className="w-full flex items-center justify-center rounded-lg transition-all duration-150"
                   style={{ padding: "7px 0", margin: "1px 0", color: childActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))", background: childActive ? "rgba(239,68,68,0.12)" : "transparent" }}
                   onClick={() => toggleAccordion(item.key)}
@@ -182,6 +199,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
       return (
         <div key={item.key}>
           <button
+            data-tutorial={dataTutorial}
             className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
             style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: childActive ? 600 : 500, color: childActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))", background: childActive ? "rgba(239,68,68,0.12)" : "transparent" }}
             onClick={() => toggleAccordion(item.key)}
@@ -224,6 +242,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           <Tooltip>
             <TooltipTrigger asChild>
               <button
+                data-tutorial={dataTutorial}
                 className="w-full flex items-center justify-center rounded-lg transition-all duration-150 relative"
                 style={{ padding: "7px 0", margin: "1px 0", color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))", background: isActive ? "rgba(239,68,68,0.12)" : "transparent" }}
                 onClick={() => handleNav(item.key)}
@@ -245,7 +264,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
     }
 
     return (
-      <button key={item.key} className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
+      <button key={item.key} data-tutorial={dataTutorial} className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
         style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: isActive ? 600 : 500, color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))", background: isActive ? "rgba(239,68,68,0.12)" : "transparent" }}
         onClick={() => handleNav(item.key)}
         onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "hsl(var(--foreground))"; } }}
@@ -354,7 +373,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           <TooltipProvider delayDuration={0}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link to="/account/settings" className="flex items-center justify-center rounded-lg transition-all duration-150" style={{ padding: "7px 0", margin: "1px 0", color: "hsl(var(--muted-foreground))" }}>
+                <Link to="/account/settings" data-tutorial="account" className="flex items-center justify-center rounded-lg transition-all duration-150" style={{ padding: "7px 0", margin: "1px 0", color: "hsl(var(--muted-foreground))" }}>
                   <Settings style={{ width: 16, height: 16 }} />
                 </Link>
               </TooltipTrigger>
@@ -363,7 +382,7 @@ export function DashboardSidebar({ pendingCount, unreadCount, actionsCount = 0, 
           </TooltipProvider>
         ) : (
           <div>
-            <button className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
+            <button data-tutorial="account" className="w-full flex items-center gap-2.5 rounded-lg transition-all duration-150"
               style={{ padding: "7px 12px", margin: "1px 0", fontSize: 13, fontWeight: 500, color: "hsl(var(--muted-foreground))" }}
               onClick={() => toggleAccordion("settings")}
               onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; e.currentTarget.style.color = "hsl(var(--foreground))"; }}

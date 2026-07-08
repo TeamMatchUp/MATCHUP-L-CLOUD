@@ -164,7 +164,7 @@ export function Header() {
             <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
+                <Button variant="ghost" size="sm" className="gap-2" data-tutorial="account">
                   <Avatar className="h-7 w-7">
                     {avatarUrl && <AvatarImage src={avatarUrl} alt="Profile" />}
                     <AvatarFallback className="text-[10px] bg-muted text-muted-foreground">

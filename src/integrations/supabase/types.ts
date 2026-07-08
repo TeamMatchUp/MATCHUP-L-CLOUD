@@ -2077,6 +2077,7 @@ export type Database = {
         | "system"
         | "gym_request"
       weight_class:
+        | "unspecified"
         | "strawweight"
         | "flyweight"
         | "bantamweight"
@@ -2299,6 +2300,7 @@ export const Constants = {
         "gym_request",
       ],
       weight_class: [
+        "unspecified",
         "strawweight",
         "flyweight",
         "bantamweight",
