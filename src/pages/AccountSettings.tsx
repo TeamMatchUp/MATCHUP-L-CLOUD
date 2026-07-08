@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "next-themes";
+import { useQueryClient } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -12,17 +13,26 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Camera, Loader2, Save, User, Sun, Moon, Sparkles, ExternalLink, Check } from "lucide-react";
+import { Camera, Loader2, Save, User, Sun, Moon, Sparkles, ExternalLink, Check, PlayCircle } from "lucide-react";
 import { getStripeEnvironment } from "@/lib/stripe";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
 import { CoachFighterProfileForm } from "@/components/onboarding/CoachFighterProfileForm";
 
+const ROLE_PATHS: Record<string, string> = {
+  organiser: "/organiser/dashboard",
+  fighter: "/fighter/dashboard",
+  gym_owner: "/gym-owner/dashboard",
+  coach: "/coach/dashboard",
+  admin: "/admin",
+};
+
 export default function AccountSettings() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, activeRole, loading: authLoading } = useAuth();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [loading, setLoading] = useState(true);
