@@ -9,6 +9,11 @@ const SPONSORS = ["Venum", "Hayabusa", "Everlast", "Fairtex", "Tatami", "Ringsid
 // to make the whole ticker feel faster or slower — both rows stay in sync.
 const TICKER_PX_PER_SEC = 60;
 
+// How many times to repeat the sponsor list per "half" of the track.
+// Needs to be high enough that the repeated content is wider than even
+// an ultrawide viewport, so there's never a visible gap in the loop.
+const SPONSOR_REPEATS = 6;
+
 /**
  * Measures one "half" of a duplicated ticker track (the distance covered
  * by a -50% translateX) and returns a duration in seconds so every row
@@ -65,6 +70,7 @@ export function UpcomingFightsTicker() {
   const fights = (data ?? []).filter((f: any) => f.fighter_a && f.fighter_b);
   const REPEATS_PER_HALF = Math.max(4, Math.ceil(12 / Math.max(fights.length, 1)));
   const fillerRepeats = Array.from({ length: REPEATS_PER_HALF });
+  const sponsorFillerRepeats = Array.from({ length: SPONSOR_REPEATS });
 
   const row1Ref = useRef<HTMLDivElement>(null);
   const row2Ref = useRef<HTMLDivElement>(null);
@@ -128,14 +134,16 @@ export function UpcomingFightsTicker() {
         >
           {[...Array(2)].map((_, dup) => (
             <div key={dup} className="flex items-center gap-10 pr-10 shrink-0">
-              {SPONSORS.map((s) => (
-                <span
-                  key={`${dup}-${s}`}
-                  className="font-heading text-lg tracking-widest text-muted-foreground/40 whitespace-nowrap"
-                >
-                  {s.toUpperCase()}
-                </span>
-              ))}
+              {sponsorFillerRepeats.flatMap((_, rep) =>
+                SPONSORS.map((s) => (
+                  <span
+                    key={`${dup}-${rep}-${s}`}
+                    className="font-heading text-lg tracking-widest text-muted-foreground/40 whitespace-nowrap"
+                  >
+                    {s.toUpperCase()}
+                  </span>
+                )),
+              )}
             </div>
           ))}
         </div>
