@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
@@ -7,56 +7,26 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 import { AppLogo } from "@/components/AppLogo";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
-import { Copy, Check, CalendarIcon, Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarIcon, Plus, Building2, ArrowRight, Loader2 } from "lucide-react";
 import { format, setMonth, setYear, getYear, getMonth } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 import type { Database } from "@/integrations/supabase/types";
-import { Loader2 } from "lucide-react";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
+type CountryCode = Database["public"]["Enums"]["country_code"];
 type WeightClass = Database["public"]["Enums"]["weight_class"];
 
-const WEIGHT_CLASSES: { value: WeightClass; label: string }[] = [
-  { value: "strawweight", label: "Strawweight" },
-  { value: "flyweight", label: "Flyweight" },
-  { value: "bantamweight", label: "Bantamweight" },
-  { value: "featherweight", label: "Featherweight" },
-  { value: "lightweight", label: "Lightweight" },
-  { value: "super_lightweight", label: "Super Lightweight" },
-  { value: "welterweight", label: "Welterweight" },
-  { value: "super_welterweight", label: "Super Welterweight" },
-  { value: "middleweight", label: "Middleweight" },
-  { value: "super_middleweight", label: "Super Middleweight" },
-  { value: "light_heavyweight", label: "Light Heavyweight" },
-  { value: "cruiserweight", label: "Cruiserweight" },
-  { value: "heavyweight", label: "Heavyweight" },
-  { value: "super_heavyweight", label: "Super Heavyweight" },
-];
-
-const DISCIPLINES = ["Boxing", "Muay Thai", "MMA", "BJJ", "Kickboxing", "Wrestling", "Other"];
 const STANCES = ["Orthodox", "Southpaw", "Switch"];
-
-const FIGHTING_SUBSTYLES: Record<string, string[]> = {
-  Boxing: ["Out-Boxer", "Pressure", "In-Fighter", "Counter-Puncher", "Brawler"],
-  "Muay Thai": ["Teep", "Rhythm", "Aggressive", "Forward", "Clinch-Heavy", "Aggressive Striker", "All-Range"],
-  MMA: ["Striker", "Wrestler", "BJJ-Submission", "Kickboxer-based", "Balanced"],
-  Kickboxing: ["Out-Fighter", "Pressure", "Combo", "Counter", "Switch Kicker"],
-};
-
-const ROSTER_SIZES = ["1–5", "6–15", "16–30", "30+"];
 
 const ROLE_PATHS: Record<string, string> = {
   organiser: "/organiser/dashboard",
@@ -84,49 +54,27 @@ async function markOnboardingComplete(queryClient: ReturnType<typeof useQueryCli
 /** DOB picker with year/month selectors for fast decade jumping */
 function DOBPicker({ value, onChange }: { value?: Date; onChange: (d: Date | undefined) => void }) {
   const [viewDate, setViewDate] = useState(value || new Date(2000, 0, 1));
-
   const years = Array.from({ length: 60 }, (_, i) => getYear(new Date()) - i);
-  const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
-  ];
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 px-1">
-        <Select
-          value={String(getMonth(viewDate))}
-          onValueChange={(v) => setViewDate(setMonth(viewDate, parseInt(v)))}
-        >
-          <SelectTrigger className="h-8 text-xs flex-1">
-            <SelectValue />
-          </SelectTrigger>
+        <Select value={String(getMonth(viewDate))} onValueChange={(v) => setViewDate(setMonth(viewDate, parseInt(v)))}>
+          <SelectTrigger className="h-8 text-xs flex-1"><SelectValue /></SelectTrigger>
           <SelectContent position="popper" side="bottom">
-            {months.map((m, i) => (
-              <SelectItem key={m} value={String(i)}>{m}</SelectItem>
-            ))}
+            {months.map((m, i) => (<SelectItem key={m} value={String(i)}>{m}</SelectItem>))}
           </SelectContent>
         </Select>
-        <Select
-          value={String(getYear(viewDate))}
-          onValueChange={(v) => setViewDate(setYear(viewDate, parseInt(v)))}
-        >
-          <SelectTrigger className="h-8 text-xs w-24">
-            <SelectValue />
-          </SelectTrigger>
+        <Select value={String(getYear(viewDate))} onValueChange={(v) => setViewDate(setYear(viewDate, parseInt(v)))}>
+          <SelectTrigger className="h-8 text-xs w-24"><SelectValue /></SelectTrigger>
           <SelectContent position="popper" side="bottom">
-            {years.map((y) => (
-              <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-            ))}
+            {years.map((y) => (<SelectItem key={y} value={String(y)}>{y}</SelectItem>))}
           </SelectContent>
         </Select>
       </div>
       <Calendar
-        mode="single"
-        selected={value}
-        onSelect={onChange}
-        month={viewDate}
-        onMonthChange={setViewDate}
+        mode="single" selected={value} onSelect={onChange} month={viewDate} onMonthChange={setViewDate}
         disabled={(date) => date > new Date() || date < new Date("1940-01-01")}
         className={cn("p-3 pointer-events-auto")}
       />
@@ -134,114 +82,98 @@ function DOBPicker({ value, onChange }: { value?: Date; onChange: (d: Date | und
   );
 }
 
-function FighterForm({ onComplete }: { onComplete: () => void }) {
+// ---------------- Fighter ----------------
+
+function FighterForm() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { track } = useAnalytics();
 
-  // Track abandonment on unmount if not completed
-  const completedRef = { current: false };
-  useEffect(() => {
-    return () => {
-      if (!completedRef.current) {
-        void track("onboarding_abandoned", { step: 1, role: "fighter" });
-      }
-    };
-  }, []);
-  const [weightClass, setWeightClass] = useState<WeightClass | "">("");
-  const [discipline, setDiscipline] = useState("");
-  const [stance, setStance] = useState("");
-  const [fightingSubstyle, setFightingSubstyle] = useState("");
-  const [postcode, setPostcode] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState<Date>();
-  const [walkAroundWeight, setWalkAroundWeight] = useState("");
   const [heightCm, setHeightCm] = useState("");
-  const [reachCm, setReachCm] = useState("");
-  const [amateurWins, setAmateurWins] = useState("0");
-  const [amateurLosses, setAmateurLosses] = useState("0");
-  const [amateurDraws, setAmateurDraws] = useState("0");
-  const [proWins, setProWins] = useState("0");
-  const [proLosses, setProLosses] = useState("0");
-  const [proDraws, setProDraws] = useState("0");
-  const [hasGym, setHasGym] = useState(false);
+  const [walkAroundWeight, setWalkAroundWeight] = useState("");
+  const [stance, setStance] = useState("");
+  const [level, setLevel] = useState<"amateur" | "pro" | "">("");
+  const [country, setCountry] = useState<string>("UK");
+
+  const [showBio, setShowBio] = useState(true);
+  const [bio, setBio] = useState("");
+  const [showGym, setShowGym] = useState(true);
   const [gymSearch, setGymSearch] = useState("");
   const [gymResults, setGymResults] = useState<GymResult[]>([]);
   const [selectedGym, setSelectedGym] = useState<GymResult | null>(null);
+
   const [loading, setLoading] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const substyleOptions = FIGHTING_SUBSTYLES[discipline] ?? [];
-
-  useEffect(() => { setFightingSubstyle(""); }, [discipline]);
 
   useEffect(() => {
     if (!gymSearch || gymSearch.length < 2) { setGymResults([]); return; }
-    const timeout = setTimeout(async () => {
-      const { data } = await supabase.from("gyms").select("id, name, city, coach_id, claimed").ilike("name", `%${gymSearch}%`).limit(5);
+    const t = setTimeout(async () => {
+      const { data } = await supabase.from("gyms")
+        .select("id, name, city, coach_id, claimed").ilike("name", `%${gymSearch}%`).limit(5);
       setGymResults(data ?? []);
     }, 300);
-    return () => clearTimeout(timeout);
+    return () => clearTimeout(t);
   }, [gymSearch]);
 
-  const handleCopySignupUrl = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/auth?mode=signup`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const handleSubmit = async () => {
-    if (!weightClass || !discipline) {
-      toast({ title: "Please fill in required fields", variant: "destructive" });
+    if (!dateOfBirth || !heightCm || !walkAroundWeight || !stance || !level || !country) {
+      toast({ title: "Please complete all required fields", variant: "destructive" });
       return;
     }
     setLoading(true);
 
-    const { data: existing } = await supabase.from("fighter_profiles").select("id").eq("user_id", user!.id).maybeSingle();
-    let fighterId = existing?.id;
+    const { data: existing } = await supabase.from("fighter_profiles")
+      .select("id")
+      .eq("user_id", user!.id).maybeSingle();
 
-    const styleValue = discipline === "Wrestling" || discipline === "Other" || discipline === "BJJ"
-      ? null
-      : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]);
-
-    const profileData = {
-      weight_class: weightClass as WeightClass,
-      style: styleValue,
-      stance: stance || null,
-      fighting_substyle: fightingSubstyle || null,
-      discipline,
-      date_of_birth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
-      walk_around_weight_kg: walkAroundWeight ? parseFloat(walkAroundWeight) : null,
-      height: heightCm ? parseInt(heightCm) : null,
-      reach: reachCm ? parseInt(reachCm) : null,
-      amateur_wins: parseInt(amateurWins) || 0,
-      amateur_losses: parseInt(amateurLosses) || 0,
-      amateur_draws: parseInt(amateurDraws) || 0,
-      record_wins: parseInt(proWins) || 0,
-      record_losses: parseInt(proLosses) || 0,
-      record_draws: parseInt(proDraws) || 0,
+    const baseUpdate: any = {
+      date_of_birth: format(dateOfBirth, "yyyy-MM-dd"),
+      height: parseInt(heightCm),
+      walk_around_weight_kg: parseFloat(walkAroundWeight),
+      stance,
+      country: country as CountryCode,
+      bio: showBio && bio ? bio : null,
     };
 
+    let fighterId = existing?.id;
+
     if (!existing) {
+      // First creation only: initialise the appropriate record block at 0-0-0.
+      // Existing rows are NEVER overwritten by the level toggle.
+      const insertData: any = { ...baseUpdate };
+      if (level === "amateur") {
+        insertData.amateur_wins = 0; insertData.amateur_losses = 0; insertData.amateur_draws = 0;
+      } else {
+        insertData.record_wins = 0; insertData.record_losses = 0; insertData.record_draws = 0;
+      }
       const { data: created, error } = await supabase.from("fighter_profiles").insert({
         user_id: user!.id,
+        email: user!.email ?? null,
         name: user!.user_metadata?.full_name || user!.email || "Fighter",
-        ...profileData,
+        weight_class: "unspecified" as WeightClass,
+        ...insertData,
       }).select("id").single();
-      if (error) console.error("Fighter profile error:", error);
+      if (error) {
+        console.error("Fighter profile create error:", error);
+        toast({ title: "Failed to save profile", description: error.message, variant: "destructive" });
+        setLoading(false);
+        return;
+      }
       fighterId = created?.id;
     } else {
-      await supabase.from("fighter_profiles").update(profileData).eq("id", existing.id);
+      await supabase.from("fighter_profiles").update(baseUpdate).eq("id", existing.id);
     }
 
-    if (hasGym && selectedGym && fighterId) {
+    if (showGym && selectedGym && fighterId) {
       const { data: linkData } = await supabase.from("fighter_gym_links").insert({
         fighter_id: fighterId, gym_id: selectedGym.id, status: "pending",
       }).select("id").single();
 
       if (linkData) {
-        const { data: freshGym } = await supabase.from("gyms").select("coach_id, claimed, name").eq("id", selectedGym.id).single();
+        const { data: freshGym } = await supabase.from("gyms")
+          .select("coach_id, claimed, name").eq("id", selectedGym.id).single();
         if (freshGym?.claimed && freshGym.coach_id) {
           await supabase.rpc("create_notification", {
             _user_id: freshGym.coach_id,
@@ -255,7 +187,6 @@ function FighterForm({ onComplete }: { onComplete: () => void }) {
     }
 
     await markOnboardingComplete(queryClient);
-    completedRef.current = true;
     void track("onboarding_completed", { role: "fighter" });
     setLoading(false);
     navigate("/fighter/dashboard", { replace: true });
@@ -264,10 +195,13 @@ function FighterForm({ onComplete }: { onComplete: () => void }) {
   return (
     <div className="space-y-5">
       <h3 className="font-heading text-xl text-foreground">Fighter Setup</h3>
+      <p className="text-xs text-muted-foreground -mt-3">
+        The essentials to get you into matchmaking. You can pick your weight class, discipline and records later from My Profile.
+      </p>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2 col-span-2">
-          <Label>Date of Birth</Label>
+          <Label>Date of Birth *</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dateOfBirth && "text-muted-foreground")}>
@@ -281,41 +215,17 @@ function FighterForm({ onComplete }: { onComplete: () => void }) {
           </Popover>
         </div>
 
-        <div className="space-y-2 col-span-2">
-          <Label>Weight Class *</Label>
-          <Select value={weightClass} onValueChange={(v) => setWeightClass(v as WeightClass)}>
-            <SelectTrigger><SelectValue placeholder="Select weight class" /></SelectTrigger>
-            <SelectContent position="popper" side="bottom">
-              {WEIGHT_CLASSES.map((wc) => (<SelectItem key={wc.value} value={wc.value}>{wc.label}</SelectItem>))}
-            </SelectContent>
-          </Select>
-        </div>
-
         <div className="space-y-2">
-          <Label>Walk-around Weight (kg)</Label>
-          <Input type="number" min="0" value={walkAroundWeight} onChange={(e) => setWalkAroundWeight(e.target.value)} placeholder="e.g. 75" />
-        </div>
-        <div className="space-y-2">
-          <Label>Height (cm)</Label>
+          <Label>Height (cm) *</Label>
           <Input type="number" min="0" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} placeholder="e.g. 178" />
         </div>
-        <div className="space-y-2 col-span-2">
-          <Label>Reach (cm)</Label>
-          <Input type="number" min="0" value={reachCm} onChange={(e) => setReachCm(e.target.value)} placeholder="e.g. 183" />
+        <div className="space-y-2">
+          <Label>Weight (kg) *</Label>
+          <Input type="number" min="0" value={walkAroundWeight} onChange={(e) => setWalkAroundWeight(e.target.value)} placeholder="e.g. 75" />
         </div>
 
         <div className="space-y-2 col-span-2">
-          <Label>Discipline *</Label>
-          <Select value={discipline} onValueChange={setDiscipline}>
-            <SelectTrigger><SelectValue placeholder="Select discipline" /></SelectTrigger>
-            <SelectContent position="popper" side="bottom">
-              {DISCIPLINES.map((d) => (<SelectItem key={d} value={d}>{d}</SelectItem>))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2 col-span-2">
-          <Label>Stance</Label>
+          <Label>Stance *</Label>
           <Select value={stance} onValueChange={setStance}>
             <SelectTrigger><SelectValue placeholder="Select stance" /></SelectTrigger>
             <SelectContent position="popper" side="bottom">
@@ -324,68 +234,69 @@ function FighterForm({ onComplete }: { onComplete: () => void }) {
           </Select>
         </div>
 
-        {substyleOptions.length > 0 && (
-          <div className="space-y-2 col-span-2">
-            <Label>Fighting Style</Label>
-            <Select value={fightingSubstyle} onValueChange={setFightingSubstyle}>
-              <SelectTrigger><SelectValue placeholder="Select fighting style" /></SelectTrigger>
-              <SelectContent position="popper" side="bottom">
-                {substyleOptions.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-              </SelectContent>
-            </Select>
+        <div className="space-y-2 col-span-2">
+          <Label>Level *</Label>
+          <div className="grid grid-cols-2 gap-3">
+            <Button type="button" variant={level === "amateur" ? "hero" : "outline"} onClick={() => setLevel("amateur")}>Amateur</Button>
+            <Button type="button" variant={level === "pro" ? "hero" : "outline"} onClick={() => setLevel("pro")}>Pro</Button>
           </div>
+        </div>
+
+        <div className="space-y-2 col-span-2">
+          <Label>Country *</Label>
+          <SearchableCountrySelect value={country} onValueChange={(v) => setCountry(v)} />
+        </div>
+      </div>
+
+      {/* Optional: Bio */}
+      <div className="pt-3 border-t border-border">
+        <div className="flex items-center justify-between mb-2">
+          <Label className="text-sm">Bio <span className="text-muted-foreground text-xs">(optional)</span></Label>
+          {showBio ? (
+            <button type="button" onClick={() => { setShowBio(false); setBio(""); }} className="text-xs text-muted-foreground hover:text-foreground">Skip</button>
+          ) : (
+            <button type="button" onClick={() => setShowBio(true)} className="text-xs text-primary hover:text-primary/80">Add</button>
+          )}
+        </div>
+        {showBio && (
+          <Textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell us about yourself..." rows={3} />
         )}
       </div>
 
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">Amateur Record</Label>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Wins</Label><Input type="number" min="0" value={amateurWins} onChange={(e) => setAmateurWins(e.target.value)} /></div>
-          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Losses</Label><Input type="number" min="0" value={amateurLosses} onChange={(e) => setAmateurLosses(e.target.value)} /></div>
-          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Draws</Label><Input type="number" min="0" value={amateurDraws} onChange={(e) => setAmateurDraws(e.target.value)} /></div>
+      {/* Optional: Gym */}
+      <div className="pt-3 border-t border-border">
+        <div className="flex items-center justify-between mb-2">
+          <Label className="text-sm">Gym affiliation <span className="text-muted-foreground text-xs">(optional)</span></Label>
+          {showGym ? (
+            <button type="button" onClick={() => { setShowGym(false); setSelectedGym(null); setGymSearch(""); }} className="text-xs text-muted-foreground hover:text-foreground">Skip</button>
+          ) : (
+            <button type="button" onClick={() => setShowGym(true)} className="text-xs text-primary hover:text-primary/80">Add</button>
+          )}
         </div>
-      </div>
-
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">Pro Record</Label>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Wins</Label><Input type="number" min="0" value={proWins} onChange={(e) => setProWins(e.target.value)} /></div>
-          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Losses</Label><Input type="number" min="0" value={proLosses} onChange={(e) => setProLosses(e.target.value)} /></div>
-          <div className="space-y-1"><Label className="text-xs text-muted-foreground">Draws</Label><Input type="number" min="0" value={proDraws} onChange={(e) => setProDraws(e.target.value)} /></div>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label>Postcode</Label>
-        <Input value={postcode} onChange={(e) => setPostcode(e.target.value)} placeholder="e.g. SW1A 1AA" />
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Checkbox checked={hasGym} onCheckedChange={(v) => { setHasGym(!!v); if (!v) { setSelectedGym(null); setGymSearch(""); } }} />
-          <Label className="cursor-pointer">I train at a gym</Label>
-        </div>
-
-        {hasGym && (
-          <div className="space-y-2 pl-6">
-            <Input value={gymSearch} onChange={(e) => { setGymSearch(e.target.value); setSelectedGym(null); }} placeholder="Search gyms..." />
+        {showGym && (
+          <div className="space-y-2">
+            <Input
+              value={gymSearch}
+              onChange={(e) => { setGymSearch(e.target.value); setSelectedGym(null); }}
+              placeholder="Search gyms..."
+            />
             {gymResults.length > 0 && !selectedGym && (
               <div className="border border-border rounded-md overflow-hidden">
                 {gymResults.map((gym) => (
-                  <button key={gym.id} onClick={() => { setSelectedGym(gym); setGymSearch(gym.name); setGymResults([]); }} className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors text-foreground">
+                  <button
+                    key={gym.id}
+                    onClick={() => { setSelectedGym(gym); setGymSearch(gym.name); setGymResults([]); }}
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors text-foreground"
+                  >
                     {gym.name}{gym.city ? ` — ${gym.city}` : ""}
                   </button>
                 ))}
               </div>
             )}
-            {selectedGym && selectedGym.claimed === false && (
-              <div className="rounded-md border border-border bg-muted/50 p-3 space-y-2">
-                <p className="text-sm text-muted-foreground">This gym hasn't been claimed yet — share this link to invite the coach to sign up and claim it.</p>
-                <button onClick={handleCopySignupUrl} className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors">
-                  {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied ? "Copied!" : "Copy signup URL"}
-                </button>
-              </div>
+            {selectedGym && (
+              <p className="text-xs text-muted-foreground">
+                A join request will be sent to <strong className="text-foreground">{selectedGym.name}</strong>.
+              </p>
             )}
           </div>
         )}
@@ -400,362 +311,121 @@ function FighterForm({ onComplete }: { onComplete: () => void }) {
   );
 }
 
-function CoachForm({ onComplete }: { onComplete: () => void }) {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+// ---------------- Coach / Gym owner ----------------
+
+function CoachLanding() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { track } = useAnalytics();
+  const { activeRole } = useAuth();
 
-  // Gym fields
-  const [gymName, setGymName] = useState("");
-  const [gymPostcode, setGymPostcode] = useState("");
-  const [gymDisciplines, setGymDisciplines] = useState<string[]>([]);
-  const [rosterSize, setRosterSize] = useState("");
-  const [matchedGym, setMatchedGym] = useState<{ id: string; name: string } | null>(null);
-  const [dismissedMatch, setDismissedMatch] = useState(false);
+  const dashboardPath = activeRole && ROLE_PATHS[activeRole]
+    ? ROLE_PATHS[activeRole]
+    : ROLE_PATHS.coach;
 
-  // Is this coach also an active fighter?
-  const [isFighter, setIsFighter] = useState<"yes" | "no" | null>(null);
-
-  // Fighter profile fields (same as FighterForm)
-  const [weightClass, setWeightClass] = useState<WeightClass | "">("");
-  const [discipline, setDiscipline] = useState("");
-  const [stance, setStance] = useState("");
-  const [fightingSubstyle, setFightingSubstyle] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState<Date>();
-  const [walkAroundWeight, setWalkAroundWeight] = useState("");
-  const [heightCm, setHeightCm] = useState("");
-  const [reachCm, setReachCm] = useState("");
-  const [amateurWins, setAmateurWins] = useState("0");
-  const [amateurLosses, setAmateurLosses] = useState("0");
-  const [amateurDraws, setAmateurDraws] = useState("0");
-  const [proWins, setProWins] = useState("0");
-  const [proLosses, setProLosses] = useState("0");
-  const [proDraws, setProDraws] = useState("0");
-  const [loading, setLoading] = useState(false);
-
-  const substyleOptions = FIGHTING_SUBSTYLES[discipline] ?? [];
-  useEffect(() => { setFightingSubstyle(""); }, [discipline]);
-
-  const toggleGymDiscipline = (d: string) => {
-    setGymDisciplines((prev) => prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]);
-  };
-
-  useEffect(() => {
-    if (dismissedMatch || gymName.length < 3) { setMatchedGym(null); return; }
-    const timeout = setTimeout(async () => {
-      const { data } = await supabase.from("gyms").select("id, name").ilike("name", `%${gymName}%`).limit(1);
-      if (data && data.length > 0) setMatchedGym(data[0]);
-      else setMatchedGym(null);
-    }, 400);
-    return () => clearTimeout(timeout);
-  }, [gymName, dismissedMatch]);
-
-  const handleSubmit = async () => {
-    if (!gymName) {
-      toast({ title: "Please enter your gym name", variant: "destructive" });
-      return;
-    }
-    if (isFighter === null) {
-      toast({ title: "Please answer whether you are also an active fighter", variant: "destructive" });
-      return;
-    }
-    if (isFighter === "yes" && (!weightClass || !discipline)) {
-      toast({ title: "Please fill in weight class and discipline", variant: "destructive" });
-      return;
-    }
-    setLoading(true);
-
-    // Create gym
-    await supabase.from("gyms").insert({
-      name: gymName, postcode: gymPostcode || null, claimed: true, listing_tier: "free",
-      coach_id: user!.id, discipline_tags: gymDisciplines.length > 0 ? gymDisciplines.join(", ") : null,
-    });
-
-    // Create fighter profile only if coach opted in
-    if (isFighter === "yes") {
-      const styleValue = discipline === "Wrestling" || discipline === "Other" || discipline === "BJJ"
-        ? null
-        : (discipline.toLowerCase().replace(/ /g, "_") as Database["public"]["Enums"]["fighting_style"]);
-
-      const { data: existing } = await supabase.from("fighter_profiles").select("id").eq("user_id", user!.id).maybeSingle();
-
-      const profileData = {
-        weight_class: weightClass as WeightClass,
-        style: styleValue,
-        stance: stance || null,
-        fighting_substyle: fightingSubstyle || null,
-        discipline,
-        date_of_birth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : null,
-        walk_around_weight_kg: walkAroundWeight ? parseFloat(walkAroundWeight) : null,
-        height: heightCm ? parseInt(heightCm) : null,
-        reach: reachCm ? parseInt(reachCm) : null,
-        amateur_wins: parseInt(amateurWins) || 0,
-        amateur_losses: parseInt(amateurLosses) || 0,
-        amateur_draws: parseInt(amateurDraws) || 0,
-        record_wins: parseInt(proWins) || 0,
-        record_losses: parseInt(proLosses) || 0,
-        record_draws: parseInt(proDraws) || 0,
-        created_by_coach_id: user!.id,
-      };
-
-      if (!existing) {
-        await supabase.from("fighter_profiles").insert({
-          user_id: user!.id,
-          name: user!.user_metadata?.full_name || user!.email || "Coach",
-          ...profileData,
-        });
-      } else {
-        await supabase.from("fighter_profiles").update(profileData).eq("id", existing.id);
-      }
-    }
-
+  const go = async (path: string) => {
     await markOnboardingComplete(queryClient);
-    void track("onboarding_completed", { role: "coach", fighter_profile: isFighter === "yes" });
-    setLoading(false);
-    onComplete();
+    void track("onboarding_completed", { role: activeRole ?? "coach" });
+    navigate(path, { replace: true });
   };
 
   return (
-    <div className="space-y-5">
-      <h3 className="font-heading text-xl text-foreground">Coach Setup</h3>
-
-      {/* Gym section */}
-      <div className="space-y-2">
-        <Label>Gym Name *</Label>
-        <Input value={gymName} onChange={(e) => { setGymName(e.target.value); setDismissedMatch(false); }} placeholder="Your gym name" />
-        {matchedGym && !dismissedMatch && (
-          <div className="rounded-md border border-primary/30 bg-primary/5 p-3 space-y-2">
-            <p className="text-sm text-foreground">
-              Your gym may already be in our directory — <strong className="text-primary">{matchedGym.name}</strong>. Claim this listing?
-            </p>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="text-xs" onClick={async () => {
-                await markOnboardingComplete(queryClient);
-                navigate(`/gyms/${matchedGym.id}`);
-              }}>Claim Existing Listing</Button>
-              <Button size="sm" variant="ghost" className="text-xs" onClick={() => setDismissedMatch(true)}>Continue Creating New</Button>
-            </div>
-          </div>
-        )}
-      </div>
-      <div className="space-y-2">
-        <Label>Gym Postcode</Label>
-        <Input value={gymPostcode} onChange={(e) => setGymPostcode(e.target.value)} placeholder="e.g. SW1A 1AA" />
-      </div>
-      <div className="space-y-2">
-        <Label>Disciplines</Label>
-        <div className="grid grid-cols-2 gap-2">
-          {DISCIPLINES.filter((d) => d !== "Other").map((d) => (
-            <label key={d} className="flex items-center gap-2 cursor-pointer">
-              <Checkbox checked={gymDisciplines.includes(d)} onCheckedChange={() => toggleGymDiscipline(d)} />
-              <span className="text-sm text-foreground">{d}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label>Roster Size</Label>
-        <Select value={rosterSize} onValueChange={setRosterSize}>
-          <SelectTrigger><SelectValue placeholder="Select size" /></SelectTrigger>
-          <SelectContent position="popper" side="bottom">
-            {ROSTER_SIZES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-          </SelectContent>
-        </Select>
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-heading text-xl text-foreground">Welcome, Coach</h3>
+        <p className="text-sm text-muted-foreground mt-1">What would you like to do first?</p>
       </div>
 
-      {/* Active fighter gate */}
-      <div className="border-t border-border pt-4 mt-4 space-y-3">
-        <Label className="text-base text-foreground">Are you also an active fighter?</Label>
-        <div className="grid grid-cols-2 gap-3">
-          <Button
-            type="button"
-            variant={isFighter === "yes" ? "hero" : "outline"}
-            onClick={() => setIsFighter("yes")}
-          >
-            Yes
-          </Button>
-          <Button
-            type="button"
-            variant={isFighter === "no" ? "hero" : "outline"}
-            onClick={() => setIsFighter("no")}
-          >
-            No
-          </Button>
-        </div>
+      <div className="grid grid-cols-1 gap-3">
+        <button
+          onClick={() => go("/register-gym")}
+          className="group rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-5 text-left flex items-start gap-3"
+        >
+          <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
+            <Building2 className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h4 className="font-heading text-lg text-foreground">Add your first gym</h4>
+            <p className="text-sm text-muted-foreground">Register your gym so fighters can find and join it.</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => go("/organiser/create-event")}
+          className="group rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-5 text-left flex items-start gap-3"
+        >
+          <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
+            <Plus className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0">
+            <h4 className="font-heading text-lg text-foreground">Add your first event</h4>
+            <p className="text-sm text-muted-foreground">Set up a fight night and start building the card.</p>
+          </div>
+        </button>
       </div>
 
-      {/* Fighter profile section */}
-      {isFighter === "yes" && (
-      <div className="border-t border-border pt-4 mt-4">
-        <h4 className="font-heading text-lg text-foreground mb-3">
-          YOUR <span className="text-primary">FIGHTER PROFILE</span>
-        </h4>
-        <p className="text-xs text-muted-foreground mb-4">As a coach, your fighter profile is publicly visible and allows you to be put forward for events.</p>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2 col-span-2">
-            <Label>Date of Birth</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dateOfBirth && "text-muted-foreground")}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {dateOfBirth ? format(dateOfBirth, "PPP") : "Select date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start" side="bottom">
-                <DOBPicker value={dateOfBirth} onChange={setDateOfBirth} />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2 col-span-2">
-            <Label>Weight Class *</Label>
-            <Select value={weightClass} onValueChange={(v) => setWeightClass(v as WeightClass)}>
-              <SelectTrigger><SelectValue placeholder="Select weight class" /></SelectTrigger>
-              <SelectContent position="popper" side="bottom">
-                {WEIGHT_CLASSES.map((wc) => (<SelectItem key={wc.value} value={wc.value}>{wc.label}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Walk-around Weight (kg)</Label>
-            <Input type="number" min="0" value={walkAroundWeight} onChange={(e) => setWalkAroundWeight(e.target.value)} placeholder="e.g. 75" />
-          </div>
-          <div className="space-y-2">
-            <Label>Height (cm)</Label>
-            <Input type="number" min="0" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} placeholder="e.g. 178" />
-          </div>
-          <div className="space-y-2 col-span-2">
-            <Label>Reach (cm)</Label>
-            <Input type="number" min="0" value={reachCm} onChange={(e) => setReachCm(e.target.value)} placeholder="e.g. 183" />
-          </div>
-
-          <div className="space-y-2 col-span-2">
-            <Label>Discipline *</Label>
-            <Select value={discipline} onValueChange={setDiscipline}>
-              <SelectTrigger><SelectValue placeholder="Select discipline" /></SelectTrigger>
-              <SelectContent position="popper" side="bottom">
-                {DISCIPLINES.map((d) => (<SelectItem key={d} value={d}>{d}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2 col-span-2">
-            <Label>Stance</Label>
-            <Select value={stance} onValueChange={setStance}>
-              <SelectTrigger><SelectValue placeholder="Select stance" /></SelectTrigger>
-              <SelectContent position="popper" side="bottom">
-                {STANCES.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {substyleOptions.length > 0 && (
-            <div className="space-y-2 col-span-2">
-              <Label>Fighting Style</Label>
-              <Select value={fightingSubstyle} onValueChange={setFightingSubstyle}>
-                <SelectTrigger><SelectValue placeholder="Select fighting style" /></SelectTrigger>
-                <SelectContent position="popper" side="bottom">
-                  {substyleOptions.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-3 mt-3">
-          <Label className="text-sm font-medium">Amateur Record</Label>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="space-y-1"><Label className="text-xs text-muted-foreground">Wins</Label><Input type="number" min="0" value={amateurWins} onChange={(e) => setAmateurWins(e.target.value)} /></div>
-            <div className="space-y-1"><Label className="text-xs text-muted-foreground">Losses</Label><Input type="number" min="0" value={amateurLosses} onChange={(e) => setAmateurLosses(e.target.value)} /></div>
-            <div className="space-y-1"><Label className="text-xs text-muted-foreground">Draws</Label><Input type="number" min="0" value={amateurDraws} onChange={(e) => setAmateurDraws(e.target.value)} /></div>
-          </div>
-        </div>
-
-        <div className="space-y-3 mt-3">
-          <Label className="text-sm font-medium">Pro Record</Label>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="space-y-1"><Label className="text-xs text-muted-foreground">Wins</Label><Input type="number" min="0" value={proWins} onChange={(e) => setProWins(e.target.value)} /></div>
-            <div className="space-y-1"><Label className="text-xs text-muted-foreground">Losses</Label><Input type="number" min="0" value={proLosses} onChange={(e) => setProLosses(e.target.value)} /></div>
-            <div className="space-y-1"><Label className="text-xs text-muted-foreground">Draws</Label><Input type="number" min="0" value={proDraws} onChange={(e) => setProDraws(e.target.value)} /></div>
-          </div>
-        </div>
-      </div>
-      )}
-
-      <div className="flex flex-col gap-3 pt-2">
-        <Button variant="hero" onClick={handleSubmit} disabled={loading}>
-          {loading ? "Saving..." : "Continue"}
+      <div className="pt-2">
+        <Button variant="ghost" className="w-full" onClick={() => go(dashboardPath)}>
+          Skip for now <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
     </div>
   );
 }
 
+// ---------------- Organiser ----------------
+
 function OrganiserLanding() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
   const { track } = useAnalytics();
 
-  const handleCreateEvent = async () => {
+  const go = async (path: string) => {
     await markOnboardingComplete(queryClient);
     void track("onboarding_completed", { role: "organiser" });
-    navigate("/organiser/create-event", { replace: true });
-  };
-
-  const handleBrowseEvents = async () => {
-    await markOnboardingComplete(queryClient);
-    void track("onboarding_completed", { role: "organiser" });
-    navigate("/explore?tab=events", { replace: true });
+    navigate(path, { replace: true });
   };
 
   return (
     <div className="space-y-6">
-      <h3 className="font-heading text-xl text-foreground text-center">
-        WELCOME, <span className="text-primary">ORGANISER</span>
-      </h3>
-      <p className="text-sm text-muted-foreground text-center">What would you like to do first?</p>
-      <div className="grid grid-cols-1 gap-4">
-        <button onClick={handleCreateEvent} className="group rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-6 text-left space-y-3">
-          <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-            <Plus className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h4 className="font-heading text-lg text-foreground">Create your first event</h4>
-            <p className="text-sm text-muted-foreground">Set up a fight night, build a card, and start matchmaking.</p>
-          </div>
-        </button>
-        <button onClick={handleBrowseEvents} className="group rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-6 text-left space-y-3">
-          <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-            <Search className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h4 className="font-heading text-lg text-foreground">Browse existing events</h4>
-            <p className="text-sm text-muted-foreground">See what's coming up and explore the fight calendar.</p>
-          </div>
-        </button>
+      <div>
+        <h3 className="font-heading text-xl text-foreground">
+          WELCOME, <span className="text-primary">ORGANISER</span>
+        </h3>
+        <p className="text-sm text-muted-foreground mt-1">Let's get your first event on the calendar.</p>
+      </div>
+
+      <button
+        onClick={() => go("/organiser/create-event")}
+        className="group w-full rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-5 text-left flex items-start gap-3"
+      >
+        <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
+          <Plus className="h-5 w-5 text-primary" />
+        </div>
+        <div className="min-w-0">
+          <h4 className="font-heading text-lg text-foreground">Add your first event</h4>
+          <p className="text-sm text-muted-foreground">Set up a fight night, build the card, and start matchmaking.</p>
+        </div>
+      </button>
+
+      <div className="pt-2">
+        <Button variant="ghost" className="w-full" onClick={() => go(ROLE_PATHS.organiser)}>
+          Skip for now <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
       </div>
     </div>
   );
 }
 
+// ---------------- Shell ----------------
+
 export default function Onboarding() {
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
-  // (9) Read role directly from user_roles table, not cached session
   const { data: freshRoles, isLoading: rolesLoading } = useQuery({
     queryKey: ["onboarding-fresh-roles", user?.id],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user!.id);
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", user!.id);
       return (data ?? []).map((r) => r.role) as AppRole[];
     },
     enabled: !!user,
@@ -764,32 +434,14 @@ export default function Onboarding() {
   });
 
   const primaryRole: AppRole | null = freshRoles
-    ? freshRoles.includes("gym_owner")
-      ? "gym_owner"
-      : freshRoles.includes("fighter")
-        ? "fighter"
-        : freshRoles.includes("organiser")
-          ? "organiser"
-          : freshRoles.includes("coach")
-            ? "coach"
-            : freshRoles[0] ?? null
+    ? freshRoles.includes("gym_owner") ? "gym_owner"
+      : freshRoles.includes("fighter") ? "fighter"
+      : freshRoles.includes("organiser") ? "organiser"
+      : freshRoles.includes("coach") ? "coach"
+      : freshRoles[0] ?? null
     : null;
 
-  const goToDashboard = () => {
-    const path = primaryRole ? (ROLE_PATHS[primaryRole] ?? "/dashboard") : "/dashboard";
-    navigate(path, { replace: true });
-  };
-
-  // Show nothing until auth + roles are resolved
-  if (authLoading || !user || rolesLoading || !freshRoles) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (freshRoles.length === 0) {
+  if (authLoading || !user || rolesLoading || !freshRoles || freshRoles.length === 0) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -811,15 +463,9 @@ export default function Onboarding() {
         </div>
 
         <div className="rounded-lg border border-border bg-card p-5 sm:p-8">
-          {primaryRole === "fighter" && (
-            <FighterForm onComplete={goToDashboard} />
-          )}
-          {(primaryRole === "coach" || primaryRole === "gym_owner") && (
-            <CoachForm onComplete={goToDashboard} />
-          )}
-          {primaryRole === "organiser" && (
-            <OrganiserLanding />
-          )}
+          {primaryRole === "fighter" && <FighterForm />}
+          {(primaryRole === "coach" || primaryRole === "gym_owner") && <CoachLanding />}
+          {primaryRole === "organiser" && <OrganiserLanding />}
         </div>
       </motion.div>
     </div>
