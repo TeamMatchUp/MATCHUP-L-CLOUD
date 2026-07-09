@@ -47,7 +47,11 @@ export function GymGalleryManager({ gymId }: GymGalleryManagerProps) {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const ext = file.name.split(".").pop() || "jpg";
-        const path = `${gymId}-gallery-${Date.now()}-${i}.${ext}`;
+        // Path MUST start with `${gymId}/` — storage RLS keys the ownership
+        // check on the first `/`-separated segment. UUIDs contain hyphens, so
+        // a `-` separator would only match the first UUID segment and reject
+        // the upload.
+        const path = `${gymId}/gallery-${Date.now()}-${i}.${ext}`;
         const { error: upErr } = await supabase.storage.from("gym-images").upload(path, file, { upsert: true });
         if (upErr) throw upErr;
         const { data: pub } = supabase.storage.from("gym-images").getPublicUrl(path);
