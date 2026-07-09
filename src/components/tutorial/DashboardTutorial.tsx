@@ -7,7 +7,7 @@ import type { Database } from "@/integrations/supabase/types";
 type AppRole = Database["public"]["Enums"]["app_role"];
 
 interface Step {
-  key: "explore" | "my-content" | "account";
+  key: "explore" | "my-content" | "notifications" | "interactions" | "account";
   copy: string;
 }
 
@@ -23,11 +23,15 @@ const STEP_COPY: Record<Step["key"], string> = {
     "This is where you find your network — search fighters, gyms, and events across the UK.",
   "my-content":
     "Anything you've added — your profile, gyms, or events — lives here. Edit or update it any time.",
+  notifications:
+    "Match requests, follow requests, gym claims and event applications all land here. You'll see a badge whenever something needs your attention.",
+  interactions:
+    "Send a match request and it starts as Pending — the other fighter can Accept or Decline, and both sides get notified. Gym claims go to the gym owner and event applications go to the organiser.",
   account:
     "Manage your account here, including updating your password and notification preferences.",
 };
 
-const ORDER: Step["key"][] = ["explore", "my-content", "account"];
+const ORDER: Step["key"][] = ["explore", "my-content", "notifications", "interactions", "account"];
 
 interface Rect {
   top: number;
