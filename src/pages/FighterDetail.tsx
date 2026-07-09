@@ -867,7 +867,9 @@ export default function FighterDetail() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {related.map((rf: any) => {
                   const ri = rf.name.replace(/"[^"]+"/g, "").trim().split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
-                  const rw = rf.record_wins ?? 0, rl = rf.record_losses ?? 0, rd = rf.record_draws ?? 0;
+                  const rw = (rf.record_wins ?? 0) + (rf.amateur_wins ?? 0);
+                  const rl = (rf.record_losses ?? 0) + (rf.amateur_losses ?? 0);
+                  const rd = (rf.record_draws ?? 0) + (rf.amateur_draws ?? 0);
                   const rtot = rw + rl + rd;
                   const rwr = rtot > 0 ? Math.round((rw / rtot) * 100) : 0;
                   return (
