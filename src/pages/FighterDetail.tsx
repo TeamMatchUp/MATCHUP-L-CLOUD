@@ -128,7 +128,7 @@ export default function FighterDetail() {
       if (!fighter) return [];
       const { data } = await supabase
         .from("fighter_profiles")
-        .select("id, name, profile_image, weight_class, discipline, country, record_wins, record_losses, record_draws")
+        .select("id, name, profile_image, weight_class, discipline, country, record_wins, record_losses, record_draws, amateur_wins, amateur_losses, amateur_draws")
         .eq("weight_class", fighter.weight_class)
         .neq("id", fighter.id)
         .eq("visibility", "public")
@@ -148,19 +148,38 @@ export default function FighterDetail() {
 
   const stats = useMemo(() => {
     if (!fighter) return { wins: 0, losses: 0, draws: 0, kos: 0, tkos: 0, subs: 0, decs: 0, lossKos: 0, lossTkos: 0, lossDecs: 0, lossSubs: 0, stated: false, avgFinishRound: 0 };
+
+    const proFights = fights.filter((f: any) => !f.is_amateur);
+    const amFights = fights.filter((f: any) => f.is_amateur);
+
+    // Per side: use fight rows when present, otherwise cached counters.
+    const proCount = {
+      w: proFights.length > 0 ? proFights.filter((f: any) => isWin(f, fighter.id)).length : (fighter.record_wins ?? 0),
+      l: proFights.length > 0 ? proFights.filter((f: any) => isLoss(f, fighter.id)).length : (fighter.record_losses ?? 0),
+      d: proFights.length > 0 ? proFights.filter((f: any) => isDraw(f)).length : (fighter.record_draws ?? 0),
+    };
+    const amCount = {
+      w: amFights.length > 0 ? amFights.filter((f: any) => isWin(f, fighter.id)).length : (fighter.amateur_wins ?? 0),
+      l: amFights.length > 0 ? amFights.filter((f: any) => isLoss(f, fighter.id)).length : (fighter.amateur_losses ?? 0),
+      d: amFights.length > 0 ? amFights.filter((f: any) => isDraw(f)).length : (fighter.amateur_draws ?? 0),
+    };
+    const totals = scope === "pro" ? proCount
+      : scope === "amateur" ? amCount
+      : { w: proCount.w + amCount.w, l: proCount.l + amCount.l, d: proCount.d + amCount.d };
+
+    // Method breakdowns still come from whichever fight rows are in scope
+    // (we can't infer KO/Sub/etc from cached counters).
     const w = scopedFights.filter((f: any) => isWin(f, fighter.id));
     const l = scopedFights.filter((f: any) => isLoss(f, fighter.id));
-    const d = scopedFights.filter((f: any) => isDraw(f));
-    const hasFights = scopedFights.length > 0;
-    const cachedW = scope === "amateur" ? (fighter.amateur_wins ?? 0) : scope === "pro" ? (fighter.record_wins ?? 0) : (fighter.record_wins ?? 0) + (fighter.amateur_wins ?? 0);
-    const cachedL = scope === "amateur" ? (fighter.amateur_losses ?? 0) : scope === "pro" ? (fighter.record_losses ?? 0) : (fighter.record_losses ?? 0) + (fighter.amateur_losses ?? 0);
-    const cachedD = scope === "amateur" ? (fighter.amateur_draws ?? 0) : scope === "pro" ? (fighter.record_draws ?? 0) : (fighter.record_draws ?? 0) + (fighter.amateur_draws ?? 0);
     const finishes = w.filter((f: any) => isKO(f.method) || isTKO(f.method) || isSub(f.method));
     const finishRounds = finishes.map((f: any) => f.round).filter(Boolean);
+    const stated = (scope === "pro" && proFights.length === 0)
+      || (scope === "amateur" && amFights.length === 0)
+      || (scope === "total" && proFights.length === 0 && amFights.length === 0);
     return {
-      wins: hasFights ? w.length : cachedW,
-      losses: hasFights ? l.length : cachedL,
-      draws: hasFights ? d.length : cachedD,
+      wins: totals.w,
+      losses: totals.l,
+      draws: totals.d,
       kos: w.filter((f: any) => isKO(f.method)).length,
       tkos: w.filter((f: any) => isTKO(f.method)).length,
       subs: w.filter((f: any) => isSub(f.method)).length,
@@ -169,10 +188,10 @@ export default function FighterDetail() {
       lossTkos: l.filter((f: any) => isTKO(f.method)).length,
       lossDecs: l.filter((f: any) => isDec(f.method)).length,
       lossSubs: l.filter((f: any) => isSub(f.method)).length,
-      stated: !hasFights,
+      stated,
       avgFinishRound: finishRounds.length ? finishRounds.reduce((a: number, b: number) => a + b, 0) / finishRounds.length : 0,
     };
-  }, [scopedFights, fighter, scope]);
+  }, [scopedFights, fights, fighter, scope]);
 
   const total = stats.wins + stats.losses + stats.draws;
   const winRate = total > 0 ? Math.round((stats.wins / total) * 100) : 0;
@@ -848,7 +867,9 @@ export default function FighterDetail() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {related.map((rf: any) => {
                   const ri = rf.name.replace(/"[^"]+"/g, "").trim().split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
-                  const rw = rf.record_wins ?? 0, rl = rf.record_losses ?? 0, rd = rf.record_draws ?? 0;
+                  const rw = (rf.record_wins ?? 0) + (rf.amateur_wins ?? 0);
+                  const rl = (rf.record_losses ?? 0) + (rf.amateur_losses ?? 0);
+                  const rd = (rf.record_draws ?? 0) + (rf.amateur_draws ?? 0);
                   const rtot = rw + rl + rd;
                   const rwr = rtot > 0 ? Math.round((rw / rtot) * 100) : 0;
                   return (
