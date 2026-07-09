@@ -128,7 +128,7 @@ export default function FighterDetail() {
       if (!fighter) return [];
       const { data } = await supabase
         .from("fighter_profiles")
-        .select("id, name, profile_image, weight_class, discipline, country, record_wins, record_losses, record_draws")
+        .select("id, name, profile_image, weight_class, discipline, country, record_wins, record_losses, record_draws, amateur_wins, amateur_losses, amateur_draws")
         .eq("weight_class", fighter.weight_class)
         .neq("id", fighter.id)
         .eq("visibility", "public")
