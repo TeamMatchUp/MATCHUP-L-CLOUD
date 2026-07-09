@@ -161,7 +161,7 @@ export function Header() {
                 }}>{basketCount}</span>
               </Link>
             )}
-            <NotificationBell />
+            <span data-tutorial="notifications" className="inline-flex"><NotificationBell /></span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="gap-2" data-tutorial="account">

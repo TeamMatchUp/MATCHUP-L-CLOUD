@@ -90,14 +90,9 @@ export function FighterRecordHero() {
     if (!fighterProfile) return { wins: 0, losses: 0, draws: 0, total: 0, stated: false };
     const fid = fighterProfile.id;
 
-    if (fights.length > 0) {
-      const scoped = filter === "all"
-        ? fights
-        : filter === "pro"
-          ? fights.filter((f) => !f.is_amateur)
-          : fights.filter((f) => f.is_amateur);
+    const tally = (arr: any[]) => {
       let wins = 0, losses = 0, draws = 0;
-      scoped.forEach((f) => {
+      arr.forEach((f) => {
         const result = String(f.result ?? "").toLowerCase();
         if (result === "draw") { draws++; return; }
         if (f.winner_id) {
@@ -108,21 +103,39 @@ export function FighterRecordHero() {
         if (result === "win") { if (isA) wins++; else losses++; }
         else if (result === "loss") { if (isA) losses++; else wins++; }
       });
-      return { wins, losses, draws, total: wins + losses + draws, stated: false };
-    }
+      return { wins, losses, draws };
+    };
 
-    // Fallback: stored counters on fighter_profiles
-    const pw = fighterProfile.record_wins ?? 0;
-    const pl = fighterProfile.record_losses ?? 0;
-    const pd = fighterProfile.record_draws ?? 0;
-    const aw = fighterProfile.amateur_wins ?? 0;
-    const al = fighterProfile.amateur_losses ?? 0;
-    const ad = fighterProfile.amateur_draws ?? 0;
-    let wins = 0, losses = 0, draws = 0;
-    if (filter === "pro") { wins = pw; losses = pl; draws = pd; }
-    else if (filter === "amateur") { wins = aw; losses = al; draws = ad; }
-    else { wins = pw + aw; losses = pl + al; draws = pd + ad; }
-    return { wins, losses, draws, total: wins + losses + draws, stated: true };
+    const proFights = fights.filter((f) => !f.is_amateur);
+    const amFights = fights.filter((f) => f.is_amateur);
+
+    // Per side: prefer authoritative fight rows, fall back to cached counters.
+    const pro = proFights.length > 0
+      ? tally(proFights)
+      : {
+          wins: fighterProfile.record_wins ?? 0,
+          losses: fighterProfile.record_losses ?? 0,
+          draws: fighterProfile.record_draws ?? 0,
+        };
+    const am = amFights.length > 0
+      ? tally(amFights)
+      : {
+          wins: fighterProfile.amateur_wins ?? 0,
+          losses: fighterProfile.amateur_losses ?? 0,
+          draws: fighterProfile.amateur_draws ?? 0,
+        };
+
+    const scoped = filter === "pro" ? pro : filter === "amateur" ? am : {
+      wins: pro.wins + am.wins,
+      losses: pro.losses + am.losses,
+      draws: pro.draws + am.draws,
+    };
+    const stated = proFights.length === 0 && amFights.length === 0;
+    return {
+      ...scoped,
+      total: scoped.wins + scoped.losses + scoped.draws,
+      stated,
+    };
   }, [fighterProfile, fights, filter]);
 
   // Donut data
