@@ -47,21 +47,46 @@ export function computeFighterRecord(
   const own = fights.filter(
     (f) => f.fighter_a_id === fighter.id || f.fighter_b_id === fighter.id,
   );
-  if (own.length > 0) {
-    const wins = own.filter((f) => isWin(f, fighter.id));
+  const proFights = own.filter((f) => !f.is_amateur);
+  const amFights = own.filter((f) => f.is_amateur);
+
+  const tally = (arr: any[]) => {
+    const wins = arr.filter((f) => isWin(f, fighter.id));
     return {
       wins: wins.length,
-      losses: own.filter((f) => isLoss(f, fighter.id)).length,
-      draws: own.filter(isDraw).length,
+      losses: arr.filter((f) => isLoss(f, fighter.id)).length,
+      draws: arr.filter(isDraw).length,
       kos: wins.filter((f) => isKO(f.method) || isTKO(f.method)).length,
-      stated: false,
     };
-  }
+  };
+
+  // For each side (pro / amateur), prefer authoritative fight rows when
+  // present, otherwise fall back to the cached counters on fighter_profiles.
+  // This guarantees pro history is never dropped just because only amateur
+  // bouts (or vice versa) have been logged in the fights table.
+  const pro = proFights.length > 0
+    ? tally(proFights)
+    : {
+        wins: fighter.record_wins ?? 0,
+        losses: fighter.record_losses ?? 0,
+        draws: fighter.record_draws ?? 0,
+        kos: 0,
+      };
+  const am = amFights.length > 0
+    ? tally(amFights)
+    : {
+        wins: fighter.amateur_wins ?? 0,
+        losses: fighter.amateur_losses ?? 0,
+        draws: fighter.amateur_draws ?? 0,
+        kos: 0,
+      };
+
   return {
-    wins: (fighter.record_wins ?? 0) + (fighter.amateur_wins ?? 0),
-    losses: (fighter.record_losses ?? 0) + (fighter.amateur_losses ?? 0),
-    draws: (fighter.record_draws ?? 0) + (fighter.amateur_draws ?? 0),
-    kos: 0,
-    stated: true,
+    wins: pro.wins + am.wins,
+    losses: pro.losses + am.losses,
+    draws: pro.draws + am.draws,
+    kos: pro.kos + am.kos,
+    // "stated" iff both sides fell back to the cached counters.
+    stated: proFights.length === 0 && amFights.length === 0,
   };
 }
