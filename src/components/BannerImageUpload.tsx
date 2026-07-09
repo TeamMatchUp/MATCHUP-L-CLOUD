@@ -85,7 +85,11 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
     setUploading(true);
     try {
       const blob = await getCroppedBlob(cropSrc, croppedAreaPixels);
-      const path = `${entityId}-banner-${Date.now()}.jpg`;
+      // Path MUST start with `${entityId}/` — storage RLS keys ownership on
+      // the first `/`-separated segment. UUIDs contain hyphens, so a `-`
+      // separator would only match the first UUID segment and reject the
+      // upload.
+      const path = `${entityId}/banner-${Date.now()}.jpg`;
       const { error } = await supabase.storage.from(bucket).upload(path, blob, { upsert: true, contentType: "image/jpeg" });
       if (error) {
         toast.error("Upload failed — please try again");
