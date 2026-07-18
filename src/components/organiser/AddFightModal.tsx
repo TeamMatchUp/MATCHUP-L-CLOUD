@@ -875,6 +875,95 @@ export function AddFightModal({
             </div>
           </>
         )}
+
+        {step === "nonmember" && (
+          <>
+            <button
+              onClick={() => setStep("menu")}
+              className="flex items-center gap-1 mb-3 text-sm transition-colors"
+              style={{ color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer" }}
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Back
+            </button>
+            <DialogHeader>
+              <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "hsl(var(--foreground))" }}>
+                Add Non-Member Fighter
+              </DialogTitle>
+              <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>
+                We'll create an unclaimed profile and email them a link to sign up and claim it.
+              </p>
+            </DialogHeader>
+            <div className="space-y-4 mt-3">
+              <div className="space-y-1">
+                <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Full name *</Label>
+                <Input value={nmName} onChange={(e) => setNmName(e.target.value)} placeholder="e.g. Alex Doe" className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Age *</Label>
+                  <Input type="number" min={16} max={70} value={nmAge} onChange={(e) => setNmAge(e.target.value)} placeholder="e.g. 26" className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }} />
+                </div>
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Email *</Label>
+                  <Input type="email" value={nmEmail} onChange={(e) => setNmEmail(e.target.value)} placeholder="fighter@example.com" className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Weight Class</Label>
+                  <Select value={nmWc || "any"} onValueChange={(v) => setNmWc(v === "any" ? "" : v)}>
+                    <SelectTrigger className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Not sure</SelectItem>
+                      {WEIGHT_CLASSES.map((w) => (<SelectItem key={w} value={w}>{formatEnum(w)}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Discipline</Label>
+                  <Select value={nmDisc || "any"} onValueChange={(v) => setNmDisc(v === "any" ? "" : v)}>
+                    <SelectTrigger className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Not sure</SelectItem>
+                      {DISCIPLINES.map((d) => (<SelectItem key={d} value={d}>{formatEnum(d)}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {scenario !== "oneTBA" && (
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Assign to</Label>
+                  <Select value={nmSide} onValueChange={(v) => setNmSide(v as "A" | "B")}>
+                    <SelectTrigger className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A">Side A</SelectItem>
+                      <SelectItem value="B">Side B</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="flex items-start gap-2 rounded-md p-3" style={{ background: "rgba(232,160,32,0.08)" }}>
+                <Mail className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+                <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>
+                  An email invite will be sent to <strong style={{ color: "hsl(var(--foreground))" }}>{nmEmail || "the fighter"}</strong>. When they sign up with this email, their profile is claimed automatically.
+                </p>
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end pt-3">
+                <Button variant="ghost" onClick={() => handleClose(false)} style={{ color: "hsl(var(--muted-foreground))" }}>Cancel</Button>
+                <Button
+                  onClick={handleNonMemberSave}
+                  disabled={loading}
+                  style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", fontWeight: 600, borderRadius: 8 }}
+                >
+                  {loading ? "Saving..." : "Add & Invite"}
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
