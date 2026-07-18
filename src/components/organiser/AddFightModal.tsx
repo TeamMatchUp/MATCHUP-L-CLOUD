@@ -692,6 +692,12 @@ export function AddFightModal({
                 "Reserve a slot with parameters but no fighters yet",
                 () => setStep("open")
               )}
+              {optionCard(
+                <UserPlus className="h-5 w-5" />,
+                "Add Non-Member Fighter",
+                "Invite a fighter who isn't on Matchup yet — they'll get an email to claim their profile",
+                () => setStep("nonmember")
+              )}
             </div>
           </>
         )}
