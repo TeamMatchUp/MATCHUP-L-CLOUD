@@ -66,7 +66,7 @@ async function notifyBoutParties(fighterA: FighterProfile, fighterB: FighterProf
   );
 }
 
-type Step = "menu" | "manual" | "suggested" | "open";
+type Step = "menu" | "manual" | "suggested" | "open" | "nonmember";
 
 /**
  * Detect scenario from a prefill slot:
