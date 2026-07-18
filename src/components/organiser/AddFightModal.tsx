@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Sparkles, PlusCircle, ArrowLeft, ArrowRight, Search } from "lucide-react";
+import { UserPlus, Sparkles, PlusCircle, ArrowLeft, ArrowRight, Search, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
@@ -66,7 +66,7 @@ async function notifyBoutParties(fighterA: FighterProfile, fighterB: FighterProf
   );
 }
 
-type Step = "menu" | "manual" | "suggested" | "open";
+type Step = "menu" | "manual" | "suggested" | "open" | "nonmember";
 
 /**
  * Detect scenario from a prefill slot:
@@ -128,6 +128,14 @@ export function AddFightModal({
   const [openWeightKg, setOpenWeightKg] = useState<string>("");
   const [openWeightLbs, setOpenWeightLbs] = useState<string>("");
 
+  // Non-member invite state
+  const [nmName, setNmName] = useState("");
+  const [nmAge, setNmAge] = useState("");
+  const [nmEmail, setNmEmail] = useState("");
+  const [nmWc, setNmWc] = useState("");
+  const [nmDisc, setNmDisc] = useState("");
+  const [nmSide, setNmSide] = useState<"A" | "B">("A");
+
   const scenario = mode === "find" ? detectScenario(prefillSlot) : null;
   const anchorFighter = scenario === "oneTBA" ? getAnchorFighter(prefillSlot) : null;
 
@@ -147,6 +155,7 @@ export function AddFightModal({
     setOpenRoundTime("");
     setOpenWeightKg("");
     setOpenWeightLbs("");
+    setNmName(""); setNmAge(""); setNmEmail(""); setNmWc(""); setNmDisc(""); setNmSide("A");
   };
 
   const handleClose = (v: boolean) => {
@@ -268,7 +277,135 @@ export function AddFightModal({
     }
   };
 
-  // ─── Suggestion select handler ───
+  // ─── Non-member invite save ───
+  const handleNonMemberSave = async () => {
+    const name = nmName.trim();
+    const email = nmEmail.trim().toLowerCase();
+    const age = parseInt(nmAge);
+    if (!name || !email || !Number.isFinite(age) || age < 16 || age > 70) {
+      toast({ title: "Fill in name, email and a valid age (16–70)", variant: "destructive" });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast({ title: "Enter a valid email address", variant: "destructive" });
+      return;
+    }
+    if (!user?.id) {
+      toast({ title: "You must be signed in", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    try {
+      // Reuse an existing profile with this email, else create an unclaimed one
+      const { data: existing } = await supabase
+        .from("fighter_profiles")
+        .select("*")
+        .ilike("email", email)
+        .maybeSingle();
+
+      let fighter: FighterProfile | null = (existing as any) ?? null;
+
+      if (!fighter) {
+        const dobYear = new Date().getFullYear() - age;
+        const wc = (nmWc || prefillSlot?.weight_class || anchorFighter?.weight_class || "unspecified") as WeightClass;
+        const { data: inserted, error: insErr } = await supabase
+          .from("fighter_profiles")
+          .insert({
+            name,
+            email,
+            date_of_birth: `${dobYear}-01-01`,
+            weight_class: wc,
+            discipline: nmDisc || prefillSlot?.discipline || null,
+            country: "GB",
+            visibility: "unlisted",
+            verified: false,
+            created_by_coach_id: user.id,
+            user_id: null,
+          } as any)
+          .select("*")
+          .single();
+        if (insErr) throw insErr;
+        fighter = inserted as any;
+      }
+
+      if (!fighter) throw new Error("Could not create fighter profile");
+
+      // Wire the fighter into the bout slot (same logic as manual)
+      let slotId: string | null = null;
+      let bothFilled = false;
+      let partnerFighter: FighterProfile | null = null;
+
+      if (prefillSlot && mode === "find") {
+        const update: any = {};
+        if (scenario === "oneTBA") {
+          if (!prefillSlot.fighter_a_id) update.fighter_a_id = fighter.id;
+          else if (!prefillSlot.fighter_b_id) update.fighter_b_id = fighter.id;
+          bothFilled = !!(prefillSlot.fighter_a_id || update.fighter_a_id) && !!(prefillSlot.fighter_b_id || update.fighter_b_id);
+          partnerFighter = anchorFighter;
+        } else {
+          if (nmSide === "A") update.fighter_a_id = fighter.id;
+          else update.fighter_b_id = fighter.id;
+          bothFilled = !!(prefillSlot.fighter_a_id || update.fighter_a_id) && !!(prefillSlot.fighter_b_id || update.fighter_b_id);
+        }
+        if (bothFilled) update.status = "proposed";
+        const { error: updErr } = await supabase.from("event_fight_slots").update(update).eq("id", prefillSlot.id);
+        if (updErr) throw updErr;
+        slotId = prefillSlot.id;
+      } else {
+        const { data: newSlot, error: slotErr } = await supabase
+          .from("event_fight_slots")
+          .insert({
+            event_id: eventId,
+            slot_number: nextSlotNumber,
+            fighter_a_id: nmSide === "A" ? fighter.id : null,
+            fighter_b_id: nmSide === "B" ? fighter.id : null,
+            weight_class: (nmWc || fighter.weight_class || null) as any,
+            discipline: nmDisc || null,
+            bout_type: sectionType,
+            status: "open",
+            is_public: false,
+          } as any)
+          .select("id")
+          .single();
+        if (slotErr) throw slotErr;
+        slotId = newSlot?.id ?? null;
+      }
+
+      if (bothFilled && partnerFighter && slotId) {
+        await notifyBoutParties(partnerFighter, fighter, eventId, slotId);
+      }
+
+      // Fire the invite email (best-effort — user is told if it fails)
+      let emailSent = false;
+      if (!fighter.user_id) {
+        const { error: invErr } = await supabase.functions.invoke("send-fighter-invite", {
+          body: { email, name, eventId, fighterProfileId: fighter.id },
+        });
+        emailSent = !invErr;
+        if (invErr) console.warn("send-fighter-invite failed:", invErr);
+      }
+
+      toast({
+        title: fighter.user_id
+          ? "Fighter already on Matchup — added to bout"
+          : emailSent
+          ? "Fighter added and invite sent"
+          : "Fighter added — invite email couldn't be sent yet",
+        description: fighter.user_id
+          ? undefined
+          : emailSent
+          ? `${name} will receive an email to claim their profile.`
+          : "Set up an email domain in Cloud → Emails to enable invite emails. The bout is saved.",
+      });
+      onSuccess();
+      handleClose(false);
+    } catch (err: any) {
+      toast({ title: "Error adding non-member", description: err?.message ?? String(err), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSuggestionSelect = async (a: FighterProfile, b: FighterProfile) => {
     setLoading(true);
     const wc = a.weight_class || b.weight_class;
@@ -555,6 +692,12 @@ export function AddFightModal({
                 "Reserve a slot with parameters but no fighters yet",
                 () => setStep("open")
               )}
+              {optionCard(
+                <UserPlus className="h-5 w-5" />,
+                "Add Non-Member Fighter",
+                "Invite a fighter who isn't on Matchup yet — they'll get an email to claim their profile",
+                () => setStep("nonmember")
+              )}
             </div>
           </>
         )}
@@ -727,6 +870,95 @@ export function AddFightModal({
                   }}
                 >
                   {loading ? "Adding..." : "Add Slot"}
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {step === "nonmember" && (
+          <>
+            <button
+              onClick={() => setStep("menu")}
+              className="flex items-center gap-1 mb-3 text-sm transition-colors"
+              style={{ color: "hsl(var(--muted-foreground))", background: "none", border: "none", cursor: "pointer" }}
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Back
+            </button>
+            <DialogHeader>
+              <DialogTitle style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 20, color: "hsl(var(--foreground))" }}>
+                Add Non-Member Fighter
+              </DialogTitle>
+              <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 4 }}>
+                We'll create an unclaimed profile and email them a link to sign up and claim it.
+              </p>
+            </DialogHeader>
+            <div className="space-y-4 mt-3">
+              <div className="space-y-1">
+                <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Full name *</Label>
+                <Input value={nmName} onChange={(e) => setNmName(e.target.value)} placeholder="e.g. Alex Doe" className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Age *</Label>
+                  <Input type="number" min={16} max={70} value={nmAge} onChange={(e) => setNmAge(e.target.value)} placeholder="e.g. 26" className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }} />
+                </div>
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Email *</Label>
+                  <Input type="email" value={nmEmail} onChange={(e) => setNmEmail(e.target.value)} placeholder="fighter@example.com" className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Weight Class</Label>
+                  <Select value={nmWc || "any"} onValueChange={(v) => setNmWc(v === "any" ? "" : v)}>
+                    <SelectTrigger className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Not sure</SelectItem>
+                      {WEIGHT_CLASSES.map((w) => (<SelectItem key={w} value={w}>{formatEnum(w)}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Discipline</Label>
+                  <Select value={nmDisc || "any"} onValueChange={(v) => setNmDisc(v === "any" ? "" : v)}>
+                    <SelectTrigger className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="any">Not sure</SelectItem>
+                      {DISCIPLINES.map((d) => (<SelectItem key={d} value={d}>{formatEnum(d)}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {scenario !== "oneTBA" && (
+                <div className="space-y-1">
+                  <Label style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>Assign to</Label>
+                  <Select value={nmSide} onValueChange={(v) => setNmSide(v as "A" | "B")}>
+                    <SelectTrigger className="h-9 text-sm" style={{ background: "hsl(var(--muted))" }}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="A">Side A</SelectItem>
+                      <SelectItem value="B">Side B</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="flex items-start gap-2 rounded-md p-3" style={{ background: "rgba(232,160,32,0.08)" }}>
+                <Mail className="h-4 w-4 mt-0.5 shrink-0" style={{ color: "hsl(var(--primary))" }} />
+                <p style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>
+                  An email invite will be sent to <strong style={{ color: "hsl(var(--foreground))" }}>{nmEmail || "the fighter"}</strong>. When they sign up with this email, their profile is claimed automatically.
+                </p>
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end pt-3">
+                <Button variant="ghost" onClick={() => handleClose(false)} style={{ color: "hsl(var(--muted-foreground))" }}>Cancel</Button>
+                <Button
+                  onClick={handleNonMemberSave}
+                  disabled={loading}
+                  style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))", fontWeight: 600, borderRadius: 8 }}
+                >
+                  {loading ? "Saving..." : "Add & Invite"}
                 </Button>
               </div>
             </div>

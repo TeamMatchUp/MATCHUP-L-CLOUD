@@ -40,11 +40,12 @@ function AuthPage() {
     searchParams = new URLSearchParams();
   }
 
-  const [isSignUp, setIsSignUp] = useState(searchParams.get("mode") === "signup");
-  const [email, setEmail] = useState("");
+  const inviteEmail = searchParams.get("invite") ?? "";
+  const [isSignUp, setIsSignUp] = useState(searchParams.get("mode") === "signup" || !!inviteEmail);
+  const [email, setEmail] = useState(inviteEmail);
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
-  const [selectedRoles, setSelectedRoles] = useState<AppRole[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<AppRole[]>(inviteEmail ? ["fighter"] : []);
   const [loading, setLoading] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const { toast } = useToast();
