@@ -277,7 +277,135 @@ export function AddFightModal({
     }
   };
 
-  // ─── Suggestion select handler ───
+  // ─── Non-member invite save ───
+  const handleNonMemberSave = async () => {
+    const name = nmName.trim();
+    const email = nmEmail.trim().toLowerCase();
+    const age = parseInt(nmAge);
+    if (!name || !email || !Number.isFinite(age) || age < 16 || age > 70) {
+      toast({ title: "Fill in name, email and a valid age (16–70)", variant: "destructive" });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast({ title: "Enter a valid email address", variant: "destructive" });
+      return;
+    }
+    if (!user?.id) {
+      toast({ title: "You must be signed in", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+    try {
+      // Reuse an existing profile with this email, else create an unclaimed one
+      const { data: existing } = await supabase
+        .from("fighter_profiles")
+        .select("*")
+        .ilike("email", email)
+        .maybeSingle();
+
+      let fighter: FighterProfile | null = (existing as any) ?? null;
+
+      if (!fighter) {
+        const dobYear = new Date().getFullYear() - age;
+        const wc = (nmWc || prefillSlot?.weight_class || anchorFighter?.weight_class || "unspecified") as WeightClass;
+        const { data: inserted, error: insErr } = await supabase
+          .from("fighter_profiles")
+          .insert({
+            name,
+            email,
+            date_of_birth: `${dobYear}-01-01`,
+            weight_class: wc,
+            discipline: nmDisc || prefillSlot?.discipline || null,
+            country: "GB",
+            visibility: "unlisted",
+            verified: false,
+            created_by_coach_id: user.id,
+            user_id: null,
+          } as any)
+          .select("*")
+          .single();
+        if (insErr) throw insErr;
+        fighter = inserted as any;
+      }
+
+      if (!fighter) throw new Error("Could not create fighter profile");
+
+      // Wire the fighter into the bout slot (same logic as manual)
+      let slotId: string | null = null;
+      let bothFilled = false;
+      let partnerFighter: FighterProfile | null = null;
+
+      if (prefillSlot && mode === "find") {
+        const update: any = {};
+        if (scenario === "oneTBA") {
+          if (!prefillSlot.fighter_a_id) update.fighter_a_id = fighter.id;
+          else if (!prefillSlot.fighter_b_id) update.fighter_b_id = fighter.id;
+          bothFilled = !!(prefillSlot.fighter_a_id || update.fighter_a_id) && !!(prefillSlot.fighter_b_id || update.fighter_b_id);
+          partnerFighter = anchorFighter;
+        } else {
+          if (nmSide === "A") update.fighter_a_id = fighter.id;
+          else update.fighter_b_id = fighter.id;
+          bothFilled = !!(prefillSlot.fighter_a_id || update.fighter_a_id) && !!(prefillSlot.fighter_b_id || update.fighter_b_id);
+        }
+        if (bothFilled) update.status = "proposed";
+        const { error: updErr } = await supabase.from("event_fight_slots").update(update).eq("id", prefillSlot.id);
+        if (updErr) throw updErr;
+        slotId = prefillSlot.id;
+      } else {
+        const { data: newSlot, error: slotErr } = await supabase
+          .from("event_fight_slots")
+          .insert({
+            event_id: eventId,
+            slot_number: nextSlotNumber,
+            fighter_a_id: nmSide === "A" ? fighter.id : null,
+            fighter_b_id: nmSide === "B" ? fighter.id : null,
+            weight_class: (nmWc || fighter.weight_class || null) as any,
+            discipline: nmDisc || null,
+            bout_type: sectionType,
+            status: "open",
+            is_public: false,
+          } as any)
+          .select("id")
+          .single();
+        if (slotErr) throw slotErr;
+        slotId = newSlot?.id ?? null;
+      }
+
+      if (bothFilled && partnerFighter && slotId) {
+        await notifyBoutParties(partnerFighter, fighter, eventId, slotId);
+      }
+
+      // Fire the invite email (best-effort — user is told if it fails)
+      let emailSent = false;
+      if (!fighter.user_id) {
+        const { error: invErr } = await supabase.functions.invoke("send-fighter-invite", {
+          body: { email, name, eventId, fighterProfileId: fighter.id },
+        });
+        emailSent = !invErr;
+        if (invErr) console.warn("send-fighter-invite failed:", invErr);
+      }
+
+      toast({
+        title: fighter.user_id
+          ? "Fighter already on Matchup — added to bout"
+          : emailSent
+          ? "Fighter added and invite sent"
+          : "Fighter added — invite email couldn't be sent yet",
+        description: fighter.user_id
+          ? undefined
+          : emailSent
+          ? `${name} will receive an email to claim their profile.`
+          : "Set up an email domain in Cloud → Emails to enable invite emails. The bout is saved.",
+      });
+      onSuccess();
+      handleClose(false);
+    } catch (err: any) {
+      toast({ title: "Error adding non-member", description: err?.message ?? String(err), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSuggestionSelect = async (a: FighterProfile, b: FighterProfile) => {
     setLoading(true);
     const wc = a.weight_class || b.weight_class;
