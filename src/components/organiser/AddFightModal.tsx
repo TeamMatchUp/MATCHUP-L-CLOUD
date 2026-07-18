@@ -155,6 +155,7 @@ export function AddFightModal({
     setOpenRoundTime("");
     setOpenWeightKg("");
     setOpenWeightLbs("");
+    setNmName(""); setNmAge(""); setNmEmail(""); setNmWc(""); setNmDisc(""); setNmSide("A");
   };
 
   const handleClose = (v: boolean) => {
