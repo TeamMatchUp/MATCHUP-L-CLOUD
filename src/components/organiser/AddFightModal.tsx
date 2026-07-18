@@ -128,6 +128,14 @@ export function AddFightModal({
   const [openWeightKg, setOpenWeightKg] = useState<string>("");
   const [openWeightLbs, setOpenWeightLbs] = useState<string>("");
 
+  // Non-member invite state
+  const [nmName, setNmName] = useState("");
+  const [nmAge, setNmAge] = useState("");
+  const [nmEmail, setNmEmail] = useState("");
+  const [nmWc, setNmWc] = useState("");
+  const [nmDisc, setNmDisc] = useState("");
+  const [nmSide, setNmSide] = useState<"A" | "B">("A");
+
   const scenario = mode === "find" ? detectScenario(prefillSlot) : null;
   const anchorFighter = scenario === "oneTBA" ? getAnchorFighter(prefillSlot) : null;
 
