@@ -64,6 +64,25 @@ function compatibilityLabel(score: number): string {
   return "Viable match";
 }
 
+// Canonical discipline values used by fighter_profiles.discipline
+const CANONICAL_DISCIPLINES = ["Boxing", "Muay Thai", "MMA", "Kickboxing", "Bjj"] as const;
+
+function normaliseDiscipline(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  const cleaned = raw.toLowerCase().replace(/_/g, " ").replace(/[()]/g, " ");
+  // split on separators
+  const tokens = cleaned.split(/&|\/|,|\band\b|\+/g).map((t) => t.trim()).filter(Boolean);
+  const out = new Set<string>();
+  for (const t of tokens) {
+    if (t.includes("muay thai")) out.add("Muay Thai");
+    if (/\bmma\b/.test(t) || t.includes("mixed martial")) out.add("MMA");
+    if (t.includes("boxing") && !t.includes("kick")) out.add("Boxing");
+    if (t.includes("kickboxing") || t.includes("kick boxing")) out.add("Kickboxing");
+    if (/\bbjj\b/.test(t) || t.includes("brazilian jiu")) out.add("Bjj");
+  }
+  return Array.from(out);
+}
+
 export default function Matchmaking() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
