@@ -1,71 +1,40 @@
 ## Scope
-All edits confined to `src/pages/Matchmaking.tsx`. No engine, scoring, Elo, RLS, or schema changes.
 
----
+Only `src/components/landing/HeroSection.tsx` and one new asset. Everything below the hero (ticker, feature showcase, etc.) stays untouched.
 
-## 1. Fix blocking bug — discipline mismatch
+## Asset
 
-**Root cause (confirmed against DB):** the fighter pool query uses `.eq("discipline", event.discipline)`, but `events.discipline` is inconsistently cased and sometimes multi-token (`boxing`, `muay_thai`, `Mixed (Muay Thai & Boxing)`), while `fighter_profiles.discipline` uses canonical single values (`Boxing`, `Muay Thai`, `MMA`, `Kickboxing`, `Bjj`). Exact-string match returns zero fighters → empty pool → engine returns `[]` → UI renders blank with no explanation. Elo is fully populated (73/73) and is not the cause.
+- Upload `user-uploads://Fighters_coaches_and_promoters_are_already_matching._Don_t_get_left_off_the_card..png` via `lovable-assets create` → `src/assets/hero-horizon.png.asset.json`. Import the pointer JSON in `HeroSection.tsx`.
 
-**Fix:**
-- Add a `normaliseDiscipline(raw: string): string[]` helper that:
-  - Lowercases, replaces `_` with space, strips punctuation.
-  - Maps known aliases (`bjj`→`Bjj`, `mma`→`MMA`, `muay thai`→`Muay Thai`, `boxing`→`Boxing`, `kickboxing`→`Kickboxing`).
-  - Splits combined values on `&`, `/`, `,`, or `and` (so `Mixed (Muay Thai & Boxing)` → `["Muay Thai", "Boxing"]`).
-  - Returns a de-duplicated array of canonical fighter-profile discipline values.
-- Change the pool query from `.eq("discipline", event.discipline)` to `.in("discipline", normalised)` when the array is non-empty; when the array is empty (unrecognised discipline) fetch all fighters and rely on the diagnostic banner (below).
-- Add a diagnostic banner shown when `fighters.length === 0` after the query resolves (not loading):
-  > "No fighters match this event's discipline (`{event.discipline}`). Showing all fighters as a fallback so you can still build the card."
-  Combined with a fallback query in that branch that drops the discipline filter entirely, so the walkthrough always has something to work with.
+## HeroSection.tsx changes
 
-## 2. Step 1 copy
-Change the Step 1 question string inside the `Walkthrough` component from "What kind of card are you building?" to **"Select the type of fight you want to see"**. Preset options and blurbs unchanged.
+1. **Background**: Wrap the `<section>` with an inline style that layers the horizon PNG at `background: url(...) center bottom / cover no-repeat, #000`. The image already fades from black at top → navy → amber at bottom, so no extra gradient needed. Scope strictly to the hero `<section>` — nothing bleeds into the ticker below.
 
-## 3. Step 2 weight dropdown
-Source options from the full `WEIGHT_CLASS_LABELS` map already defined at the top of the file, not from `availableWeights` derived from the (possibly empty) pool. Order: `"Any weight class"` first, then every entry in `WEIGHT_CLASS_LABELS` in its declared order. Apply the same change to the Refine panel weight dropdown so both agree.
+2. **Lockup markup**: Replace the current flex column (icon stacked over stacked headline with comma + `text-gold-glow`) with a single flex row:
+   ```
+   <div class="flex items-center justify-center gap-[0.35em]">
+     <span>MATCH EASY</span>
+     <AppIcon />
+     <span>FIGHT HARD</span>
+   </div>
+   ```
+   - Both words: same `font-heading`, weight 800, `text-foreground` (white), `letterSpacing 0.01em`, `fontSize: clamp(2.25rem, 6vw, 4.75rem)`, `lineHeight: 1`. No comma. No `text-gold-glow` class on "FIGHT HARD".
+   - Shield: sized to cap-height. Use `h-[0.82em]` (cap-height ≈ 70–75% of font-size for Bebas-style display faces; 0.82em visually matches the reference at the target scale) with `w-auto`, and `alignSelf: center` inside an `items-center` row. Because both text spans have `line-height: 1`, centering on line-box == centering on cap-height, eliminating the sag.
+   - Equal spacing: single `gap-[0.35em]` on the flex row applies identically to both sides of the shield.
 
-## 4. Experience tier — no change
-Confirmed wired to real data (see investigation above). No edits.
+3. **Mobile**: On very narrow widths the row could overflow. Keep it single-row down to ~360px by relying on the `clamp()` min of 2.25rem and `gap-[0.25em] sm:gap-[0.35em]`. Do NOT stack vertically on mobile — the user asked for a single horizontal lockup. Verify at 375px viewport that the row fits (2.25rem × ~10 chars per word + shield + gaps ≈ fits within container padding).
 
-## 5. Region → Nationality
-- Remove `regionFilter` state, the Step 3 "Region" text `Input`, and the Refine panel "Region" field.
-- Add `nationalityFilter` state (default `"any"`).
-- New filter uses `SearchableCountrySelect` (already exists at `src/components/SearchableCountrySelect.tsx`, includes flag icons and search) with `includeAll` so "All Countries" is the "Any" option.
-- Update the pool filter (`useMemo` at line 174) to filter on `f.country === nationalityFilter` when not `"any"`. `country` is present on all 73 fighter_profiles, so the field is safe.
-- Add both Step 3 and Refine panel instances.
+4. **Unchanged**: subhead paragraph, CTA button block, auth-conditional links.
 
-## 6. Remove "Available only"
-Delete `availableOnly` state, the Step 3 toggle, the Refine panel "Availability" field, and its use inside the pool `useMemo`. The `available` column on fighter_profiles is untouched — only the UI filter is removed.
+## ASCII target
 
-## 7. Walkthrough styling — match AuthModal
-- Convert the inline `Walkthrough` render (currently inside `<main>`) to render inside a shadcn `<Dialog>` whose `open` is `walkthroughActive`. Use the exact `DialogContent` styling from `AuthModal.tsx`:
-  ```
-  className="p-0 border-0 max-w-md overflow-hidden"
-  style={{
-    background: "hsl(var(--card))",
-    boxShadow: "var(--shadow-modal)",
-    backdropFilter: "blur(20px) saturate(160%)",
-    WebkitBackdropFilter: "blur(20px) saturate(160%)",
-  }}
-  ```
-  (Radix's `DialogOverlay` already provides the frosted/blurred backdrop treatment used by the sign-up flow.)
-- Add the segmented top progress indicator copied from `AuthModal`'s `SIGNUP_STEPS` block:
-  - Steps array: `["Fight type", "Weight", "Filters"]`.
-  - Numbered pills that turn primary-gold when done/active, with checkmark once done.
-  - Thin `h-1` progress bar underneath, fills to `((step + 1) / 3) * 100%`.
-  - Clicking a completed pill jumps back to that step (same pattern as sign-up).
-- Keep the underlying step content (preset picker, weight dropdown, tier + nationality) as-is; only the wrapper and header change.
-- When the user finishes step 3 (or clicks "Start over" from the results view), close the dialog by setting `walkStep = 3`. Results/refine UI stays where it is (below the header, non-modal) once the walkthrough is done.
+```
+[  MATCH EASY  ⛨  FIGHT HARD  ]
+   Fighters, coaches and promoters ...
+        [ Create free account ]
+```
+Backdrop: dark navy top → amber horizon at bottom edge of hero, hard cutoff at section end.
 
----
+## Out of scope
 
-## Verification
-- Open matchmaking for a `boxing`, `muay_thai`, and `Mixed (…)` event; confirm fighters appear in the pool and suggestions render with zero filters applied.
-- Unrecognised discipline → banner shown + fallback pool used.
-- Weight dropdown lists all 14 classes.
-- Nationality dropdown lists countries with flags; selecting one filters pool.
-- Availability toggle absent from both Step 3 and Refine.
-- Walkthrough opens as a centered modal with frosted backdrop and 3-step segmented progress bar visually matching the sign-up modal.
-
-## Out of scope (unchanged)
-Engine scoring, safety gate thresholds, Elo recompute, RLS, schema, tier logic, preset weights.
+Header, ticker, FeatureShowcase, and everything below the hero remain untouched.
