@@ -129,7 +129,7 @@ export function DashboardTutorial({
   // Keep rect fresh on resize / scroll.
   useEffect(() => {
     if (!currentStep) return;
-    const update = () => setRect(getRect(currentStep.key));
+    const update = () => setRect(getRect(currentStep.anchor));
     window.addEventListener("resize", update);
     window.addEventListener("scroll", update, true);
     return () => {
