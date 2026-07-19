@@ -23,7 +23,8 @@ export function HeroSection() {
         <div className="mx-auto max-w-6xl flex flex-col items-center text-center">
           {/* Horizontal lockup: MATCH EASY — shield — FIGHT HARD */}
           <h1
-            className="font-heading flex items-center justify-center gap-[0.02em] sm:gap-[0.03em] text-foreground"
+            className="font-heading flex items-center justify-center gap-[0.005em] text-foreground"
+
             style={{
               fontWeight: 800,
               letterSpacing: "0.01em",
