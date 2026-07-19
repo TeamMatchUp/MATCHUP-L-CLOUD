@@ -413,8 +413,17 @@ function OrganiserLanding() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { track } = useAnalytics();
+  const { toast } = useToast();
+  const [dob, setDob] = useState<Date>();
 
   const go = async (path: string) => {
+    if (!dob) { toast({ title: "Date of birth is required", variant: "destructive" }); return; }
+    try {
+      await supabase.rpc("record_date_of_birth", { _dob: format(dob, "yyyy-MM-dd") });
+    } catch (e: any) {
+      toast({ title: "Could not save date of birth", description: e?.message, variant: "destructive" });
+      return;
+    }
     await markOnboardingComplete(queryClient);
     void track("onboarding_completed", { role: "organiser" });
     navigate(path, { replace: true });
@@ -429,9 +438,26 @@ function OrganiserLanding() {
         <p className="text-sm text-muted-foreground mt-1">Let's get your first event on the calendar.</p>
       </div>
 
+      <div className="space-y-2">
+        <Label>Date of birth *</Label>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !dob && "text-muted-foreground")}>
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {dob ? format(dob, "PPP") : "Select date"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start" side="bottom">
+            <DOBPicker value={dob} onChange={setDob} />
+          </PopoverContent>
+        </Popover>
+        {!dob && <p className="text-xs text-muted-foreground">Required so we can apply the right privacy protections.</p>}
+      </div>
+
       <button
         onClick={() => go("/organiser/create-event")}
-        className="group w-full rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-5 text-left flex items-start gap-3"
+        disabled={!dob}
+        className="group w-full rounded-lg border border-border bg-card hover:border-primary/50 transition-all p-5 text-left flex items-start gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <div className="h-10 w-10 rounded-md bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors shrink-0">
           <Plus className="h-5 w-5 text-primary" />
@@ -443,7 +469,7 @@ function OrganiserLanding() {
       </button>
 
       <div className="pt-2">
-        <Button variant="ghost" className="w-full" onClick={() => go(ROLE_PATHS.organiser)}>
+        <Button variant="ghost" className="w-full" onClick={() => go(ROLE_PATHS.organiser)} disabled={!dob}>
           Skip for now <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
