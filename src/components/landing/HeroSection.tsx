@@ -3,7 +3,7 @@ import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppIcon } from "@/components/AppIcon";
 import { Link } from "react-router-dom";
-import heroHorizon from "@/assets/hero-horizon.png.asset.json";
+import heroHorizon from "@/assets/hero-horizon-v2.png.asset.json";
 
 export function HeroSection() {
   const { open } = useAuthModal();
@@ -11,7 +11,7 @@ export function HeroSection() {
 
   return (
     <section
-      className="relative min-h-[70vh] flex items-center overflow-hidden py-16 bg-black"
+      className="relative min-h-[calc(100svh-4rem)] flex items-center overflow-hidden py-10 bg-black"
       style={{
         backgroundImage: `url(${heroHorizon.url})`,
         backgroundSize: "cover",
