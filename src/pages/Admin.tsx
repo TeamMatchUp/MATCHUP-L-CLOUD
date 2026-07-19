@@ -562,6 +562,13 @@ export default function Admin() {
 
         <AdminSummary />
 
+        <div>
+          <h2 className="font-heading text-lg text-foreground mb-3 flex items-center gap-2">
+            <Inbox className="h-5 w-5 text-primary" /> Review Queue
+          </h2>
+          <ReviewQueue />
+        </div>
+
         <Tabs defaultValue="gym-claims">
           <TabsList>
             <TabsTrigger value="gym-claims"><Building2 className="h-4 w-4 mr-1" /> Gym Claims</TabsTrigger>
