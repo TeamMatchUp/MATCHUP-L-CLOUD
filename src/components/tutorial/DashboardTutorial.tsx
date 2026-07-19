@@ -118,11 +118,11 @@ export function DashboardTutorial({
   // sidebar-anchored steps so the target is on screen.
   useEffect(() => {
     if (!currentStep) return;
-    if (isMobile && onOpenMobileSidebar && (currentStep.key === "explore" || currentStep.key === "my-content")) {
+    if (isMobile && onOpenMobileSidebar && (currentStep.anchor === "explore" || currentStep.anchor === "my-content")) {
       onOpenMobileSidebar();
     }
     // small delay so the drawer transition can complete
-    const t = setTimeout(() => setRect(getRect(currentStep.key)), 220);
+    const t = setTimeout(() => setRect(getRect(currentStep.anchor)), 220);
     return () => clearTimeout(t);
   }, [currentStep, isMobile, onOpenMobileSidebar]);
 
