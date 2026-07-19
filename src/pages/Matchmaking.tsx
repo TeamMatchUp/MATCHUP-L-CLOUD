@@ -519,37 +519,83 @@ interface WalkthroughProps {
   applyPreset: (k: string) => void;
   weightFilter: string;
   setWeightFilter: (v: string) => void;
-  availableWeights: string[];
   expTier: string;
   setExpTier: (v: string) => void;
-  regionFilter: string;
-  setRegionFilter: (v: string) => void;
-  availableOnly: boolean;
-  setAvailableOnly: (v: boolean) => void;
+  nationalityFilter: string;
+  setNationalityFilter: (v: string) => void;
 }
 
+const WALK_STEPS = ["Fight type", "Weight", "Filters"] as const;
+
 function Walkthrough(p: WalkthroughProps) {
-  const totalSteps = 3;
+  const totalSteps = WALK_STEPS.length;
   const stepTitles = [
-    "What kind of card are you building?",
+    "Select the type of fight you want to see",
     "Any weight class preference?",
     "Anything else to narrow it down?",
   ];
 
   return (
-    <div className="rounded-lg bg-card p-6 sm:p-8" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3)" }}>
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">Step {p.step + 1} of {totalSteps}</p>
+    <div className="p-6 sm:p-8">
+      <h2 className="font-heading text-2xl text-foreground mb-4">Build your card</h2>
+
+      {/* Progress bar (matches AuthModal signup) */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          {WALK_STEPS.map((label, i) => {
+            const done = i < p.step;
+            const active = i === p.step;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => i <= p.step && p.setStep(i)}
+                className="flex items-center gap-2"
+                style={{ cursor: i <= p.step ? "pointer" : "default" }}
+              >
+                <span
+                  className="flex items-center justify-center rounded-full text-xs font-semibold"
+                  style={{
+                    width: 24,
+                    height: 24,
+                    background: done || active ? "hsl(var(--primary))" : "rgba(255,255,255,0.06)",
+                    color: done || active ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                  }}
+                >
+                  {done ? <Check className="h-3 w-3" /> : i + 1}
+                </span>
+                <span
+                  className="text-xs font-medium"
+                  style={{ color: active ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))" }}
+                >
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="h-1 rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full transition-all duration-300"
+            style={{
+              width: `${((p.step + 1) / totalSteps) * 100}%`,
+              background: "hsl(var(--primary))",
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-heading text-lg text-foreground">{stepTitles[p.step]}</h3>
         {p.step > 0 && (
           <Button variant="ghost" size="sm" onClick={() => p.setStep(totalSteps)} className="text-muted-foreground">
             Skip
           </Button>
         )}
       </div>
-      <h2 className="font-heading text-2xl text-foreground mb-6">{stepTitles[p.step]}</h2>
 
       {p.step === 0 && (
-        <div className="space-y-2">
+        <div className="space-y-2 max-h-[50vh] overflow-y-auto">
           {Object.entries(PRESETS).map(([key, preset]) => (
             <button
               key={key}
@@ -572,8 +618,8 @@ function Walkthrough(p: WalkthroughProps) {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="any">Any weight class</SelectItem>
-                {p.availableWeights.map((w) => (
-                  <SelectItem key={w} value={w}>{WEIGHT_CLASS_LABELS[w] || w}</SelectItem>
+                {Object.entries(WEIGHT_CLASS_LABELS).map(([k, label]) => (
+                  <SelectItem key={k} value={k}>{label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -594,22 +640,12 @@ function Walkthrough(p: WalkthroughProps) {
               </SelectContent>
             </Select>
           </FilterField>
-          <FilterField label="Region">
-            <Input
-              placeholder="e.g. London"
-              value={p.regionFilter}
-              onChange={(e) => p.setRegionFilter(e.target.value)}
+          <FilterField label="Nationality">
+            <SearchableCountrySelect
+              value={p.nationalityFilter}
+              onValueChange={p.setNationalityFilter}
+              includeAll
             />
-          </FilterField>
-          <FilterField label="Availability">
-            <Button
-              variant={p.availableOnly ? "default" : "outline"}
-              size="sm"
-              onClick={() => p.setAvailableOnly(!p.availableOnly)}
-              className="w-full justify-start"
-            >
-              {p.availableOnly ? "Available fighters only" : "Include unavailable"}
-            </Button>
           </FilterField>
         </div>
       )}
