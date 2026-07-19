@@ -57,8 +57,8 @@ export function HeroSection() {
             }}
           >
             <span>MATCH EASY</span>
-            <span className="inline-flex shrink-0" style={{ height: "4em" }}>
-              <AppIcon className="h-full w-auto" alt="MatchUp shield" />
+            <span className="inline-flex items-center leading-none shrink-0 -mx-[0.15em]" style={{ height: "4em" }}>
+              <AppIcon className="h-full w-auto block" alt="MatchUp shield" />
             </span>
             <span>FIGHT HARD</span>
           </h1>
@@ -75,15 +75,15 @@ export function HeroSection() {
 
           <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 w-full sm:w-auto">
             {user ? (
-              <Button asChild variant="hero" size="lg" className="rounded-full px-10 min-h-[52px] text-base">
+              <Button asChild variant="heroCta" size="lg" className="rounded-full px-10 min-h-[52px] text-base">
                 <Link to="/explore">Explore MatchUp</Link>
               </Button>
             ) : (
               <>
                 <Button
-                  variant="hero"
+                  variant="heroCta"
                   size="lg"
-                  className="rounded-full px-10 min-h-[52px] text-base gold-glow"
+                  className="rounded-full px-10 min-h-[52px] text-base"
                   onClick={() => open("signup")}
                 >
                   Create free account
