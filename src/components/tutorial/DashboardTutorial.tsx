@@ -91,9 +91,8 @@ export function DashboardTutorial({
     // Give the sidebar / DOM a beat to render before probing.
     const timeout = setTimeout(() => {
       if (cancelled) return;
-      const steps: Step[] = ORDER
-        .filter((k) => getRect(k) != null)
-        .map((k) => ({ key: k, copy: STEP_COPY[k] }));
+      const allSteps = role === "fighter" ? [...BASE_STEPS, ...FIGHTER_EXTRA_STEPS] : BASE_STEPS;
+      const steps: Step[] = allSteps.filter((s) => getRect(s.anchor) != null);
 
       if (steps.length === 0) {
         // No anchors present — persist dismissal so we don't loop next time.
