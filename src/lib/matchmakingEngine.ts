@@ -52,12 +52,17 @@ function getStyleContrast(a: string | null, b: string | null): number {
 }
 
 // ── Experience tiers ─────────────────────────────────────────────────────
-function getExpTier(totalPro: number): number {
-  if (totalPro === 0) return 0;
-  if (totalPro <= 3) return 1;
-  if (totalPro <= 9) return 2;
+// Amateur fights count toward tier progression at the same discount used by
+// the Elo engine's level_weight (0.55), keeping tier and Elo conceptually aligned.
+const AMATEUR_TIER_WEIGHT = 0.55;
+
+function getExpTier(weightedFights: number): number {
+  if (weightedFights === 0) return 0;
+  if (weightedFights <= 3) return 1;
+  if (weightedFights <= 9) return 2;
   return 3;
 }
+
 
 // ── Types ────────────────────────────────────────────────────────────────
 export interface FighterWithStats extends FighterProfile {
