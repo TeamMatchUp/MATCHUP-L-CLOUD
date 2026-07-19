@@ -335,23 +335,32 @@ export default function Matchmaking() {
             </div>
           )}
 
-          {walkthroughActive ? (
-            <Walkthrough
-              step={walkStep}
-              setStep={setWalkStep}
-              presetKey={presetKey}
-              applyPreset={applyPreset}
-              weightFilter={weightFilter}
-              setWeightFilter={setWeightFilter}
-              availableWeights={availableWeights}
-              expTier={expTier}
-              setExpTier={setExpTier}
-              regionFilter={regionFilter}
-              setRegionFilter={setRegionFilter}
-              availableOnly={availableOnly}
-              setAvailableOnly={setAvailableOnly}
-            />
-          ) : (
+          <Dialog open={walkthroughActive} onOpenChange={(o) => { if (!o) setWalkStep(3); }}>
+            <DialogContent
+              className="p-0 border-0 max-w-md overflow-hidden"
+              style={{
+                background: "hsl(var(--card))",
+                boxShadow: "var(--shadow-modal)",
+                backdropFilter: "blur(20px) saturate(160%)",
+                WebkitBackdropFilter: "blur(20px) saturate(160%)",
+              }}
+            >
+              <Walkthrough
+                step={walkStep}
+                setStep={setWalkStep}
+                presetKey={presetKey}
+                applyPreset={applyPreset}
+                weightFilter={weightFilter}
+                setWeightFilter={setWeightFilter}
+                expTier={expTier}
+                setExpTier={setExpTier}
+                nationalityFilter={nationalityFilter}
+                setNationalityFilter={setNationalityFilter}
+              />
+            </DialogContent>
+          </Dialog>
+
+          {!walkthroughActive && (
             <>
               {/* Header row: preset badge + start over + refine toggle */}
               <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
