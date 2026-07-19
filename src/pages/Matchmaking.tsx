@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 import { ArrowLeft, ArrowRight, Sparkles, Check, X, Search, AlertTriangle, Swords, ChevronDown, ChevronUp, SlidersHorizontal, ExternalLink, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -63,6 +64,25 @@ function compatibilityLabel(score: number): string {
   return "Viable match";
 }
 
+// Canonical discipline values used by fighter_profiles.discipline
+const CANONICAL_DISCIPLINES = ["Boxing", "Muay Thai", "MMA", "Kickboxing", "Bjj"] as const;
+
+function normaliseDiscipline(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  const cleaned = raw.toLowerCase().replace(/_/g, " ").replace(/[()]/g, " ");
+  // split on separators
+  const tokens = cleaned.split(/&|\/|,|\band\b|\+/g).map((t) => t.trim()).filter(Boolean);
+  const out = new Set<string>();
+  for (const t of tokens) {
+    if (t.includes("muay thai")) out.add("Muay Thai");
+    if (/\bmma\b/.test(t) || t.includes("mixed martial")) out.add("MMA");
+    if (t.includes("boxing") && !t.includes("kick")) out.add("Boxing");
+    if (t.includes("kickboxing") || t.includes("kick boxing")) out.add("Kickboxing");
+    if (/\bbjj\b/.test(t) || t.includes("brazilian jiu")) out.add("Bjj");
+  }
+  return Array.from(out);
+}
+
 export default function Matchmaking() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
@@ -73,8 +93,7 @@ export default function Matchmaking() {
   const [presetKey, setPresetKey] = useState("action_night");
   const [weightFilter, setWeightFilter] = useState<string>("any");
   const [expTier, setExpTier] = useState<string>("any");
-  const [regionFilter, setRegionFilter] = useState<string>("");
-  const [availableOnly, setAvailableOnly] = useState(true);
+  const [nationalityFilter, setNationalityFilter] = useState<string>("all");
 
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [confirmedFighterIds, setConfirmedFighterIds] = useState<Set<string>>(new Set());
@@ -142,11 +161,14 @@ export default function Matchmaking() {
     enabled: !!eventId,
   });
 
+  const disciplineTokens = useMemo(() => normaliseDiscipline(event?.discipline), [event?.discipline]);
+  const disciplineUnrecognised = !!event?.discipline && disciplineTokens.length === 0;
+
   const { data: fighters = [], isLoading: loadingFighters } = useQuery({
-    queryKey: ["matchmaking-pool", eventId, event?.discipline],
+    queryKey: ["matchmaking-pool", eventId, disciplineTokens.join("|")],
     queryFn: async () => {
       let query = supabase.from("fighter_profiles").select("*");
-      if (event?.discipline) query = query.eq("discipline", event.discipline);
+      if (disciplineTokens.length > 0) query = query.in("discipline", disciplineTokens);
       const { data: rawFighters, error } = await query;
       if (error) throw error;
       if (!rawFighters) return [];
@@ -173,13 +195,12 @@ export default function Matchmaking() {
 
   const pool = useMemo(() => {
     return fighters.filter((f) => {
-      if (availableOnly && !f.available) return false;
       if (weightFilter !== "any" && f.weight_class !== weightFilter) return false;
       if (expTier !== "any" && String(f.expTier) !== expTier) return false;
-      if (regionFilter.trim() && !(f.region || "").toLowerCase().includes(regionFilter.trim().toLowerCase())) return false;
+      if (nationalityFilter !== "all" && (f as { country?: string }).country !== nationalityFilter) return false;
       return true;
     });
-  }, [fighters, availableOnly, weightFilter, expTier, regionFilter]);
+  }, [fighters, weightFilter, expTier, nationalityFilter]);
 
   const suggestions = useMemo(() => {
     if (pool.length < 2) return [];
@@ -202,11 +223,6 @@ export default function Matchmaking() {
     return list;
   }, [suggestions, dismissed, filterText, confirmedFighterIds]);
 
-  const availableWeights = useMemo(() => {
-    const set = new Set<string>();
-    fighters.forEach((f) => { if (f.weight_class) set.add(f.weight_class); });
-    return Array.from(set);
-  }, [fighters]);
 
   const handleConfirmWithBoutType = async (boutType: string) => {
     const match = boutTypeMatch;
@@ -314,23 +330,32 @@ export default function Matchmaking() {
             </div>
           )}
 
-          {walkthroughActive ? (
-            <Walkthrough
-              step={walkStep}
-              setStep={setWalkStep}
-              presetKey={presetKey}
-              applyPreset={applyPreset}
-              weightFilter={weightFilter}
-              setWeightFilter={setWeightFilter}
-              availableWeights={availableWeights}
-              expTier={expTier}
-              setExpTier={setExpTier}
-              regionFilter={regionFilter}
-              setRegionFilter={setRegionFilter}
-              availableOnly={availableOnly}
-              setAvailableOnly={setAvailableOnly}
-            />
-          ) : (
+          <Dialog open={walkthroughActive} onOpenChange={(o) => { if (!o) setWalkStep(3); }}>
+            <DialogContent
+              className="p-0 border-0 max-w-md overflow-hidden"
+              style={{
+                background: "hsl(var(--card))",
+                boxShadow: "var(--shadow-modal)",
+                backdropFilter: "blur(20px) saturate(160%)",
+                WebkitBackdropFilter: "blur(20px) saturate(160%)",
+              }}
+            >
+              <Walkthrough
+                step={walkStep}
+                setStep={setWalkStep}
+                presetKey={presetKey}
+                applyPreset={applyPreset}
+                weightFilter={weightFilter}
+                setWeightFilter={setWeightFilter}
+                expTier={expTier}
+                setExpTier={setExpTier}
+                nationalityFilter={nationalityFilter}
+                setNationalityFilter={setNationalityFilter}
+              />
+            </DialogContent>
+          </Dialog>
+
+          {!walkthroughActive && (
             <>
               {/* Header row: preset badge + start over + refine toggle */}
               <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
@@ -384,9 +409,9 @@ export default function Matchmaking() {
                       <Select value={weightFilter} onValueChange={setWeightFilter}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="any">Any weight</SelectItem>
-                          {availableWeights.map((w) => (
-                            <SelectItem key={w} value={w}>{WEIGHT_CLASS_LABELS[w] || w}</SelectItem>
+                          <SelectItem value="any">Any weight class</SelectItem>
+                          {Object.entries(WEIGHT_CLASS_LABELS).map(([k, label]) => (
+                            <SelectItem key={k} value={k}>{label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -401,24 +426,26 @@ export default function Matchmaking() {
                         </SelectContent>
                       </Select>
                     </FilterField>
-                    <FilterField label="Region">
-                      <Input
-                        placeholder="e.g. London"
-                        value={regionFilter}
-                        onChange={(e) => setRegionFilter(e.target.value)}
+                    <FilterField label="Nationality">
+                      <SearchableCountrySelect
+                        value={nationalityFilter}
+                        onValueChange={setNationalityFilter}
+                        includeAll
                       />
                     </FilterField>
-                    <FilterField label="Availability">
-                      <Button
-                        variant={availableOnly ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setAvailableOnly((v) => !v)}
-                        className="w-full justify-start"
-                      >
-                        {availableOnly ? "Available only" : "All fighters"}
-                      </Button>
-                    </FilterField>
                   </div>
+                </div>
+              )}
+
+              {!loadingFighters && fighters.length === 0 && (
+                <div className="rounded-lg bg-card p-4 mb-4 flex items-start gap-3" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
+                  <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+                  <p className="text-xs text-muted-foreground">
+                    No fighters match this event's discipline
+                    {event?.discipline ? <> (<span className="text-foreground">{event.discipline}</span>)</> : null}
+                    {disciplineUnrecognised ? " — the discipline value wasn't recognised." : "."}
+                    {" "}Ask fighters to add their discipline, or open Refine to widen filters.
+                  </p>
                 </div>
               )}
 
@@ -487,37 +514,83 @@ interface WalkthroughProps {
   applyPreset: (k: string) => void;
   weightFilter: string;
   setWeightFilter: (v: string) => void;
-  availableWeights: string[];
   expTier: string;
   setExpTier: (v: string) => void;
-  regionFilter: string;
-  setRegionFilter: (v: string) => void;
-  availableOnly: boolean;
-  setAvailableOnly: (v: boolean) => void;
+  nationalityFilter: string;
+  setNationalityFilter: (v: string) => void;
 }
 
+const WALK_STEPS = ["Fight type", "Weight", "Filters"] as const;
+
 function Walkthrough(p: WalkthroughProps) {
-  const totalSteps = 3;
+  const totalSteps = WALK_STEPS.length;
   const stepTitles = [
-    "What kind of card are you building?",
+    "Select the type of fight you want to see",
     "Any weight class preference?",
     "Anything else to narrow it down?",
   ];
 
   return (
-    <div className="rounded-lg bg-card p-6 sm:p-8" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3)" }}>
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">Step {p.step + 1} of {totalSteps}</p>
+    <div className="p-6 sm:p-8">
+      <h2 className="font-heading text-2xl text-foreground mb-4">Build your card</h2>
+
+      {/* Progress bar (matches AuthModal signup) */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-2">
+          {WALK_STEPS.map((label, i) => {
+            const done = i < p.step;
+            const active = i === p.step;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => i <= p.step && p.setStep(i)}
+                className="flex items-center gap-2"
+                style={{ cursor: i <= p.step ? "pointer" : "default" }}
+              >
+                <span
+                  className="flex items-center justify-center rounded-full text-xs font-semibold"
+                  style={{
+                    width: 24,
+                    height: 24,
+                    background: done || active ? "hsl(var(--primary))" : "rgba(255,255,255,0.06)",
+                    color: done || active ? "hsl(var(--primary-foreground))" : "hsl(var(--muted-foreground))",
+                  }}
+                >
+                  {done ? <Check className="h-3 w-3" /> : i + 1}
+                </span>
+                <span
+                  className="text-xs font-medium"
+                  style={{ color: active ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))" }}
+                >
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="h-1 rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full transition-all duration-300"
+            style={{
+              width: `${((p.step + 1) / totalSteps) * 100}%`,
+              background: "hsl(var(--primary))",
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-heading text-lg text-foreground">{stepTitles[p.step]}</h3>
         {p.step > 0 && (
           <Button variant="ghost" size="sm" onClick={() => p.setStep(totalSteps)} className="text-muted-foreground">
             Skip
           </Button>
         )}
       </div>
-      <h2 className="font-heading text-2xl text-foreground mb-6">{stepTitles[p.step]}</h2>
 
       {p.step === 0 && (
-        <div className="space-y-2">
+        <div className="space-y-2 max-h-[50vh] overflow-y-auto">
           {Object.entries(PRESETS).map(([key, preset]) => (
             <button
               key={key}
@@ -540,8 +613,8 @@ function Walkthrough(p: WalkthroughProps) {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="any">Any weight class</SelectItem>
-                {p.availableWeights.map((w) => (
-                  <SelectItem key={w} value={w}>{WEIGHT_CLASS_LABELS[w] || w}</SelectItem>
+                {Object.entries(WEIGHT_CLASS_LABELS).map(([k, label]) => (
+                  <SelectItem key={k} value={k}>{label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -562,22 +635,12 @@ function Walkthrough(p: WalkthroughProps) {
               </SelectContent>
             </Select>
           </FilterField>
-          <FilterField label="Region">
-            <Input
-              placeholder="e.g. London"
-              value={p.regionFilter}
-              onChange={(e) => p.setRegionFilter(e.target.value)}
+          <FilterField label="Nationality">
+            <SearchableCountrySelect
+              value={p.nationalityFilter}
+              onValueChange={p.setNationalityFilter}
+              includeAll
             />
-          </FilterField>
-          <FilterField label="Availability">
-            <Button
-              variant={p.availableOnly ? "default" : "outline"}
-              size="sm"
-              onClick={() => p.setAvailableOnly(!p.availableOnly)}
-              className="w-full justify-start"
-            >
-              {p.availableOnly ? "Available fighters only" : "Include unavailable"}
-            </Button>
           </FilterField>
         </div>
       )}
