@@ -83,7 +83,10 @@ export function DashboardGyms({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Gym created" });
+      toast({
+        title: "Submitted for review",
+        description: "Your gym has been submitted and is pending review. We'll notify you once it's live.",
+      });
       setShowCreateGym(false);
       setNewGymName("");
       setNewGymLocation("");
