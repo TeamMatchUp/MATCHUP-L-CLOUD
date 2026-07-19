@@ -139,6 +139,13 @@ function FighterForm() {
 
     let fighterId = existing?.id;
 
+    // Mirror DOB to profiles for cross-role age gates
+    try {
+      await supabase.rpc("record_date_of_birth", { _dob: format(dateOfBirth, "yyyy-MM-dd") });
+    } catch (e) {
+      console.warn("record_date_of_birth failed", e);
+    }
+
     if (!existing) {
       // First creation only: initialise the appropriate record block at 0-0-0.
       // Existing rows are NEVER overwritten by the level toggle.
