@@ -161,11 +161,14 @@ export default function Matchmaking() {
     enabled: !!eventId,
   });
 
+  const disciplineTokens = useMemo(() => normaliseDiscipline(event?.discipline), [event?.discipline]);
+  const disciplineUnrecognised = !!event?.discipline && disciplineTokens.length === 0;
+
   const { data: fighters = [], isLoading: loadingFighters } = useQuery({
-    queryKey: ["matchmaking-pool", eventId, event?.discipline],
+    queryKey: ["matchmaking-pool", eventId, disciplineTokens.join("|")],
     queryFn: async () => {
       let query = supabase.from("fighter_profiles").select("*");
-      if (event?.discipline) query = query.eq("discipline", event.discipline);
+      if (disciplineTokens.length > 0) query = query.in("discipline", disciplineTokens);
       const { data: rawFighters, error } = await query;
       if (error) throw error;
       if (!rawFighters) return [];
@@ -192,13 +195,12 @@ export default function Matchmaking() {
 
   const pool = useMemo(() => {
     return fighters.filter((f) => {
-      if (availableOnly && !f.available) return false;
       if (weightFilter !== "any" && f.weight_class !== weightFilter) return false;
       if (expTier !== "any" && String(f.expTier) !== expTier) return false;
-      if (regionFilter.trim() && !(f.region || "").toLowerCase().includes(regionFilter.trim().toLowerCase())) return false;
+      if (nationalityFilter !== "all" && (f as { country?: string }).country !== nationalityFilter) return false;
       return true;
     });
-  }, [fighters, availableOnly, weightFilter, expTier, regionFilter]);
+  }, [fighters, weightFilter, expTier, nationalityFilter]);
 
   const suggestions = useMemo(() => {
     if (pool.length < 2) return [];
