@@ -24,12 +24,14 @@ function AdminSummary() {
   const { data } = useQuery({
     queryKey: ["admin-gym-summary"],
     queryFn: async () => {
-      const [total, unclaimed, claimed, pending, eventClaims] = await Promise.all([
+      const [total, unclaimed, claimed, pending, eventClaims, pendingGyms, pendingEvents] = await Promise.all([
         supabase.from("gyms").select("id", { count: "exact", head: true }),
         supabase.from("gyms").select("id", { count: "exact", head: true }).eq("claimed", false),
         supabase.from("gyms").select("id", { count: "exact", head: true }).eq("claimed", true),
         supabase.from("gym_claims").select("id", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("event_claims" as any).select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("gyms").select("id", { count: "exact", head: true }).eq("review_status" as any, "pending"),
+        supabase.from("events").select("id", { count: "exact", head: true }).eq("review_status" as any, "pending"),
       ]);
       return {
         total: total.count ?? 0,
@@ -37,14 +39,16 @@ function AdminSummary() {
         claimed: claimed.count ?? 0,
         pending: pending.count ?? 0,
         eventClaims: (eventClaims as any).count ?? 0,
+        pendingGyms: pendingGyms.count ?? 0,
+        pendingEvents: pendingEvents.count ?? 0,
       };
     },
   });
 
   const stats = [
     { label: "Total Gyms", value: data?.total ?? 0, icon: Building2 },
-    { label: "Unclaimed", value: data?.unclaimed ?? 0, icon: Clock },
-    { label: "Claimed", value: data?.claimed ?? 0, icon: ShieldCheck },
+    { label: "Pending Gym Reviews", value: data?.pendingGyms ?? 0, icon: Inbox },
+    { label: "Pending Event Reviews", value: data?.pendingEvents ?? 0, icon: Inbox },
     { label: "Pending Gym Claims", value: data?.pending ?? 0, icon: Clock },
     { label: "Pending Event Claims", value: data?.eventClaims ?? 0, icon: Calendar },
   ];
