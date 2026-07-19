@@ -7,7 +7,8 @@ import type { Database } from "@/integrations/supabase/types";
 type AppRole = Database["public"]["Enums"]["app_role"];
 
 interface Step {
-  key: "explore" | "my-content" | "notifications" | "interactions" | "account";
+  key: string;
+  anchor: "explore" | "my-content" | "notifications" | "account";
   copy: string;
 }
 
@@ -18,20 +19,30 @@ interface DashboardTutorialProps {
   onOpenMobileSidebar?: () => void;
 }
 
-const STEP_COPY: Record<Step["key"], string> = {
-  explore:
-    "This is where you find your network — search fighters, gyms, and events across the UK.",
-  "my-content":
-    "Anything you've added — your profile, gyms, or events — lives here. Edit or update it any time.",
-  notifications:
-    "Match requests, follow requests, gym claims and event applications all land here. You'll see a badge whenever something needs your attention.",
-  interactions:
-    "Send a match request and it starts as Pending — the other fighter can Accept or Decline, and both sides get notified. Gym claims go to the gym owner and event applications go to the organiser.",
-  account:
-    "Manage your account here, including updating your password and notification preferences.",
-};
+const BASE_STEPS: Step[] = [
+  { key: "explore", anchor: "explore",
+    copy: "This is where you find your network — search fighters, gyms, and events across the UK." },
+  { key: "my-content", anchor: "my-content",
+    copy: "Anything you've added — your profile, gyms, or events — lives here. Edit or update it any time." },
+  { key: "notifications", anchor: "notifications",
+    copy: "Match requests, follow requests, gym claims and event applications all land here. You'll see a badge whenever something needs your attention." },
+  { key: "interactions", anchor: "notifications",
+    copy: "Send a match request and it starts as Pending — the other fighter can Accept or Decline, and both sides get notified. Gym claims go to the gym owner and event applications go to the organiser." },
+  { key: "account", anchor: "account",
+    copy: "Manage your account here, including updating your password and notification preferences." },
+];
 
-const ORDER: Step["key"][] = ["explore", "my-content", "notifications", "interactions", "account"];
+// Fighter-only extra steps — reuse existing anchors so no dashboard markup changes are needed.
+const FIGHTER_EXTRA_STEPS: Step[] = [
+  { key: "fighter-profile", anchor: "my-content",
+    copy: "Keep your profile sharp: photo, weight class, discipline, record, and a socials link. Organisers and coaches see this first." },
+  { key: "fighter-availability", anchor: "my-content",
+    copy: "Toggle Available for a match when you're ready to fight. Coaches and organisers filter by availability when building cards." },
+  { key: "fighter-record", anchor: "my-content",
+    copy: "Your MU Score updates from verified fights only. Head to the Leaderboard from Explore to see where you rank globally or in your gym." },
+  { key: "fighter-matchmaking", anchor: "explore",
+    copy: "Organisers use Matchmaking to shortlist fighters for their events. A strong, complete profile puts you at the top of that list." },
+];
 
 interface Rect {
   top: number;
@@ -40,17 +51,9 @@ interface Rect {
   height: number;
 }
 
-// Some tutorial steps piggyback on another step's anchor (e.g. the
-// "interactions" copy uses the notification bell so users see where match
-// requests / claims / applications land).
-const ANCHOR_ALIAS: Record<string, string> = {
-  interactions: "notifications",
-};
-
-function getRect(key: string): Rect | null {
+function getRect(anchor: string): Rect | null {
   if (typeof document === "undefined") return null;
-  const anchorKey = ANCHOR_ALIAS[key] ?? key;
-  const el = document.querySelector<HTMLElement>(`[data-tutorial="${anchorKey}"]`);
+  const el = document.querySelector<HTMLElement>(`[data-tutorial="${anchor}"]`);
   if (!el) return null;
   const r = el.getBoundingClientRect();
   if (r.width === 0 && r.height === 0) return null;
@@ -88,9 +91,8 @@ export function DashboardTutorial({
     // Give the sidebar / DOM a beat to render before probing.
     const timeout = setTimeout(() => {
       if (cancelled) return;
-      const steps: Step[] = ORDER
-        .filter((k) => getRect(k) != null)
-        .map((k) => ({ key: k, copy: STEP_COPY[k] }));
+      const allSteps = role === "fighter" ? [...BASE_STEPS, ...FIGHTER_EXTRA_STEPS] : BASE_STEPS;
+      const steps: Step[] = allSteps.filter((s) => getRect(s.anchor) != null);
 
       if (steps.length === 0) {
         // No anchors present — persist dismissal so we don't loop next time.
@@ -116,18 +118,18 @@ export function DashboardTutorial({
   // sidebar-anchored steps so the target is on screen.
   useEffect(() => {
     if (!currentStep) return;
-    if (isMobile && onOpenMobileSidebar && (currentStep.key === "explore" || currentStep.key === "my-content")) {
+    if (isMobile && onOpenMobileSidebar && (currentStep.anchor === "explore" || currentStep.anchor === "my-content")) {
       onOpenMobileSidebar();
     }
     // small delay so the drawer transition can complete
-    const t = setTimeout(() => setRect(getRect(currentStep.key)), 220);
+    const t = setTimeout(() => setRect(getRect(currentStep.anchor)), 220);
     return () => clearTimeout(t);
   }, [currentStep, isMobile, onOpenMobileSidebar]);
 
   // Keep rect fresh on resize / scroll.
   useEffect(() => {
     if (!currentStep) return;
-    const update = () => setRect(getRect(currentStep.key));
+    const update = () => setRect(getRect(currentStep.anchor));
     window.addEventListener("resize", update);
     window.addEventListener("scroll", update, true);
     return () => {

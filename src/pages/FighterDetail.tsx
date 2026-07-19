@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFollow } from "@/hooks/useFollow";
+import { useIsMinor } from "@/hooks/useIsMinor";
+import { Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { FlagIcon, getCountryDisplayName } from "@/components/FlagIcon";
@@ -139,6 +141,8 @@ export default function FighterDetail() {
   });
 
   const { isFollowing, toggle: toggleFollow, loading: followLoading } = useFollow(fighter?.user_id);
+  const { data: minorStatus } = useIsMinor(fighter?.user_id);
+  const isMinor = !!minorStatus?.isMinor;
 
   const scopedFights = useMemo(() => {
     if (scope === "total") return fights;
@@ -431,7 +435,7 @@ export default function FighterDetail() {
                 display: "flex", alignItems: "center", justifyContent: "center",
                 background: fighter._avatar ? "transparent" : "linear-gradient(135deg, rgba(232,160,32,0.18), rgba(232,160,32,0.04))",
               }}>
-                {fighter._avatar ? (
+                {fighter._avatar && !isMinor ? (
                   <img src={fighter._avatar} alt={cleanName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
                   <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 48, color: GOLD, letterSpacing: "0.04em" }}>{initials}</span>
@@ -448,13 +452,37 @@ export default function FighterDetail() {
                 <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(2.5rem, 4.5vw, 3.6rem)", lineHeight: 1, color: TEXT, letterSpacing: "0.02em", margin: "4px 0 10px" }}>
                   {cleanName.toUpperCase()}
                 </h1>
-                <div className="flex items-center gap-2 flex-wrap" style={{ fontSize: 13, color: MUTED }}>
-                  <FlagIcon countryCode={fighter.country} size={18} />
-                  <span style={{ fontWeight: 600 }}>{fighter.country}</span>
-                  <span style={{ color: DIM }}>·</span>
+                <div className="flex items-center gap-2 flex-wrap justify-center md:justify-start" style={{ fontSize: 13, color: MUTED }}>
+                  {!isMinor && <FlagIcon countryCode={fighter.country} size={18} />}
+                  {!isMinor && <span style={{ fontWeight: 600 }}>{fighter.country}</span>}
+                  {!isMinor && <span style={{ color: DIM }}>·</span>}
                   <span>{WEIGHT_CLASS_LABELS[fighter.weight_class] || fighter.weight_class}</span>
                   <span style={{ color: DIM }}>·</span>
                   <span style={{ textTransform: "uppercase" }}>{fighter.discipline || "—"}</span>
+                </div>
+
+                {/* MU Score + leaderboard + socials row */}
+                <div className="flex items-center gap-3 flex-wrap justify-center md:justify-start" style={{ marginTop: 12 }}>
+                  <div className="flex items-center gap-2" style={{
+                    background: GOLD_TINT, borderRadius: 9999, padding: "6px 14px",
+                  }}>
+                    <Trophy style={{ width: 14, height: 14, color: GOLD }} />
+                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: GOLD, letterSpacing: "0.04em" }}>
+                      MU {Math.round((fighter as any).elo_rating ?? 1000)}
+                    </span>
+                  </div>
+                  <button onClick={() => navigate("/leaderboard")} style={{
+                    background: "transparent", color: MUTED, border: "none", fontSize: 11, fontWeight: 700,
+                    letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer",
+                  }}>View leaderboard →</button>
+                  {(fighter as any).social_url && (
+                    <a href={(fighter as any).social_url} target="_blank" rel="noopener noreferrer" style={{
+                      color: MUTED, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase",
+                      textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4,
+                    }}>
+                      <Globe style={{ width: 12, height: 12 }} /> Socials
+                    </a>
+                  )}
                 </div>
 
                 {/* Stat pills */}

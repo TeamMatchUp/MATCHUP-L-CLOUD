@@ -71,6 +71,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
       years_training: fighterProfile.years_training || "",
       region: fighterProfile.region || "",
       postcode: fighterProfile.postcode || "",
+      social_url: fighterProfile.social_url || "",
     },
   });
 
@@ -182,6 +183,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
       bio: data.bio || null, country: data.country, training_background: data.training_background || null,
       years_training: data.years_training ? parseInt(data.years_training) : null, region: data.region || null,
       postcode: data.postcode || null,
+      social_url: data.social_url?.trim() || null,
       available: isAvailable,
     } as any).eq("id", fighterProfile.id);
     setSaving(false);
@@ -340,6 +342,11 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
 
 
           <div><Label>Bio</Label><Textarea {...register("bio")} rows={3} placeholder="Tell your story..." /></div>
+          <div>
+            <Label>Socials URL</Label>
+            <Input {...register("social_url")} type="url" placeholder="https://instagram.com/yourhandle" />
+            <p className="text-xs text-muted-foreground mt-1">Instagram, X, TikTok, or your personal site — one link.</p>
+          </div>
           <div className="flex gap-2">
             <Button type="submit" disabled={saving}><Save className="h-3.5 w-3.5 mr-1" /> {saving ? "Saving..." : "Save Changes"}</Button>
             <Button type="button" variant="outline" onClick={handleCancel}>Cancel</Button>

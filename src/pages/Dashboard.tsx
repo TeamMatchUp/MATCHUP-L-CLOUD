@@ -29,6 +29,7 @@ import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
 import { GymRequestsPanel } from "@/components/coach/GymRequestsPanel";
 import { EditableProfilePanel } from "@/components/fighter/EditableProfilePanel";
 import { DashboardAnalytics } from "@/components/dashboard/DashboardAnalytics";
+import { AgeGate } from "@/components/age/AgeGate";
 import { SEO } from "@/components/SEO";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -410,6 +411,9 @@ export default function Dashboard() {
           </div>
         </main>
       </div>
+
+      {/* Age gate — DOB prompt first, guardian confirmation only if under 18 */}
+      <AgeGate />
 
       {/* First-login dashboard tutorial */}
       {user && tutorialFlag?.has_seen_tutorial === false && activeRole && (
