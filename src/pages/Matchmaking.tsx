@@ -23,6 +23,8 @@ import {
   type ScoredMatch,
   type Preset,
 } from "@/lib/matchmakingEngine";
+import { useMatchmakingConsent } from "@/lib/matchmakingConsent";
+import { MatchmakingConsentModal } from "@/components/matchmaking/MatchmakingConsentModal";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
