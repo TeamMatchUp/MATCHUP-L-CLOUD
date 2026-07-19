@@ -3,47 +3,50 @@ import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppIcon } from "@/components/AppIcon";
 import { Link } from "react-router-dom";
-import { Lock } from "lucide-react";
+import heroHorizon from "@/assets/hero-horizon.png.asset.json";
 
 export function HeroSection() {
   const { open } = useAuthModal();
   const { user } = useAuth();
 
   return (
-    <section className="relative min-h-[70vh] flex items-center overflow-hidden py-16">
+    <section
+      className="relative min-h-[70vh] flex items-center overflow-hidden py-16 bg-black"
+      style={{
+        backgroundImage: `url(${heroHorizon.url})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center bottom",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <div className="container relative z-10">
-        <div className="mx-auto max-w-5xl flex flex-col items-center text-center">
-          {/* Logo + Headline horizontal lockup */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+        <div className="mx-auto max-w-6xl flex flex-col items-center text-center">
+          {/* Horizontal lockup: MATCH EASY — shield — FIGHT HARD */}
+          <h1
+            className="font-heading flex items-center justify-center gap-[0.25em] sm:gap-[0.35em] text-foreground"
+            style={{
+              fontWeight: 800,
+              letterSpacing: "0.01em",
+              fontSize: "clamp(1.75rem, 8vw, 4.75rem)",
+              lineHeight: 1,
+            }}
+          >
+            <span>MATCH EASY</span>
             <AppIcon
-              className="h-[clamp(112px,13vw,176px)] w-auto opacity-95 drop-shadow-[0_0_60px_rgba(255,255,255,0.08)] shrink-0"
+              className="w-auto shrink-0"
+              style={{ height: "0.82em" }}
               alt="MatchUp shield"
             />
-            <h1
-              className="font-heading leading-[0.9] tracking-tight text-left"
-              style={{ fontWeight: 800, letterSpacing: "0.01em" }}
-            >
-              <span
-                className="block text-foreground"
-                style={{ fontSize: "clamp(2.25rem, 6vw, 4.75rem)", lineHeight: 0.92 }}
-              >
-                MATCH EASY,
-              </span>
-              <span
-                className="block text-primary text-gold-glow"
-                style={{ fontSize: "clamp(2.25rem, 6vw, 4.75rem)", lineHeight: 0.92 }}
-              >
-                FIGHT HARD
-              </span>
-            </h1>
-          </div>
+            <span>FIGHT HARD</span>
+          </h1>
 
           {/* Tagline */}
           <p
             className="text-foreground/90 mt-8 max-w-2xl font-normal"
             style={{ fontSize: "clamp(1rem, 1.6vw, 1.25rem)", lineHeight: 1.5 }}
           >
-            Fighters, coaches and promoters are already matching. <strong className="font-bold text-foreground">Don't get left off the card.</strong>
+            Fighters, coaches and promoters are already matching.{" "}
+            <strong className="font-bold text-foreground">Don't get left off the card.</strong>
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 w-full sm:w-auto">
@@ -70,7 +73,6 @@ export function HeroSection() {
               </>
             )}
           </div>
-
         </div>
       </div>
     </section>
