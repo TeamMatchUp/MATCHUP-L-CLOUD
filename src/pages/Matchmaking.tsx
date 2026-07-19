@@ -442,6 +442,18 @@ export default function Matchmaking() {
                 </div>
               )}
 
+              {!loadingFighters && fighters.length === 0 && (
+                <div className="rounded-lg bg-card p-4 mb-4 flex items-start gap-3" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
+                  <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+                  <p className="text-xs text-muted-foreground">
+                    No fighters match this event's discipline
+                    {event?.discipline ? <> (<span className="text-foreground">{event.discipline}</span>)</> : null}
+                    {disciplineUnrecognised ? " — the discipline value wasn't recognised." : "."}
+                    {" "}Ask fighters to add their discipline, or open Refine to widen filters.
+                  </p>
+                </div>
+              )}
+
               <p className="text-xs text-muted-foreground mb-4">
                 <strong>{filtered.length}</strong> suggestions · <strong>{dismissed.size}</strong> reviewed · <strong>{confirmedFighterIds.size / 2}</strong> confirmed
               </p>
