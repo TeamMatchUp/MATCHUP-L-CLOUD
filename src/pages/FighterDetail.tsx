@@ -435,7 +435,7 @@ export default function FighterDetail() {
                 display: "flex", alignItems: "center", justifyContent: "center",
                 background: fighter._avatar ? "transparent" : "linear-gradient(135deg, rgba(232,160,32,0.18), rgba(232,160,32,0.04))",
               }}>
-                {fighter._avatar ? (
+                {fighter._avatar && !isMinor ? (
                   <img src={fighter._avatar} alt={cleanName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 ) : (
                   <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 48, color: GOLD, letterSpacing: "0.04em" }}>{initials}</span>
