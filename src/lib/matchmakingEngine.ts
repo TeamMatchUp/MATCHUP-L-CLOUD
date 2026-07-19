@@ -52,12 +52,17 @@ function getStyleContrast(a: string | null, b: string | null): number {
 }
 
 // ── Experience tiers ─────────────────────────────────────────────────────
-function getExpTier(totalPro: number): number {
-  if (totalPro === 0) return 0;
-  if (totalPro <= 3) return 1;
-  if (totalPro <= 9) return 2;
+// Amateur fights count toward tier progression at the same discount used by
+// the Elo engine's level_weight (0.55), keeping tier and Elo conceptually aligned.
+const AMATEUR_TIER_WEIGHT = 0.55;
+
+function getExpTier(weightedFights: number): number {
+  if (weightedFights === 0) return 0;
+  if (weightedFights <= 3) return 1;
+  if (weightedFights <= 9) return 2;
   return 3;
 }
+
 
 // ── Types ────────────────────────────────────────────────────────────────
 export interface FighterWithStats extends FighterProfile {
@@ -89,6 +94,10 @@ export function enrichFighter(
   const totalPro = f.record_wins + f.record_losses + f.record_draws;
   const winPct = totalPro > 0 ? f.record_wins / totalPro : 0;
 
+  const totalAmateur =
+    (f.amateur_wins ?? 0) + (f.amateur_losses ?? 0) + (f.amateur_draws ?? 0);
+  const weightedFightCount = totalPro + totalAmateur * AMATEUR_TIER_WEIGHT;
+
   // Finish rate from fights table
   const myFights = fights.filter((ft) => ft.fighter_a_id === f.id);
   const finishes = myFights.filter(
@@ -101,10 +110,11 @@ export function enrichFighter(
     totalPro,
     winPct,
     finishRate,
-    expTier: getExpTier(totalPro),
+    expTier: getExpTier(weightedFightCount),
     gymIds,
   };
 }
+
 
 // ── Safety gates ─────────────────────────────────────────────────────────
 function passesSafetyGates(a: FighterWithStats, b: FighterWithStats): { pass: boolean; flags: string[] } {

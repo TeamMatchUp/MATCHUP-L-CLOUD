@@ -1,95 +1,44 @@
-## Heads-up on current state
 
-The earlier matchmaking task (Part 2 UI only) explicitly **deferred all Elo work**. There is currently **no Elo engine, no `elo` column on `fighter_profiles`, no `transfer_weight`/`pro_elo_seed` code, and no "unverified opponent" flag in the app**. The rules described as "already live" have never actually shipped.
+## Change
 
-That's good news for the migration piece (nothing stored to overwrite), but it means this task is really: **build the Elo engine correctly the first time**, using rules A and B, with a single global chronological replay for platform-confirmed fights.
+In `src/lib/matchmakingEngine.ts`, feed a weighted fight count into the existing tier function so amateur experience counts, discounted to match the Elo `level_weight` (0.55).
 
-## What I'll build
+### Current
+```ts
+function getExpTier(totalPro: number): number {
+  if (totalPro === 0) return 0;   // T0 Debut
+  if (totalPro <= 3) return 1;   // T1 Novice
+  if (totalPro <= 9) return 2;   // T2 Intermediate
+  return 3;                       // T3 Experienced
+}
+// ...
+const totalPro = f.record_wins + f.record_losses + f.record_draws;
+expTier: getExpTier(totalPro),
+```
 
-### 1. Elo engine (new)
+### After
+Keep the thresholds (0 / 1–3 / 4–9 / 10+) unchanged. Only the input changes:
 
-New module `src/lib/eloEngine.ts` implementing corrected rules only — no legacy branches:
+```ts
+const AMATEUR_TIER_WEIGHT = 0.55; // mirrors Elo level_weight
 
-- `K = 32`
-- `S_a`: 1.0 win / 0.5 draw / 0.0 loss, with ±15% finish bonus for KO/TKO/Submission (DQ = plain win, no bonus)
-- `E_a`:
-  - Historical / self-reported fight (`verification_status` = `self_reported` or `coach_verified`) → **always 0.50**, regardless of whether the named opponent matches a Matchup profile
-  - Platform-confirmed fight (`verification_status = 'platform_confirmed'`) → real opponent-Elo differential using each fighter's Elo **as it stands just before that fight in the global replay**
-- `level_weight`: `1.0` if `fights.is_amateur = false`, `0.55` if `true` — flat across all disciplines, applied to every fight
-- `change = K × (S_a − E_a) × level_weight`
+const totalPro = f.record_wins + f.record_losses + f.record_draws;
+const totalAmateur =
+  (f.amateur_wins ?? 0) + (f.amateur_losses ?? 0) + (f.amateur_draws ?? 0);
+const weightedFightCount = totalPro + totalAmateur * AMATEUR_TIER_WEIGHT;
 
-**Replay architecture — single global chronological pass:**
+expTier: getExpTier(weightedFightCount),
+```
 
-1. Load every fight row (both self-reported/coach-verified and platform-confirmed) across all fighters.
-2. Sort globally by `event_date ASC NULLS LAST`, tiebreak `created_at ASC`, then `id` for a stable total order.
-3. Initialise every fighter at Elo 1000 in an in-memory map `Map<fighterId, number>`.
-4. Iterate the sorted list **once**. For each fight:
-   - **Self-reported / coach-verified**: update only fighter A's Elo (they are the perspective owner of a self-reported row) using `E_a = 0.50` and their own `level_weight`. Opponent side is not touched — the other side of a historical fight isn't a Matchup rating event.
-   - **Platform-confirmed**: read both fighters' current running Elo from the map, compute `E_a` and `E_b` from the differential, apply `change` to each with their per-side `level_weight` (a mixed-level bout is possible in principle, so `level_weight` is looked up per fighter row / per fight-side), and write both back to the map.
-5. After the pass, the map holds each fighter's final Elo. This guarantees no future information leaks into any lookup, and rematches / shared opponents resolve unambiguously because every prior fight has already been applied before the next one is read.
+`getExpTier` signature widens to `number` (float) — the `<= 3` / `<= 9` comparisons keep working with fractional inputs.
 
-Unit tests in `src/test/eloEngine.test.ts` covering:
+`totalPro` field on `FighterWithStats` stays as pro-only (used elsewhere by `proDiff` in the debut-exception check — must remain pro-only per spec: "No change to hard-block or exception-window logic itself").
 
-- Muay Thai worked example (2 amateur KO wins, 1 amateur DQ win, 2 amateur draws, 1 pro decision win) → **1047.68**
-- A rematch pair (A beats B, then B beats A) confirming the second bout uses post-first-bout Elos, not starting 1000s
-- A shared-opponent chain (A vs C, then B vs C, then A vs B) confirming C's Elo at each lookup reflects only prior fights
-
-### 2. Schema + migration
-
-Migration adds:
-
-- `fighter_profiles.elo_rating integer NOT NULL DEFAULT 1000`
-- `fighter_profiles.elo_last_computed_at timestamptz`
-- `fights.verification_status` — already exists, no change
-- `fights.is_amateur` — already exists, no change
-- `profiles.has_consented_matchmaking boolean NOT NULL DEFAULT false`
-- `profiles.matchmaking_consent_version integer`
-- `profiles.matchmaking_consent_at timestamptz`
-- New `public.record_matchmaking_consent(_version integer)` SECURITY DEFINER RPC that sets all three columns on `auth.uid()`'s profile
-
-RLS / grants on `profiles` and `fighter_profiles` already exist and stay untouched.
-
-### 3. One-time recompute job
-
-Since no prior Elo values exist, this doubles as first-compute and future-rerun tool:
-
-- Edge function `supabase/functions/recompute-elo/index.ts` — admin-gated via `has_role('admin')`
-- Runs the single global chronological pass described above, then writes each fighter's final Elo + `elo_last_computed_at` in one batched update
-- Returns a JSON report listing any fighter whose Elo shifted by >50 points vs. their previously stored value (suppressed on first run when previous value is 1000/null; meaningful on subsequent reruns)
-- Triggered manually from `Admin.tsx` via a new "Recompute Elo" button in the existing admin tools area
-
-### 4. Matchmaker flag rename
-
-In `src/pages/Matchmaking.tsx` and `src/lib/matchmakingEngine.ts`:
-
-- Remove any "Unverified opponent" copy
-- Add flag `no_platform_history`, triggered when a fighter has zero `fights` rows with `verification_status = 'platform_confirmed'`
-- Icon-only on the card, full text inside "Why this match":
-  > "[Name]'s rating is built from self-reported history using neutral assumptions — not yet tested against a Matchup-confirmed opponent. Verify suitability with fighter/coach before confirming this match."
-
-### 5. Consent modal (new)
-
-- New `src/components/matchmaking/MatchmakingConsentModal.tsx` — dark theme, gold accent, no border, shadow-only per design system
-- Constant `MATCHMAKING_CONSENT_VERSION = 1` in `src/lib/matchmakingConsent.ts`
-- Gate placed at the top of `src/pages/Matchmaking.tsx`: if user's `has_consented_matchmaking` is false **or** `matchmaking_consent_version < MATCHMAKING_CONSENT_VERSION`, render only the modal (walkthrough + suggestions list are not rendered behind it)
-- Body covers: decision-support only, self-reported ratings use neutral assumptions, matchmaker still responsible for debut/welfare/no-platform-history checks, link to T&Cs anchor `#matchmaking`
-- Single checkbox "I have read and understood this, and agree to the Matchup Terms & Conditions" — `Continue` disabled until checked; `Cancel` / dismiss → `navigate('/dashboard')`
-- On Continue → call `record_matchmaking_consent` RPC, then reveal the walkthrough
-
-### 6. Terms & Conditions
-
-Add new section `#matchmaking` to `src/pages/TermsOfService.tsx`:
-
-- **Neutral-Elo disclosure** — ratings built from self-reported history reflect neutral assumptions, not confirmed opponent strength
-- **Matchmaker responsibility** — organisers/coaches remain responsible for verifying suitability regardless of algorithm output
+### Verification against your cases
+- 0 pro + 20 am → weighted 11.0 → **T3** (was T0). ✓
+- 0 pro + 2 am → weighted 1.1 → **T1** (was T0). Note: your spec allowed "T0 or a low tier"; 1.1 rounds into T1 under the existing `totalPro === 0 → T0` threshold since 1.1 ≠ 0. This is consistent with the philosophy (small but real experience → out of Debut). Flagging so you can confirm; if you'd rather keep 2-am fighters at T0, we'd change the T0 rule to `< 1` (i.e. require ≥ 1 weighted fight to leave Debut) — say the word and I'll adjust.
+- Pro-only fighters: `totalAmateur = 0` → weighted count = `totalPro` → tier identical to today. ✓
+- Hard-block (`tierGap > 2`) and exception (`tierGap === 2 && proDiff <= 3`) logic untouched.
 
 ## Out of scope (unchanged)
-
-Simplified matchmaking UI (walkthrough, icon warnings, Why-this-match panel, Refine toggle), preset weights, safety-gate thresholds, and the four scoring dimensions all stay exactly as they are.
-
-## Verification before I call it done
-
-1. Unit tests pass, including the Muay Thai 1047.68 case, rematch case, and shared-opponent chain
-2. Migration applied; `fighter_profiles.elo_rating` populated by recompute function
-3. Manual: fresh account with 0 consent → opening `/matchmaking` shows only the modal; ticking + Continue lands on Step 1 of 3; refresh doesn't re-prompt
-4. Manual: fighter with only self-reported fights shows the new `no_platform_history` flag (icon on card, full text in Why-this-match); fighter with any platform-confirmed fight does not
+Tier thresholds, hard-block/exception logic, Elo engine, discipline normaliser, weight dropdown, nationality filter, modal styling.
