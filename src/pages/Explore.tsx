@@ -514,6 +514,11 @@ export default function Explore() {
                               {Object.entries(STYLE_LABELS).map(([v, l]) => <SelectItem key={v} value={v}>{l}</SelectItem>)}
                             </SelectContent>
                           </Select>
+                          <Link to="/leaderboard" className="inline-flex items-center gap-1.5 px-3 rounded-md text-xs font-semibold uppercase tracking-wider" style={{
+                            height: 36, background: "rgba(232,160,32,0.12)", color: EX.gold, border: `1px solid rgba(232,160,32,0.3)`, textDecoration: "none",
+                          }}>
+                            <Trophy className="h-3.5 w-3.5" /> Global Rankings
+                          </Link>
                         </>
                       )}
                     </div>
