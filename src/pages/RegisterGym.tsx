@@ -82,7 +82,10 @@ export default function RegisterGym() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Gym registered!", description: "Welcome to your Coach Dashboard." });
+      toast({
+        title: "Submitted for review",
+        description: "Your gym has been submitted and is pending review. We'll notify you once it's live.",
+      });
       navigate("/gym-owner/dashboard", { replace: true });
     },
     onError: (e: any) => {

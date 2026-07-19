@@ -83,7 +83,10 @@ export function DashboardGyms({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast({ title: "Gym created" });
+      toast({
+        title: "Submitted for review",
+        description: "Your gym has been submitted and is pending review. We'll notify you once it's live.",
+      });
       setShowCreateGym(false);
       setNewGymName("");
       setNewGymLocation("");
@@ -182,10 +185,23 @@ export function DashboardGyms({
               className="rounded-lg border border-border bg-card p-5 hover:border-primary/30 transition-colors"
             >
               <Link to={`/gyms/${gym.id}`}>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h3 className="font-heading text-lg text-foreground">{gym.name}</h3>
                   <GymTierBadge tier={gym.listing_tier} />
+                  {gym.review_status === "pending" && (
+                    <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded bg-amber-500/15 text-amber-500">
+                      Pending Review
+                    </span>
+                  )}
+                  {gym.review_status === "rejected" && (
+                    <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded bg-destructive/15 text-destructive">
+                      Rejected
+                    </span>
+                  )}
                 </div>
+                {gym.review_status === "rejected" && gym.review_reason && (
+                  <p className="text-xs text-destructive mt-1">Reason: {gym.review_reason}</p>
+                )}
                 <p className="text-xs text-muted-foreground mt-1">
                   {gym.location} · {gym.country}
                 </p>
