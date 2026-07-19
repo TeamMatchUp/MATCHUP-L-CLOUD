@@ -76,6 +76,17 @@ export function HeroSection() {
           </div>
         </div>
       </div>
+
+      {/* Faint scroll suggestion */}
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-3 text-muted-foreground/25 pointer-events-none">
+        <span
+          className="font-body text-[10px] tracking-[0.2em] uppercase"
+          style={{ writingMode: "vertical-rl" }}
+        >
+          Scroll
+        </span>
+        <ChevronDown className="h-4 w-4 animate-bounce" />
+      </div>
     </section>
   );
 }
