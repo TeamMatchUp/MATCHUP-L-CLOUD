@@ -71,6 +71,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
       years_training: fighterProfile.years_training || "",
       region: fighterProfile.region || "",
       postcode: fighterProfile.postcode || "",
+      social_url: fighterProfile.social_url || "",
     },
   });
 
