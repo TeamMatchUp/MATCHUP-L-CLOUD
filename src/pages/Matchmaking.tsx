@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { SearchableCountrySelect } from "@/components/SearchableCountrySelect";
 import { ArrowLeft, ArrowRight, Sparkles, Check, X, Search, AlertTriangle, Swords, ChevronDown, ChevronUp, SlidersHorizontal, ExternalLink, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import {
