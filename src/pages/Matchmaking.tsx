@@ -269,6 +269,29 @@ export default function Matchmaking() {
 
   const walkthroughActive = walkStep < 3;
 
+  const { loading: consentLoading, needsConsent, recordConsent } = useMatchmakingConsent();
+
+  if (consentLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading…</div>
+      </div>
+    );
+  }
+
+  if (needsConsent) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <MatchmakingConsentModal
+          open
+          onConsented={() => { /* query invalidation reveals content */ }}
+          recordConsent={recordConsent}
+        />
+      </div>
+    );
+  }
+
   return (
     <TooltipProvider>
     <div className="min-h-screen bg-background">
