@@ -316,7 +316,7 @@ export function AddFightModal({
             date_of_birth: `${dobYear}-01-01`,
             weight_class: wc,
             discipline: nmDisc || prefillSlot?.discipline || null,
-            country: "GB",
+            country: "UK",
             visibility: "unlisted",
             verified: false,
             created_by_coach_id: user.id,
