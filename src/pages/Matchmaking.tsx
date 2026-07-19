@@ -223,11 +223,6 @@ export default function Matchmaking() {
     return list;
   }, [suggestions, dismissed, filterText, confirmedFighterIds]);
 
-  const availableWeights = useMemo(() => {
-    const set = new Set<string>();
-    fighters.forEach((f) => { if (f.weight_class) set.add(f.weight_class); });
-    return Array.from(set);
-  }, [fighters]);
 
   const handleConfirmWithBoutType = async (boutType: string) => {
     const match = boutTypeMatch;
