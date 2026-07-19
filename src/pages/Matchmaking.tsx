@@ -43,7 +43,7 @@ const PRESET_BLURBS: Record<string, string> = {
 const FLAG_COPY: Record<string, string> = {
   "Debut": "One or both fighters have no logged fights. Coach acknowledgement required before confirming.",
   "Welfare": "Notable experience gap between fighters. Review with both coaches to confirm suitability.",
-  "Unverified Opponents": "Rating is based partly or entirely on fights against opponents not found on Matchup. Verify strength with fighter/coach before confirming.",
+  "No Platform History": "This fighter's rating is built from self-reported history using neutral assumptions — not yet tested against a Matchup-confirmed opponent. Verify suitability with fighter/coach before confirming this match.",
   "No Competitive History": "Fighter has no verified competitive record on Matchup — treat rating as provisional.",
 };
 
