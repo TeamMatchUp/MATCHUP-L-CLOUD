@@ -13,13 +13,22 @@ export function HeroSection() {
   return (
     <section
       className="relative min-h-[calc(100vh-140px)] flex items-center overflow-hidden py-10 bg-black"
-      style={{
-        backgroundImage: `url(${heroHorizon.url})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center bottom",
-        backgroundRepeat: "no-repeat",
-      }}
     >
+      {/* Background layer overscanned by 1px on all sides so fractional browser
+          zoom cannot expose a rendering seam at the section edge */}
+      <div
+        aria-hidden
+        className="absolute pointer-events-none"
+        style={{
+          inset: "-1px",
+          backgroundImage: `url(${heroHorizon.url})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center bottom",
+          backgroundRepeat: "no-repeat",
+          backgroundColor: "#000",
+        }}
+      />
+
       <div className="container relative z-10">
         <div className="mx-auto max-w-6xl flex flex-col items-center text-center">
           {/* Horizontal lockup: MATCH EASY — shield — FIGHT HARD */}
@@ -77,16 +86,17 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Faint scroll suggestion */}
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-3 text-muted-foreground/25 pointer-events-none">
+      {/* Scroll suggestion */}
+      <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-3 text-foreground/70 pointer-events-none z-20">
         <span
-          className="font-body text-[10px] tracking-[0.2em] uppercase"
-          style={{ writingMode: "vertical-rl" }}
+          className="font-body text-[11px] tracking-[0.25em] uppercase"
+          style={{ writingMode: "vertical-rl", textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}
         >
           Scroll
         </span>
-        <ChevronDown className="h-4 w-4 animate-bounce" />
+        <ChevronDown className="h-5 w-5 animate-bounce" />
       </div>
+
     </section>
   );
 }
