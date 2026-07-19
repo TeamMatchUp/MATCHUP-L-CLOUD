@@ -141,6 +141,8 @@ export default function FighterDetail() {
   });
 
   const { isFollowing, toggle: toggleFollow, loading: followLoading } = useFollow(fighter?.user_id);
+  const { data: minorStatus } = useIsMinor(fighter?.user_id);
+  const isMinor = !!minorStatus?.isMinor;
 
   const scopedFights = useMemo(() => {
     if (scope === "total") return fights;
