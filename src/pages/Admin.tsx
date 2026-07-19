@@ -534,6 +534,57 @@ function ReviewQueue() {
   );
 }
 
+function EloRecomputePanel() {
+  const [running, setRunning] = useState(false);
+  const [result, setResult] = useState<{ updated: number; shifts: any[] } | null>(null);
+  const run = async () => {
+    setRunning(true);
+    setResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("recompute-elo", { body: {} });
+      if (error) throw error;
+      setResult(data as any);
+      toast({ title: "Elo recomputed", description: `${(data as any)?.updated ?? 0} fighters updated.` });
+    } catch (e: any) {
+      toast({ title: "Recompute failed", description: e?.message ?? "Unknown error", variant: "destructive" as any });
+    } finally {
+      setRunning(false);
+    }
+  };
+  return (
+    <Card className="bg-card border-border/40 p-4 space-y-3">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <h2 className="font-heading text-lg text-foreground">Elo Recompute</h2>
+          <p className="text-xs text-muted-foreground">
+            Runs a global chronological replay across all fights and rewrites each fighter's Elo. Flags shifts &gt; 50 points from the previous stored value (first-ever run is not flagged).
+          </p>
+        </div>
+        <Button onClick={run} disabled={running}>
+          {running ? "Recomputing…" : "Recompute Elo"}
+        </Button>
+      </div>
+      {result && (
+        <div className="text-sm text-muted-foreground">
+          Updated <span className="text-foreground font-medium">{result.updated}</span> fighters.
+          {result.shifts.length > 0 && (
+            <>
+              {" "}<span className="text-foreground font-medium">{result.shifts.length}</span> large shifts:
+              <ul className="mt-2 space-y-1 text-xs">
+                {result.shifts.slice(0, 20).map((s: any) => (
+                  <li key={s.fighter_id}>
+                    {s.name}: {s.before} → {s.after} ({s.delta > 0 ? "+" : ""}{s.delta})
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 export default function Admin() {
   const { session, loading } = useAuth();
 
