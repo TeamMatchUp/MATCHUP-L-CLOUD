@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFollow } from "@/hooks/useFollow";
+import { useIsMinor } from "@/hooks/useIsMinor";
+import { Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { FlagIcon, getCountryDisplayName } from "@/components/FlagIcon";
