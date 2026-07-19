@@ -513,6 +513,9 @@ export type Database = {
           postcode: string | null
           promotion_name: string | null
           promotion_status: string | null
+          review_reason: string | null
+          review_status: string
+          reviewed_at: string | null
           show_ticket_sales: boolean | null
           sold_out: boolean | null
           status: Database["public"]["Enums"]["event_status"]
@@ -544,6 +547,9 @@ export type Database = {
           postcode?: string | null
           promotion_name?: string | null
           promotion_status?: string | null
+          review_reason?: string | null
+          review_status?: string
+          reviewed_at?: string | null
           show_ticket_sales?: boolean | null
           sold_out?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
@@ -575,6 +581,9 @@ export type Database = {
           postcode?: string | null
           promotion_name?: string | null
           promotion_status?: string | null
+          review_reason?: string | null
+          review_status?: string
+          reviewed_at?: string | null
           show_ticket_sales?: boolean | null
           sold_out?: boolean | null
           status?: Database["public"]["Enums"]["event_status"]
@@ -1299,6 +1308,9 @@ export type Database = {
           name: string
           phone: string | null
           postcode: string | null
+          review_reason: string | null
+          review_status: string
+          reviewed_at: string | null
           training_schedule: string | null
           twitter_url: string | null
           unclaimed_interactions: number
@@ -1330,6 +1342,9 @@ export type Database = {
           name: string
           phone?: string | null
           postcode?: string | null
+          review_reason?: string | null
+          review_status?: string
+          reviewed_at?: string | null
           training_schedule?: string | null
           twitter_url?: string | null
           unclaimed_interactions?: number
@@ -1361,6 +1376,9 @@ export type Database = {
           name?: string
           phone?: string | null
           postcode?: string | null
+          review_reason?: string | null
+          review_status?: string
+          reviewed_at?: string | null
           training_schedule?: string | null
           twitter_url?: string | null
           unclaimed_interactions?: number
@@ -1976,6 +1994,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_event: { Args: { _event_id: string }; Returns: undefined }
+      approve_gym: { Args: { _gym_id: string }; Returns: undefined }
       approve_gym_claim: { Args: { _claim_id: string }; Returns: undefined }
       assign_signup_role: {
         Args: { _role: Database["public"]["Enums"]["app_role"] }
@@ -2001,6 +2021,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      reject_event: {
+        Args: { _event_id: string; _reason?: string }
+        Returns: undefined
+      }
+      reject_gym: {
+        Args: { _gym_id: string; _reason?: string }
+        Returns: undefined
       }
     }
     Enums: {
