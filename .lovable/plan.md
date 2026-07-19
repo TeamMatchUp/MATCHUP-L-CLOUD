@@ -1,11 +1,40 @@
-Two changes on the landing hero:
+## Scope
 
-1. Fix the left-edge light seam that appears at certain zoom levels (50%, 100%, 110%; not 67%).
-   - Investigate `src/components/landing/HeroSection.tsx`, `src/pages/Index.tsx`, `src/components/Header.tsx`, and global CSS to pinpoint the element causing the seam.
-   - Likely causes to check in order: (a) an unintended left-anchored decorative element mirroring the right-side Scroll hint, (b) hero background image not overscanning past the viewport, causing a sub-pixel edge at fractional zoom, (c) root/page wrapper margin/padding exposing the `html` background.
-   - Apply the smallest targeted fix (overscan hero background by ~1px, or normalize the root wrapper), keeping hero design, logo size, spacing, and background image unchanged.
-   - Verify at 50%, 67%, 100%, 110% zoom that the left edge stays dark with no vertical light sliver.
+Only `src/components/landing/HeroSection.tsx` and one new asset. Everything below the hero (ticker, feature showcase, etc.) stays untouched.
 
-2. Make the right-side "Scroll" hint more visible.
-   - In `src/components/landing/HeroSection.tsx`, increase the opacity of the vertical "Scroll" text and the bouncing `ChevronDown` icon so it is clearly visible against the hero background, while still reading as a subtle hint (not a primary CTA).
-   - Keep position, size, animation, and layout unchanged.
+## Asset
+
+- Upload `user-uploads://Fighters_coaches_and_promoters_are_already_matching._Don_t_get_left_off_the_card..png` via `lovable-assets create` → `src/assets/hero-horizon.png.asset.json`. Import the pointer JSON in `HeroSection.tsx`.
+
+## HeroSection.tsx changes
+
+1. **Background**: Wrap the `<section>` with an inline style that layers the horizon PNG at `background: url(...) center bottom / cover no-repeat, #000`. The image already fades from black at top → navy → amber at bottom, so no extra gradient needed. Scope strictly to the hero `<section>` — nothing bleeds into the ticker below.
+
+2. **Lockup markup**: Replace the current flex column (icon stacked over stacked headline with comma + `text-gold-glow`) with a single flex row:
+   ```
+   <div class="flex items-center justify-center gap-[0.35em]">
+     <span>MATCH EASY</span>
+     <AppIcon />
+     <span>FIGHT HARD</span>
+   </div>
+   ```
+   - Both words: same `font-heading`, weight 800, `text-foreground` (white), `letterSpacing 0.01em`, `fontSize: clamp(2.25rem, 6vw, 4.75rem)`, `lineHeight: 1`. No comma. No `text-gold-glow` class on "FIGHT HARD".
+   - Shield: sized to cap-height. Use `h-[0.82em]` (cap-height ≈ 70–75% of font-size for Bebas-style display faces; 0.82em visually matches the reference at the target scale) with `w-auto`, and `alignSelf: center` inside an `items-center` row. Because both text spans have `line-height: 1`, centering on line-box == centering on cap-height, eliminating the sag.
+   - Equal spacing: single `gap-[0.35em]` on the flex row applies identically to both sides of the shield.
+
+3. **Mobile**: On very narrow widths the row could overflow. Keep it single-row down to ~360px by relying on the `clamp()` min of 2.25rem and `gap-[0.25em] sm:gap-[0.35em]`. Do NOT stack vertically on mobile — the user asked for a single horizontal lockup. Verify at 375px viewport that the row fits (2.25rem × ~10 chars per word + shield + gaps ≈ fits within container padding).
+
+4. **Unchanged**: subhead paragraph, CTA button block, auth-conditional links.
+
+## ASCII target
+
+```
+[  MATCH EASY  ⛨  FIGHT HARD  ]
+   Fighters, coaches and promoters ...
+        [ Create free account ]
+```
+Backdrop: dark navy top → amber horizon at bottom edge of hero, hard cutoff at section end.
+
+## Out of scope
+
+Header, ticker, FeatureShowcase, and everything below the hero remain untouched.

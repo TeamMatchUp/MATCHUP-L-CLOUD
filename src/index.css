@@ -210,16 +210,7 @@
 
   html, body {
     overflow-x: hidden;
-    min-height: 100%;
-  }
-
-  html {
-    background-color: hsl(var(--background));
-  }
-
-  #root {
-    background-color: hsl(var(--background));
-    min-height: 100vh;
+    max-width: 100vw;
   }
 
   body {

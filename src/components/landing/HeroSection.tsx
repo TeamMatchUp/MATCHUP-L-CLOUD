@@ -3,7 +3,6 @@ import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppIcon } from "@/components/AppIcon";
 import { Link } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
 import heroHorizon from "@/assets/hero-horizon.png.asset.json";
 
 export function HeroSection() {
@@ -12,23 +11,14 @@ export function HeroSection() {
 
   return (
     <section
-      className="relative min-h-[calc(100vh-140px)] flex items-center overflow-hidden py-10 bg-black"
+      className="relative min-h-[70vh] flex items-center overflow-hidden py-16 bg-black"
+      style={{
+        backgroundImage: `url(${heroHorizon.url})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center bottom",
+        backgroundRepeat: "no-repeat",
+      }}
     >
-      {/* Background layer overscanned by 1px on all sides so fractional browser
-          zoom cannot expose a rendering seam at the section edge */}
-      <div
-        aria-hidden
-        className="absolute pointer-events-none"
-        style={{
-          inset: "-1px",
-          backgroundImage: `url(${heroHorizon.url})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center bottom",
-          backgroundRepeat: "no-repeat",
-          backgroundColor: "#000",
-        }}
-      />
-
       <div className="container relative z-10">
         <div className="mx-auto max-w-6xl flex flex-col items-center text-center">
           {/* Horizontal lockup: MATCH EASY — shield — FIGHT HARD */}
@@ -85,18 +75,6 @@ export function HeroSection() {
           </div>
         </div>
       </div>
-
-      {/* Scroll suggestion */}
-      <div className="absolute right-6 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-3 text-foreground/70 pointer-events-none z-20">
-        <span
-          className="font-body text-[11px] tracking-[0.25em] uppercase"
-          style={{ writingMode: "vertical-rl", textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}
-        >
-          Scroll
-        </span>
-        <ChevronDown className="h-5 w-5 animate-bounce" />
-      </div>
-
     </section>
   );
 }
