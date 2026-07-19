@@ -93,8 +93,7 @@ export default function Matchmaking() {
   const [presetKey, setPresetKey] = useState("action_night");
   const [weightFilter, setWeightFilter] = useState<string>("any");
   const [expTier, setExpTier] = useState<string>("any");
-  const [regionFilter, setRegionFilter] = useState<string>("");
-  const [availableOnly, setAvailableOnly] = useState(true);
+  const [nationalityFilter, setNationalityFilter] = useState<string>("all");
 
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [confirmedFighterIds, setConfirmedFighterIds] = useState<Set<string>>(new Set());
