@@ -85,15 +85,28 @@ export function DashboardEvents({
               className="flex items-center justify-between rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors"
             >
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-medium text-foreground">{event.title}</p>
                   <Badge variant="outline" className={STATUS_COLORS[event.status] || ""}>
                     {event.status}
                   </Badge>
+                  {event.review_status === "pending" && (
+                    <Badge variant="outline" className="bg-amber-500/15 text-amber-500 border-amber-500/30">
+                      Pending Review
+                    </Badge>
+                  )}
+                  {event.review_status === "rejected" && (
+                    <Badge variant="outline" className="bg-destructive/15 text-destructive border-destructive/30">
+                      Rejected
+                    </Badge>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {event.date} · {event.location} · {eventSlots.length} slots ({openSlots} open)
                 </p>
+                {event.review_status === "rejected" && event.review_reason && (
+                  <p className="text-xs text-destructive mt-1">Reason: {event.review_reason}</p>
+                )}
               </div>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </Link>
