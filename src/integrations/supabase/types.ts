@@ -857,6 +857,7 @@ export type Database = {
           record_losses: number
           record_wins: number
           region: string | null
+          social_url: string | null
           stance: string | null
           style: Database["public"]["Enums"]["fighting_style"] | null
           training_background: string | null
@@ -895,6 +896,7 @@ export type Database = {
           record_losses?: number
           record_wins?: number
           region?: string | null
+          social_url?: string | null
           stance?: string | null
           style?: Database["public"]["Enums"]["fighting_style"] | null
           training_background?: string | null
@@ -933,6 +935,7 @@ export type Database = {
           record_losses?: number
           record_wins?: number
           region?: string | null
+          social_url?: string | null
           stance?: string | null
           style?: Database["public"]["Enums"]["fighting_style"] | null
           training_background?: string | null
@@ -1610,6 +1613,7 @@ export type Database = {
           avatar_url: string | null
           country: string | null
           created_at: string
+          date_of_birth: string | null
           full_name: string | null
           gym_id: string | null
           has_consented_matchmaking: boolean
@@ -1623,12 +1627,16 @@ export type Database = {
           notification_match_updates: boolean
           notification_system: boolean
           onboarding_completed: boolean
+          responsible_person_confirmed_at: string | null
+          responsible_person_confirmed_version: number | null
+          responsible_person_name: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           country?: string | null
           created_at?: string
+          date_of_birth?: string | null
           full_name?: string | null
           gym_id?: string | null
           has_consented_matchmaking?: boolean
@@ -1642,12 +1650,16 @@ export type Database = {
           notification_match_updates?: boolean
           notification_system?: boolean
           onboarding_completed?: boolean
+          responsible_person_confirmed_at?: string | null
+          responsible_person_confirmed_version?: number | null
+          responsible_person_name?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           country?: string | null
           created_at?: string
+          date_of_birth?: string | null
           full_name?: string | null
           gym_id?: string | null
           has_consented_matchmaking?: boolean
@@ -1661,6 +1673,9 @@ export type Database = {
           notification_match_updates?: boolean
           notification_system?: boolean
           onboarding_completed?: boolean
+          responsible_person_confirmed_at?: string | null
+          responsible_person_confirmed_version?: number | null
+          responsible_person_name?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2037,8 +2052,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_minor: { Args: { _uid: string }; Returns: boolean }
+      record_date_of_birth: { Args: { _dob: string }; Returns: undefined }
       record_matchmaking_consent: {
         Args: { _version: number }
+        Returns: undefined
+      }
+      record_responsible_person: {
+        Args: { _name: string; _version?: number }
         Returns: undefined
       }
       reject_event: {
