@@ -12,7 +12,7 @@ export function HeroSection() {
 
   return (
     <section
-      className="relative min-h-[70vh] flex items-center overflow-hidden py-16 bg-black"
+      className="relative min-h-[calc(100vh-140px)] flex items-center overflow-hidden py-10 bg-black"
       style={{
         backgroundImage: `url(${heroHorizon.url})`,
         backgroundSize: "cover",
