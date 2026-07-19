@@ -183,6 +183,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
       bio: data.bio || null, country: data.country, training_background: data.training_background || null,
       years_training: data.years_training ? parseInt(data.years_training) : null, region: data.region || null,
       postcode: data.postcode || null,
+      social_url: data.social_url?.trim() || null,
       available: isAvailable,
     } as any).eq("id", fighterProfile.id);
     setSaving(false);
