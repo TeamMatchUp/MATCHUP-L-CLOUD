@@ -71,11 +71,6 @@ export function HeroSection() {
             )}
           </div>
 
-          {/* Trust microcopy */}
-          <p className="mt-8 text-[11px] text-muted-foreground/70 flex items-center gap-1.5 flex-wrap justify-center">
-            <Lock className="h-3 w-3" />
-            Your fighter data is private by default · GDPR compliant · You control visibility
-          </p>
         </div>
       </div>
     </section>
