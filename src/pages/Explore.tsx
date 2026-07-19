@@ -35,7 +35,7 @@ import NetworkBackground from "@/components/NetworkBackground";
 import { ExploreBanner } from "@/components/ExploreBanner";
 import { HazePlaceholder } from "@/components/HazePlaceholder";
 import { FlagIcon, getCountryDisplayName } from "@/components/FlagIcon";
-import { Award } from "lucide-react";
+import { Award, Trophy } from "lucide-react";
 import { BoostedBadge } from "@/components/BoostedBadge";
 import { isEventBoosted, latestBoostCreatedAt } from "@/hooks/useActiveBoost";
 import { EventCard } from "@/components/explore/EventCard";
