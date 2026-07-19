@@ -8,11 +8,12 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { ArrowLeft, Sparkles, Check, X, Search, AlertTriangle, Swords } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ArrowLeft, ArrowRight, Sparkles, Check, X, Search, AlertTriangle, Swords, ChevronDown, ChevronUp, SlidersHorizontal, ExternalLink, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import {
   PRESETS,
@@ -31,16 +32,54 @@ const WEIGHT_CLASS_LABELS: Record<string, string> = {
   cruiserweight: "Cruiserweight", heavyweight: "Heavyweight", super_heavyweight: "Super Heavyweight",
 };
 
+const PRESET_BLURBS: Record<string, string> = {
+  action_night:     "High-energy card built for finishes and crowd reaction.",
+  championship:     "Even, high-stakes matchups suited to title fights.",
+  grassroots:       "Balanced pairings for developing fighters.",
+  ko_special:       "Prioritises knockout artists and stoppage rates.",
+  undefeated_clash: "Pits unbeaten records against each other for narrative.",
+};
+
+const FLAG_COPY: Record<string, string> = {
+  "Debut": "One or both fighters have no logged fights. Coach acknowledgement required before confirming.",
+  "Welfare": "Notable experience gap between fighters. Review with both coaches to confirm suitability.",
+  "Unverified Opponents": "Rating is based partly or entirely on fights against opponents not found on Matchup. Verify strength with fighter/coach before confirming.",
+  "No Competitive History": "Fighter has no verified competitive record on Matchup — treat rating as provisional.",
+};
+
+const EXP_TIERS: { value: string; label: string }[] = [
+  { value: "any", label: "Any experience" },
+  { value: "0", label: "Debut (0 fights)" },
+  { value: "1", label: "Novice (1–3)" },
+  { value: "2", label: "Intermediate (4–9)" },
+  { value: "3", label: "Experienced (10+)" },
+];
+
+function compatibilityLabel(score: number): string {
+  if (score >= 0.75) return "Strong match";
+  if (score >= 0.55) return "Good match";
+  return "Viable match";
+}
+
 export default function Matchmaking() {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // Walkthrough state
+  const [walkStep, setWalkStep] = useState(0); // 0..2, 3 = done
   const [presetKey, setPresetKey] = useState("action_night");
+  const [weightFilter, setWeightFilter] = useState<string>("any");
+  const [expTier, setExpTier] = useState<string>("any");
+  const [regionFilter, setRegionFilter] = useState<string>("");
+  const [availableOnly, setAvailableOnly] = useState(true);
+
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [confirmedFighterIds, setConfirmedFighterIds] = useState<Set<string>>(new Set());
   const [filterText, setFilterText] = useState("");
+  const [showRefine, setShowRefine] = useState(false);
 
-  // Custom slider weights (0–100, must sum to 100)
+  // Refine sliders (initialised from preset, only used when Refine is opened)
   const [wComp, setWComp] = useState(30);
   const [wEnt, setWEnt] = useState(40);
   const [wStyle, setWStyle] = useState(20);
@@ -49,8 +88,7 @@ export default function Matchmaking() {
   // Bout type modal
   const [boutTypeMatch, setBoutTypeMatch] = useState<ScoredMatch | null>(null);
 
-  // When preset changes, set sliders
-  const handlePresetChange = useCallback((key: string) => {
+  const applyPreset = useCallback((key: string) => {
     setPresetKey(key);
     const p = PRESETS[key];
     setWComp(Math.round(p.w_comp * 100));
@@ -59,35 +97,25 @@ export default function Matchmaking() {
     setWNarr(Math.round(p.w_narr * 100));
   }, []);
 
-  // Constrained slider handler — adjusts others proportionally to keep sum at 100
   const handleSlider = useCallback((which: "comp" | "ent" | "style" | "narr", newVal: number) => {
     const current = { comp: wComp, ent: wEnt, style: wStyle, narr: wNarr };
     const others = (["comp", "ent", "style", "narr"] as const).filter(k => k !== which);
     const oldOtherSum = others.reduce((s, k) => s + current[k], 0);
     const newOtherSum = 100 - newVal;
-
+    const vals = { ...current, [which]: newVal };
     if (oldOtherSum === 0) {
       const each = Math.floor(newOtherSum / 3);
       const remainder = newOtherSum - each * 3;
-      const vals = { comp: wComp, ent: wEnt, style: wStyle, narr: wNarr };
       others.forEach((k, i) => { vals[k] = each + (i < remainder ? 1 : 0); });
-      vals[which] = newVal;
-      setWComp(vals.comp); setWEnt(vals.ent); setWStyle(vals.style); setWNarr(vals.narr);
     } else {
       const ratio = newOtherSum / oldOtherSum;
-      const vals = { comp: wComp, ent: wEnt, style: wStyle, narr: wNarr };
-      vals[which] = newVal;
       let assigned = newVal;
       others.forEach((k, i) => {
-        if (i === others.length - 1) {
-          vals[k] = 100 - assigned;
-        } else {
-          vals[k] = Math.max(0, Math.round(current[k] * ratio));
-          assigned += vals[k];
-        }
+        if (i === others.length - 1) vals[k] = 100 - assigned;
+        else { vals[k] = Math.max(0, Math.round(current[k] * ratio)); assigned += vals[k]; }
       });
-      setWComp(vals.comp); setWEnt(vals.ent); setWStyle(vals.style); setWNarr(vals.narr);
     }
+    setWComp(vals.comp); setWEnt(vals.ent); setWStyle(vals.style); setWNarr(vals.narr);
   }, [wComp, wEnt, wStyle, wNarr]);
 
   const activePreset: Preset = useMemo(() => ({
@@ -98,7 +126,6 @@ export default function Matchmaking() {
     w_narr: wNarr / 100,
   }), [wComp, wEnt, wStyle, wNarr]);
 
-  // Fetch event
   const { data: event } = useQuery({
     queryKey: ["matchmaking-event", eventId],
     queryFn: async () => {
@@ -113,83 +140,71 @@ export default function Matchmaking() {
     enabled: !!eventId,
   });
 
-  // Fetch fighters pool
   const { data: fighters = [], isLoading: loadingFighters } = useQuery({
     queryKey: ["matchmaking-pool", eventId, event?.discipline],
     queryFn: async () => {
-      let query = supabase
-        .from("fighter_profiles")
-        .select("*")
-        .eq("available", true);
-
-      if (event?.discipline) {
-        query = query.eq("discipline", event.discipline);
-      }
-
+      let query = supabase.from("fighter_profiles").select("*");
+      if (event?.discipline) query = query.eq("discipline", event.discipline);
       const { data: rawFighters, error } = await query;
       if (error) throw error;
       if (!rawFighters) return [];
-
       const fighterIds = rawFighters.map((f) => f.id);
       const { data: fights = [] } = await supabase
         .from("fights")
         .select("fighter_a_id, result, method")
         .in("fighter_a_id", fighterIds);
-
       const { data: gymLinks = [] } = await supabase
         .from("fighter_gym_links")
         .select("fighter_id, gym_id")
         .eq("status", "approved")
         .in("fighter_id", fighterIds);
-
       const gymMap = new Map<string, string[]>();
       gymLinks.forEach((gl) => {
         const arr = gymMap.get(gl.fighter_id) || [];
         arr.push(gl.gym_id);
         gymMap.set(gl.fighter_id, arr);
       });
-
-      return rawFighters.map((f) =>
-        enrichFighter(f, fights || [], gymMap.get(f.id) || [])
-      );
+      return rawFighters.map((f) => enrichFighter(f, fights || [], gymMap.get(f.id) || []));
     },
     enabled: !!event,
   });
 
-  // Run engine
-  const suggestions = useMemo(() => {
-    if (fighters.length < 2) return [];
-    return runMatchmakingEngine(fighters, activePreset);
-  }, [fighters, activePreset]);
+  const pool = useMemo(() => {
+    return fighters.filter((f) => {
+      if (availableOnly && !f.available) return false;
+      if (weightFilter !== "any" && f.weight_class !== weightFilter) return false;
+      if (expTier !== "any" && String(f.expTier) !== expTier) return false;
+      if (regionFilter.trim() && !(f.region || "").toLowerCase().includes(regionFilter.trim().toLowerCase())) return false;
+      return true;
+    });
+  }, [fighters, availableOnly, weightFilter, expTier, regionFilter]);
 
-  // Apply text filter + dismissed + confirmed fighter exclusion
+  const suggestions = useMemo(() => {
+    if (pool.length < 2) return [];
+    return runMatchmakingEngine(pool, activePreset);
+  }, [pool, activePreset]);
+
   const filtered = useMemo(() => {
     let list = suggestions.filter(
       (s) => !dismissed.has(`${s.fighterA.id}-${s.fighterB.id}`) &&
              !confirmedFighterIds.has(s.fighterA.id) &&
              !confirmedFighterIds.has(s.fighterB.id)
     );
-
     if (filterText.trim()) {
       const lower = filterText.toLowerCase();
-      if (lower.includes("finisher")) {
-        list = list.filter((s) => s.entertainment > 0.5);
-      } else if (lower.includes("local")) {
-        list = list.filter((s) => s.fighterA.region && s.fighterB.region && s.fighterA.region === s.fighterB.region);
-      } else if (lower.includes("undefeated")) {
-        list = list.filter((s) => s.fighterA.record_losses === 0 && s.fighterB.record_losses === 0);
-      } else if (lower.includes("debut")) {
-        list = list.filter((s) => s.flags.includes("Debut"));
-      } else {
-        list = list.filter((s) =>
-          s.fighterA.name.toLowerCase().includes(lower) ||
-          s.fighterB.name.toLowerCase().includes(lower)
-        );
-      }
+      list = list.filter((s) =>
+        s.fighterA.name.toLowerCase().includes(lower) ||
+        s.fighterB.name.toLowerCase().includes(lower)
+      );
     }
-
     return list;
   }, [suggestions, dismissed, filterText, confirmedFighterIds]);
+
+  const availableWeights = useMemo(() => {
+    const set = new Set<string>();
+    fighters.forEach((f) => { if (f.weight_class) set.add(f.weight_class); });
+    return Array.from(set);
+  }, [fighters]);
 
   const handleConfirmWithBoutType = async (boutType: string) => {
     const match = boutTypeMatch;
@@ -204,7 +219,6 @@ export default function Matchmaking() {
         bout_type: boutType,
         status: "confirmed",
       });
-
       await supabase.from("match_suggestions").insert({
         event_id: eventId,
         fighter_a_id: match.fighterA.id,
@@ -218,7 +232,6 @@ export default function Matchmaking() {
         preset_used: presetKey,
         status: "confirmed",
       });
-
       setConfirmedFighterIds((prev) => {
         const next = new Set(prev);
         next.add(match.fighterA.id);
@@ -252,111 +265,170 @@ export default function Matchmaking() {
     setDismissed((prev) => new Set(prev).add(`${match.fighterA.id}-${match.fighterB.id}`));
   };
 
+  const walkthroughActive = walkStep < 3;
+
   return (
+    <TooltipProvider>
     <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-16">
-        <div className="container py-8">
+        <div className="container py-8 max-w-3xl">
           <Button variant="ghost" size="sm" className="mb-6" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4 mr-2" /> Back to Event
           </Button>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8">
-            {/* Left Panel */}
-            <div className="space-y-6">
-              <div className="rounded-lg border border-primary/30 bg-card p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <h2 className="font-heading text-xl text-foreground">MATCHMAKER</h2>
-                </div>
-
-                {event && (
-                  <div className="space-y-2 mb-6">
-                    <h3 className="font-heading text-lg text-foreground">{event.title}</h3>
-                    <p className="text-sm text-muted-foreground">{event.city || event.location}</p>
-                    {event.discipline && <Badge variant="outline" className="capitalize">{event.discipline}</Badge>}
-                    <p className="text-xs text-muted-foreground mt-1">{fighters.length} fighters in pool</p>
-                  </div>
-                )}
-
-                <div className="space-y-3">
-                  <label className="text-sm font-medium text-foreground">Preset</label>
-                  <Select value={presetKey} onValueChange={handlePresetChange}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent position="popper" side="bottom">
-                      {Object.entries(PRESETS).map(([key, p]) => (
-                        <SelectItem key={key} value={key}>{p.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  {/* Sliders */}
-                  <div className="space-y-4 pt-3">
-                    <SliderRow label="Competitiveness" value={wComp} onChange={(v) => handleSlider("comp", v)} />
-                    <SliderRow label="Entertainment" value={wEnt} onChange={(v) => handleSlider("ent", v)} />
-                    <SliderRow label="Style Contrast" value={wStyle} onChange={(v) => handleSlider("style", v)} />
-                    <SliderRow label="Narrative" value={wNarr} onChange={(v) => handleSlider("narr", v)} />
-                    <p className="text-[10px] text-muted-foreground text-right">Total: {wComp + wEnt + wStyle + wNarr}%</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Text filter */}
-              <div className="rounded-lg border border-border bg-card p-4">
-                <label className="text-sm font-medium text-foreground mb-2 block">Quick Filter</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder='e.g. "finishers only" or "local fighters"'
-                    value={filterText}
-                    onChange={(e) => setFilterText(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-2">
-                  Try: finishers, local, undefeated, debut, or a fighter name
-                </p>
-              </div>
-
-              <div className="rounded-lg border border-border bg-card p-4">
-                <p className="text-xs text-muted-foreground">
-                  <strong>{filtered.length}</strong> suggestions · <strong>{dismissed.size}</strong> reviewed · <strong>{confirmedFighterIds.size / 2}</strong> confirmed
-                </p>
-              </div>
-            </div>
-
-            {/* Right Panel — Suggestions */}
-            <div className="space-y-4">
-              <h2 className="font-heading text-2xl text-foreground">
-                RANKED <span className="text-primary">SUGGESTIONS</span>
-              </h2>
-
-              {loadingFighters ? (
-                <div className="text-muted-foreground animate-pulse py-12 text-center">Analysing fighter pool...</div>
-              ) : filtered.length === 0 ? (
-                <div className="rounded-lg border border-border bg-card p-12 text-center">
-                  <Swords className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    {suggestions.length === 0 ? "Not enough eligible fighters to generate suggestions." : "No matches left — adjust your filter or preset."}
-                  </p>
-                </div>
-              ) : (
-                filtered.slice(0, 20).map((match, idx) => (
-                  <MatchCard
-                    key={`${match.fighterA.id}-${match.fighterB.id}`}
-                    match={match}
-                    rank={idx + 1}
-                    onConfirm={() => setBoutTypeMatch(match)}
-                    onDismiss={() => handleDismiss(match)}
-                  />
-                ))
-              )}
-            </div>
+          <div className="flex items-center gap-2 mb-6">
+            <Sparkles className="h-5 w-5 text-primary" />
+            <h1 className="font-heading text-2xl text-foreground">MATCHMAKER</h1>
           </div>
+
+          {event && (
+            <div className="mb-6">
+              <h3 className="font-heading text-lg text-foreground">{event.title}</h3>
+              <p className="text-sm text-muted-foreground">{event.city || event.location}</p>
+            </div>
+          )}
+
+          {walkthroughActive ? (
+            <Walkthrough
+              step={walkStep}
+              setStep={setWalkStep}
+              presetKey={presetKey}
+              applyPreset={applyPreset}
+              weightFilter={weightFilter}
+              setWeightFilter={setWeightFilter}
+              availableWeights={availableWeights}
+              expTier={expTier}
+              setExpTier={setExpTier}
+              regionFilter={regionFilter}
+              setRegionFilter={setRegionFilter}
+              availableOnly={availableOnly}
+              setAvailableOnly={setAvailableOnly}
+            />
+          ) : (
+            <>
+              {/* Header row: preset badge + start over + refine toggle */}
+              <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant="outline" className="capitalize">
+                    {PRESETS[presetKey]?.label || "Custom"}
+                  </Badge>
+                  <Button variant="ghost" size="sm" onClick={() => setWalkStep(0)} className="gap-1 text-muted-foreground">
+                    <RotateCcw className="h-3 w-3" /> Start over
+                  </Button>
+                </div>
+                <Button
+                  variant={showRefine ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowRefine((s) => !s)}
+                  className="gap-2"
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {showRefine ? "Hide refine" : "Refine match"}
+                </Button>
+              </div>
+
+              {/* Search */}
+              <div className="relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search fighters by name"
+                  value={filterText}
+                  onChange={(e) => setFilterText(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Refine panel */}
+              {showRefine && (
+                <div className="rounded-lg bg-card p-5 mb-6 space-y-5" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3)" }}>
+                  <div>
+                    <p className="text-sm font-medium mb-3 text-foreground">Weighting</p>
+                    <div className="space-y-4">
+                      <SliderRow label="Competitiveness" value={wComp} onChange={(v) => handleSlider("comp", v)} />
+                      <SliderRow label="Entertainment" value={wEnt} onChange={(v) => handleSlider("ent", v)} />
+                      <SliderRow label="Style Contrast" value={wStyle} onChange={(v) => handleSlider("style", v)} />
+                      <SliderRow label="Narrative" value={wNarr} onChange={(v) => handleSlider("narr", v)} />
+                      <p className="text-[10px] text-muted-foreground text-right">
+                        Total: {wComp + wEnt + wStyle + wNarr}%
+                      </p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <FilterField label="Weight class">
+                      <Select value={weightFilter} onValueChange={setWeightFilter}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="any">Any weight</SelectItem>
+                          {availableWeights.map((w) => (
+                            <SelectItem key={w} value={w}>{WEIGHT_CLASS_LABELS[w] || w}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FilterField>
+                    <FilterField label="Experience tier">
+                      <Select value={expTier} onValueChange={setExpTier}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {EXP_TIERS.map((t) => (
+                            <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FilterField>
+                    <FilterField label="Region">
+                      <Input
+                        placeholder="e.g. London"
+                        value={regionFilter}
+                        onChange={(e) => setRegionFilter(e.target.value)}
+                      />
+                    </FilterField>
+                    <FilterField label="Availability">
+                      <Button
+                        variant={availableOnly ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setAvailableOnly((v) => !v)}
+                        className="w-full justify-start"
+                      >
+                        {availableOnly ? "Available only" : "All fighters"}
+                      </Button>
+                    </FilterField>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-muted-foreground mb-4">
+                <strong>{filtered.length}</strong> suggestions · <strong>{dismissed.size}</strong> reviewed · <strong>{confirmedFighterIds.size / 2}</strong> confirmed
+              </p>
+
+              <div className="space-y-4">
+                {loadingFighters ? (
+                  <div className="text-muted-foreground animate-pulse py-12 text-center">Analysing fighter pool...</div>
+                ) : filtered.length === 0 ? (
+                  <div className="rounded-lg bg-card p-12 text-center" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4)" }}>
+                    <Swords className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">
+                      {suggestions.length === 0
+                        ? "Not enough eligible fighters to generate suggestions — try widening your filters."
+                        : "No matches left — adjust your search or refine settings."}
+                    </p>
+                  </div>
+                ) : (
+                  filtered.slice(0, 20).map((match) => (
+                    <MatchCard
+                      key={`${match.fighterA.id}-${match.fighterB.id}`}
+                      match={match}
+                      onConfirm={() => setBoutTypeMatch(match)}
+                      onDismiss={() => handleDismiss(match)}
+                    />
+                  ))
+                )}
+              </div>
+            </>
+          )}
         </div>
       </main>
 
-      {/* Bout Type Modal */}
       <Dialog open={!!boutTypeMatch} onOpenChange={(open) => { if (!open) setBoutTypeMatch(null); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
@@ -378,11 +450,143 @@ export default function Matchmaking() {
 
       <Footer />
     </div>
+    </TooltipProvider>
+  );
+}
+
+// ── Walkthrough ─────────────────────────────────────────────────────────
+interface WalkthroughProps {
+  step: number;
+  setStep: (n: number) => void;
+  presetKey: string;
+  applyPreset: (k: string) => void;
+  weightFilter: string;
+  setWeightFilter: (v: string) => void;
+  availableWeights: string[];
+  expTier: string;
+  setExpTier: (v: string) => void;
+  regionFilter: string;
+  setRegionFilter: (v: string) => void;
+  availableOnly: boolean;
+  setAvailableOnly: (v: boolean) => void;
+}
+
+function Walkthrough(p: WalkthroughProps) {
+  const totalSteps = 3;
+  const stepTitles = [
+    "What kind of card are you building?",
+    "Any weight class preference?",
+    "Anything else to narrow it down?",
+  ];
+
+  return (
+    <div className="rounded-lg bg-card p-6 sm:p-8" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3)" }}>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">Step {p.step + 1} of {totalSteps}</p>
+        {p.step > 0 && (
+          <Button variant="ghost" size="sm" onClick={() => p.setStep(totalSteps)} className="text-muted-foreground">
+            Skip
+          </Button>
+        )}
+      </div>
+      <h2 className="font-heading text-2xl text-foreground mb-6">{stepTitles[p.step]}</h2>
+
+      {p.step === 0 && (
+        <div className="space-y-2">
+          {Object.entries(PRESETS).map(([key, preset]) => (
+            <button
+              key={key}
+              onClick={() => { p.applyPreset(key); p.setStep(1); }}
+              className={`w-full text-left rounded-lg p-4 transition-all bg-background hover:bg-muted ${
+                p.presetKey === key ? "ring-2 ring-primary" : ""
+              }`}
+            >
+              <p className="font-heading text-lg text-foreground">{preset.label}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">{PRESET_BLURBS[key]}</p>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {p.step === 1 && (
+        <div className="space-y-4">
+          <FilterField label="Weight class">
+            <Select value={p.weightFilter} onValueChange={p.setWeightFilter}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any weight class</SelectItem>
+                {p.availableWeights.map((w) => (
+                  <SelectItem key={w} value={w}>{WEIGHT_CLASS_LABELS[w] || w}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FilterField>
+          <p className="text-xs text-muted-foreground">Discipline is already set by the event.</p>
+        </div>
+      )}
+
+      {p.step === 2 && (
+        <div className="space-y-4">
+          <FilterField label="Experience tier">
+            <Select value={p.expTier} onValueChange={p.setExpTier}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {EXP_TIERS.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FilterField>
+          <FilterField label="Region">
+            <Input
+              placeholder="e.g. London"
+              value={p.regionFilter}
+              onChange={(e) => p.setRegionFilter(e.target.value)}
+            />
+          </FilterField>
+          <FilterField label="Availability">
+            <Button
+              variant={p.availableOnly ? "default" : "outline"}
+              size="sm"
+              onClick={() => p.setAvailableOnly(!p.availableOnly)}
+              className="w-full justify-start"
+            >
+              {p.availableOnly ? "Available fighters only" : "Include unavailable"}
+            </Button>
+          </FilterField>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between mt-8 pt-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => p.setStep(Math.max(0, p.step - 1))}
+          disabled={p.step === 0}
+          className="gap-1"
+        >
+          <ArrowLeft className="h-3 w-3" /> Back
+        </Button>
+        {p.step > 0 && (
+          <Button size="sm" onClick={() => p.setStep(p.step + 1)} className="gap-1">
+            {p.step === totalSteps - 1 ? "See suggestions" : "Next"} <ArrowRight className="h-3 w-3" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FilterField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">{label}</label>
+      {children}
+    </div>
   );
 }
 
 // ── Sub-components ───────────────────────────────────────────────────────
-
 function SliderRow({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div className="space-y-1">
@@ -390,93 +594,125 @@ function SliderRow({ label, value, onChange }: { label: string; value: number; o
         <span className="text-xs text-muted-foreground">{label}</span>
         <span className="text-xs font-medium text-foreground tabular-nums">{value}%</span>
       </div>
-      <Slider
-        value={[value]}
-        onValueChange={([v]) => onChange(v)}
-        min={0}
-        max={100}
-        step={1}
-        className="w-full"
-      />
-    </div>
-  );
-}
-
-function DimensionBar({ label, value }: { label: string; value: number }) {
-  const pct = Math.round(value * 100);
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] text-muted-foreground w-20 shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
-      </div>
-      <span className="text-[10px] font-medium text-foreground w-8 text-right">{pct}%</span>
+      <Slider value={[value]} onValueChange={([v]) => onChange(v)} min={0} max={100} step={1} className="w-full" />
     </div>
   );
 }
 
 interface MatchCardProps {
   match: ScoredMatch;
-  rank: number;
   onConfirm: () => void;
   onDismiss: () => void;
 }
 
-function MatchCard({ match, rank, onConfirm, onDismiss }: MatchCardProps) {
+function MatchCard({ match, onConfirm, onDismiss }: MatchCardProps) {
   const { fighterA: a, fighterB: b } = match;
-  const compositePct = Math.round(match.composite * 100);
+  const [whyOpen, setWhyOpen] = useState(true);
+  const label = compatibilityLabel(match.composite);
+  const barPct = Math.max(6, Math.min(100, Math.round(match.composite * 100)));
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5 hover:border-primary/40 transition-colors">
-      <div className="flex items-start justify-between gap-4 mb-3">
-        <div className="flex items-center gap-3">
-          <span className="font-heading text-lg text-muted-foreground">#{rank}</span>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Link to={`/fighters/${a.id}`} className="font-medium text-foreground hover:text-primary">{a.name}</Link>
-              <span className="text-xs text-muted-foreground">({a.record_wins}W-{a.record_losses}L-{a.record_draws}D)</span>
-              <span className="text-primary font-heading text-sm">VS</span>
-              <Link to={`/fighters/${b.id}`} className="font-medium text-foreground hover:text-primary">{b.name}</Link>
-              <span className="text-xs text-muted-foreground">({b.record_wins}W-{b.record_losses}L-{b.record_draws}D)</span>
-            </div>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              {a.weight_class && <Badge variant="outline" className="text-[10px]">{WEIGHT_CLASS_LABELS[a.weight_class] || a.weight_class}</Badge>}
-              {a.fighting_substyle && <Badge variant="secondary" className="text-[10px]">{a.fighting_substyle}</Badge>}
-              {b.fighting_substyle && <Badge variant="secondary" className="text-[10px]">{b.fighting_substyle}</Badge>}
-            </div>
-          </div>
-        </div>
-        <div className="text-right shrink-0">
-          <p className="font-heading text-2xl text-primary">{compositePct}%</p>
-          <p className="text-[10px] text-muted-foreground">Match Score</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-3">
-        <DimensionBar label="Competitive" value={match.competitiveness} />
-        <DimensionBar label="Entertainment" value={match.entertainment} />
-        <DimensionBar label="Style Clash" value={match.styleContrast} />
-        <DimensionBar label="Narrative" value={match.narrative} />
-      </div>
-
-      {match.flags.length > 0 && (
-        <div className="flex items-center gap-2 mb-3">
-          {match.flags.map((flag) => (
-            <Badge key={flag} variant="outline" className={flag === "Welfare" ? "text-destructive border-destructive/40 text-[10px]" : "text-amber-500 border-amber-500/40 text-[10px]"}>
-              <AlertTriangle className="h-3 w-3 mr-1" />{flag}
+    <div className="rounded-lg bg-card p-5" style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.3)" }}>
+      {/* vs layout */}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 mb-4">
+        <div className="text-right">
+          <Link to={`/fighters/${a.id}`} className="font-heading text-lg text-foreground hover:text-primary block truncate">
+            {a.name}
+          </Link>
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {a.record_wins}W · {a.record_losses}L · {a.record_draws}D
+          </p>
+          {a.weight_class && (
+            <Badge variant="outline" className="text-[10px] mt-1">
+              {WEIGHT_CLASS_LABELS[a.weight_class] || a.weight_class}
             </Badge>
-          ))}
+          )}
         </div>
-      )}
+        <span className="font-heading text-primary text-xl px-2">VS</span>
+        <div className="text-left">
+          <Link to={`/fighters/${b.id}`} className="font-heading text-lg text-foreground hover:text-primary block truncate">
+            {b.name}
+          </Link>
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {b.record_wins}W · {b.record_losses}L · {b.record_draws}D
+          </p>
+          {b.weight_class && (
+            <Badge variant="outline" className="text-[10px] mt-1">
+              {WEIGHT_CLASS_LABELS[b.weight_class] || b.weight_class}
+            </Badge>
+          )}
+        </div>
+      </div>
 
-      <p className="text-xs text-muted-foreground mb-4 italic">{match.explanation}</p>
+      {/* Compatibility bar + label + warning icons */}
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-xs font-medium text-foreground">{label}</span>
+          {match.flags.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              {match.flags.map((flag) => (
+                <Tooltip key={flag}>
+                  <TooltipTrigger asChild>
+                    <span
+                      className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-background"
+                      aria-label={`Warning: ${flag}`}
+                    >
+                      <AlertTriangle className={`h-3.5 w-3.5 ${flag === "Welfare" ? "text-destructive" : "text-amber-500"}`} />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">{flag}</TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div
+            className="h-full rounded-full bg-primary transition-all"
+            style={{ width: `${barPct}%` }}
+          />
+        </div>
+      </div>
 
-      <div className="flex items-center gap-2 justify-end">
+      {/* Why this match — visible by default, collapsible */}
+      <Collapsible open={whyOpen} onOpenChange={setWhyOpen}>
+        <CollapsibleTrigger asChild>
+          <button className="flex items-center gap-1.5 text-xs font-medium text-primary hover:underline mb-2">
+            {whyOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            Why this match
+          </button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-2 mb-4">
+          <p className="text-xs text-muted-foreground italic">{match.explanation}</p>
+          {match.flags.map((flag) => (
+            <div key={flag} className="rounded-md bg-background p-2.5">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className={`h-3.5 w-3.5 mt-0.5 shrink-0 ${flag === "Welfare" ? "text-destructive" : "text-amber-500"}`} />
+                <div>
+                  <p className="text-xs font-medium text-foreground">{flag}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {FLAG_COPY[flag] || "Review this flag with both coaches before confirming."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2 justify-end flex-wrap">
+        <Button variant="ghost" size="sm" asChild className="gap-1 text-muted-foreground">
+          <Link to={`/fighters/${a.id}`}><ExternalLink className="h-3 w-3" /> View A</Link>
+        </Button>
+        <Button variant="ghost" size="sm" asChild className="gap-1 text-muted-foreground">
+          <Link to={`/fighters/${b.id}`}><ExternalLink className="h-3 w-3" /> View B</Link>
+        </Button>
         <Button variant="ghost" size="sm" onClick={onDismiss} className="gap-1 text-muted-foreground">
           <X className="h-3 w-3" /> Dismiss
         </Button>
         <Button size="sm" onClick={onConfirm} className="gap-1">
-          <Check className="h-3 w-3" /> Confirm
+          <Check className="h-3 w-3" /> Accept
         </Button>
       </div>
     </div>
