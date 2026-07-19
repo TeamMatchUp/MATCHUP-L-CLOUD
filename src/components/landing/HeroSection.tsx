@@ -3,6 +3,7 @@ import { useAuthModal } from "@/components/auth/AuthModalProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { AppIcon } from "@/components/AppIcon";
 import { Link } from "react-router-dom";
+import { ChevronDown } from "lucide-react";
 import heroHorizon from "@/assets/hero-horizon.png.asset.json";
 
 export function HeroSection() {
