@@ -285,6 +285,255 @@ function EventClaimsTable() {
   );
 }
 
+function RejectDialog({
+  open, onOpenChange, onConfirm, kind, name, pending,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onConfirm: (reason: string) => void;
+  kind: "gym" | "event";
+  name: string;
+  pending: boolean;
+}) {
+  const [reason, setReason] = useState("");
+  useEffect(() => { if (!open) setReason(""); }, [open]);
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reject {kind}</DialogTitle>
+          <DialogDescription>
+            Optionally tell the submitter why "{name}" was not approved. They'll receive a notification.
+          </DialogDescription>
+        </DialogHeader>
+        <Textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Reason (optional)"
+          rows={3}
+        />
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button variant="destructive" disabled={pending} onClick={() => onConfirm(reason)}>
+            {pending ? "Rejecting…" : "Reject"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PendingGymsTable() {
+  const queryClient = useQueryClient();
+  const [rejectTarget, setRejectTarget] = useState<any>(null);
+
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ["admin-pending-gyms"],
+    queryFn: async () => {
+      const { data, error } = await (supabase.from("gyms") as any)
+        .select("id, name, city, country, location, created_at, coach_id")
+        .eq("review_status", "pending")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      const coachIds = Array.from(new Set((data ?? []).map((r: any) => r.coach_id).filter(Boolean)));
+      let profileMap = new Map<string, any>();
+      if (coachIds.length > 0) {
+        const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", coachIds as any);
+        (profs ?? []).forEach((p: any) => profileMap.set(p.id, p));
+      }
+      return (data ?? []).map((r: any) => ({ ...r, coach: profileMap.get(r.coach_id) }));
+    },
+  });
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-pending-gyms"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-pending-all"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-gym-summary"] });
+  };
+
+  const approve = useMutation({
+    mutationFn: async (row: any) => {
+      const { error } = await supabase.rpc("approve_gym" as any, { _gym_id: row.id });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast({ title: "Gym approved" }); invalidate(); },
+    onError: (e: any) => toast({ title: "Failed to approve", description: e.message, variant: "destructive" }),
+  });
+
+  const reject = useMutation({
+    mutationFn: async ({ row, reason }: { row: any; reason: string }) => {
+      const { error } = await supabase.rpc("reject_gym" as any, { _gym_id: row.id, _reason: reason || null });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast({ title: "Gym rejected" }); setRejectTarget(null); invalidate(); },
+    onError: (e: any) => toast({ title: "Failed to reject", description: e.message, variant: "destructive" }),
+  });
+
+  if (isLoading) return <p className="text-muted-foreground text-sm">Loading…</p>;
+  if (!rows?.length) return <p className="text-muted-foreground text-sm">No gyms pending review.</p>;
+
+  return (
+    <>
+      <div className="rounded-lg border border-border/40 overflow-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Gym</TableHead>
+              <TableHead>Submitter</TableHead>
+              <TableHead className="hidden md:table-cell">Location</TableHead>
+              <TableHead className="hidden md:table-cell">Submitted</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r: any) => (
+              <TableRow key={r.id}>
+                <TableCell className="font-medium">{r.name}</TableCell>
+                <TableCell>{r.coach?.full_name ?? "—"}</TableCell>
+                <TableCell className="hidden md:table-cell">{[r.city, r.location, r.country].filter(Boolean).join(", ")}</TableCell>
+                <TableCell className="hidden md:table-cell">{r.created_at ? format(new Date(r.created_at), "dd MMM yyyy") : "—"}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex gap-1 justify-end">
+                    <Button size="sm" variant="outline" className="h-7 text-xs border-green-600/40 text-green-500 hover:bg-green-600/10" onClick={() => approve.mutate(r)} disabled={approve.isPending}>
+                      <CheckCircle className="h-3 w-3 mr-1" /> Approve
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7 text-xs border-destructive/40 text-destructive hover:bg-destructive/10" onClick={() => setRejectTarget(r)}>
+                      <XCircle className="h-3 w-3 mr-1" /> Reject
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <RejectDialog
+        open={!!rejectTarget}
+        onOpenChange={(v) => !v && setRejectTarget(null)}
+        onConfirm={(reason) => rejectTarget && reject.mutate({ row: rejectTarget, reason })}
+        kind="gym"
+        name={rejectTarget?.name ?? ""}
+        pending={reject.isPending}
+      />
+    </>
+  );
+}
+
+function PendingEventsTable() {
+  const queryClient = useQueryClient();
+  const [rejectTarget, setRejectTarget] = useState<any>(null);
+
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ["admin-pending-events"],
+    queryFn: async () => {
+      const { data, error } = await (supabase.from("events") as any)
+        .select("id, title, city, location, date, created_at, organiser_id")
+        .eq("review_status", "pending")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      const orgIds = Array.from(new Set((data ?? []).map((r: any) => r.organiser_id).filter(Boolean)));
+      let profileMap = new Map<string, any>();
+      if (orgIds.length > 0) {
+        const { data: profs } = await supabase.from("profiles").select("id, full_name").in("id", orgIds as any);
+        (profs ?? []).forEach((p: any) => profileMap.set(p.id, p));
+      }
+      return (data ?? []).map((r: any) => ({ ...r, organiser: profileMap.get(r.organiser_id) }));
+    },
+  });
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-pending-events"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-pending-all"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-gym-summary"] });
+  };
+
+  const approve = useMutation({
+    mutationFn: async (row: any) => {
+      const { error } = await supabase.rpc("approve_event" as any, { _event_id: row.id });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast({ title: "Event approved" }); invalidate(); },
+    onError: (e: any) => toast({ title: "Failed to approve", description: e.message, variant: "destructive" }),
+  });
+
+  const reject = useMutation({
+    mutationFn: async ({ row, reason }: { row: any; reason: string }) => {
+      const { error } = await supabase.rpc("reject_event" as any, { _event_id: row.id, _reason: reason || null });
+      if (error) throw error;
+    },
+    onSuccess: () => { toast({ title: "Event rejected" }); setRejectTarget(null); invalidate(); },
+    onError: (e: any) => toast({ title: "Failed to reject", description: e.message, variant: "destructive" }),
+  });
+
+  if (isLoading) return <p className="text-muted-foreground text-sm">Loading…</p>;
+  if (!rows?.length) return <p className="text-muted-foreground text-sm">No events pending review.</p>;
+
+  return (
+    <>
+      <div className="rounded-lg border border-border/40 overflow-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Event</TableHead>
+              <TableHead>Organiser</TableHead>
+              <TableHead className="hidden md:table-cell">Location</TableHead>
+              <TableHead className="hidden md:table-cell">Date</TableHead>
+              <TableHead className="hidden md:table-cell">Submitted</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((r: any) => (
+              <TableRow key={r.id}>
+                <TableCell className="font-medium">{r.title}</TableCell>
+                <TableCell>{r.organiser?.full_name ?? "—"}</TableCell>
+                <TableCell className="hidden md:table-cell">{[r.city, r.location].filter(Boolean).join(", ")}</TableCell>
+                <TableCell className="hidden md:table-cell">{r.date ? format(new Date(r.date), "dd MMM yyyy") : "—"}</TableCell>
+                <TableCell className="hidden md:table-cell">{r.created_at ? format(new Date(r.created_at), "dd MMM yyyy") : "—"}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex gap-1 justify-end">
+                    <Button size="sm" variant="outline" className="h-7 text-xs border-green-600/40 text-green-500 hover:bg-green-600/10" onClick={() => approve.mutate(r)} disabled={approve.isPending}>
+                      <CheckCircle className="h-3 w-3 mr-1" /> Approve
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7 text-xs border-destructive/40 text-destructive hover:bg-destructive/10" onClick={() => setRejectTarget(r)}>
+                      <XCircle className="h-3 w-3 mr-1" /> Reject
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <RejectDialog
+        open={!!rejectTarget}
+        onOpenChange={(v) => !v && setRejectTarget(null)}
+        onConfirm={(reason) => rejectTarget && reject.mutate({ row: rejectTarget, reason })}
+        kind="event"
+        name={rejectTarget?.title ?? ""}
+        pending={reject.isPending}
+      />
+    </>
+  );
+}
+
+function ReviewQueue() {
+  return (
+    <Tabs defaultValue="gyms">
+      <TabsList>
+        <TabsTrigger value="gyms"><Building2 className="h-4 w-4 mr-1" /> Gyms</TabsTrigger>
+        <TabsTrigger value="events"><Calendar className="h-4 w-4 mr-1" /> Events</TabsTrigger>
+      </TabsList>
+      <TabsContent value="gyms" className="mt-4">
+        <PendingGymsTable />
+      </TabsContent>
+      <TabsContent value="events" className="mt-4">
+        <PendingEventsTable />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
 export default function Admin() {
   const { session, loading } = useAuth();
 
