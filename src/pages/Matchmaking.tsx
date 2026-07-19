@@ -414,9 +414,9 @@ export default function Matchmaking() {
                       <Select value={weightFilter} onValueChange={setWeightFilter}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="any">Any weight</SelectItem>
-                          {availableWeights.map((w) => (
-                            <SelectItem key={w} value={w}>{WEIGHT_CLASS_LABELS[w] || w}</SelectItem>
+                          <SelectItem value="any">Any weight class</SelectItem>
+                          {Object.entries(WEIGHT_CLASS_LABELS).map(([k, label]) => (
+                            <SelectItem key={k} value={k}>{label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -431,22 +431,12 @@ export default function Matchmaking() {
                         </SelectContent>
                       </Select>
                     </FilterField>
-                    <FilterField label="Region">
-                      <Input
-                        placeholder="e.g. London"
-                        value={regionFilter}
-                        onChange={(e) => setRegionFilter(e.target.value)}
+                    <FilterField label="Nationality">
+                      <SearchableCountrySelect
+                        value={nationalityFilter}
+                        onValueChange={setNationalityFilter}
+                        includeAll
                       />
-                    </FilterField>
-                    <FilterField label="Availability">
-                      <Button
-                        variant={availableOnly ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setAvailableOnly((v) => !v)}
-                        className="w-full justify-start"
-                      >
-                        {availableOnly ? "Available only" : "All fighters"}
-                      </Button>
                     </FilterField>
                   </div>
                 </div>
