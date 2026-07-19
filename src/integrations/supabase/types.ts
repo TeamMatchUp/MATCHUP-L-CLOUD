@@ -843,6 +843,8 @@ export type Database = {
           created_by_coach_id: string | null
           date_of_birth: string | null
           discipline: string | null
+          elo_last_computed_at: string | null
+          elo_rating: number
           email: string | null
           fighting_substyle: string | null
           height: number | null
@@ -879,6 +881,8 @@ export type Database = {
           created_by_coach_id?: string | null
           date_of_birth?: string | null
           discipline?: string | null
+          elo_last_computed_at?: string | null
+          elo_rating?: number
           email?: string | null
           fighting_substyle?: string | null
           height?: number | null
@@ -915,6 +919,8 @@ export type Database = {
           created_by_coach_id?: string | null
           date_of_birth?: string | null
           discipline?: string | null
+          elo_last_computed_at?: string | null
+          elo_rating?: number
           email?: string | null
           fighting_substyle?: string | null
           height?: number | null
@@ -1606,9 +1612,12 @@ export type Database = {
           created_at: string
           full_name: string | null
           gym_id: string | null
+          has_consented_matchmaking: boolean
           has_seen_tutorial: boolean
           id: string
           marketing_opt_in: boolean
+          matchmaking_consent_at: string | null
+          matchmaking_consent_version: number | null
           notification_event_updates: boolean
           notification_match_proposals: boolean
           notification_match_updates: boolean
@@ -1622,9 +1631,12 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           gym_id?: string | null
+          has_consented_matchmaking?: boolean
           has_seen_tutorial?: boolean
           id: string
           marketing_opt_in?: boolean
+          matchmaking_consent_at?: string | null
+          matchmaking_consent_version?: number | null
           notification_event_updates?: boolean
           notification_match_proposals?: boolean
           notification_match_updates?: boolean
@@ -1638,9 +1650,12 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           gym_id?: string | null
+          has_consented_matchmaking?: boolean
           has_seen_tutorial?: boolean
           id?: string
           marketing_opt_in?: boolean
+          matchmaking_consent_at?: string | null
+          matchmaking_consent_version?: number | null
           notification_event_updates?: boolean
           notification_match_proposals?: boolean
           notification_match_updates?: boolean
@@ -2021,6 +2036,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      record_matchmaking_consent: {
+        Args: { _version: number }
+        Returns: undefined
       }
       reject_event: {
         Args: { _event_id: string; _reason?: string }

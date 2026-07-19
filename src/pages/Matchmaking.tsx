@@ -23,6 +23,8 @@ import {
   type ScoredMatch,
   type Preset,
 } from "@/lib/matchmakingEngine";
+import { useMatchmakingConsent } from "@/lib/matchmakingConsent";
+import { MatchmakingConsentModal } from "@/components/matchmaking/MatchmakingConsentModal";
 
 const WEIGHT_CLASS_LABELS: Record<string, string> = {
   strawweight: "Strawweight", flyweight: "Flyweight", bantamweight: "Bantamweight",
@@ -43,7 +45,7 @@ const PRESET_BLURBS: Record<string, string> = {
 const FLAG_COPY: Record<string, string> = {
   "Debut": "One or both fighters have no logged fights. Coach acknowledgement required before confirming.",
   "Welfare": "Notable experience gap between fighters. Review with both coaches to confirm suitability.",
-  "Unverified Opponents": "Rating is based partly or entirely on fights against opponents not found on Matchup. Verify strength with fighter/coach before confirming.",
+  "No Platform History": "This fighter's rating is built from self-reported history using neutral assumptions — not yet tested against a Matchup-confirmed opponent. Verify suitability with fighter/coach before confirming this match.",
   "No Competitive History": "Fighter has no verified competitive record on Matchup — treat rating as provisional.",
 };
 
@@ -266,6 +268,29 @@ export default function Matchmaking() {
   };
 
   const walkthroughActive = walkStep < 3;
+
+  const { loading: consentLoading, needsConsent, recordConsent } = useMatchmakingConsent();
+
+  if (consentLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Loading…</div>
+      </div>
+    );
+  }
+
+  if (needsConsent) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <MatchmakingConsentModal
+          open
+          onConsented={() => { /* query invalidation reveals content */ }}
+          recordConsent={recordConsent}
+        />
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>
