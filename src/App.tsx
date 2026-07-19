@@ -39,6 +39,7 @@ import Checkout from "./pages/Checkout";
 import CheckoutReturn from "./pages/CheckoutReturn";
 import Pricing from "./pages/Pricing";
 import ProposalDetailPage from "./pages/ProposalDetailPage";
+import Leaderboard from "./pages/Leaderboard";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
