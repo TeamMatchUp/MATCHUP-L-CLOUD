@@ -562,6 +562,8 @@ export default function Admin() {
 
         <AdminSummary />
 
+        <EloRecomputePanel />
+
         <div>
           <h2 className="font-heading text-lg text-foreground mb-3 flex items-center gap-2">
             <Inbox className="h-5 w-5 text-primary" /> Review Queue
