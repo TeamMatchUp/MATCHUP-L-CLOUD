@@ -133,7 +133,10 @@ export default function CreateEvent() {
       return;
     }
 
-    toast({ title: "Event created", description: "Your event is saved as a draft." });
+    toast({
+      title: "Submitted for review",
+      description: "Your event has been submitted and is pending review. We'll notify you once it's live.",
+    });
     navigate(`/organiser/events/${event.id}`);
   };
 
