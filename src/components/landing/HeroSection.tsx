@@ -23,7 +23,7 @@ export function HeroSection() {
         <div className="mx-auto max-w-6xl flex flex-col items-center text-center">
           {/* Horizontal lockup: MATCH EASY — shield — FIGHT HARD */}
           <h1
-            className="font-heading flex items-center justify-center gap-[0.08em] sm:gap-[0.1em] text-foreground"
+            className="font-heading flex items-center justify-center gap-[0.02em] sm:gap-[0.03em] text-foreground"
             style={{
               fontWeight: 800,
               letterSpacing: "0.01em",
@@ -32,7 +32,7 @@ export function HeroSection() {
             }}
           >
             <span>MATCH EASY</span>
-            <span className="inline-flex shrink-0" style={{ height: "2em" }}>
+            <span className="inline-flex shrink-0" style={{ height: "4em" }}>
               <AppIcon className="h-full w-auto" alt="MatchUp shield" />
             </span>
             <span>FIGHT HARD</span>
@@ -43,7 +43,8 @@ export function HeroSection() {
             className="text-foreground/90 mt-8 max-w-2xl font-normal"
             style={{ fontSize: "clamp(1rem, 1.6vw, 1.25rem)", lineHeight: 1.5 }}
           >
-            Fighters, coaches and promoters are already matching.{" "}
+            Fighters, coaches and promoters are already matching.
+            <br />
             <strong className="font-bold text-foreground">Don't get left off the card.</strong>
           </p>
 
