@@ -1,44 +1,71 @@
+## Scope
+All edits confined to `src/pages/Matchmaking.tsx`. No engine, scoring, Elo, RLS, or schema changes.
 
-## Change
+---
 
-In `src/lib/matchmakingEngine.ts`, feed a weighted fight count into the existing tier function so amateur experience counts, discounted to match the Elo `level_weight` (0.55).
+## 1. Fix blocking bug — discipline mismatch
 
-### Current
-```ts
-function getExpTier(totalPro: number): number {
-  if (totalPro === 0) return 0;   // T0 Debut
-  if (totalPro <= 3) return 1;   // T1 Novice
-  if (totalPro <= 9) return 2;   // T2 Intermediate
-  return 3;                       // T3 Experienced
-}
-// ...
-const totalPro = f.record_wins + f.record_losses + f.record_draws;
-expTier: getExpTier(totalPro),
-```
+**Root cause (confirmed against DB):** the fighter pool query uses `.eq("discipline", event.discipline)`, but `events.discipline` is inconsistently cased and sometimes multi-token (`boxing`, `muay_thai`, `Mixed (Muay Thai & Boxing)`), while `fighter_profiles.discipline` uses canonical single values (`Boxing`, `Muay Thai`, `MMA`, `Kickboxing`, `Bjj`). Exact-string match returns zero fighters → empty pool → engine returns `[]` → UI renders blank with no explanation. Elo is fully populated (73/73) and is not the cause.
 
-### After
-Keep the thresholds (0 / 1–3 / 4–9 / 10+) unchanged. Only the input changes:
+**Fix:**
+- Add a `normaliseDiscipline(raw: string): string[]` helper that:
+  - Lowercases, replaces `_` with space, strips punctuation.
+  - Maps known aliases (`bjj`→`Bjj`, `mma`→`MMA`, `muay thai`→`Muay Thai`, `boxing`→`Boxing`, `kickboxing`→`Kickboxing`).
+  - Splits combined values on `&`, `/`, `,`, or `and` (so `Mixed (Muay Thai & Boxing)` → `["Muay Thai", "Boxing"]`).
+  - Returns a de-duplicated array of canonical fighter-profile discipline values.
+- Change the pool query from `.eq("discipline", event.discipline)` to `.in("discipline", normalised)` when the array is non-empty; when the array is empty (unrecognised discipline) fetch all fighters and rely on the diagnostic banner (below).
+- Add a diagnostic banner shown when `fighters.length === 0` after the query resolves (not loading):
+  > "No fighters match this event's discipline (`{event.discipline}`). Showing all fighters as a fallback so you can still build the card."
+  Combined with a fallback query in that branch that drops the discipline filter entirely, so the walkthrough always has something to work with.
 
-```ts
-const AMATEUR_TIER_WEIGHT = 0.55; // mirrors Elo level_weight
+## 2. Step 1 copy
+Change the Step 1 question string inside the `Walkthrough` component from "What kind of card are you building?" to **"Select the type of fight you want to see"**. Preset options and blurbs unchanged.
 
-const totalPro = f.record_wins + f.record_losses + f.record_draws;
-const totalAmateur =
-  (f.amateur_wins ?? 0) + (f.amateur_losses ?? 0) + (f.amateur_draws ?? 0);
-const weightedFightCount = totalPro + totalAmateur * AMATEUR_TIER_WEIGHT;
+## 3. Step 2 weight dropdown
+Source options from the full `WEIGHT_CLASS_LABELS` map already defined at the top of the file, not from `availableWeights` derived from the (possibly empty) pool. Order: `"Any weight class"` first, then every entry in `WEIGHT_CLASS_LABELS` in its declared order. Apply the same change to the Refine panel weight dropdown so both agree.
 
-expTier: getExpTier(weightedFightCount),
-```
+## 4. Experience tier — no change
+Confirmed wired to real data (see investigation above). No edits.
 
-`getExpTier` signature widens to `number` (float) — the `<= 3` / `<= 9` comparisons keep working with fractional inputs.
+## 5. Region → Nationality
+- Remove `regionFilter` state, the Step 3 "Region" text `Input`, and the Refine panel "Region" field.
+- Add `nationalityFilter` state (default `"any"`).
+- New filter uses `SearchableCountrySelect` (already exists at `src/components/SearchableCountrySelect.tsx`, includes flag icons and search) with `includeAll` so "All Countries" is the "Any" option.
+- Update the pool filter (`useMemo` at line 174) to filter on `f.country === nationalityFilter` when not `"any"`. `country` is present on all 73 fighter_profiles, so the field is safe.
+- Add both Step 3 and Refine panel instances.
 
-`totalPro` field on `FighterWithStats` stays as pro-only (used elsewhere by `proDiff` in the debut-exception check — must remain pro-only per spec: "No change to hard-block or exception-window logic itself").
+## 6. Remove "Available only"
+Delete `availableOnly` state, the Step 3 toggle, the Refine panel "Availability" field, and its use inside the pool `useMemo`. The `available` column on fighter_profiles is untouched — only the UI filter is removed.
 
-### Verification against your cases
-- 0 pro + 20 am → weighted 11.0 → **T3** (was T0). ✓
-- 0 pro + 2 am → weighted 1.1 → **T1** (was T0). Note: your spec allowed "T0 or a low tier"; 1.1 rounds into T1 under the existing `totalPro === 0 → T0` threshold since 1.1 ≠ 0. This is consistent with the philosophy (small but real experience → out of Debut). Flagging so you can confirm; if you'd rather keep 2-am fighters at T0, we'd change the T0 rule to `< 1` (i.e. require ≥ 1 weighted fight to leave Debut) — say the word and I'll adjust.
-- Pro-only fighters: `totalAmateur = 0` → weighted count = `totalPro` → tier identical to today. ✓
-- Hard-block (`tierGap > 2`) and exception (`tierGap === 2 && proDiff <= 3`) logic untouched.
+## 7. Walkthrough styling — match AuthModal
+- Convert the inline `Walkthrough` render (currently inside `<main>`) to render inside a shadcn `<Dialog>` whose `open` is `walkthroughActive`. Use the exact `DialogContent` styling from `AuthModal.tsx`:
+  ```
+  className="p-0 border-0 max-w-md overflow-hidden"
+  style={{
+    background: "hsl(var(--card))",
+    boxShadow: "var(--shadow-modal)",
+    backdropFilter: "blur(20px) saturate(160%)",
+    WebkitBackdropFilter: "blur(20px) saturate(160%)",
+  }}
+  ```
+  (Radix's `DialogOverlay` already provides the frosted/blurred backdrop treatment used by the sign-up flow.)
+- Add the segmented top progress indicator copied from `AuthModal`'s `SIGNUP_STEPS` block:
+  - Steps array: `["Fight type", "Weight", "Filters"]`.
+  - Numbered pills that turn primary-gold when done/active, with checkmark once done.
+  - Thin `h-1` progress bar underneath, fills to `((step + 1) / 3) * 100%`.
+  - Clicking a completed pill jumps back to that step (same pattern as sign-up).
+- Keep the underlying step content (preset picker, weight dropdown, tier + nationality) as-is; only the wrapper and header change.
+- When the user finishes step 3 (or clicks "Start over" from the results view), close the dialog by setting `walkStep = 3`. Results/refine UI stays where it is (below the header, non-modal) once the walkthrough is done.
+
+---
+
+## Verification
+- Open matchmaking for a `boxing`, `muay_thai`, and `Mixed (…)` event; confirm fighters appear in the pool and suggestions render with zero filters applied.
+- Unrecognised discipline → banner shown + fallback pool used.
+- Weight dropdown lists all 14 classes.
+- Nationality dropdown lists countries with flags; selecting one filters pool.
+- Availability toggle absent from both Step 3 and Refine.
+- Walkthrough opens as a centered modal with frosted backdrop and 3-step segmented progress bar visually matching the sign-up modal.
 
 ## Out of scope (unchanged)
-Tier thresholds, hard-block/exception logic, Elo engine, discipline normaliser, weight dropdown, nationality filter, modal styling.
+Engine scoring, safety gate thresholds, Elo recompute, RLS, schema, tier logic, preset weights.
