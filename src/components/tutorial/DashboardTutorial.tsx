@@ -51,17 +51,9 @@ interface Rect {
   height: number;
 }
 
-// Some tutorial steps piggyback on another step's anchor (e.g. the
-// "interactions" copy uses the notification bell so users see where match
-// requests / claims / applications land).
-const ANCHOR_ALIAS: Record<string, string> = {
-  interactions: "notifications",
-};
-
-function getRect(key: string): Rect | null {
+function getRect(anchor: string): Rect | null {
   if (typeof document === "undefined") return null;
-  const anchorKey = ANCHOR_ALIAS[key] ?? key;
-  const el = document.querySelector<HTMLElement>(`[data-tutorial="${anchorKey}"]`);
+  const el = document.querySelector<HTMLElement>(`[data-tutorial="${anchor}"]`);
   if (!el) return null;
   const r = el.getBoundingClientRect();
   if (r.width === 0 && r.height === 0) return null;
