@@ -412,6 +412,9 @@ export default function Dashboard() {
         </main>
       </div>
 
+      {/* Age gate — DOB prompt first, guardian confirmation only if under 18 */}
+      <AgeGate />
+
       {/* First-login dashboard tutorial */}
       {user && tutorialFlag?.has_seen_tutorial === false && activeRole && (
         <DashboardTutorial
