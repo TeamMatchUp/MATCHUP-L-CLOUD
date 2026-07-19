@@ -29,6 +29,7 @@ import { ImportFightersDialog } from "@/components/coach/ImportFightersDialog";
 import { GymRequestsPanel } from "@/components/coach/GymRequestsPanel";
 import { EditableProfilePanel } from "@/components/fighter/EditableProfilePanel";
 import { DashboardAnalytics } from "@/components/dashboard/DashboardAnalytics";
+import { AgeGate } from "@/components/age/AgeGate";
 import { SEO } from "@/components/SEO";
 import type { Database } from "@/integrations/supabase/types";
 
