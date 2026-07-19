@@ -24,23 +24,21 @@ function AdminSummary() {
   const { data } = useQuery({
     queryKey: ["admin-gym-summary"],
     queryFn: async () => {
-      const [total, unclaimed, claimed, pending, eventClaims, pendingGyms, pendingEvents] = await Promise.all([
-        supabase.from("gyms").select("id", { count: "exact", head: true }),
-        supabase.from("gyms").select("id", { count: "exact", head: true }).eq("claimed", false),
-        supabase.from("gyms").select("id", { count: "exact", head: true }).eq("claimed", true),
-        supabase.from("gym_claims").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("event_claims" as any).select("id", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("gyms").select("id", { count: "exact", head: true }).eq("review_status" as any, "pending"),
-        supabase.from("events").select("id", { count: "exact", head: true }).eq("review_status" as any, "pending"),
-      ]);
+      const total = await supabase.from("gyms").select("id", { count: "exact", head: true });
+      const unclaimed = await supabase.from("gyms").select("id", { count: "exact", head: true }).eq("claimed", false);
+      const claimed = await supabase.from("gyms").select("id", { count: "exact", head: true }).eq("claimed", true);
+      const pending = await supabase.from("gym_claims").select("id", { count: "exact", head: true }).eq("status", "pending");
+      const eventClaims = await supabase.from("event_claims" as any).select("id", { count: "exact", head: true }).eq("status", "pending");
+      const pendingGyms = await (supabase.from("gyms") as any).select("id", { count: "exact", head: true }).eq("review_status", "pending");
+      const pendingEvents = await (supabase.from("events") as any).select("id", { count: "exact", head: true }).eq("review_status", "pending");
       return {
         total: total.count ?? 0,
         unclaimed: unclaimed.count ?? 0,
         claimed: claimed.count ?? 0,
         pending: pending.count ?? 0,
         eventClaims: (eventClaims as any).count ?? 0,
-        pendingGyms: pendingGyms.count ?? 0,
-        pendingEvents: pendingEvents.count ?? 0,
+        pendingGyms: (pendingGyms as any).count ?? 0,
+        pendingEvents: (pendingEvents as any).count ?? 0,
       };
     },
   });
