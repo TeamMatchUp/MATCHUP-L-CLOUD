@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { FighterSearchDropdown } from "./FighterSearchDropdown";
-import { MatchSuggestionsPanel } from "./MatchSuggestionsPanel";
 import { Constants } from "@/integrations/supabase/types";
 import { formatEnum } from "@/lib/format";
 import type { Database } from "@/integrations/supabase/types";
@@ -66,7 +66,7 @@ async function notifyBoutParties(fighterA: FighterProfile, fighterB: FighterProf
   );
 }
 
-type Step = "menu" | "manual" | "suggested" | "open" | "nonmember";
+type Step = "menu" | "manual" | "open" | "nonmember";
 
 /**
  * Detect scenario from a prefill slot:
@@ -105,6 +105,7 @@ export function AddFightModal({
   mode = "add",
 }: AddFightModalProps) {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { user, effectiveRoles } = useAuth();
   const isCoach = effectiveRoles.includes("coach");
   const [step, setStep] = useState<Step>("menu");
@@ -161,6 +162,11 @@ export function AddFightModal({
   const handleClose = (v: boolean) => {
     if (!v) reset();
     onOpenChange(v);
+  };
+
+  const openSuggestedMatchmaker = () => {
+    handleClose(false);
+    navigate(`/events/${eventId}/matchmaking`);
   };
 
   // ─── Manual Save ───
@@ -637,22 +643,21 @@ export function AddFightModal({
     </div>
   );
 
-  const wideStep = step === "suggested" || step === "manual";
+  const wideStep = step === "manual";
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className={step === "suggested" ? "" : "max-h-[90vh] overflow-y-auto"}
+        className="max-h-[90vh] overflow-y-auto"
         style={{
           background: "hsl(var(--card))",
           border: "none",
-          borderRadius: step === "suggested" ? 14 : 16,
+          borderRadius: 16,
           width: wideStep ? "min(95vw, 1100px)" : "min(540px, 95vw)",
           maxWidth: "95vw",
-          padding: step === "suggested" ? 0 : 24,
+          padding: 24,
           boxShadow: "0 8px 32px rgba(0,0,0,0.6), 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
-          maxHeight: step === "suggested" ? "92vh" : "90vh",
-          overflow: step === "suggested" ? "hidden" : undefined,
+          maxHeight: "90vh",
         }}
       >
         {step === "menu" && (
@@ -684,7 +689,7 @@ export function AddFightModal({
                 <Sparkles className="h-5 w-5" />,
                 getSuggestedLabel(),
                 getSuggestedDesc(),
-                () => setStep("suggested")
+                openSuggestedMatchmaker
               )}
               {mode === "add" && optionCard(
                 <PlusCircle className="h-5 w-5" />,
@@ -826,19 +831,6 @@ export function AddFightModal({
               </div>
             </div>
           </>
-        )}
-
-        {step === "suggested" && (
-          <MatchSuggestionsPanel
-            slot={fightSlot ?? undefined}
-            existingProposalFighterIds={existingFighterIds}
-            onSelectPair={handleSuggestionSelect}
-            eventId={eventId}
-            weightClassOverride={prefillSlot?.weight_class ?? null}
-            disciplineOverride={prefillSlot?.discipline ?? null}
-            anchorFighter={anchorFighter ?? undefined}
-            onClose={() => setStep("menu")}
-          />
         )}
 
         {step === "open" && (
