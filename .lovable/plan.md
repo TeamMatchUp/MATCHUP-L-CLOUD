@@ -1,59 +1,45 @@
-# Add Non-Member Fighter to Matchmaking
+## What I found
 
-## Understanding
+All four uploaders (Account avatar, Fighter photo, Gym/event banner, Gym gallery) call `supabase.storage.from(...).upload(...)`. The storage RLS INSERT policies require the caller to own the target entity — you upload to `${entityId}/…` for gym/event, and to `${auth.uid()}/…` for avatars.
 
-When an organiser is filling a bout slot (Add Fight / Find Matches / Find Fights in `AddFightModal`), they currently choose fighters only from the Matchup roster via `FighterSearchDropdown`. You want a third option — **Add Non-Member** — that lets them enter a fighter who isn't on the platform yet, drops that fighter into the bout, and emails them an invite to create an account and claim the profile.
+For the currently signed-in test account (`gym_owner`), I could not find any gym with `coach_id = auth.uid()` — only a draft event `london`. So any gym banner or gym gallery upload from that account will correctly be blocked by RLS ("new row violates row-level security"), because no gym in the DB actually belongs to them.
 
-The good news: the plumbing for claim-on-signup already exists. `fighter_profiles` has `email`, `user_id`, and `created_by_coach_id` columns, and a `sync_fighter_on_signup` trigger auto-links a fighter profile to a new auth user when their signup email matches an unclaimed profile (and assigns the `fighter` role). We just need to create the unclaimed profile from the organiser and send the invite email.
+That's the most likely cause for the gym-side failures. The banner/avatar policies themselves are correct. But a couple of gaps are worth closing at the same time:
 
-## Scope
+1. **`gyms` INSERT policy** has no `with_check`, so a coach can currently create a gym with someone else's `coach_id`. Uploads then fail because the row's owner doesn't match auth. We should force `coach_id = auth.uid()` on insert.
+2. **Uploader error toasts** currently swallow the real Supabase message on the banner/avatar paths, so it's hard for you (and me) to tell which RLS check tripped. We should surface `error.message` in every red toast.
+3. **Avatar upload in Account Settings** doesn't set a `contentType`, so an iPhone HEIC file would silently break in the browser. Force a jpg/png/webp filter on file pick and set an explicit `contentType`.
+4. **Event-images bucket** is restricted to `image/jpeg|png|webp`. The banner uploader already sends jpeg (correct). No change needed — just noting so the filter matches.
 
-- Add a **Non-Member** entry point inside `AddFightModal` alongside "Add Manually" / "Suggested".
-- New form: **Full name**, **Age**, **Email** (all required). Optional: weight class + discipline (pre-filled from slot when known so the profile is useful downstream).
-- On submit:
-  1. Look up existing `fighter_profiles` by email (case-insensitive). If one exists, reuse it — don't duplicate.
-  2. Otherwise insert a new `fighter_profiles` row: `name`, `email`, DOB derived from age (Jan 1 of `currentYear - age`), `weight_class`, `discipline`, `visibility = 'unlisted'`, `verified = false`, `created_by_coach_id = <organiser user id>`, `user_id = null`.
-  3. Use that fighter as one side of the bout (respecting `oneTBA` / `bothTBA` / new-slot logic already in `AddFightModal`).
-  4. Send an invite email via a new `send-fighter-invite` edge function.
-- Invite email content: "You've been added to [Event] on Matchup by [Organiser]. Create your account to claim your profile and confirm the bout." Contains a signup link (`/auth?invite=<email>`) prefilling the email.
-- When the invitee signs up with that email, the existing `sync_fighter_on_signup` trigger fires: it links `user_id`, assigns the `fighter` role, and notifies them of gym/bout context. No new claim logic needed.
-- Also create an in-app `notifications` entry for the organiser confirming the invite was sent.
+## Plan
+
+**A. Tighten gym insert (migration)**
+- Recreate `gyms` INSERT policy with `WITH CHECK (auth.uid() = coach_id)` so a newly-created gym is always owned by the caller and subsequent uploads to `${gymId}/…` pass RLS.
+
+**B. Surface real upload errors (frontend, no behaviour change on success)**
+- `src/components/BannerImageUpload.tsx`: change the "Upload failed" toast to include `error.message`.
+- `src/components/fighter/EditableProfilePanel.tsx`: same for the avatar upload toast.
+- `src/pages/AccountSettings.tsx`: already surfaces `uploadError.message` — no change.
+- `src/components/gym/GymGalleryManager.tsx`: already surfaces `e.message` — no change.
+
+**C. Account Settings avatar hardening**
+- Restrict the file input to `image/jpeg,image/png,image/webp`.
+- Pass `contentType: file.type` on `.upload(...)`.
+- Reject HEIC with a clear toast telling the user to convert to JPG/PNG.
+
+**D. Verification pass (no code changes, just checks)**
+- Confirm signed-in user has: at least one `gyms` row where `coach_id = auth.uid()` before testing gym banner/gallery, and at least one `events` row where `organiser_id = auth.uid()` before testing event banner. If a test user has neither, uploads will correctly be blocked — this is expected RLS behaviour, not a bug.
+- After the fixes, retry each of the four upload types; the improved toasts will name the exact failing check if any remain.
 
 ## Explicitly out of scope
 
-- No changes to matchmaking scoring or suggestions (non-members are only usable via the manual/non-member path, not AI suggestions).
-- No changes to existing `FighterSearchDropdown`, RLS, or roles beyond what's above.
-- No bulk invite. One fighter per submission.
-- No SMS. Email only.
-- Auth email templates unchanged — this is an app (transactional) email.
-
-## Technical notes
-
-**UI** — `src/components/organiser/AddFightModal.tsx`
-- Add `"nonmember"` to the `Step` union and a third `optionCard` in the menu ("Add Non-Member Fighter", icon `UserPlus`, copy: "Invite a fighter who isn't on Matchup yet").
-- New `nonMember` step: name / age (number 16–70) / email inputs + optional weight class + discipline selects + `paramFields` for slot params (only when creating a new slot, matching manual behaviour).
-- Side selector when `scenario === "bothTBA"` or creating a new slot (which side does the invitee take, or "Side A" default). For `oneTBA`, the empty side is auto-picked.
-- Submit handler mirrors `handleManualSave` — same INSERT vs UPDATE branches on `event_fight_slots`, same `notifyBoutParties` for the on-platform side (organiser/coach of the anchor fighter), then triggers the invite email.
-
-**Data** — no schema migration required. `fighter_profiles` already has every column we need. Add a lookup+insert helper in the modal (no new table).
-
-**Edge function** — new `supabase/functions/send-fighter-invite/index.ts`
-- Verifies JWT, validates body with Zod (`{ email, name, eventId, fighterProfileId }`), checks the caller owns the event (`events.organiser_id = auth.uid()`), then calls `send-transactional-email` with a new template `fighter-invite`.
-- New React Email template `supabase/functions/_shared/transactional-email-templates/fighter-invite.tsx` registered in `registry.ts`. Uses Matchup brand tokens (bg #ffffff, gold #e8a020 CTA), CTA link `${SITE_URL}/auth?invite=<encoded email>&fighter=<fighterProfileId>`.
-- Prerequisite: this needs Lovable Emails infrastructure (`setup_email_infra` + `scaffold_transactional_email` + an email domain). Build step will check `check_email_domain_status` first; if no domain, surface the domain-setup dialog and pause implementation there.
-
-**Auth page** — `src/pages/Auth.tsx` reads `?invite=` and prefills the email field on the signup tab. No signup logic change; existing `sync_fighter_on_signup` handles claim on account creation.
+- No changes to storage bucket public/private state (all three buckets are already public with sensible size/mime limits).
+- No changes to the existing storage RLS policies (they correctly accept `${entityId}/…` paths via `split_part(name,'/',1)`).
+- No re-architecture of the uploaders — same crop/preview/UX flow.
 
 ## Files touched
 
-- `src/components/organiser/AddFightModal.tsx` — add tab + form + submit handler
-- `src/pages/Auth.tsx` — prefill email from `?invite=` param
-- `supabase/functions/send-fighter-invite/index.ts` — new
-- `supabase/functions/_shared/transactional-email-templates/fighter-invite.tsx` — new
-- `supabase/functions/_shared/transactional-email-templates/registry.ts` — register template
-
-## Open questions (please confirm before I build)
-
-1. **Age → DOB**: storing exact DOB isn't in the form. OK to store Jan 1 of birth year (approximate) so downstream age math works, or would you rather leave DOB null and store age separately? (There's no `age` column on `fighter_profiles` today — DOB is the standard field.)
-2. **Email prerequisite**: does the project already have an email domain configured? If not, we'll need to set one up before the invite email can send. The bout can still be created without the email, but the invite won't reach them.
-3. **Bout status when the second side is a non-member**: should it go straight to `proposed` (as it does today for two on-platform fighters), or sit as `pending_invite` until the invitee signs up and accepts? Default in this plan: `proposed` — the on-platform side sees it immediately, and the invitee sees/accepts once they claim.
+- `supabase/migrations/*` — one migration to replace the `gyms` INSERT policy.
+- `src/components/BannerImageUpload.tsx` — include `error.message` in the failure toast.
+- `src/components/fighter/EditableProfilePanel.tsx` — include upload error message in the toast.
+- `src/pages/AccountSettings.tsx` — restrict avatar accept types, set `contentType`, friendly HEIC message.

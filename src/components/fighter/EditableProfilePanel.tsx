@@ -163,7 +163,7 @@ export function EditableProfilePanel({ fighterProfile, userId, onRefresh }: Edit
     setUploadingPhoto(true);
     const path = `${userId}/${Date.now()}.jpg`;
     const { error: uploadError } = await supabase.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
-    if (uploadError) { toast.error("Upload failed"); setUploadingPhoto(false); return; }
+    if (uploadError) { toast.error(`Upload failed — ${uploadError.message}`); setUploadingPhoto(false); return; }
     const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(path);
     await supabase.from("fighter_profiles").update({ profile_image: urlData.publicUrl }).eq("id", fighterProfile.id);
     toast.success("Photo updated");

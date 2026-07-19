@@ -151,6 +151,17 @@ export default function AccountSettings() {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) {
+      toast({
+        title: "Unsupported image format",
+        description: "Please upload a JPG, PNG, or WebP image. iPhone HEIC photos must be converted first.",
+        variant: "destructive",
+      });
+      e.target.value = "";
+      return;
+    }
+
     if (file.size > 2 * 1024 * 1024) {
       toast({ title: "File too large", description: "Please upload an image under 2MB.", variant: "destructive" });
       return;
@@ -162,7 +173,7 @@ export default function AccountSettings() {
 
     const { error: uploadError } = await supabase.storage
       .from("avatars")
-      .upload(filePath, file, { upsert: true });
+      .upload(filePath, file, { upsert: true, contentType: file.type });
 
     if (uploadError) {
       toast({ title: "Upload failed", description: uploadError.message, variant: "destructive" });
@@ -277,7 +288,7 @@ export default function AccountSettings() {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   className="hidden"
                   onChange={handleAvatarUpload}
                 />
