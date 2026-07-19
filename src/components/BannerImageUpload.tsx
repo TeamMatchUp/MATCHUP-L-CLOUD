@@ -92,7 +92,7 @@ export function BannerImageUpload({ bucket, entityId, currentUrl, onUploaded, on
       const path = `${entityId}/banner-${Date.now()}.jpg`;
       const { error } = await supabase.storage.from(bucket).upload(path, blob, { upsert: true, contentType: "image/jpeg" });
       if (error) {
-        toast.error("Upload failed — please try again");
+        toast.error(`Upload failed — ${error.message}`);
         setUploading(false);
         return;
       }
