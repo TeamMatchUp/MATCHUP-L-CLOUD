@@ -153,7 +153,7 @@ export default function OrganiserDashboard() {
                             <p className="text-xs text-muted-foreground mt-1">{event.date} · {event.location} · {eventTotal} slots</p>
                           </Link>
                           <div className="flex gap-2 shrink-0">
-                            <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate(`/matchmaking/${event.id}`)}>
+                            <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate(`/events/${event.id}/matchmaking`)}>
                               <Sparkles className="h-3.5 w-3.5" /> Find Matches
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => setPromoteEvent(event)}>
