@@ -388,12 +388,24 @@ export default function FighterDetail() {
           className="mx-auto" style={{ maxWidth: 1280, padding: "0 24px" }}>
 
           {/* Back link */}
-          <button onClick={() => fromParam === "roster" ? navigate("/dashboard?section=roster") : navigate("/explore?tab=fighters")}
-            aria-label="Back to fighters"
-            className="flex items-center gap-2"
-            style={{ background: "none", border: "none", color: MUTED, fontSize: 13, cursor: "pointer", padding: "0 0 16px" }}>
-            <ArrowLeft style={{ width: 14, height: 14 }} /> Back to Fighters
-          </button>
+          {(() => {
+            const eventIdParam = searchParams.get("eventId");
+            const isFromEvent = fromParam === "event" && eventIdParam;
+            const backLabel = isFromEvent ? "Back to Event" : "Back to Fighters";
+            const onBack = () => {
+              if (fromParam === "roster") navigate("/dashboard?section=roster");
+              else if (isFromEvent) navigate(`/events/${eventIdParam}`);
+              else navigate("/explore?tab=fighters");
+            };
+            return (
+              <button onClick={onBack}
+                aria-label={backLabel.toLowerCase()}
+                className="flex items-center gap-2"
+                style={{ background: "none", border: "none", color: MUTED, fontSize: 13, cursor: "pointer", padding: "0 0 16px" }}>
+                <ArrowLeft style={{ width: 14, height: 14 }} /> {backLabel}
+              </button>
+            );
+          })()}
 
           {/* ════ HERO CARD ════ */}
           <div className="p-5 md:p-8" style={{

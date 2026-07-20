@@ -424,7 +424,7 @@ export default function EventDetail() {
             )}
             <div className="text-left min-w-0">
               {fA ? (
-                <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
+                <Link to={`/fighters/${fA.id}?from=event&eventId=${id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-xl md:text-2xl text-foreground uppercase truncate">{nameA}</p>
                 </Link>
               ) : (
@@ -442,7 +442,7 @@ export default function EventDetail() {
           <div className="flex items-center gap-3 justify-end overflow-hidden">
             <div className="text-right min-w-0">
               {fB ? (
-                <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
+                <Link to={`/fighters/${fB.id}?from=event&eventId=${id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-xl md:text-2xl text-foreground uppercase truncate">{nameB}</p>
                 </Link>
               ) : (
@@ -479,7 +479,7 @@ export default function EventDetail() {
             )}
             <div className="text-left min-w-0">
               {fA ? (
-                <Link to={`/fighters/${fA.id}`} className="hover:text-primary transition-colors">
+                <Link to={`/fighters/${fA.id}?from=event&eventId=${id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-sm text-foreground uppercase truncate">{nameA}</p>
                 </Link>
               ) : <p className="font-heading text-sm text-muted-foreground uppercase">{nameA}</p>}
@@ -495,7 +495,7 @@ export default function EventDetail() {
           <div className="flex items-center gap-2 justify-end overflow-hidden">
             <div className="text-right min-w-0">
               {fB ? (
-                <Link to={`/fighters/${fB.id}`} className="hover:text-primary transition-colors">
+                <Link to={`/fighters/${fB.id}?from=event&eventId=${id}`} className="hover:text-primary transition-colors">
                   <p className="font-heading text-sm text-foreground uppercase truncate">{nameB}</p>
                 </Link>
               ) : <p className="font-heading text-sm text-muted-foreground uppercase">{nameB}</p>}

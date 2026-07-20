@@ -57,7 +57,7 @@ export function HeroSection() {
             }}
           >
             <span>MATCH EASY</span>
-            <span className="inline-flex items-center leading-none shrink-0 mx-[0.12em]" style={{ height: "4em" }}>
+            <span className="inline-flex items-center leading-none shrink-0 mx-[0.12em]" style={{ height: "3em" }}>
               <AppIcon className="h-full w-auto block" alt="MatchUp shield" />
             </span>
             <span>FIGHT HARD</span>
