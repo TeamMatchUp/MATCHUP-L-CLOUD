@@ -1,10 +1,10 @@
-import shieldAsset from "@/assets/mu-shield.png.asset.json";
+import logoAsset from "@/assets/mu-logo.png.asset.json";
 
 interface AppLogoProps {
   className?: string;
   alt?: string;
 }
 
-export function AppLogo({ className = "h-10", alt = "MatchUp" }: AppLogoProps) {
-  return <img src={shieldAsset.url} alt={alt} className={className} />;
+export function AppLogo({ className = "h-10 w-auto", alt = "MatchUp" }: AppLogoProps) {
+  return <img src={logoAsset.url} alt={alt} className={className} />;
 }
