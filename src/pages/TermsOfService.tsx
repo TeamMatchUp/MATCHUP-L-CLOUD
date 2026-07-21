@@ -73,7 +73,7 @@ export default function TermsOfService() {
           <section id="matchmaking">
             <h2 className="text-2xl font-semibold text-foreground mb-4">Matchmaking &amp; Rating System</h2>
             <p><strong>Decision-support only.</strong> Matchup's matchmaking algorithm and Elo-style ratings are provided as a decision-support tool. They are not a guarantee of a safe, fair, or competitively balanced pairing.</p>
-            <p className="mt-2"><strong>Neutral-Elo disclosure.</strong> Where a fighter's rating is built from self-reported historical results (including coach-verified imports), Matchup applies neutral assumptions rather than a real opponent-strength calculation. Such ratings do not reflect confirmed opponent strength and should be treated as provisional until the fighter has one or more Matchup-confirmed results.</p>
+            <p className="mt-2"><strong>Conservative-rating disclosure.</strong> Scores for fighters who haven't yet competed through Matchup are conservative estimates based on their reported record — always verify suitability before confirming a match.</p>
             <p className="mt-2"><strong>Matchmaker responsibility.</strong> Event organisers, coaches, and any other users using the matchmaking tools remain solely responsible for verifying the suitability of any proposed pairing before confirming it. This includes, but is not limited to, debut fighters, welfare flags, mixed amateur/pro history, and fighters without Matchup-confirmed results.</p>
           </section>
 

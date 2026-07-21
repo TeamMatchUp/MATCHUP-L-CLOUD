@@ -475,14 +475,33 @@ export default function FighterDetail() {
 
                 {/* MU Score + leaderboard + socials row */}
                 <div className="flex items-center gap-3 flex-wrap justify-center md:justify-start" style={{ marginTop: 12 }}>
-                  <div className="flex items-center gap-2" style={{
-                    background: GOLD_TINT, borderRadius: 9999, padding: "6px 14px",
-                  }}>
-                    <Trophy style={{ width: 14, height: 14, color: GOLD }} />
-                    <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: GOLD, letterSpacing: "0.04em" }}>
-                      MU {Math.round((fighter as any).elo_rating ?? 1000)}
-                    </span>
-                  </div>
+                  {(() => {
+                    const f: any = fighter;
+                    const rating = f.rating ?? 1500;
+                    const rd = f.rating_deviation ?? 350;
+                    const last = f.last_result_at ? new Date(f.last_result_at) : null;
+                    const months = last ? Math.max(0, (Date.now() - last.getTime()) / (1000 * 60 * 60 * 24 * 30.4375)) : 0;
+                    const effRd = Math.min(Math.sqrt(rd * rd + 64.5 * 64.5 * months), 350);
+                    const mu = Math.round(rating - 2 * effRd);
+                    const inactive = last && months >= 12;
+                    return (
+                      <>
+                        <a href="/record-accuracy" title="How MU Score is calculated" className="flex items-center gap-2" style={{
+                          background: GOLD_TINT, borderRadius: 9999, padding: "6px 14px", textDecoration: "none",
+                        }}>
+                          <Trophy style={{ width: 14, height: 14, color: GOLD }} />
+                          <span style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 18, color: GOLD, letterSpacing: "0.04em" }}>
+                            MU {mu}
+                          </span>
+                        </a>
+                        {inactive && (
+                          <span style={{ color: MUTED, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                            Inactive — no fights in 12+ months
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
                   <button onClick={() => navigate("/leaderboard")} style={{
                     background: "transparent", color: MUTED, border: "none", fontSize: 11, fontWeight: 700,
                     letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer",

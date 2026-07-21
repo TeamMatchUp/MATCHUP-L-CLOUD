@@ -53,9 +53,9 @@ export function MatchmakingConsentModal({ open, onConsented, recordConsent }: Pr
             not a guarantee of a safe or fair pairing.
           </p>
           <p>
-            Ratings built from self-reported history use neutral assumptions rather than
-            confirmed opponent strength — they may not reflect a fighter's true level until
-            they have Matchup-confirmed results.
+            Scores for fighters who haven't yet competed through Matchup are conservative
+            estimates based on their reported record — always verify suitability before
+            confirming a match.
           </p>
           <p>
             You remain responsible for verifying suitability before confirming any match,
