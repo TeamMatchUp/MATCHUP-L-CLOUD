@@ -536,7 +536,7 @@ function ReviewQueue() {
 
 function EloRecomputePanel() {
   const [running, setRunning] = useState(false);
-  const [result, setResult] = useState<{ updated: number; shifts: any[] } | null>(null);
+  const [result, setResult] = useState<{ updated: number; count: number; report: any[] } | null>(null);
   const run = async () => {
     setRunning(true);
     setResult(null);
