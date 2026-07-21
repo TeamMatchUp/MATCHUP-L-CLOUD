@@ -541,10 +541,10 @@ function EloRecomputePanel() {
     setRunning(true);
     setResult(null);
     try {
-      const { data, error } = await supabase.functions.invoke("recompute-elo", { body: {} });
+      const { data, error } = await supabase.functions.invoke("recompute-ratings", { body: {} });
       if (error) throw error;
       setResult(data as any);
-      toast({ title: "Elo recomputed", description: `${(data as any)?.updated ?? 0} fighters updated.` });
+      toast({ title: "MU Scores recomputed", description: `${(data as any)?.updated ?? 0} fighters updated.` });
     } catch (e: any) {
       toast({ title: "Recompute failed", description: e?.message ?? "Unknown error", variant: "destructive" as any });
     } finally {
@@ -555,25 +555,26 @@ function EloRecomputePanel() {
     <Card className="bg-card border-border/40 p-4 space-y-3">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h2 className="font-heading text-lg text-foreground">Elo Recompute</h2>
+          <h2 className="font-heading text-lg text-foreground">MU Score Recompute</h2>
           <p className="text-xs text-muted-foreground">
-            Runs a global chronological replay across all fights and rewrites each fighter's Elo. Flags shifts &gt; 50 points from the previous stored value (first-ever run is not flagged).
+            Runs a full Glicko-2 replay across all fights and rewrites each fighter's rating, RD, volatility and displayed MU Score. Flags fighters whose leaderboard rank moves by more than 10 positions.
           </p>
         </div>
         <Button onClick={run} disabled={running}>
-          {running ? "Recomputing…" : "Recompute Elo"}
+          {running ? "Recomputing…" : "Recompute MU Scores"}
         </Button>
       </div>
       {result && (
         <div className="text-sm text-muted-foreground">
-          Updated <span className="text-foreground font-medium">{result.updated}</span> fighters.
-          {result.shifts.length > 0 && (
+          Updated <span className="text-foreground font-medium">{result.updated}</span> of{" "}
+          <span className="text-foreground font-medium">{result.count}</span> fighters.
+          {Array.isArray(result.report) && result.report.some((r: any) => r.flagged) && (
             <>
-              {" "}<span className="text-foreground font-medium">{result.shifts.length}</span> large shifts:
+              {" "}Rank shifts &gt; 10:
               <ul className="mt-2 space-y-1 text-xs">
-                {result.shifts.slice(0, 20).map((s: any) => (
-                  <li key={s.fighter_id}>
-                    {s.name}: {s.before} → {s.after} ({s.delta > 0 ? "+" : ""}{s.delta})
+                {result.report.filter((r: any) => r.flagged).slice(0, 20).map((r: any) => (
+                  <li key={r.fighter_id}>
+                    {r.name}: MU {r.old_displayed} → {r.new_displayed} · rank #{r.rank_before} → #{r.rank_after}
                   </li>
                 ))}
               </ul>
