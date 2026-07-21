@@ -847,11 +847,15 @@ export type Database = {
           elo_rating: number
           email: string | null
           fighting_substyle: string | null
+          first_platform_confirmed_at: string | null
           height: number | null
           id: string
+          last_result_at: string | null
           name: string
           postcode: string | null
           profile_image: string | null
+          rating: number
+          rating_deviation: number
           reach: number | null
           record_draws: number
           record_losses: number
@@ -865,6 +869,7 @@ export type Database = {
           user_id: string | null
           verified: boolean
           visibility: string
+          volatility: number
           walk_around_weight_kg: number | null
           weight_class: Database["public"]["Enums"]["weight_class"]
           years_training: number | null
@@ -886,11 +891,15 @@ export type Database = {
           elo_rating?: number
           email?: string | null
           fighting_substyle?: string | null
+          first_platform_confirmed_at?: string | null
           height?: number | null
           id?: string
+          last_result_at?: string | null
           name: string
           postcode?: string | null
           profile_image?: string | null
+          rating?: number
+          rating_deviation?: number
           reach?: number | null
           record_draws?: number
           record_losses?: number
@@ -904,6 +913,7 @@ export type Database = {
           user_id?: string | null
           verified?: boolean
           visibility?: string
+          volatility?: number
           walk_around_weight_kg?: number | null
           weight_class: Database["public"]["Enums"]["weight_class"]
           years_training?: number | null
@@ -925,11 +935,15 @@ export type Database = {
           elo_rating?: number
           email?: string | null
           fighting_substyle?: string | null
+          first_platform_confirmed_at?: string | null
           height?: number | null
           id?: string
+          last_result_at?: string | null
           name?: string
           postcode?: string | null
           profile_image?: string | null
+          rating?: number
+          rating_deviation?: number
           reach?: number | null
           record_draws?: number
           record_losses?: number
@@ -943,6 +957,7 @@ export type Database = {
           user_id?: string | null
           verified?: boolean
           visibility?: string
+          volatility?: number
           walk_around_weight_kg?: number | null
           weight_class?: Database["public"]["Enums"]["weight_class"]
           years_training?: number | null
