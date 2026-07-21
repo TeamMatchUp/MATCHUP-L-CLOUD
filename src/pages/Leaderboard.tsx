@@ -131,7 +131,7 @@ export default function Leaderboard() {
                 <div style={{ fontWeight: 600, fontSize: 14 }}>{r.name}</div>
                 <div style={{ color: MUTED, fontSize: 13 }}>{r.gym_name ?? "Independent"}</div>
                 <div style={{ textAlign: "right", fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: GOLD }}>
-                  {r.elo_rating}
+                  {r.mu_score}
                 </div>
               </Link>
             ))}
